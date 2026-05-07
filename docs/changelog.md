@@ -2,6 +2,28 @@
 
 Stand: 2026-05-07
 
+## 2026-05-07 - Finale Dokumentations-Wahrheitspruefung fuer M4
+
+### Changed
+
+- Aktueller Hardening-Gate-Stand als verbindliche Dokumentationsgrenze ergaenzt.
+- Unbelegte oder ueberholte Freigabeformulierungen fuer M4 durch `blockiert` ersetzt.
+- Chat-Request-Dokumentation korrigiert: `workspace_id` ist nicht mehr Body-Vertrag, sondern kommt aus AuthContext und `X-Workspace-Id`.
+- M4d bleibt ausschliesslich als read-only Diagnostics-Slice dokumentiert.
+
+### Findings
+
+- Aktueller Hardening-Score: `74/100`.
+- M4 bleibt blockiert.
+- M5 bleibt auch nach spaeterem M4-Hardening bis zur vollstaendigen Dokumentationspruefung blockiert.
+- Echte PostgreSQL-Truth-Nachweise sind fuer den aktuellen Lauf nicht gruen belegt.
+
+### Decision
+
+- M4: `No-Go`.
+- M4d: `read-only vorbereitet`, nicht vollstaendig abgeschlossen.
+- M5: `No-Go`.
+
 ## 2026-05-07 - M4d Read-only Diagnostics Dokumentationssync
 
 ### Changed
@@ -16,12 +38,12 @@ Stand: 2026-05-07
 
 - Backend-Diagnostics- und Admin-Grenztests sind fokussiert gruen: `11 passed`.
 - Frontend-Diagnostics-Screen ist fokussiert gruen: `4 passed`.
-- M4d Read-only Gate wurde mit `94/100` akzeptiert.
+- Der damalige read-only M4d-Teil wurde als vorbereitet bewertet; der aktuelle M4-Hardening-Score bleibt mit `74/100` blockierend fuer M4 insgesamt.
 - Vollstaendige M4d-Admin-Aktionen bleiben blockiert, weil M4a, M4b und M4c noch nicht gruen sind.
 
 ### Decision
 
-- M4d read-only Diagnostics: `akzeptiert`.
+- M4d read-only Diagnostics: `vorbereitet`.
 - Vollstaendiges M4d: `nicht abgeschlossen`.
 - M4d darf in keiner Dokumentation als vollstaendig abgeschlossen dargestellt werden.
 
@@ -57,8 +79,8 @@ Stand: 2026-05-07
 
 ### Findings
 
-- Damaliger Stand: `M4a = 82/100`, `M4b = 88/100`, `M4c = 88/100`, `M4d = 58/100`, `M4e = 18/100`; M4d read-only ist seit 2026-05-07 mit `94/100` akzeptiert, aber nicht vollstaendig abgeschlossen.
-- M4 ist damit `teilweise stabil`.
+- Damaliger Stand: `M4a = 82/100`, `M4b = 88/100`, `M4c = 88/100`, `M4d = 58/100`, `M4e = 18/100`; dieser historische Scorestand ist durch den aktuellen Hardening-Score `74/100` ersetzt.
+- M4 ist nach aktuellem Hardening-Gate blockiert.
 - M5 bleibt blockiert, weil `M4a < 95`, `M4b < 90` und `M4c < 90`.
 - Der letzte PostgreSQL-Integrationslauf fuer Search/Reindex ist weiterhin an Connection-Timeouts gegen die konfigurierte Ziel-Datenbank gescheitert.
 - Die damalige Admin-Diagnostics-GUI bildete nur den Search-Index-Rebuild-Flow ab; seit 2026-05-07 ist die UI read-only und ohne mutierende Aktionsbuttons.

@@ -877,6 +877,7 @@ Response `200` `ChatSessionDetail`:
         {
           "chunk_id": "chunk-1",
           "document_id": "document-1",
+          "document_title": "Document title",
           "source_anchor": {
             "type": "text",
             "page": null,
@@ -884,7 +885,8 @@ Response `200` `ChatSessionDetail`:
             "char_start": 10,
             "char_end": 130
           },
-          "quote_preview": null
+          "quote_preview": "Historischer Quellen-Snapshot",
+          "source_status": "active"
         }
       ],
       "confidence": null
@@ -927,6 +929,7 @@ Response `201` `ChatMessageResponse` fuer die Assistant-Antwort:
     {
       "chunk_id": "chunk-1",
       "document_id": "document-1",
+      "document_title": "Document title",
       "source_anchor": {
         "type": "text",
         "page": null,
@@ -934,7 +937,8 @@ Response `201` `ChatMessageResponse` fuer die Assistant-Antwort:
         "char_start": 10,
         "char_end": 130
       },
-      "quote_preview": "Nach der Probezeit gilt eine Kuendigungsfrist von vier Wochen zum Monatsende."
+      "quote_preview": "Nach der Probezeit gilt eine Kuendigungsfrist von vier Wochen zum Monatsende.",
+      "source_status": "active"
     }
   ],
   "confidence": {

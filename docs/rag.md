@@ -19,7 +19,7 @@ Es beschreibt den abgeschlossenen Stand der M3c Chat/RAG Foundation. M3c liefert
 - Insufficient-Context-Policy ist implementiert.
 - Chat-Persistenz fuer Sessions, Messages und Citations ist implementiert.
 - Fake LLM Provider fuer deterministische Tests ist implementiert.
-- Chat-UI ist gegen den echten Backend-Vertrag implementiert.
+- Chat-UI ist gegen den dokumentierten Backend-Vertrag implementiert und ueber Screen-Tests abgesichert.
 - API-, Service- und Frontend-Tests fuer M3c sind vorhanden.
 
 ## Antwortpfad
@@ -78,7 +78,7 @@ Alle Fehler verwenden das API-Error-Envelope.
 
 ## Verifikation
 
-- Chat-API, Schemas, RAG-Service, Fake LLM Provider und Chat-Persistenz: `74 passed` im fokussierten Backend-Lauf.
+- Chat-API, Schemas, RAG-Service, Fake LLM Provider und Chat-Persistenz: `74 passed` im historischen fokussierten Backend-Lauf.
 - Frontend ChatPage und alle Frontend-Screen-Tests: `14 passed`.
 - Frontend-Build: erfolgreich.
 
@@ -93,7 +93,7 @@ Alle Fehler verwenden das API-Error-Envelope.
 - Fachlicher Fortschritt: abgeschlossen fuer M3c Foundation
 - Harter Abschluss: bestanden
 - Score: `94/100`
-- Entscheidung fuer M4: `Go`
+- Historische Entscheidung nach M3c-Abschluss: `Go` fuer den Start von M4-Produktisierung; kein aktueller M4-Freigabestatus.
 
 ## Abgrenzung zu M4
 

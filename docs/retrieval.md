@@ -203,7 +203,7 @@ M3b Search ist ueber PostgreSQL-Integrationstests vorbereitet, die nur mit `TEST
 
 Aktueller Befund:
 
-- Der fokussierte SQLite-/Service-Slice ist gruen.
+- Der fokussierte lokale Service-/API-Slice ist gruen.
 - Der letzte End-to-End-Lauf gegen die konfigurierte PostgreSQL-Ziel-Datenbank ist nicht an fachlichem Verhalten, sondern an DB-Erreichbarkeit gescheitert.
 - Der lokale Reindex-/Inkonsistenz-Slice ist gruen, ersetzt aber nicht den blockierten PostgreSQL-End-to-End-Nachweis.
 

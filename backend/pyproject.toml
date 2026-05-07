@@ -22,5 +22,6 @@ line-length = 100
 testpaths = ["tests"]
 pythonpath = ["."]
 markers = [
-    "postgres: requires a real PostgreSQL database — set TEST_DATABASE_URL or use docker-compose.test.yml",
+    "postgres: requires a real PostgreSQL database - set TEST_DATABASE_URL or use docker-compose.test.yml",
+    "postgres_truth: hard PostgreSQL truth tests; only skip when TEST_DATABASE_URL is missing",
 ]

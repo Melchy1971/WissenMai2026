@@ -4,7 +4,7 @@ Stand: 2026-05-07
 
 ## Status
 
-Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erweitert, fuer M3c um eine dokumentgestuetzte Chat-Oberflaeche ergaenzt und in M4 um Upload-, Lifecycle- sowie read-only Admin-Diagnostics-Slices erweitert. Der Upload- und Diagnostics-Slice nutzen den zentralen Auth-/Workspace-Kontext; ein voll integriertes Frontend-Modell fuer Chat und Navigation ist aber noch nicht konsistent abgeschlossen.
+Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erweitert, fuer M3c um eine dokumentgestuetzte Chat-Oberflaeche ergaenzt und in M4 um Upload-, Lifecycle- sowie read-only Admin-Diagnostics-Slices erweitert. Der Upload- und Diagnostics-Slice nutzen den aktuellen Auth-/Workspace-Request-Kontext; ein voll integriertes Frontend-Modell fuer Login, Logout, Sessionwiederherstellung und Route-Guards ist nicht nachweisbar umgesetzt.
 
 ## Umgesetzter Scope
 
@@ -26,7 +26,7 @@ Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erw
 - Sichtbarer Quellenblock mit Citations.
 - Sichtbarer Insufficient-Context-Zustand.
 - Fehlerzustaende fuer `CHAT_SESSION_NOT_FOUND`, `CHAT_MESSAGE_INVALID`, `INSUFFICIENT_CONTEXT`, `RETRIEVAL_FAILED` und `LLM_UNAVAILABLE`.
-- POST-Message-Request im aktuellen Frontend weiterhin mit `workspace_id`, `question` und `retrieval_limit`.
+- POST-Message-Request im aktuellen Frontend mit `question` und `retrieval_limit`; Workspace und User kommen aus dem zentralen Request-Kontext.
 - POST-Message-Response wird als Assistant-Message mit Citations und Confidence gemappt.
 - Lade-, Leer- und Fehlerzustaende.
 - Sichtbare Fehlercodes im UI.
@@ -173,7 +173,7 @@ Aktuell verifiziert:
 - Polling nutzt festen 250-ms-Takt ohne Backoff.
 - Dokument-, Search- und Chat-API-Clients senden keinen `workspace_id` mehr in Query oder Body, sondern nutzen den zentralen Request-Kontext fuer `X-Workspace-Id`.
 - Ein vollstaendiger Frontend-Produktflow fuer Login, Logout, Sessionwiederherstellung und geschuetzte Route-Guards fehlt weiterhin.
-- Kein Login-Screen, kein Logout und kein serverseitig aufgeloester Benutzerkontext in der GUI.
+- Kein Login-Screen und kein Logout; die GUI konsumiert geschuetzte Endpunkte ueber den Request-Kontext, bietet aber keinen vollstaendigen M4a-Produktfluss.
 - Admin-Diagnostik nutzt den zentralen Auth-/Workspace-Kontext; die GUI zeigt keinen manuellen `x-admin-token`-Pfad und keine mutierenden Admin-Aktionen mehr.
 
 ## M4a Konsistenzstand im Frontend

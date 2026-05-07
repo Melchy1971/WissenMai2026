@@ -1,6 +1,6 @@
 # Wissensbasis V1 - Masterplan
 
-**Stand:** 2026-05-06  
+**Stand:** 2026-05-07  
 **Ground Truth:** Code und Migrationen sind verbindlich. Dokumentation beschreibt den Stand, entscheidet ihn aber nicht.  
 **Ziel:** Eine robuste Wissensbasis, in der Dokumente importiert, normalisiert, versioniert, als Chunks lesbar gemacht, spaeter durchsucht und im Chat/Analysekontext verwendet werden koennen.
 
@@ -18,7 +18,7 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 | Test-DB | SQLite fuer lokale API-/Unit-Tests, optional PostgreSQL via `TEST_DATABASE_URL` | ✅ implementiert |
 | Migrationen | Alembic | ✅ implementiert |
 | Auth V1 | M4a fuehrt Auth und Workspace-Isolation als Produktthema ein | Zielbild definiert, im Code nicht konsistent abgeschlossen |
-| Mehrbenutzer | Datenmodell vorbereiten, Logik spaeter | vorbereitet, aber keine echte Membership-Logik nachweisbar |
+| Mehrbenutzer | Datenmodell vorbereiten, Logik spaeter | Auth-Sessions und Workspace-Memberships sind im Backend vorhanden; die Workspace-Isolation ist wegen offener Mutationspfade nicht durchgaengig freigegeben |
 | Originaldateien | Nicht speichern | gilt weiterhin |
 | Kanonischer Inhalt | `document_versions.normalized_markdown` | ✅ implementiert |
 | Versionierung | Dokument zeigt ueber `current_version_id` auf aktuelle Version | ✅ implementiert |
@@ -79,7 +79,7 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 ### Partial
 
 - PostgreSQL-Integrationstests existieren, laufen aber nur mit `TEST_DATABASE_URL` und sind im letzten echten Lauf nicht gruen gewesen.
-- Echter PostgreSQL-Zugriff gegen `85.215.131.200:5432` ist aus der aktuellen Umgebung blockiert; dadurch sind Duplicate-, Search- und Reindex-Nachweise aktuell nicht gruen verifiziert.
+- Echter PostgreSQL-Zugriff fuer den aktuellen Truth-/Hardening-Nachweis ist aus dieser Umgebung nicht erfolgreich verifiziert; dadurch sind Duplicate-, Search- und Reindex-Nachweise aktuell nicht gruen bestaetigt.
 - M4a Auth und Workspace-Isolation sind nur teilweise abgeschlossen.
 - M4b Upload/API-Stabilitaet ist nur teilweise abgeschlossen.
 - M4c Lifecycle ist fachlich implementiert, aber fuer den Abschluss nicht vollstaendig hart nachgewiesen.
@@ -94,7 +94,7 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 
 - OCR-Engine.
 - vollstaendig freigegebener M4a-Produktflow fuer Auth/Logout/Frontend-Route-Guards.
-- echte Workspace-/User-Verwaltung mit Memberships und Sessionkontext.
+- produktreife Workspace-/User-Verwaltung oberhalb der vorhandenen Membership- und Sessiontabellen.
 - Embeddings.
 - Analyse-/Merge-/Refine-Fachlogik.
 - Backup-/Restore-Automatisierung.
@@ -901,11 +901,12 @@ Aktueller M4-Gate-Stand am 2026-05-07:
 
 | Bereich | Score | Status | Gate-Relevanz |
 |---|---:|---|---|
-| M4a | `82/100` | nicht abgeschlossen | blockiert M5 |
-| M4b | `88/100` | nicht abgeschlossen | blockiert M5 |
-| M4c | `88/100` | nicht abgeschlossen | blockiert M5 |
-| M4d | `94/100` | read-only vorbereitet, nicht vollstaendig abgeschlossen | read-only akzeptiert, Admin-Aktionen blockiert |
-| M4e | `18/100` | Konzept, nicht implementiert | `No-Go` |
+| M4 Hardening gesamt | `74/100` | blockiert | blockiert M4 und M5 |
+| M4a | wahrscheinlich `82/100` | nicht abgeschlossen | blockiert M5 |
+| M4b | wahrscheinlich `88/100` | nicht abgeschlossen | blockiert M5 |
+| M4c | wahrscheinlich `88/100` | nicht abgeschlossen | blockiert M5 |
+| M4d | read-only vorbereitet | nicht vollstaendig abgeschlossen | Admin-Aktionen blockiert |
+| M4e | Konzept | nicht implementiert | `No-Go` |
 
 Gate-Regel fuer M5:
 
@@ -915,7 +916,8 @@ Gate-Regel fuer M5:
 
 Aktuelles Ergebnis:
 
-- M4 ist **teilweise stabil**.
+- M4 ist nach dem aktuellen Hardening-Gate **nicht technisch stabilisiert**.
+- Hardening-Score: `74/100`; damit bleibt M4 unter der Freigabeschwelle `>= 90`.
 - M5 bleibt blockiert.
 
 Aktueller M4c-Befund:
@@ -925,10 +927,9 @@ Aktueller M4c-Befund:
 - Search- und Reindex-Integrationslauf gegen PostgreSQL ist aktuell nicht erfolgreich, weil die konfigurierte Test-Datenbank im letzten Lauf nicht erreichbar war.
 - Der M4c-Produktstatus bleibt deshalb vorerst `nicht abgeschlossen`.
 - Admin- und Diagnoseansicht sind als read-only Diagnostics real vorhanden; Reparatur-, Reindex-, Cleanup- und Backup-Aktionen sind nicht freigegeben.
-- Zentrale Fehler, Health-Informationen und Betriebsmetriken sind beobachtbar.
+- Zentrale Import-, Search- und Chat-Events sind beobachtbar; Lifecycle-, Retrieval- und Reindex-Observability sind nicht vollstaendig instrumentiert.
 - Backup und Restore sind aktuell als Konzept und Runbook beschrieben, aber nicht real implementiert oder getestet.
-- Read-, Retrieval- und Chat-Pfade halten definierte lokale Performancebudgets ein.
-- Deployment- und Betriebsdokumentation reicht fuer lokalen Betrieb, nicht aber fuer einen nachgewiesenen Restore-Fall.
+- Performance- und Betriebsdokumentation sind vorhanden, ersetzen aber keinen aktuellen PostgreSQL-Truth- oder Restore-Nachweis.
 
 ### Risiken
 

@@ -4,15 +4,15 @@ Stand: 2026-05-07
 
 ## PostgreSQL-Integrationstests
 
-Aktuell verwendete Test-URL:
+Test-URL:
 
-- `TEST_DATABASE_URL=postgresql+psycopg://appuser:<password>@85.215.131.200:5432/wissen2026`
+- `TEST_DATABASE_URL=postgresql+psycopg://<user>:<password>@<host>:<port>/<database>`
 
 Lokale Aktivierung:
 
 ```powershell
 cd backend
-$env:TEST_DATABASE_URL="postgresql+psycopg://appuser:<password>@85.215.131.200:5432/wissen2026"
+$env:TEST_DATABASE_URL="postgresql+psycopg://<user>:<password>@<host>:<port>/<database>"
 $env:DATABASE_URL=$env:TEST_DATABASE_URL
 .\.venv\Scripts\python.exe -m alembic heads
 .\.venv\Scripts\python.exe -m alembic current
@@ -21,10 +21,9 @@ $env:DATABASE_URL=$env:TEST_DATABASE_URL
 
 Verbindungsstatus am 2026-05-06:
 
-- Die URL ist fachlich korrekt zusammengesetzt.
-- Der Verbindungsaufbau gegen `85.215.131.200:5432` ist aus der aktuellen Umgebung per `psycopg.errors.ConnectionTimeout` fehlgeschlagen.
-- `alembic current` kann gegen diese Datenbank deshalb aktuell nicht erfolgreich laufen.
-- `pytest -m postgres` scheitert vor dem eigentlichen Fachtest am selben Verbindungsproblem.
+- Der zuletzt versuchte echte PostgreSQL-Nachweis war aus dieser Umgebung nicht erfolgreich.
+- Der aktuelle lokale Dokumentations- und Hardening-Lauf ersetzte den echten PostgreSQL-Nachweis nicht; die Truth-Suite wurde ohne `TEST_DATABASE_URL` geskippt.
+- `alembic current` und `pytest -m postgres` ersetzen ohne erreichbare dedizierte Testdatenbank keinen Freigabenachweis.
 - `alembic heads` ist lokal lesbar, zeigt aber aktuell zwei Heads: `20260505_0016` und `20260506_0013`.
 
 Bekannte Einschraenkungen:

@@ -4,11 +4,11 @@ Stand: 2026-05-07
 
 ## Paket-5-Abschlussstand
 
-Paket 5 ist fachlich und technisch abgeschlossen. Das harte Abschluss-Gate ist bestanden.
+Paket 5 ist historisch als fachlich und technisch abgeschlossen dokumentiert. Diese Aussage gilt nicht als aktueller Ersatz fuer die M4-PostgreSQL-Truth- und Hardening-Nachweise.
 
-- Letzter verifizierter Standardlauf: `42 passed, 1 skipped`
-- Zusaetzlicher PostgreSQL-Integrationslauf: `6 passed`
-- Zusaetzlicher Read-/Import-API-Ruecklauf nach PostgreSQL-Fixes: `19 passed`
+- Historisch dokumentierter Standardlauf: `42 passed, 1 skipped`
+- Historisch dokumentierter PostgreSQL-Integrationslauf: `6 passed`
+- Historisch dokumentierter Read-/Import-API-Ruecklauf nach PostgreSQL-Fixes: `19 passed`
 - Verifizierte Migrationskette: `20260430_0001` bis `20260504_0010`
 - Dokumentation ist mit dem heutigen Code- und Migrationsstand aktualisiert.
 - Verifizierter Performance-Lauf auf PostgreSQL-Referenzdaten: alle Zielwerte eingehalten.
@@ -98,7 +98,7 @@ Stand des Abgleichs mit Code, Backend-Tests, Frontend-Tests und Build am 2026-05
   - `GET /api/v1/chat/sessions/{session_id}`
 - Message API ist implementiert und getestet:
   - `POST /api/v1/chat/sessions/{session_id}/messages`
-  - Request: `workspace_id`, `question`, `retrieval_limit`
+  - Request: `question`, `retrieval_limit`; der Workspace kommt serverseitig aus AuthContext und `X-Workspace-Id`
   - Response: Assistant-`ChatMessageResponse` mit Citations und Confidence
 - `RagChatService` ist implementiert und verdrahtet:
   - User-Frage speichern
@@ -166,16 +166,34 @@ M4 Statusmatrix am 2026-05-07:
 
 | Bereich | Score | Status |
 |---|---:|---|
-| M4a Auth & Workspace Isolation | `82/100` | nicht abgeschlossen |
-| M4b Upload/API Stabilitaet | `88/100` | nicht abgeschlossen |
-| M4c Lifecycle | `88/100` | nicht abgeschlossen |
-| M4d Diagnostics | `94/100` | read-only vorbereitet, nicht vollstaendig abgeschlossen |
-| M4e Backup/Restore | `18/100` | Konzept, nicht implementiert |
+| M4 Hardening gesamt | `74/100` | blockiert |
+| M4a Auth & Workspace Isolation | wahrscheinlich `82/100` | nicht abgeschlossen |
+| M4b Upload/API Stabilitaet | wahrscheinlich `88/100` | nicht abgeschlossen |
+| M4c Lifecycle | wahrscheinlich `88/100` | nicht abgeschlossen |
+| M4d Diagnostics | read-only vorbereitet | nicht vollstaendig abgeschlossen |
+| M4e Backup/Restore | Konzept | nicht implementiert |
 
 Gesamtentscheidung fuer M4:
 
-- M4 ist **teilweise stabil**.
+- M4 ist nach dem aktuellen Hardening-Gate **nicht technisch stabilisiert**.
 - M5 bleibt blockiert, bis `M4a >= 95`, `M4b >= 90` und `M4c >= 90` nachweisbar erreicht sind.
+- M5 bleibt zusaetzlich bis zu einer vollstaendigen Dokumentationspruefung blockiert.
+
+### Finale Wahrheitsmatrix fuer M4-Dokumentation
+
+| Aussage | Klassifikation | Dokumentationsregel |
+|---|---|---|
+| M4d Diagnostics hat einen realen read-only Backend-/Frontend-Slice | bewiesen | darf dokumentiert werden |
+| M4d ist vollstaendig abgeschlossen | falsch | darf nicht dokumentiert werden |
+| Mutierende Admin-Aktionen wie Reindex, Cleanup, Backup oder Repair sind freigegeben | falsch | darf nicht dokumentiert werden |
+| M5 kann starten | falsch | M5 bleibt blockiert |
+| PostgreSQL Truth-Tests ersetzen ohne `TEST_DATABASE_URL` einen echten Nachweis | falsch | Skip ohne Test-DB ist kein Stabilitaetsnachweis |
+| Search/Chat-Konsistenz ist als Truth-Test vorbereitet | bewiesen | darf als vorbereitet dokumentiert werden |
+| Search/Chat-Konsistenz ist aktuell mit echter PostgreSQL-DB gruen bewiesen | unbelegt | darf nicht als Freigabegrund dokumentiert werden |
+| Lifecycle-Mutationen sind hart workspace-scoped | falsch | als M4a/M4c-Blocker dokumentieren |
+| Chat-Message-Write ist ueber den aktuellen Request-Kontext workspace-gebunden, aber nicht als vollstaendig abgeschlossener M4a-Endzustand belegt | wahrscheinlich | nicht als Abschlussbeweis fuer M4a verwenden |
+| Historische Citation-Snapshots speichern `quote_preview`, `source_anchor`, `document_title` und `source_status` | bewiesen | darf dokumentiert werden |
+| Observability ist fuer Lifecycle/Retrieval/Reindex vollstaendig | falsch | als fehlende Instrumentierung dokumentieren |
 
 Zielbild:
 
@@ -226,7 +244,7 @@ Bekannte Einschraenkungen:
 
 - `POST /api/v1/auth/logout` ist nicht implementiert
 - keine CSRF- oder Cookie-Session-Implementierung
-- Frontend vertraut fuer Chat und Teile der Navigation weiterhin auf `workspace_id` im URL-Kontext
+- Frontend nutzt fuer Fachrequests den zentralen Request-Kontext mit `X-Workspace-Id`; ein vollstaendiger Login-/Logout-/Route-Guard-Produktfluss fehlt weiterhin.
 
 Nicht-Scope, das weiterhin nicht geliefert ist:
 
@@ -416,7 +434,7 @@ Teststatus:
 
 Abschlussbewertung fuer M4d:
 
-- Score: `94/100` fuer den read-only Slice
+- Bewertung: read-only Slice vorbereitet; kein vollstaendiges M4d
 - Dokumentation: auf read-only Zustand aktualisiert
 - Konsistenz mit dem implementierten Code: **ausreichend fuer read-only Vorbereitung**
 - Blocker fuer vollstaendiges M4d: M4a, M4b und M4c sind noch nicht gruen; deshalb bleiben alle write/admin actions blockiert
@@ -463,8 +481,8 @@ Abhaengigkeiten zu M3:
 Entscheidung:
 
 - Status fuer M4: `partial`
-- Gesamtentscheidung: `teilweise stabil`
-- Go/No-Go fuer M4d: `Read-only Go`, vollstaendiges M4d `No-Go`
+- Gesamtentscheidung: `blockiert`, aktueller Hardening-Score `74/100`
+- Go/No-Go fuer M4d: `read-only vorbereitet`, vollstaendiges M4d `No-Go`
 - Go/No-Go fuer M4e: `No-Go`
 - Startfreigabe fuer weitere M4-Slices: `No-Go`, solange das M4-Gate fuer `M4a`, `M4b` und `M4c` nicht erreicht ist
 
