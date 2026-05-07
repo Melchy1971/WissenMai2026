@@ -1,15 +1,15 @@
 name: ci
 on: [pull_request]
 jobs:
-  backend:
+  backend-fast-feedback:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
-      - run: cd backend && pip install -r requirements-dev.txt && ruff check . && pytest -m "not postgres"
+      - run: cd backend && pip install -r requirements-dev.txt && ruff check . && pytest -m "not postgres and not postgres_truth"
 
-  backend-postgres:
+  backend-postgres-integration:
     runs-on: ubuntu-latest
     services:
       testdb:
@@ -29,7 +29,37 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
-      - run: cd backend && pip install -r requirements-dev.txt && pytest -m postgres
+      - run: cd backend && pip install -r requirements-dev.txt && pytest -m "postgres and not postgres_truth"
+        env:
+          TEST_DATABASE_URL: postgresql://testuser:testpass@localhost:5433/wissen_test
+
+  backend-postgres-truth-gates:
+    runs-on: ubuntu-latest
+    services:
+      testdb:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: wissen_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d wissen_test"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: cd backend && pip install -r requirements-dev.txt && pytest -m "postgres_truth and m4a_gate"
+        env:
+          TEST_DATABASE_URL: postgresql://testuser:testpass@localhost:5433/wissen_test
+      - run: cd backend && pytest -m "postgres_truth and m4b_gate"
+        env:
+          TEST_DATABASE_URL: postgresql://testuser:testpass@localhost:5433/wissen_test
+      - run: cd backend && pytest -m "postgres_truth and m4c_gate"
         env:
           TEST_DATABASE_URL: postgresql://testuser:testpass@localhost:5433/wissen_test
 

@@ -38,34 +38,67 @@ class DocumentImportPersistenceService:
         mime_type: str,
         content_hash: str,
         document: NormalizedDocument,
+        connection: psycopg.Connection | None = None,
     ) -> PersistedImportDocument:
-        with get_connection() as connection:
-            existing = self._fetch_existing(connection, workspace_id=workspace_id, content_hash=content_hash)
-            if existing is not None:
-                return existing
+        if connection is not None:
+            return self._persist_import_on_connection(
+                connection,
+                workspace_id=workspace_id,
+                owner_user_id=owner_user_id,
+                title=title,
+                mime_type=mime_type,
+                content_hash=content_hash,
+                document=document,
+            )
 
-            try:
-                return self._insert_document(
-                    connection,
-                    workspace_id=workspace_id,
-                    owner_user_id=owner_user_id,
-                    title=title,
-                    mime_type=mime_type,
-                    content_hash=content_hash,
-                    document=document,
-                )
-            except IntegrityError as exc:
-                if not self._is_content_hash_conflict(exc):
-                    raise
-                connection.rollback()
-                existing = self._fetch_existing(
-                    connection,
-                    workspace_id=workspace_id,
-                    content_hash=content_hash,
-                )
-                if existing is None:
-                    raise
-                return existing
+        with get_connection() as managed_connection:
+            return self._persist_import_on_connection(
+                managed_connection,
+                workspace_id=workspace_id,
+                owner_user_id=owner_user_id,
+                title=title,
+                mime_type=mime_type,
+                content_hash=content_hash,
+                document=document,
+            )
+
+    def _persist_import_on_connection(
+        self,
+        connection: psycopg.Connection,
+        *,
+        workspace_id: str,
+        owner_user_id: str,
+        title: str,
+        mime_type: str,
+        content_hash: str,
+        document: NormalizedDocument,
+    ) -> PersistedImportDocument:
+        existing = self._fetch_existing(connection, workspace_id=workspace_id, content_hash=content_hash)
+        if existing is not None:
+            return existing
+
+        try:
+            return self._insert_document(
+                connection,
+                workspace_id=workspace_id,
+                owner_user_id=owner_user_id,
+                title=title,
+                mime_type=mime_type,
+                content_hash=content_hash,
+                document=document,
+            )
+        except IntegrityError as exc:
+            if not self._is_content_hash_conflict(exc):
+                raise
+            connection.rollback()
+            existing = self._fetch_existing(
+                connection,
+                workspace_id=workspace_id,
+                content_hash=content_hash,
+            )
+            if existing is None:
+                raise
+            return existing
 
     def _insert_document(
         self,

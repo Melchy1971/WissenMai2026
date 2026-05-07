@@ -175,11 +175,11 @@ def list_document_chunks(
 @router.patch("/{document_id}/archive", response_model=DocumentLifecycleResponse)
 def archive_document(
     document_id: str,
-    _auth_context: Annotated[AuthContext, Depends(require_workspace_member)],
+    auth_context: Annotated[AuthContext, Depends(require_workspace_member)],
     service: Annotated[DocumentLifecycleService, Depends(get_document_lifecycle_service)],
 ) -> DocumentLifecycleResponse:
     try:
-        document = service.archive(document_id)
+        document = service.archive(document_id, workspace_id=auth_context.workspace_id)
     except DocumentLifecycleNotFoundError as exc:
         raise DocumentNotFoundApiError(details={"document_id": document_id}) from exc
     except DocumentAlreadyArchivedError as exc:
@@ -201,11 +201,11 @@ def archive_document(
 @router.patch("/{document_id}/restore", response_model=DocumentLifecycleResponse)
 def restore_document(
     document_id: str,
-    _auth_context: Annotated[AuthContext, Depends(require_workspace_member)],
+    auth_context: Annotated[AuthContext, Depends(require_workspace_member)],
     service: Annotated[DocumentLifecycleService, Depends(get_document_lifecycle_service)],
 ) -> DocumentLifecycleResponse:
     try:
-        document = service.restore(document_id)
+        document = service.restore(document_id, workspace_id=auth_context.workspace_id)
     except DocumentLifecycleNotFoundError as exc:
         raise DocumentNotFoundApiError(details={"document_id": document_id}) from exc
     except DocumentAlreadyDeletedError as exc:
@@ -225,11 +225,11 @@ def restore_document(
 @router.delete("/{document_id}", response_model=DocumentLifecycleResponse)
 def delete_document(
     document_id: str,
-    _auth_context: Annotated[AuthContext, Depends(require_workspace_member)],
+    auth_context: Annotated[AuthContext, Depends(require_workspace_member)],
     service: Annotated[DocumentLifecycleService, Depends(get_document_lifecycle_service)],
 ) -> DocumentLifecycleResponse:
     try:
-        document = service.delete(document_id)
+        document = service.delete(document_id, workspace_id=auth_context.workspace_id)
     except DocumentLifecycleNotFoundError as exc:
         raise DocumentNotFoundApiError(details={"document_id": document_id}) from exc
     except DocumentAlreadyDeletedError as exc:

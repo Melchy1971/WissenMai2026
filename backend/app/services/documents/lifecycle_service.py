@@ -36,8 +36,8 @@ class DocumentLifecycleService:
     def from_session(cls, session: Session) -> "DocumentLifecycleService":
         return cls(session)
 
-    def archive(self, document_id: str):
-        document = self._get_document(document_id)
+    def archive(self, document_id: str, *, workspace_id: str):
+        document = self._get_document(document_id, workspace_id=workspace_id)
         if document.lifecycle_status == "archived":
             raise DocumentAlreadyArchivedError("Document is already archived")
         if document.lifecycle_status == "deleted":
@@ -57,8 +57,8 @@ class DocumentLifecycleService:
         self._session.refresh(document)
         return document
 
-    def restore(self, document_id: str):
-        document = self._get_document(document_id)
+    def restore(self, document_id: str, *, workspace_id: str):
+        document = self._get_document(document_id, workspace_id=workspace_id)
         if document.lifecycle_status == "deleted":
             raise DocumentAlreadyDeletedError("Deleted documents require an explicit admin restore")
         if document.lifecycle_status == "active":
@@ -78,8 +78,8 @@ class DocumentLifecycleService:
         self._session.refresh(document)
         return document
 
-    def delete(self, document_id: str):
-        document = self._get_document(document_id)
+    def delete(self, document_id: str, *, workspace_id: str):
+        document = self._get_document(document_id, workspace_id=workspace_id)
         if document.lifecycle_status == "deleted":
             raise DocumentAlreadyDeletedError("Document is already deleted")
         now = datetime.now(UTC)
@@ -110,8 +110,10 @@ class DocumentLifecycleService:
             .values(source_status=source_status)
         )
 
-    def _get_document(self, document_id: str) -> Document:
+    def _get_document(self, document_id: str, *, workspace_id: str) -> Document:
         document = self._session.get(Document, document_id)
         if document is None:
+            raise DocumentLifecycleNotFoundError(document_id)
+        if document.workspace_id != workspace_id:
             raise DocumentLifecycleNotFoundError(document_id)
         return document

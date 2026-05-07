@@ -196,7 +196,7 @@ class BackgroundJob(Base):
             name="ck_background_jobs_job_type_allowed",
         ),
         CheckConstraint(
-            "status in ('queued', 'running', 'completed', 'failed', 'cancelled')",
+            "status in ('pending', 'running', 'completed', 'failed', 'retryable', 'dead_letter', 'cancelled')",
             name="ck_background_jobs_status_allowed",
         ),
         CheckConstraint("attempt_count >= 0", name="ck_background_jobs_attempt_count_non_negative"),
@@ -204,7 +204,7 @@ class BackgroundJob(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     job_type: Mapped[str] = mapped_column(String(64), nullable=False)
-    status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending")
     workspace_id: Mapped[str] = mapped_column(String, nullable=False)
     requested_by_user_id: Mapped[str | None] = mapped_column(String, nullable=True)
     payload_: Mapped[dict] = mapped_column("payload", JSON, nullable=False, default=dict)

@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.services.jobs.background_jobs import BackgroundJobService, process_import_job, process_search_index_rebuild_job
 from app.services.chat.citation_mapper import CitationMapper
 from app.services.chat.context_builder import ContextBuilder
 from app.services.chat.fake_llm_provider import FakeLlmProvider
@@ -42,12 +43,15 @@ CHUNK_ARCHIVED = "f4000000-0000-0000-0000-000000000002"
 CHUNK_OTHER_WS = "f4000000-0000-0000-0000-000000000003"
 CHUNK_DELETED = "f4000000-0000-0000-0000-000000000004"
 TRUTH_TERM = "truthretrievalterm"
+TRUTH_IMPORT_JOB_ID = "truth-job-import-1"
+TRUTH_REINDEX_JOB_ID = "truth-job-reindex-1"
 
 
 def test_truth_cleanup_starts_without_stale_state(truth_session: Session) -> None:
     assert_no_truth_rows(truth_session)
 
 
+@pytest.mark.m4b_gate
 def test_upload_and_duplicate_handling_use_real_postgresql_transactions(truth_client: TestClient, truth_session: Session) -> None:
     first = truth_client.post(
         "/documents/import",
@@ -75,6 +79,8 @@ def test_upload_and_duplicate_handling_use_real_postgresql_transactions(truth_cl
     assert truth_session.execute(text("select count(*) from document_chunks")).scalar_one() == 1
 
 
+@pytest.mark.m4a_gate
+@pytest.mark.m4c_gate
 def test_lifecycle_and_workspace_isolation_are_truth_checked(truth_client: TestClient, truth_session: Session) -> None:
     _seed_search_documents(truth_session)
 
@@ -93,6 +99,7 @@ def test_lifecycle_and_workspace_isolation_are_truth_checked(truth_client: TestC
     assert truth_session.execute(text("select lifecycle_status from documents where id = :id"), {"id": DOC_OTHER_WS}).scalar_one() == "active"
 
 
+@pytest.mark.m4c_gate
 def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(truth_client: TestClient, truth_session: Session) -> None:
     _seed_search_documents(truth_session)
 
@@ -134,6 +141,7 @@ def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(truth_clien
     assert truth_session.execute(text("select is_searchable from document_chunks where id = :id"), {"id": CHUNK_ACTIVE}).scalar_one() is True
 
 
+@pytest.mark.m4c_gate
 def test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchors(
     truth_client: TestClient,
     truth_session: Session,
@@ -198,6 +206,7 @@ def test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchor
     assert all(item.source_anchor.model_dump() == chat_retrieval_results[index].source_anchor.model_dump() for index, item in enumerate(search_results))
 
 
+@pytest.mark.m4a_gate
 def test_auth_workspace_truth_blocks_foreign_workspace_and_non_admin_diagnostics(
     truth_seed: dict[str, str],
 ) -> None:
@@ -211,6 +220,119 @@ def test_auth_workspace_truth_blocks_foreign_workspace_and_non_admin_diagnostics
     response = foreign_workspace_client.get("/api/v1/admin/diagnostics")
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "FORBIDDEN"
+
+
+@pytest.mark.m4b_gate
+def test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows(
+    truth_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    truth_session.execute(
+        text(
+            """
+            insert into background_jobs (
+                id, job_type, status, workspace_id, requested_by_user_id, payload, result,
+                progress_current, progress_total, progress_message, error_code, error_message,
+                attempt_count, locked_at, locked_by, created_at, started_at, finished_at
+            ) values (
+                :id, 'document_import', 'running', :workspace_id, :user_id, cast(:payload as jsonb), null,
+                0, 1, 'running', null, null,
+                1, now() - interval '10 minutes', 'stale-worker', now(), now(), null
+            )
+            """
+        ),
+        {
+            "id": TRUTH_IMPORT_JOB_ID,
+            "workspace_id": TRUTH_WORKSPACE_ID,
+            "user_id": TRUTH_USER_ID,
+            "payload": json.dumps(
+                {
+                    "filename": "truth-retry.txt",
+                    "mime_type": "text/plain",
+                    "temp_file_path": "unused-in-monkeypatch",
+                }
+            ),
+        },
+    )
+    truth_session.commit()
+
+    recovered = BackgroundJobService.from_session(truth_session).recover_stale_jobs(worker_id="truth-recovery")
+    assert recovered == 1
+
+    class SuccessfulImportExecutor:
+        def execute(self, **_kwargs):
+            return {
+                "document_id": DOC_ACTIVE,
+                "version_id": VER_ACTIVE,
+                "import_status": "duplicate",
+                "duplicate_of_document_id": DOC_ACTIVE,
+                "chunk_count": 1,
+                "parser_type": "txt-parser",
+                "warnings": [],
+            }
+
+    monkeypatch.setattr("app.services.jobs.background_jobs.ImportExecutor", SuccessfulImportExecutor)
+    monkeypatch.setattr("app.services.jobs.background_jobs.Path.read_bytes", lambda _self: b"truth payload")
+
+    process_import_job(TRUTH_IMPORT_JOB_ID, truth_session.connection())
+
+    job_row = truth_session.execute(
+        text("select status, attempt_count, error_code from background_jobs where id = :id"),
+        {"id": TRUTH_IMPORT_JOB_ID},
+    ).one()
+    assert job_row.status == "completed"
+    assert job_row.attempt_count == 2
+    assert job_row.error_code is None
+
+
+@pytest.mark.m4c_gate
+def test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_retryable(
+    truth_session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _seed_search_documents(truth_session)
+    truth_session.execute(
+        text(
+            """
+            insert into background_jobs (
+                id, job_type, status, workspace_id, requested_by_user_id, payload, result,
+                progress_current, progress_total, progress_message, error_code, error_message,
+                attempt_count, locked_at, locked_by, created_at, started_at, finished_at
+            ) values (
+                :id, 'search_index_rebuild', 'pending', :workspace_id, :user_id, cast(:payload as jsonb), null,
+                0, 1, 'pending', null, null,
+                0, null, null, now(), null, null
+            )
+            """
+        ),
+        {
+            "id": TRUTH_REINDEX_JOB_ID,
+            "workspace_id": TRUTH_WORKSPACE_ID,
+            "user_id": TRUTH_USER_ID,
+            "payload": json.dumps({"target_workspace_id": TRUTH_WORKSPACE_ID}),
+        },
+    )
+    truth_session.commit()
+
+    class CrashingRebuildService:
+        @classmethod
+        def from_session(cls, _session):
+            return cls()
+
+        def rebuild_search_index(self, **_kwargs):
+            raise RuntimeError("truth reindex crash")
+
+    monkeypatch.setattr("app.services.jobs.background_jobs.SearchIndexRebuildService", CrashingRebuildService)
+
+    process_search_index_rebuild_job(TRUTH_REINDEX_JOB_ID, truth_session.connection())
+
+    job_row = truth_session.execute(
+        text("select status, error_code from background_jobs where id = :id"),
+        {"id": TRUTH_REINDEX_JOB_ID},
+    ).one()
+    assert job_row.status == "retryable"
+    assert job_row.error_code == "SERVICE_UNAVAILABLE"
+    assert truth_session.execute(text("select lifecycle_status from documents where id = :id"), {"id": DOC_ARCHIVED}).scalar_one() == "archived"
 
 
 def _seed_search_documents(session: Session) -> None:

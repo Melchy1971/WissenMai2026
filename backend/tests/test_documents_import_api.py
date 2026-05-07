@@ -39,7 +39,7 @@ def test_import_enqueues_job_and_returns_accepted(client: TestClient) -> None:
     assert response.status_code == 202
     payload = response.json()
     assert payload["job_type"] == "document_import"
-    assert payload["status"] == "queued"
+    assert payload["status"] == "pending"
     assert payload["filename"] == "notes.txt"
     assert payload["result"] is None
     assert payload["error_code"] is None
@@ -277,7 +277,7 @@ def test_import_accepts_file_within_configured_max_size(monkeypatch, client: Tes
     assert response.status_code == 202
     payload = response.json()
     assert payload["job_type"] == "document_import"
-    assert payload["status"] == "queued"
+    assert payload["status"] == "pending"
 
 
 def test_import_job_status_surfaces_parser_failures_as_job_failure(client: TestClient) -> None:

@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 from uuid import uuid4
 
+from sqlalchemy import and_, or_, select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -19,6 +20,10 @@ from app.services.search_index_service import SearchIndexRebuildService
 
 
 class BackgroundJobNotFoundError(LookupError):
+    pass
+
+
+class BackgroundJobAlreadyClaimedError(RuntimeError):
     pass
 
 
@@ -43,7 +48,7 @@ class BackgroundJobService:
         job = BackgroundJob(
             id=str(uuid4()),
             job_type="document_import",
-            status="queued",
+            status="pending",
             workspace_id=workspace_id,
             requested_by_user_id=requested_by_user_id,
             payload_={
@@ -54,7 +59,7 @@ class BackgroundJobService:
             result_=None,
             progress_current=0,
             progress_total=1,
-            progress_message="Import ist in Warteschlange",
+            progress_message="Import wartet auf Verarbeitung",
             error_code=None,
             error_message=None,
             attempt_count=0,
@@ -75,6 +80,111 @@ class BackgroundJobService:
             raise BackgroundJobNotFoundError(job_id)
         return job
 
+    def claim_job(self, *, job_id: str, worker_id: str, now: datetime | None = None) -> BackgroundJob:
+        timestamp = now or datetime.now(UTC)
+        stale_before = self._stale_lock_before(timestamp)
+        claimed = self._session.execute(
+            update(BackgroundJob)
+            .where(
+                BackgroundJob.id == job_id,
+                or_(
+                    BackgroundJob.status.in_(("pending", "retryable")),
+                    and_(
+                        BackgroundJob.status == "running",
+                        BackgroundJob.locked_at.is_not(None),
+                        BackgroundJob.locked_at < stale_before,
+                    ),
+                ),
+            )
+            .values(
+                status="running",
+                started_at=timestamp,
+                finished_at=None,
+                locked_at=timestamp,
+                locked_by=worker_id,
+                progress_current=0,
+                progress_total=1,
+                progress_message="Job wird verarbeitet",
+                error_code=None,
+                error_message=None,
+                attempt_count=BackgroundJob.attempt_count + 1,
+            )
+            .execution_options(synchronize_session=False)
+        )
+        self._session.commit()
+        if not claimed.rowcount:
+            raise BackgroundJobAlreadyClaimedError(job_id)
+        return self.get_job(job_id)
+
+    def mark_job_completed(self, *, job: BackgroundJob, result: dict) -> BackgroundJob:
+        job.status = "completed"
+        job.progress_current = 1
+        job.progress_total = 1
+        job.progress_message = "Job abgeschlossen"
+        job.result_ = result
+        job.error_code = None
+        job.error_message = None
+        job.finished_at = datetime.now(UTC)
+        job.locked_at = None
+        job.locked_by = None
+        self._session.add(job)
+        self._session.commit()
+        self._session.refresh(job)
+        return job
+
+    def mark_job_failure(self, *, job: BackgroundJob, error_code: str, error_message: str, retryable: bool) -> BackgroundJob:
+        terminal_attempt = job.attempt_count >= settings.background_job_max_attempts
+        job.status = "dead_letter" if retryable and terminal_attempt else ("retryable" if retryable else "failed")
+        job.progress_current = 1
+        job.progress_total = 1
+        job.progress_message = self._failure_progress_message(job.status)
+        job.error_code = error_code
+        job.error_message = error_message
+        job.result_ = None
+        job.finished_at = datetime.now(UTC)
+        job.locked_at = None
+        job.locked_by = None
+        self._session.add(job)
+        self._session.commit()
+        self._session.refresh(job)
+        return job
+
+    def recover_stale_jobs(self, *, worker_id: str, now: datetime | None = None) -> int:
+        timestamp = now or datetime.now(UTC)
+        stale_before = self._stale_lock_before(timestamp)
+        recovered = self._session.execute(
+            update(BackgroundJob)
+            .where(
+                BackgroundJob.status == "running",
+                BackgroundJob.locked_at.is_not(None),
+                BackgroundJob.locked_at < stale_before,
+            )
+            .values(
+                status="retryable",
+                finished_at=timestamp,
+                locked_at=None,
+                locked_by=None,
+                progress_message=f"Lease abgelaufen; Recovery durch {worker_id}",
+                error_code="WORKER_RECOVERY_REQUIRED",
+                error_message="Worker lease expired before completion",
+            )
+            .execution_options(synchronize_session=False)
+        )
+        self._session.commit()
+        return int(recovered.rowcount or 0)
+
+    def _stale_lock_before(self, timestamp: datetime) -> datetime:
+        from datetime import timedelta
+
+        return timestamp - timedelta(seconds=settings.background_job_lock_timeout_seconds)
+
+    def _failure_progress_message(self, status: str) -> str:
+        if status == "retryable":
+            return "Job fehlgeschlagen, Retry geplant"
+        if status == "dead_letter":
+            return "Job in Dead Letter verschoben"
+        return "Job fehlgeschlagen"
+
     def enqueue_search_index_rebuild_job(
         self,
         *,
@@ -86,14 +196,14 @@ class BackgroundJobService:
         job = BackgroundJob(
             id=str(uuid4()),
             job_type="search_index_rebuild",
-            status="queued",
+            status="pending",
             workspace_id=workspace_id,
             requested_by_user_id=requested_by_user_id,
             payload_={"target_workspace_id": target_workspace_id},
             result_=None,
             progress_current=0,
             progress_total=1,
-            progress_message="Rebuild ist in Warteschlange",
+            progress_message="Rebuild wartet auf Verarbeitung",
             error_code=None,
             error_message=None,
             attempt_count=0,
@@ -151,27 +261,12 @@ def process_import_job(job_id: str, bind: Engine | None = None) -> None:
     with SqlAlchemySession(bind or get_engine()) as session:
         service = BackgroundJobService.from_session(session)
         try:
-            job = service.get_job(job_id)
-        except BackgroundJobNotFoundError:
+            job = service.claim_job(job_id=job_id, worker_id="import-worker")
+        except (BackgroundJobNotFoundError, BackgroundJobAlreadyClaimedError):
             return
 
-        if job.job_type != "document_import" or job.status not in {"queued", "failed"}:
+        if job.job_type != "document_import":
             return
-
-        now = datetime.now(UTC)
-        job.status = "running"
-        job.started_at = now
-        job.finished_at = None
-        job.locked_at = now
-        job.locked_by = "in-process-worker"
-        job.progress_current = 0
-        job.progress_total = 1
-        job.progress_message = "Import wird verarbeitet"
-        job.error_code = None
-        job.error_message = None
-        job.attempt_count += 1
-        session.add(job)
-        session.commit()
 
         payload = job.payload_ if isinstance(job.payload_, dict) else {}
         temp_file_path = str(payload.get("temp_file_path") or "")
@@ -180,47 +275,31 @@ def process_import_job(job_id: str, bind: Engine | None = None) -> None:
 
         try:
             source_bytes = Path(temp_file_path).read_bytes()
+            driver_connection = _driver_connection(session)
             result = ImportExecutor().execute(
                 workspace_id=job.workspace_id,
                 user_id=job.requested_by_user_id or "",
                 filename=filename,
                 mime_type=mime_type,
                 source_bytes=source_bytes,
+                connection=driver_connection,
             )
-            job.status = "completed"
-            job.progress_current = 1
-            job.progress_total = 1
-            job.progress_message = "Import abgeschlossen"
-            job.result_ = result
-            job.error_code = None
-            job.error_message = None
-        except ApiError as exc:
-            job.status = "failed"
-            job.progress_current = 1
-            job.progress_total = 1
-            job.progress_message = "Import fehlgeschlagen"
-            job.error_code = exc.code
-            job.error_message = exc.message
-            job.result_ = None
-        except Exception:
-            job.status = "failed"
-            job.progress_current = 1
-            job.progress_total = 1
-            job.progress_message = "Import fehlgeschlagen"
-            job.error_code = "IMPORT_FAILED"
-            job.error_message = "Document import failed"
-            job.result_ = None
-        finally:
-            job.finished_at = datetime.now(UTC)
-            job.locked_at = None
-            job.locked_by = None
-            session.add(job)
-            session.commit()
+            service.mark_job_completed(job=job, result=result)
             if temp_file_path:
                 try:
                     os.remove(temp_file_path)
                 except FileNotFoundError:
                     pass
+        except ApiError as exc:
+            retryable = _is_retryable_import_error(exc.code)
+            service.mark_job_failure(job=job, error_code=exc.code, error_message=exc.message, retryable=retryable)
+        except Exception:
+            service.mark_job_failure(
+                job=job,
+                error_code="IMPORT_FAILED",
+                error_message="Document import failed",
+                retryable=True,
+            )
 
 
 def process_search_index_rebuild_job(job_id: str, bind: Engine | None = None) -> None:
@@ -230,59 +309,36 @@ def process_search_index_rebuild_job(job_id: str, bind: Engine | None = None) ->
     with SqlAlchemySession(bind or get_engine()) as session:
         service = BackgroundJobService.from_session(session)
         try:
-            job = service.get_job(job_id)
-        except BackgroundJobNotFoundError:
+            job = service.claim_job(job_id=job_id, worker_id="search-index-worker")
+        except (BackgroundJobNotFoundError, BackgroundJobAlreadyClaimedError):
             return
 
-        if job.job_type != "search_index_rebuild" or job.status not in {"queued", "failed"}:
+        if job.job_type != "search_index_rebuild":
             return
-
-        now = datetime.now(UTC)
-        job.status = "running"
-        job.started_at = now
-        job.finished_at = None
-        job.locked_at = now
-        job.locked_by = "in-process-worker"
-        job.progress_current = 0
-        job.progress_total = 1
-        job.progress_message = "Search-Index-Rebuild wird verarbeitet"
-        job.error_code = None
-        job.error_message = None
-        job.attempt_count += 1
-        session.add(job)
-        session.commit()
 
         payload = job.payload_ if isinstance(job.payload_, dict) else {}
         target_workspace_id = payload.get("target_workspace_id")
 
         try:
             result = SearchIndexRebuildService.from_session(session).rebuild_search_index(workspace_id=target_workspace_id)
-            job.status = "completed"
-            job.progress_current = 1
-            job.progress_total = 1
-            job.progress_message = "Search-Index-Rebuild abgeschlossen"
-            job.result_ = result
-            job.error_code = None
-            job.error_message = None
+            service.mark_job_completed(job=job, result=result)
         except ApiError as exc:
-            job.status = "failed"
-            job.progress_current = 1
-            job.progress_total = 1
-            job.progress_message = "Search-Index-Rebuild fehlgeschlagen"
-            job.error_code = exc.code
-            job.error_message = exc.message
-            job.result_ = None
+            service.mark_job_failure(job=job, error_code=exc.code, error_message=exc.message, retryable=False)
         except Exception:
-            job.status = "failed"
-            job.progress_current = 1
-            job.progress_total = 1
-            job.progress_message = "Search-Index-Rebuild fehlgeschlagen"
-            job.error_code = "SERVICE_UNAVAILABLE"
-            job.error_message = "Search index rebuild failed"
-            job.result_ = None
-        finally:
-            job.finished_at = datetime.now(UTC)
-            job.locked_at = None
-            job.locked_by = None
-            session.add(job)
-            session.commit()
+            service.mark_job_failure(
+                job=job,
+                error_code="SERVICE_UNAVAILABLE",
+                error_message="Search index rebuild failed",
+                retryable=True,
+            )
+
+
+def _is_retryable_import_error(error_code: str | None) -> bool:
+    return (error_code or "").upper() in {"SERVICE_UNAVAILABLE", "IMPORT_FAILED", "FILE_READ_FAILED"}
+
+
+def _driver_connection(session: Session):
+    sql_connection = session.connection()
+    proxied_connection = getattr(sql_connection, "connection", None)
+    driver_connection = getattr(proxied_connection, "driver_connection", None)
+    return driver_connection

@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 JobType = Literal["document_import", "search_index_rebuild"]
-JobStatus = Literal["queued", "running", "completed", "failed", "cancelled"]
+JobStatus = Literal["pending", "running", "completed", "failed", "retryable", "dead_letter", "cancelled"]
 
 
 class ImportJobResult(BaseModel):

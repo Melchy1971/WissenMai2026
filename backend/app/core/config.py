@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     max_upload_size_bytes: int = 50 * 1024 * 1024
     admin_api_token: str = "local-admin-token"
     import_jobs_temp_dir: str | None = None
+    background_job_lock_timeout_seconds: int = 300
+    background_job_max_attempts: int = 3
+    background_job_retry_backoff_seconds: int = 30
 
 
 settings = Settings()

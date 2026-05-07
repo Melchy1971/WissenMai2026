@@ -4,6 +4,8 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any
 
+import psycopg
+
 from pydantic import BaseModel, Field
 
 from app.core.errors import (
@@ -113,6 +115,7 @@ class ImportExecutor:
         filename: str,
         mime_type: str,
         source_bytes: bytes,
+        connection: psycopg.Connection | None = None,
     ) -> dict[str, Any]:
         start_time = perf_counter()
         bind_observability_context(workspace_id=workspace_id, user_id=user_id)
@@ -208,6 +211,7 @@ class ImportExecutor:
                 mime_type=mime_type,
                 content_hash=import_result.source_content_hash,
                 document=import_result.document,
+                connection=connection,
             )
         except ChunkingError as exc:
             raise ParserFailedApiError(message=str(exc), details={"filename": filename}) from exc

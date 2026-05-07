@@ -35,6 +35,20 @@ SECOND_CHUNK_ID = "00000000-0000-0000-0000-000000000302"
 SESSION_TOKEN = "test-session-token"
 
 
+CRITICAL_GATE_MARKERS = {"m4a_gate", "m4b_gate", "m4c_gate"}
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    for item in items:
+        marker_names = {marker.name for marker in item.iter_markers()}
+        critical_markers = sorted(CRITICAL_GATE_MARKERS.intersection(marker_names))
+        if critical_markers and "postgres_truth" not in marker_names:
+            joined = ", ".join(critical_markers)
+            raise pytest.UsageError(
+                f"Critical gate test {item.nodeid} uses {joined} but is missing the required postgres_truth marker"
+            )
+
+
 @pytest.fixture(autouse=True)
 def local_temp_dir(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     TEST_TEMP_ROOT.mkdir(exist_ok=True)
