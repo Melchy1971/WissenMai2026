@@ -919,6 +919,7 @@ Aktuelles Ergebnis:
 - M4 ist nach dem aktuellen Hardening-Gate **nicht technisch stabilisiert**.
 - Hardening-Score: `74/100`; damit bleibt M4 unter der Freigabeschwelle `>= 90`.
 - M5 bleibt blockiert.
+- Die kompakte Freigabefassung fuer den aktuell zulaessigen Dokumentationsstand steht in `docs/m4-m5-freigabefassung.md`.
 
 Aktueller M4c-Befund:
 

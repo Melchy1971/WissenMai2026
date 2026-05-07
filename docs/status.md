@@ -178,6 +178,7 @@ Gesamtentscheidung fuer M4:
 - M4 ist nach dem aktuellen Hardening-Gate **nicht technisch stabilisiert**.
 - M5 bleibt blockiert, bis `M4a >= 95`, `M4b >= 90` und `M4c >= 90` nachweisbar erreicht sind.
 - M5 bleibt zusaetzlich bis zu einer vollstaendigen Dokumentationspruefung blockiert.
+- Die kompakte Freigabefassung fuer den aktuell zulaessigen Dokumentationsstand steht in `docs/m4-m5-freigabefassung.md`.
 
 ### Finale Wahrheitsmatrix fuer M4-Dokumentation
 

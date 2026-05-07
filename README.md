@@ -27,9 +27,21 @@ Der aktuelle Stand bildet bewusst die V1-Startstruktur und Architekturentscheidu
 ## Startpunkt fuer Entwickler
 
 1. Projektziel und V1-Grenzen in dieser Datei lesen.
+2. Aktuellen M4/M5-Freigabestand in `docs/m4-m5-freigabefassung.md` lesen.
 2. Architekturentscheidungen unter `docs/adr/` lesen.
 3. Bereichsspezifische README-Dateien in `backend/`, `frontend/`, `docs/` und `scripts/` verwenden.
 4. Danach lokale Entwicklungsumgebung fuer Backend und Frontend einrichten.
+
+## Aktueller Freigabestand
+
+Fuer den aktuell zulaessigen Dokumentationsstand zu M4 und M5 gilt die kompakte Freigabefassung in `docs/m4-m5-freigabefassung.md`.
+
+Kurzstand am 2026-05-07:
+
+- M4 ist nicht technisch stabilisiert.
+- M4 Hardening Score: `74/100`.
+- M4d ist nur read-only freigegeben.
+- M5 bleibt blockiert.
 
 ## Backend-Setup
 
