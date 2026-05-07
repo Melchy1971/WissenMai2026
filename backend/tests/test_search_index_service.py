@@ -93,6 +93,17 @@ def test_inspect_inconsistencies_rejects_non_postgresql() -> None:
         raise AssertionError("Expected PostgreSQL requirement error")
 
 
+def test_inspect_drift_rejects_non_postgresql() -> None:
+    service = SearchIndexRebuildService(FakeNonPostgresSession())
+
+    try:
+        service.inspect_drift()
+    except ServiceUnavailableApiError as exc:
+        assert exc.message == "Search index drift checks require PostgreSQL"
+    else:
+        raise AssertionError("Expected PostgreSQL requirement error")
+
+
 def test_inspect_inconsistencies_detects_deleted_and_archived_chunks(db_session, document_fixture) -> None:
     bind = db_session.get_bind()
     original_dialect_name = bind.dialect.name
@@ -197,3 +208,165 @@ def test_inspect_inconsistencies_detects_deleted_and_archived_chunks(db_session,
     assert report["archived_documents_in_active_index"]["count"] == 1
     assert report["archived_documents_in_active_index"]["sample_document_ids"] == ["00000000-0000-0000-0000-000000000710"]
     assert report["orphan_index_entries"]["status"] == "not_applicable"
+
+
+def test_inspect_drift_detects_missing_deleted_archived_duplicate_and_lifecycle_mismatches(db_session, document_fixture) -> None:
+    bind = db_session.get_bind()
+    original_dialect_name = bind.dialect.name
+    bind.dialect.name = "postgresql"
+    try:
+        active_document = db_session.get(Document, document_fixture["document_id"])
+        active_chunk = db_session.get(Chunk, document_fixture["chunk_id"])
+        assert active_document is not None
+        assert active_chunk is not None
+
+        active_chunk.is_searchable = False
+        active_chunk.search_vector = "active-hidden"
+
+        archived_document = Document(
+            id="00000000-0000-0000-0000-000000000810",
+            workspace_id=document_fixture["workspace_id"],
+            owner_user_id="user-1",
+            current_version_id=None,
+            title="Archived indexed",
+            source_type="upload",
+            mime_type="text/plain",
+            content_hash="archived-drift",
+            import_status="chunked",
+            lifecycle_status="archived",
+            created_at=active_document.created_at,
+            updated_at=active_document.updated_at,
+        )
+        deleted_document = Document(
+            id="00000000-0000-0000-0000-000000000811",
+            workspace_id=document_fixture["workspace_id"],
+            owner_user_id="user-1",
+            current_version_id=None,
+            title="Deleted indexed",
+            source_type="upload",
+            mime_type="text/plain",
+            content_hash="deleted-drift",
+            import_status="chunked",
+            lifecycle_status="deleted",
+            created_at=active_document.created_at,
+            updated_at=active_document.updated_at,
+        )
+        duplicate_document = Document(
+            id="00000000-0000-0000-0000-000000000812",
+            workspace_id=document_fixture["workspace_id"],
+            owner_user_id="user-1",
+            current_version_id=None,
+            title="Duplicate indexed",
+            source_type="upload",
+            mime_type="text/plain",
+            content_hash="duplicate-drift",
+            import_status="chunked",
+            lifecycle_status="active",
+            created_at=active_document.created_at,
+            updated_at=active_document.updated_at,
+        )
+        db_session.add_all([archived_document, deleted_document, duplicate_document])
+        db_session.flush()
+
+        archived_chunk = Chunk(
+            id="00000000-0000-0000-0000-000000000813",
+            document_id=archived_document.id,
+            document_version_id=document_fixture["version_id"],
+            chunk_index=1,
+            heading_path=[],
+            anchor="archived-anchor",
+            content="archived content",
+            is_searchable=True,
+            search_vector="archived",
+            content_hash="archived-content-hash",
+            token_estimate=5,
+            metadata_={},
+            created_at=active_document.created_at,
+        )
+        deleted_chunk = Chunk(
+            id="00000000-0000-0000-0000-000000000814",
+            document_id=deleted_document.id,
+            document_version_id=document_fixture["version_id"],
+            chunk_index=1,
+            heading_path=[],
+            anchor="deleted-anchor",
+            content="deleted content",
+            is_searchable=True,
+            search_vector="deleted",
+            content_hash="deleted-content-hash",
+            token_estimate=5,
+            metadata_={},
+            created_at=active_document.created_at,
+        )
+        missing_index_chunk = Chunk(
+            id="00000000-0000-0000-0000-000000000815",
+            document_id=duplicate_document.id,
+            document_version_id=document_fixture["version_id"],
+            chunk_index=1,
+            heading_path=[],
+            anchor="dup-anchor",
+            content="missing index",
+            is_searchable=True,
+            search_vector=None,
+            content_hash="dup-shared-hash",
+            token_estimate=5,
+            metadata_={},
+            created_at=active_document.created_at,
+        )
+        duplicate_chunk_a = Chunk(
+            id="00000000-0000-0000-0000-000000000816",
+            document_id=duplicate_document.id,
+            document_version_id=document_fixture["version_id"],
+            chunk_index=2,
+            heading_path=[],
+            anchor="dup-anchor",
+            content="duplicate content a",
+            is_searchable=True,
+            search_vector="duplicate",
+            content_hash="dup-shared-hash",
+            token_estimate=5,
+            metadata_={},
+            created_at=active_document.created_at,
+        )
+        duplicate_chunk_b = Chunk(
+            id="00000000-0000-0000-0000-000000000817",
+            document_id=duplicate_document.id,
+            document_version_id=document_fixture["version_id"],
+            chunk_index=3,
+            heading_path=[],
+            anchor="dup-anchor",
+            content="duplicate content b",
+            is_searchable=True,
+            search_vector="duplicate",
+            content_hash="dup-shared-hash",
+            token_estimate=5,
+            metadata_={},
+            created_at=active_document.created_at,
+        )
+        db_session.add_all([
+            archived_chunk,
+            deleted_chunk,
+            missing_index_chunk,
+            duplicate_chunk_a,
+            duplicate_chunk_b,
+        ])
+        db_session.commit()
+
+        report = SearchIndexRebuildService(db_session).inspect_drift()
+    finally:
+        bind.dialect.name = original_dialect_name
+
+    assert report["status"] == "drifted"
+    assert report["severity"] == "critical"
+    assert report["drift_score"] == 0
+    assert report["chunks_without_index"]["count"] >= 1
+    assert "00000000-0000-0000-0000-000000000815" in report["chunks_without_index"]["sample_chunk_ids"]
+    assert report["index_without_chunk"]["status"] == "not_applicable"
+    assert report["deleted_documents_in_index"]["count"] == 1
+    assert report["archived_documents_in_active_index"]["count"] == 1
+    assert report["duplicate_index_entries"]["count"] == 1
+    assert "00000000-0000-0000-0000-000000000816" in report["duplicate_index_entries"]["sample_chunk_ids"]
+    assert "00000000-0000-0000-0000-000000000817" in report["duplicate_index_entries"]["sample_chunk_ids"]
+    assert report["invalid_lifecycle_status"]["count"] >= 3
+    assert report["invalid_lifecycle_status"]["severity"] == "medium"
+    assert "reindexing the workspace" in report["repair_recommendation"]

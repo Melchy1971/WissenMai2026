@@ -59,6 +59,7 @@ class FakeBackgroundJobService:
 class FakeSearchIndexService:
     def __init__(self) -> None:
         self.calls: list[str | None] = []
+        self.drift_calls: list[str | None] = []
 
     def inspect_inconsistencies(self, *, workspace_id: str | None = None):
         self.calls.append(workspace_id)
@@ -94,6 +95,73 @@ class FakeSearchIndexService:
                 "status": "inconsistent",
                 "sample_chunk_ids": ["chunk-archived-1"],
                 "sample_document_ids": ["doc-archived-1"],
+                "note": None,
+            },
+        }
+
+    def inspect_drift(self, *, workspace_id: str | None = None):
+        self.drift_calls.append(workspace_id)
+        return {
+            "workspace_id": workspace_id,
+            "checked_at": datetime(2026, 5, 6, 10, 5, tzinfo=UTC),
+            "index_name": "ix_document_chunks_search_vector",
+            "status": "drifted",
+            "severity": "critical",
+            "drift_score": 35,
+            "repair_recommendation": "Clear deleted documents from the active index by rebuilding searchability flags and reindexing the workspace. Deduplicate active searchable chunks with identical document, anchor and content hash before reindexing.",
+            "searchable_chunk_count": 12,
+            "chunks_without_index": {
+                "count": 1,
+                "status": "inconsistent",
+                "severity": "high",
+                "repair_recommendation": "Run search index rebuild after restoring missing search vectors for searchable chunks.",
+                "sample_chunk_ids": ["chunk-missing-1"],
+                "sample_document_ids": ["doc-active-1"],
+                "note": None,
+            },
+            "index_without_chunk": {
+                "count": 0,
+                "status": "not_applicable",
+                "severity": "info",
+                "repair_recommendation": "No direct repair needed. GIN index entries are derived from document_chunks.search_vector and are rebuilt from chunk rows.",
+                "sample_chunk_ids": [],
+                "sample_document_ids": [],
+                "note": "Standalone index rows cannot be enumerated in the current PostgreSQL GIN design; rebuild from document_chunks if index corruption is suspected.",
+            },
+            "deleted_documents_in_index": {
+                "count": 2,
+                "status": "inconsistent",
+                "severity": "critical",
+                "repair_recommendation": "Clear deleted documents from the active index by rebuilding searchability flags and reindexing the workspace.",
+                "sample_chunk_ids": ["chunk-deleted-1"],
+                "sample_document_ids": ["doc-deleted-1"],
+                "note": None,
+            },
+            "archived_documents_in_active_index": {
+                "count": 1,
+                "status": "inconsistent",
+                "severity": "high",
+                "repair_recommendation": "Rebuild searchability flags for archived documents and reindex the affected workspace.",
+                "sample_chunk_ids": ["chunk-archived-1"],
+                "sample_document_ids": ["doc-archived-1"],
+                "note": None,
+            },
+            "duplicate_index_entries": {
+                "count": 1,
+                "status": "inconsistent",
+                "severity": "high",
+                "repair_recommendation": "Deduplicate active searchable chunks with identical document, anchor and content hash before reindexing.",
+                "sample_chunk_ids": ["chunk-dup-1", "chunk-dup-2"],
+                "sample_document_ids": ["doc-active-1"],
+                "note": None,
+            },
+            "invalid_lifecycle_status": {
+                "count": 1,
+                "status": "inconsistent",
+                "severity": "medium",
+                "repair_recommendation": "Resynchronize chunk searchability from document lifecycle state and then rebuild the index.",
+                "sample_chunk_ids": ["chunk-active-hidden-1"],
+                "sample_document_ids": ["doc-active-hidden-1"],
                 "note": None,
             },
         }
@@ -192,6 +260,89 @@ def test_admin_search_index_inconsistencies_returns_stable_shape(client: TestCli
             "status": "inconsistent",
             "sample_chunk_ids": ["chunk-archived-1"],
             "sample_document_ids": ["doc-archived-1"],
+            "note": None,
+        },
+    }
+
+
+def test_admin_search_index_drift_requires_authentication() -> None:
+    response = TestClient(app).get("/api/v1/admin/search-index/drift")
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTH_REQUIRED"
+
+
+def test_admin_search_index_drift_returns_stable_shape(client: TestClient) -> None:
+    service = FakeSearchIndexService()
+    app.dependency_overrides[get_search_index_service] = lambda: service
+    try:
+        response = client.get("/api/v1/admin/search-index/drift")
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert service.drift_calls == ["00000000-0000-0000-0000-000000000001"]
+    assert response.json() == {
+        "workspace_id": "00000000-0000-0000-0000-000000000001",
+        "checked_at": "2026-05-06T10:05:00Z",
+        "index_name": "ix_document_chunks_search_vector",
+        "status": "drifted",
+        "severity": "critical",
+        "drift_score": 35,
+        "repair_recommendation": "Clear deleted documents from the active index by rebuilding searchability flags and reindexing the workspace. Deduplicate active searchable chunks with identical document, anchor and content hash before reindexing.",
+        "searchable_chunk_count": 12,
+        "chunks_without_index": {
+            "count": 1,
+            "status": "inconsistent",
+            "severity": "high",
+            "repair_recommendation": "Run search index rebuild after restoring missing search vectors for searchable chunks.",
+            "sample_chunk_ids": ["chunk-missing-1"],
+            "sample_document_ids": ["doc-active-1"],
+            "note": None,
+        },
+        "index_without_chunk": {
+            "count": 0,
+            "status": "not_applicable",
+            "severity": "info",
+            "repair_recommendation": "No direct repair needed. GIN index entries are derived from document_chunks.search_vector and are rebuilt from chunk rows.",
+            "sample_chunk_ids": [],
+            "sample_document_ids": [],
+            "note": "Standalone index rows cannot be enumerated in the current PostgreSQL GIN design; rebuild from document_chunks if index corruption is suspected.",
+        },
+        "deleted_documents_in_index": {
+            "count": 2,
+            "status": "inconsistent",
+            "severity": "critical",
+            "repair_recommendation": "Clear deleted documents from the active index by rebuilding searchability flags and reindexing the workspace.",
+            "sample_chunk_ids": ["chunk-deleted-1"],
+            "sample_document_ids": ["doc-deleted-1"],
+            "note": None,
+        },
+        "archived_documents_in_active_index": {
+            "count": 1,
+            "status": "inconsistent",
+            "severity": "high",
+            "repair_recommendation": "Rebuild searchability flags for archived documents and reindex the affected workspace.",
+            "sample_chunk_ids": ["chunk-archived-1"],
+            "sample_document_ids": ["doc-archived-1"],
+            "note": None,
+        },
+        "duplicate_index_entries": {
+            "count": 1,
+            "status": "inconsistent",
+            "severity": "high",
+            "repair_recommendation": "Deduplicate active searchable chunks with identical document, anchor and content hash before reindexing.",
+            "sample_chunk_ids": ["chunk-dup-1", "chunk-dup-2"],
+            "sample_document_ids": ["doc-active-1"],
+            "note": None,
+        },
+        "invalid_lifecycle_status": {
+            "count": 1,
+            "status": "inconsistent",
+            "severity": "medium",
+            "repair_recommendation": "Resynchronize chunk searchability from document lifecycle state and then rebuild the index.",
+            "sample_chunk_ids": ["chunk-active-hidden-1"],
+            "sample_document_ids": ["doc-active-hidden-1"],
             "note": None,
         },
     }

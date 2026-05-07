@@ -69,11 +69,13 @@ def set_observability_context(*, correlation_id: str | None, workspace_id: str |
     return _context_var.set(ObservabilityContext(correlation_id=correlation_id, workspace_id=workspace_id, user_id=user_id))
 
 
-def bind_observability_context(*, workspace_id: str | None = None, user_id: str | None = None) -> None:
+def bind_observability_context(
+    *, correlation_id: str | None = None, workspace_id: str | None = None, user_id: str | None = None
+) -> None:
     current = _context_var.get()
     _context_var.set(
         ObservabilityContext(
-            correlation_id=current.correlation_id,
+            correlation_id=correlation_id if correlation_id is not None else current.correlation_id,
             workspace_id=workspace_id if workspace_id is not None else current.workspace_id,
             user_id=user_id if user_id is not None else current.user_id,
         )

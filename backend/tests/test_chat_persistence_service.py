@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
 from app.models.documents import Base, ChatCitation, Chunk, Document, DocumentVersion
+from app.services.documents.lifecycle_service import DocumentLifecycleService
 from app.services.chat.persistence_service import (
     ChatCitationPayload,
     ChatPersistenceError,
@@ -255,3 +256,173 @@ def test_service_rejects_missing_session(chat_session: Session) -> None:
 
     with pytest.raises(ChatSessionNotFoundError, match="chat session not found"):
         service.create_message(session_id="missing", role="user", content="Hallo")
+
+
+def test_historical_chat_replay_keeps_snapshot_stable_for_archived_document(chat_session: Session) -> None:
+    service = ChatPersistenceService(chat_session)
+    message = _create_assistant_message_with_citation(service)
+    before = _citation_snapshot(service.list_citations(message_id=message.id)[0])
+
+    DocumentLifecycleService.from_session(chat_session).archive("doc-1", workspace_id="workspace-1")
+
+    replayed = service.list_citations(message_id=message.id)[0]
+    after = _citation_snapshot(replayed)
+
+    assert replayed.source_status == "archived"
+    assert replayed.chunk_id == "chunk-1"
+    assert after == {**before, "source_status": "archived"}
+
+
+def test_historical_chat_replay_keeps_snapshot_stable_for_deleted_document(chat_session: Session) -> None:
+    service = ChatPersistenceService(chat_session)
+    message = _create_assistant_message_with_citation(service)
+    before = _citation_snapshot(service.list_citations(message_id=message.id)[0])
+
+    DocumentLifecycleService.from_session(chat_session).delete("doc-1", workspace_id="workspace-1")
+
+    replayed = service.list_citations(message_id=message.id)[0]
+    after = _citation_snapshot(replayed)
+
+    assert replayed.source_status == "deleted"
+    assert replayed.chunk_id == "chunk-1"
+    assert after == {**before, "source_status": "deleted"}
+
+
+def test_historical_chat_replay_survives_version_replacement(chat_session: Session) -> None:
+    service = ChatPersistenceService(chat_session)
+    message = _create_assistant_message_with_citation(service)
+    before = _citation_snapshot(service.list_citations(message_id=message.id)[0])
+
+    created = datetime(2026, 5, 2, 10, 0, tzinfo=UTC)
+    replacement_version = DocumentVersion(
+        id="ver-2",
+        document_id="doc-1",
+        version_number=2,
+        normalized_markdown="# Current\n\nReplacement body",
+        markdown_hash="markdown-hash-replacement",
+        parser_version="2.0",
+        ocr_used=False,
+        ki_provider=None,
+        ki_model=None,
+        metadata_={},
+        created_at=created,
+    )
+    replacement_chunk = Chunk(
+        id="chunk-2",
+        document_id="doc-1",
+        document_version_id="ver-2",
+        chunk_index=0,
+        heading_path=["Replacement"],
+        anchor="dv:ver-2:c0000",
+        content="Replacement chunk body text.",
+        content_hash="chunk-hash-2",
+        token_estimate=5,
+        metadata_={"source_anchor": {"type": "text", "page": None, "paragraph": 2, "char_start": 0, "char_end": 28}},
+        created_at=created,
+    )
+    document = chat_session.get(Document, "doc-1")
+    assert document is not None
+    chat_session.add(replacement_version)
+    chat_session.flush()
+    chat_session.add(replacement_chunk)
+    chat_session.flush()
+    document.current_version_id = replacement_version.id
+    document.updated_at = created
+    chat_session.add(document)
+    chat_session.commit()
+
+    replayed = service.list_citations(message_id=message.id)[0]
+    after = _citation_snapshot(replayed)
+
+    assert replayed.chunk_id == "chunk-1"
+    assert chat_session.get(Chunk, "chunk-1") is not None
+    assert document.current_version_id == "ver-2"
+    assert after == before
+
+
+def test_historical_chat_replay_survives_rechunk_without_dangling_reference(chat_session: Session) -> None:
+    service = ChatPersistenceService(chat_session)
+    message = _create_assistant_message_with_citation(service)
+    before = _citation_snapshot(service.list_citations(message_id=message.id)[0])
+
+    replacement_chunk = Chunk(
+        id="chunk-3",
+        document_id="doc-1",
+        document_version_id="ver-1",
+        chunk_index=1,
+        heading_path=["Current", "Rechunked"],
+        anchor="dv:ver-1:c0001",
+        content="Rechunked replacement body text.",
+        content_hash="chunk-hash-3",
+        token_estimate=6,
+        metadata_={"source_anchor": {"type": "text", "page": None, "paragraph": 3, "char_start": 0, "char_end": 31}},
+        created_at=datetime(2026, 5, 2, 11, 0, tzinfo=UTC),
+    )
+    chat_session.add(replacement_chunk)
+    chat_session.flush()
+
+    original_chunk = chat_session.get(Chunk, "chunk-1")
+    assert original_chunk is not None
+    chat_session.delete(original_chunk)
+    chat_session.commit()
+
+    replayed = service.list_citations(message_id=message.id)[0]
+    after = _citation_snapshot(replayed)
+
+    assert replayed.chunk_id is None
+    assert replayed.document_id == "doc-1"
+    assert after == {**before, "chunk_id": None}
+
+
+def test_historical_chat_replay_is_unchanged_by_search_index_state_changes(chat_session: Session) -> None:
+    service = ChatPersistenceService(chat_session)
+    message = _create_assistant_message_with_citation(service)
+    before = _citation_snapshot(service.list_citations(message_id=message.id)[0])
+
+    chunk = chat_session.get(Chunk, "chunk-1")
+    assert chunk is not None
+    chunk.is_searchable = False
+    chunk.search_vector = ""
+    chat_session.add(chunk)
+    chat_session.commit()
+
+    chunk.is_searchable = True
+    chunk.search_vector = "reindexed replacement vector"
+    chat_session.add(chunk)
+    chat_session.commit()
+
+    replayed = service.list_citations(message_id=message.id)[0]
+    after = _citation_snapshot(replayed)
+
+    assert replayed.chunk_id == "chunk-1"
+    assert after == before
+
+
+def _create_assistant_message_with_citation(service: ChatPersistenceService):
+    created_session = service.create_session(workspace_id="workspace-1", title="Replay", owner_user_id="user-1")
+    return service.create_message(
+        session_id=created_session.id,
+        role="assistant",
+        content="Historische Antwort mit Quelle",
+        citations=[
+            ChatCitationPayload(
+                chunk_id="chunk-1",
+                document_id="doc-1",
+                document_title="Current Document",
+                quote_preview="Chunk body text for citation support.",
+                source_anchor={"type": "text", "page": None, "paragraph": None, "char_start": 0, "char_end": 34},
+                source_status="active",
+            )
+        ],
+    )
+
+
+def _citation_snapshot(citation: ChatCitation) -> dict:
+    return {
+        "chunk_id": citation.chunk_id,
+        "document_id": citation.document_id,
+        "document_title": citation.document_title,
+        "quote_preview": citation.quote_preview,
+        "source_anchor": citation.source_anchor,
+        "source_status": citation.source_status,
+    }

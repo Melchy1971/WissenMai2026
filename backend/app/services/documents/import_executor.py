@@ -165,15 +165,6 @@ class ImportExecutor:
 
         parsing_duration_ms = int((perf_counter() - parsing_start) * 1000)
         parser_type = parser_type_from_import_result(import_result)
-        log_import_event(
-            "parsing_completed",
-            document_id=None,
-            workspace_id=workspace_id,
-            duration_ms=parsing_duration_ms,
-            parser_type=parser_type,
-            chunk_count=0,
-            status="completed",
-        )
 
         if not import_result.success or import_result.document is None:
             detail = import_result.errors[0].message if import_result.errors else "Import failed"
@@ -184,6 +175,16 @@ class ImportExecutor:
                 "mime_type": mime_type,
                 "import_errors": [error.model_dump() for error in import_result.errors],
             }
+            log_import_event(
+                "parsing_completed",
+                document_id=None,
+                workspace_id=workspace_id,
+                duration_ms=parsing_duration_ms,
+                parser_type=parser_type,
+                chunk_count=0,
+                status="failed",
+                error_code=error_code.upper(),
+            )
             log_import_event(
                 "import_failed",
                 document_id=None,
@@ -199,6 +200,16 @@ class ImportExecutor:
             if error_code == "unsupported_type":
                 raise UnsupportedFileTypeApiError(message=detail, details=details)
             raise ParserFailedApiError(message=detail, details=details)
+
+        log_import_event(
+            "parsing_completed",
+            document_id=None,
+            workspace_id=workspace_id,
+            duration_ms=parsing_duration_ms,
+            parser_type=parser_type,
+            chunk_count=0,
+            status="completed",
+        )
 
         if import_result.source_content_hash is None:
             raise ParserFailedApiError(message="Import did not produce a content hash", details={"filename": filename})

@@ -6,7 +6,7 @@ from app.api.dependencies.auth import RequestAuthContext, require_workspace_admi
 from app.core.database import DatabaseConfigurationError
 from app.core.errors import AdminActionNotImplementedApiError, ApiError, DiagnosticsFailedApiError, ForbiddenApiError
 from app.db.session import get_session
-from app.schemas.admin import DiagnosticsResponse, SearchIndexInconsistencyReportResponse
+from app.schemas.admin import DiagnosticsResponse, SearchIndexDriftReportResponse, SearchIndexInconsistencyReportResponse
 from app.services.diagnostics import DiagnosticsService
 from app.services.search_index_service import SearchIndexRebuildService
 from app.services.jobs.background_jobs import BackgroundJobService
@@ -81,4 +81,14 @@ def get_search_index_inconsistencies(
 ) -> SearchIndexInconsistencyReportResponse:
     return SearchIndexInconsistencyReportResponse.model_validate(
         service.inspect_inconsistencies(workspace_id=auth_context.workspace_id)
+    )
+
+
+@router.get("/search-index/drift", response_model=SearchIndexDriftReportResponse)
+def get_search_index_drift(
+    auth_context: Annotated[RequestAuthContext, Depends(require_workspace_admin)],
+    service: Annotated[SearchIndexRebuildService, Depends(get_search_index_service)],
+) -> SearchIndexDriftReportResponse:
+    return SearchIndexDriftReportResponse.model_validate(
+        service.inspect_drift(workspace_id=auth_context.workspace_id)
     )

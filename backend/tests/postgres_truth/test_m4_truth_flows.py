@@ -142,6 +142,121 @@ def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(truth_clien
 
 
 @pytest.mark.m4c_gate
+def test_search_index_drift_endpoint_reports_real_postgresql_drift(
+    truth_client: TestClient,
+    truth_session: Session,
+) -> None:
+    _seed_search_documents(truth_session)
+
+    truth_session.execute(
+        text(
+            """
+            update document_chunks
+            set is_searchable = false
+            where id = :chunk_id
+            """
+        ),
+        {"chunk_id": CHUNK_ACTIVE},
+    )
+    truth_session.execute(
+        text(
+            """
+            insert into documents
+                (id, workspace_id, owner_user_id, current_version_id, title, source_type, mime_type,
+                 content_hash, import_status, lifecycle_status, archived_at, deleted_at, created_at, updated_at)
+            values
+                (:document_id, :workspace_id, :owner_user_id, null, :title, 'upload', 'text/plain',
+                 :content_hash, 'chunked', 'active', null, null, now(), now())
+            """
+        ),
+        {
+            "document_id": "f3000000-0000-0000-0000-000000000099",
+            "workspace_id": TRUTH_WORKSPACE_ID,
+            "owner_user_id": TRUTH_USER_ID,
+            "title": "Truth Duplicate",
+            "content_hash": "truth-duplicate-drift",
+        },
+    )
+    truth_session.execute(
+        text(
+            """
+            insert into document_versions
+                (id, document_id, version_number, normalized_markdown, markdown_hash, parser_version,
+                 ocr_used, ki_provider, ki_model, metadata, created_at)
+            values
+                (:version_id, :document_id, 1, :markdown, :markdown_hash, 'truth-parser',
+                 false, null, null, cast(:metadata as jsonb), now())
+            """
+        ),
+        {
+            "version_id": "f5000000-0000-0000-0000-000000000099",
+            "document_id": "f3000000-0000-0000-0000-000000000099",
+            "markdown": "# Duplicate\n\ntruth duplicate drift",
+            "markdown_hash": "truth-duplicate-version-hash",
+            "metadata": json.dumps({}),
+        },
+    )
+    truth_session.execute(
+        text(
+            "update documents set current_version_id = :version_id where id = :document_id"
+        ),
+        {
+            "version_id": "f5000000-0000-0000-0000-000000000099",
+            "document_id": "f3000000-0000-0000-0000-000000000099",
+        },
+    )
+    truth_session.execute(
+        text(
+            """
+            insert into document_chunks
+                (id, document_id, document_version_id, chunk_index, heading_path, anchor, content,
+                 is_searchable, search_vector, content_hash, token_estimate, metadata, created_at)
+            values
+                (:chunk_a, :document_id, :version_id, 0, cast(:heading_path as jsonb), :anchor, :content_a,
+                 true, to_tsvector('simple', :vector_text), :content_hash, 10, cast(:metadata as jsonb), now()),
+                (:chunk_b, :document_id, :version_id, 1, cast(:heading_path as jsonb), :anchor, :content_b,
+                 true, to_tsvector('simple', :vector_text), :content_hash, 10, cast(:metadata as jsonb), now())
+            """
+        ),
+        {
+            "chunk_a": "f4000000-0000-0000-0000-000000000099",
+            "chunk_b": "f4000000-0000-0000-0000-000000000100",
+            "document_id": "f3000000-0000-0000-0000-000000000099",
+            "version_id": "f5000000-0000-0000-0000-000000000099",
+            "heading_path": json.dumps([]),
+            "anchor": "duplicate-anchor",
+            "content_a": "truth duplicate drift A",
+            "content_b": "truth duplicate drift B",
+            "vector_text": "truth duplicate drift",
+            "content_hash": "truth-duplicate-chunk-hash",
+            "metadata": json.dumps({"source_anchor": {"type": "text", "page": None, "paragraph": 9, "char_start": 0, "char_end": 24}}),
+        },
+    )
+    truth_session.commit()
+
+    response = truth_client.get("/api/v1/admin/search-index/drift")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["workspace_id"] == TRUTH_WORKSPACE_ID
+    assert payload["status"] == "drifted"
+    assert payload["severity"] == "critical"
+    assert payload["drift_score"] == 20
+    assert payload["chunks_without_index"]["count"] >= 1
+    assert payload["chunks_without_index"]["severity"] == "high"
+    assert payload["deleted_documents_in_index"]["count"] == 1
+    assert payload["deleted_documents_in_index"]["severity"] == "critical"
+    assert payload["deleted_documents_in_index"]["sample_document_ids"] == [DOC_DELETED]
+    assert payload["archived_documents_in_active_index"]["count"] == 1
+    assert payload["archived_documents_in_active_index"]["sample_document_ids"] == [DOC_ARCHIVED]
+    assert payload["duplicate_index_entries"]["count"] == 1
+    assert payload["duplicate_index_entries"]["sample_document_ids"] == ["f3000000-0000-0000-0000-000000000099"]
+    assert payload["invalid_lifecycle_status"]["count"] >= 3
+    assert payload["index_without_chunk"]["status"] == "not_applicable"
+    assert "reindexing the workspace" in payload["repair_recommendation"]
+
+
+@pytest.mark.m4c_gate
 def test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchors(
     truth_client: TestClient,
     truth_session: Session,

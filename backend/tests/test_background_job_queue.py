@@ -9,6 +9,7 @@ import pytest
 from app.core.config import settings
 from app.core.errors import ParserFailedApiError
 from app.models.documents import BackgroundJob
+from app.observability.logging import metrics_registry
 from app.services.jobs.background_jobs import (
     BackgroundJobAlreadyClaimedError,
     BackgroundJobService,
@@ -100,6 +101,63 @@ def test_recover_stale_running_job_marks_it_retryable(db_session) -> None:
     assert refreshed.error_code == "WORKER_RECOVERY_REQUIRED"
 
 
+def test_recover_stale_running_job_emits_recovery_observability(db_session, caplog) -> None:
+    stale_at = datetime.now(UTC) - timedelta(seconds=settings.background_job_lock_timeout_seconds + 5)
+    job = make_job(status="running", attempt_count=1, locked_at=stale_at, locked_by="worker-a")
+    db_session.add(job)
+    db_session.commit()
+    metrics_registry.reset()
+
+    with caplog.at_level("INFO", logger="app.observability.events"):
+        recovered = BackgroundJobService.from_session(db_session).recover_stale_jobs(worker_id="worker-b")
+
+    assert recovered == 1
+    observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
+    assert observability_records[-1]["event_name"] == "background_job_recovered"
+    assert observability_records[-1]["workspace_id"] == job.workspace_id
+    assert observability_records[-1]["status"] == "retryable"
+    assert observability_records[-1]["error_code"] == "WORKER_RECOVERY_REQUIRED"
+    assert observability_records[-1]["correlation_id"] == f"job-{job.id}"
+    snapshot = metrics_registry.snapshot()
+    assert snapshot["background_job_recovered.retryable"] == 1
+
+
+def test_renew_job_lock_prevents_slow_worker_from_being_recovered(db_session) -> None:
+    claimed_at = datetime(2026, 5, 7, 12, 0, tzinfo=UTC)
+    renewed_at = claimed_at + timedelta(seconds=settings.background_job_lock_timeout_seconds - 1)
+    recovery_check_at = claimed_at + timedelta(seconds=settings.background_job_lock_timeout_seconds + 1)
+    job = make_job(status="running", attempt_count=1, locked_at=claimed_at, locked_by="worker-a")
+    db_session.add(job)
+    db_session.commit()
+
+    service = BackgroundJobService.from_session(db_session)
+    renewed = service.renew_job_lock(job_id=job.id, worker_id="worker-a", now=renewed_at)
+    recovered = service.recover_stale_jobs(worker_id="worker-b", now=recovery_check_at)
+
+    refreshed = db_session.get(BackgroundJob, job.id)
+    assert renewed is True
+    assert recovered == 0
+    assert refreshed is not None
+    assert refreshed.status == "running"
+    assert refreshed.locked_by == "worker-a"
+    assert refreshed.locked_at is not None
+    assert refreshed.locked_at.replace(tzinfo=UTC) == renewed_at
+
+
+def test_renew_job_lock_rejects_wrong_worker(db_session) -> None:
+    job = make_job(status="running", attempt_count=1, locked_at=datetime.now(UTC), locked_by="worker-a")
+    db_session.add(job)
+    db_session.commit()
+
+    service = BackgroundJobService.from_session(db_session)
+    renewed = service.renew_job_lock(job_id=job.id, worker_id="worker-b")
+
+    refreshed = db_session.get(BackgroundJob, job.id)
+    assert renewed is False
+    assert refreshed is not None
+    assert refreshed.locked_by == "worker-a"
+
+
 def test_process_import_job_marks_generic_failure_retryable_and_keeps_payload_for_recovery(db_session, monkeypatch, tmp_path) -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_file = Path(temp_dir) / "queue.txt"
@@ -123,6 +181,40 @@ def test_process_import_job_marks_generic_failure_retryable_and_keeps_payload_fo
         assert refreshed.status == "retryable"
         assert refreshed.error_code == "IMPORT_FAILED"
         assert Path(refreshed.payload_["temp_file_path"]).exists() is True
+
+
+def test_process_import_job_retry_is_observable_with_job_correlation(db_session, monkeypatch, caplog) -> None:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_file = Path(temp_dir) / "queue.txt"
+        temp_file.write_bytes(b"queue payload")
+        job = make_job()
+        job.payload_ = {
+            "filename": "queue.txt",
+            "mime_type": "text/plain",
+            "temp_file_path": str(temp_file),
+            "correlation_id": "corr-import-1",
+        }
+        db_session.add(job)
+        db_session.commit()
+        metrics_registry.reset()
+
+        class CrashingImportExecutor:
+            def execute(self, **_kwargs):
+                raise RuntimeError("chunking crashed")
+
+        monkeypatch.setattr("app.services.jobs.background_jobs.ImportExecutor", CrashingImportExecutor)
+
+        with caplog.at_level("INFO", logger="app.observability.events"):
+            process_import_job(job.id, db_session.connection())
+
+        observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
+        assert observability_records[-1]["event_name"] == "background_job_retry_scheduled"
+        assert observability_records[-1]["workspace_id"] == job.workspace_id
+        assert observability_records[-1]["status"] == "retryable"
+        assert observability_records[-1]["error_code"] == "IMPORT_FAILED"
+        assert observability_records[-1]["correlation_id"] == "corr-import-1"
+        snapshot = metrics_registry.snapshot()
+        assert snapshot["background_job_retry_scheduled.retryable"] == 1
 
 
 def test_process_import_job_marks_parser_crash_as_terminal_failure_without_duplicate_rows(db_session, monkeypatch) -> None:

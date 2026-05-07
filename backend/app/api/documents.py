@@ -19,7 +19,7 @@ from app.core.errors import (
     InvalidLifecycleStatusApiError,
 )
 from app.db.session import get_session
-from app.observability.logging import bind_observability_context, log_event, log_import_event
+from app.observability.logging import bind_observability_context, get_observability_context, log_event, log_import_event
 from app.schemas.documents import (
     DocumentChunkPreview,
     DocumentDetail,
@@ -303,6 +303,7 @@ async def import_document(
         filename=filename,
         mime_type=mime_type,
         temp_file_path=temp_file_path,
+        correlation_id=get_observability_context().correlation_id,
     )
     background_tasks.add_task(process_import_job, job.id, job_service._session.get_bind())
     return job_service.to_response(job)

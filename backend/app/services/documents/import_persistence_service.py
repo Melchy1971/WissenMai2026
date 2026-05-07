@@ -8,7 +8,7 @@ from psycopg.types.json import Jsonb
 
 from app.core.database import get_connection
 from app.models.import_models import NormalizedDocument
-from app.observability.logging import log_import_event
+from app.observability.logging import log_event, log_import_event
 from app.services.chunking_service import MarkdownChunkingService
 
 
@@ -75,6 +75,7 @@ class DocumentImportPersistenceService:
     ) -> PersistedImportDocument:
         existing = self._fetch_existing(connection, workspace_id=workspace_id, content_hash=content_hash)
         if existing is not None:
+            log_event("import_duplicate_detected", workspace_id=workspace_id, status="completed")
             return existing
 
         try:
@@ -98,6 +99,7 @@ class DocumentImportPersistenceService:
             )
             if existing is None:
                 raise
+            log_event("import_duplicate_detected", workspace_id=workspace_id, status="completed")
             return existing
 
     def _insert_document(

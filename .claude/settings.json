@@ -34,7 +34,10 @@
       "PowerShell(cd h:\\\\WissenMai2026\\\\backend; $env:TEST_DATABASE_URL=\"postgresql://testuser:testpass@localhost:5433/wissen_test\"; python -m pytest tests/integration/test_documents_import.py -v --tb=short 2>&1)",
       "PowerShell(cd h:\\\\WissenMai2026\\\\backend; $env:TEST_DATABASE_URL=\"postgresql://testuser:testpass@localhost:5433/wissen_test\"; python -m pytest tests/integration/test_documents_import.py -v --tb=long 2>&1)",
       "PowerShell(cd h:\\\\WissenMai2026\\\\backend; $env:TEST_DATABASE_URL=\"postgresql://testuser:testpass@localhost:5433/wissen_test\"; python -m pytest tests/integration/test_m3b_search.py -v --tb=short 2>&1)",
-      "PowerShell(cd h:\\\\WissenMai2026\\\\backend; $env:TEST_DATABASE_URL=\"postgresql://testuser:testpass@localhost:5433/wissen_test\"; python -m pytest -m postgres -v --tb=short 2>&1)"
+      "PowerShell(cd h:\\\\WissenMai2026\\\\backend; $env:TEST_DATABASE_URL=\"postgresql://testuser:testpass@localhost:5433/wissen_test\"; python -m pytest -m postgres -v --tb=short 2>&1)",
+      "Bash(python -m pytest tests/test_lifecycle_reindex_chaos.py -v --tb=short)",
+      "Bash(python -m pytest tests/ -v --ignore=tests/postgres_truth --ignore=tests/integration -x -q)",
+      "Bash(python -m pytest tests/ -v --ignore=tests/postgres_truth --ignore=tests/integration --ignore=tests/test_chat_schemas.py -q)"
     ]
   },
   "hooks": {

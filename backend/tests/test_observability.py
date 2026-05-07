@@ -1,6 +1,8 @@
 import logging
 from contextlib import contextmanager
+from types import SimpleNamespace
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -106,7 +108,8 @@ def test_upload_logs_structured_context_without_document_content(monkeypatch, ca
 
     assert response.status_code == 202
     observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
-    assert [record["event_name"] for record in observability_records] == [
+    import_records = [record for record in observability_records if "document_id" in record]
+    assert [record["event_name"] for record in import_records] == [
         "upload_received",
         "parsing_started",
         "parsing_completed",
@@ -115,7 +118,7 @@ def test_upload_logs_structured_context_without_document_content(monkeypatch, ca
         "indexing_started",
         "indexing_completed",
     ]
-    for record in observability_records:
+    for record in import_records:
         assert set(record) == {
             "event_name",
             "document_id",
@@ -129,10 +132,13 @@ def test_upload_logs_structured_context_without_document_content(monkeypatch, ca
         }
         assert record["workspace_id"] == "00000000-0000-0000-0000-000000000001"
         assert record["correlation_id"] == "upload-corr-1"
+    background_job_record = next(record for record in observability_records if record["event_name"] == "background_job_completed")
+    assert background_job_record["workspace_id"] == "00000000-0000-0000-0000-000000000001"
+    assert background_job_record["correlation_id"] == "upload-corr-1"
     assert observability_records[0]["parser_type"] == "txt-parser"
     assert observability_records[0]["chunk_count"] == 0
-    assert observability_records[-1]["document_id"] == "doc-1"
-    assert observability_records[-1]["chunk_count"] == 1
+    assert import_records[-1]["document_id"] == "doc-1"
+    assert import_records[-1]["chunk_count"] == 1
     assert "secret body" not in caplog.text
     assert "Do not log me" not in caplog.text
     snapshot = metrics_registry.snapshot()
@@ -143,6 +149,55 @@ def test_upload_logs_structured_context_without_document_content(monkeypatch, ca
     assert snapshot["chunking_completed.completed"] == 1
     assert snapshot["indexing_started.started"] == 1
     assert snapshot["indexing_completed.completed"] == 1
+    assert snapshot["background_job_completed.completed"] == 1
+
+
+def test_parser_failure_is_not_logged_as_completed(monkeypatch, caplog) -> None:
+    from app.services.documents import import_executor
+    from app.models.import_models import ImportError, ImportResult
+    from app.core.errors import ParserFailedApiError
+
+    class StubImportService:
+        def import_document(self, request):
+            return ImportResult(
+                success=False,
+                filename=request.filename,
+                mime_type=request.mime_type,
+                source_content_hash="hash-1",
+                document=None,
+                errors=[ImportError(code="parser_failed", stage="parse", message="parser exploded", recoverable=False)],
+                metadata={"filename": request.filename, "mime_type": request.mime_type},
+            )
+
+    metrics_registry.reset()
+    monkeypatch.setattr(import_executor, "build_import_service", lambda: StubImportService())
+
+    with caplog.at_level(logging.INFO, logger="app.observability.events"):
+        with pytest.raises(ParserFailedApiError):
+            import_executor.ImportExecutor().execute(
+                workspace_id="workspace-1",
+                user_id="user-1",
+                filename="notes.txt",
+                mime_type="text/plain",
+                source_bytes=b"secret body",
+            )
+
+    observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
+    assert [record["event_name"] for record in observability_records] == [
+        "parsing_started",
+        "parsing_completed",
+        "import_failed",
+    ]
+    assert observability_records[1]["status"] == "failed"
+    assert observability_records[1]["error_code"] == "PARSER_FAILED"
+    assert observability_records[2]["status"] == "failed"
+    assert observability_records[2]["error_code"] == "PARSER_FAILED"
+    assert all(record["workspace_id"] == "workspace-1" for record in observability_records)
+    assert "secret body" not in caplog.text
+    snapshot = metrics_registry.snapshot()
+    assert snapshot["parsing_started.started"] == 1
+    assert snapshot["parsing_completed.failed"] == 1
+    assert snapshot["import_failed.failed"] == 1
 
 
 def test_chat_observability_logs_context_without_full_question(caplog) -> None:
@@ -254,3 +309,93 @@ def test_persistence_logs_chunking_and_indexing_events(monkeypatch, caplog) -> N
     assert observability_records[0]["chunk_count"] == 0
     assert observability_records[1]["chunk_count"] == 1
     assert observability_records[3]["chunk_count"] == 1
+
+
+def test_duplicate_import_is_observable_without_logging_sensitive_content(monkeypatch, caplog) -> None:
+    from app.services.documents import import_persistence_service
+
+    existing = import_persistence_service.PersistedImportDocument(
+        document_id="doc-existing",
+        version_id="ver-existing",
+        title="Existing",
+        chunk_count=2,
+        duplicate_existing=True,
+        import_status="duplicate",
+    )
+    service = import_persistence_service.DocumentImportPersistenceService()
+    monkeypatch.setattr(service, "_fetch_existing", lambda *_args, **_kwargs: existing)
+    metrics_registry.reset()
+
+    with caplog.at_level(logging.INFO, logger="app.observability.events"):
+        result = service._persist_import_on_connection(
+            connection=SimpleNamespace(),
+            workspace_id="workspace-1",
+            owner_user_id="user-1",
+            title="Secret Contract",
+            mime_type="text/plain",
+            content_hash="content-hash-1",
+            document=NormalizedDocument(
+                normalized_markdown="Top secret",
+                markdown_hash="markdown-hash-1",
+                metadata={"parser_name": "txt-parser", "mime_type": "text/plain"},
+                parser_version="1.0",
+                ocr_used=False,
+            ),
+        )
+
+    assert result.import_status == "duplicate"
+    observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
+    assert observability_records[-1]["event_name"] == "import_duplicate_detected"
+    assert observability_records[-1]["workspace_id"] == "workspace-1"
+    assert observability_records[-1]["status"] == "completed"
+    assert "Top secret" not in caplog.text
+    assert "Secret Contract" not in caplog.text
+    snapshot = metrics_registry.snapshot()
+    assert snapshot["import_duplicate_detected.completed"] == 1
+
+
+def test_drift_check_is_observable(monkeypatch, caplog) -> None:
+    from app.services.search_index_service import SearchIndexRebuildService
+
+    class FakeSession:
+        def scalar(self, *_args, **_kwargs):
+            return 3
+
+        def execute(self, *_args, **_kwargs):
+            class Result:
+                def all(self):
+                    return []
+
+            return Result()
+
+        def scalars(self, *_args, **_kwargs):
+            return []
+
+    service = SearchIndexRebuildService(FakeSession())
+    metrics_registry.reset()
+    monkeypatch.setattr(service, "_require_postgresql", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(service, "_uuid_param", lambda value: value)
+    monkeypatch.setattr(
+        service,
+        "_build_drift_bucket",
+        lambda **_kwargs: {
+            "count": 0,
+            "status": "ok",
+            "severity": "ok",
+            "repair_recommendation": "No repair needed.",
+            "sample_chunk_ids": [],
+            "sample_document_ids": [],
+            "note": "ok",
+        },
+    )
+
+    with caplog.at_level(logging.INFO, logger="app.observability.events"):
+        report = service.inspect_drift(workspace_id="workspace-1")
+
+    assert report["status"] == "ok"
+    observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
+    assert observability_records[-1]["event_name"] == "search_index_drift_checked"
+    assert observability_records[-1]["workspace_id"] == "workspace-1"
+    assert observability_records[-1]["status"] == "ok"
+    snapshot = metrics_registry.snapshot()
+    assert snapshot["search_index_drift_checked.ok"] == 1

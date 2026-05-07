@@ -25,6 +25,37 @@ class SearchIndexInconsistencyBucket(BaseModel):
     note: str | None = None
 
 
+class SearchIndexDriftBucket(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    count: int
+    status: str
+    severity: str
+    repair_recommendation: str
+    sample_chunk_ids: list[str]
+    sample_document_ids: list[str]
+    note: str | None = None
+
+
+class SearchIndexDriftReportResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    workspace_id: str | None
+    checked_at: datetime
+    index_name: str
+    status: str
+    severity: str
+    drift_score: int
+    repair_recommendation: str
+    searchable_chunk_count: int
+    chunks_without_index: SearchIndexDriftBucket
+    index_without_chunk: SearchIndexDriftBucket
+    deleted_documents_in_index: SearchIndexDriftBucket
+    archived_documents_in_active_index: SearchIndexDriftBucket
+    duplicate_index_entries: SearchIndexDriftBucket
+    invalid_lifecycle_status: SearchIndexDriftBucket
+
+
 class SearchIndexInconsistencyReportResponse(BaseModel):
     model_config = ConfigDict(strict=True)
 

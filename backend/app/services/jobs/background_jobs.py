@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 import os
 from pathlib import Path
 import tempfile
+from threading import Event, Thread
+import time
 from uuid import uuid4
 
 from sqlalchemy import and_, or_, select, update
@@ -15,6 +17,7 @@ from app.core.config import settings
 from app.core.errors import ApiError
 from app.models.documents import BackgroundJob
 from app.schemas.jobs import ImportJobResult, JobResponse, SearchIndexRebuildJobResult
+from app.observability.logging import bind_observability_context, log_event
 from app.services.documents.import_executor import ImportExecutor
 from app.services.search_index_service import SearchIndexRebuildService
 
@@ -43,6 +46,7 @@ class BackgroundJobService:
         filename: str,
         mime_type: str,
         temp_file_path: str,
+        correlation_id: str | None = None,
     ) -> BackgroundJob:
         now = datetime.now(UTC)
         job = BackgroundJob(
@@ -55,6 +59,7 @@ class BackgroundJobService:
                 "filename": filename,
                 "mime_type": mime_type,
                 "temp_file_path": temp_file_path,
+                "correlation_id": correlation_id,
             },
             result_=None,
             progress_current=0,
@@ -130,7 +135,23 @@ class BackgroundJobService:
         self._session.add(job)
         self._session.commit()
         self._session.refresh(job)
+        log_event("background_job_completed", workspace_id=job.workspace_id, user_id=job.requested_by_user_id, status="completed")
         return job
+
+    def renew_job_lock(self, *, job_id: str, worker_id: str, now: datetime | None = None) -> bool:
+        timestamp = now or datetime.now(UTC)
+        renewed = self._session.execute(
+            update(BackgroundJob)
+            .where(
+                BackgroundJob.id == job_id,
+                BackgroundJob.status == "running",
+                BackgroundJob.locked_by == worker_id,
+            )
+            .values(locked_at=timestamp)
+            .execution_options(synchronize_session=False)
+        )
+        self._session.commit()
+        return bool(renewed.rowcount)
 
     def mark_job_failure(self, *, job: BackgroundJob, error_code: str, error_message: str, retryable: bool) -> BackgroundJob:
         terminal_attempt = job.attempt_count >= settings.background_job_max_attempts
@@ -147,11 +168,31 @@ class BackgroundJobService:
         self._session.add(job)
         self._session.commit()
         self._session.refresh(job)
+        event_name = {
+            "retryable": "background_job_retry_scheduled",
+            "dead_letter": "background_job_dead_lettered",
+            "failed": "background_job_failed",
+        }.get(job.status, "background_job_failed")
+        log_event(
+            event_name,
+            workspace_id=job.workspace_id,
+            user_id=job.requested_by_user_id,
+            status=job.status,
+            error_code=error_code,
+        )
         return job
 
     def recover_stale_jobs(self, *, worker_id: str, now: datetime | None = None) -> int:
         timestamp = now or datetime.now(UTC)
         stale_before = self._stale_lock_before(timestamp)
+        stale_jobs = self._session.execute(
+            select(BackgroundJob.id, BackgroundJob.workspace_id, BackgroundJob.requested_by_user_id)
+            .where(
+                BackgroundJob.status == "running",
+                BackgroundJob.locked_at.is_not(None),
+                BackgroundJob.locked_at < stale_before,
+            )
+        ).all()
         recovered = self._session.execute(
             update(BackgroundJob)
             .where(
@@ -171,6 +212,15 @@ class BackgroundJobService:
             .execution_options(synchronize_session=False)
         )
         self._session.commit()
+        for stale_job in stale_jobs:
+            bind_observability_context(correlation_id=f"job-{stale_job.id}", workspace_id=stale_job.workspace_id, user_id=stale_job.requested_by_user_id)
+            log_event(
+                "background_job_recovered",
+                workspace_id=stale_job.workspace_id,
+                user_id=stale_job.requested_by_user_id,
+                status="retryable",
+                error_code="WORKER_RECOVERY_REQUIRED",
+            )
         return int(recovered.rowcount or 0)
 
     def _stale_lock_before(self, timestamp: datetime) -> datetime:
@@ -191,6 +241,7 @@ class BackgroundJobService:
         workspace_id: str,
         requested_by_user_id: str | None,
         target_workspace_id: str | None,
+        correlation_id: str | None = None,
     ) -> BackgroundJob:
         now = datetime.now(UTC)
         job = BackgroundJob(
@@ -199,7 +250,7 @@ class BackgroundJobService:
             status="pending",
             workspace_id=workspace_id,
             requested_by_user_id=requested_by_user_id,
-            payload_={"target_workspace_id": target_workspace_id},
+            payload_={"target_workspace_id": target_workspace_id, "correlation_id": correlation_id},
             result_=None,
             progress_current=0,
             progress_total=1,
@@ -269,11 +320,18 @@ def process_import_job(job_id: str, bind: Engine | None = None) -> None:
             return
 
         payload = job.payload_ if isinstance(job.payload_, dict) else {}
+        bind_observability_context(
+            correlation_id=_job_correlation_id(job, payload),
+            workspace_id=job.workspace_id,
+            user_id=job.requested_by_user_id,
+        )
         temp_file_path = str(payload.get("temp_file_path") or "")
         filename = str(payload.get("filename") or "untitled")
         mime_type = str(payload.get("mime_type") or "application/octet-stream")
 
         try:
+            heartbeat_stop = Event()
+            heartbeat = _start_job_heartbeat(bind or get_engine(), job_id=job.id, worker_id="import-worker", stop_event=heartbeat_stop)
             source_bytes = Path(temp_file_path).read_bytes()
             driver_connection = _driver_connection(session)
             result = ImportExecutor().execute(
@@ -300,6 +358,11 @@ def process_import_job(job_id: str, bind: Engine | None = None) -> None:
                 error_message="Document import failed",
                 retryable=True,
             )
+        finally:
+            if 'heartbeat_stop' in locals():
+                heartbeat_stop.set()
+            if 'heartbeat' in locals():
+                heartbeat.join(timeout=1)
 
 
 def process_search_index_rebuild_job(job_id: str, bind: Engine | None = None) -> None:
@@ -317,9 +380,16 @@ def process_search_index_rebuild_job(job_id: str, bind: Engine | None = None) ->
             return
 
         payload = job.payload_ if isinstance(job.payload_, dict) else {}
+        bind_observability_context(
+            correlation_id=_job_correlation_id(job, payload),
+            workspace_id=job.workspace_id,
+            user_id=job.requested_by_user_id,
+        )
         target_workspace_id = payload.get("target_workspace_id")
 
         try:
+            heartbeat_stop = Event()
+            heartbeat = _start_job_heartbeat(bind or get_engine(), job_id=job.id, worker_id="search-index-worker", stop_event=heartbeat_stop)
             result = SearchIndexRebuildService.from_session(session).rebuild_search_index(workspace_id=target_workspace_id)
             service.mark_job_completed(job=job, result=result)
         except ApiError as exc:
@@ -331,6 +401,11 @@ def process_search_index_rebuild_job(job_id: str, bind: Engine | None = None) ->
                 error_message="Search index rebuild failed",
                 retryable=True,
             )
+        finally:
+            if 'heartbeat_stop' in locals():
+                heartbeat_stop.set()
+            if 'heartbeat' in locals():
+                heartbeat.join(timeout=1)
 
 
 def _is_retryable_import_error(error_code: str | None) -> bool:
@@ -342,3 +417,28 @@ def _driver_connection(session: Session):
     proxied_connection = getattr(sql_connection, "connection", None)
     driver_connection = getattr(proxied_connection, "driver_connection", None)
     return driver_connection
+
+
+def _start_job_heartbeat(bind: Engine, *, job_id: str, worker_id: str, stop_event: Event) -> Thread:
+    heartbeat = Thread(target=_heartbeat_job_lock, args=(bind, job_id, worker_id, stop_event), daemon=True)
+    heartbeat.start()
+    return heartbeat
+
+
+def _job_correlation_id(job: BackgroundJob, payload: dict[str, object]) -> str:
+    correlation_id = payload.get("correlation_id")
+    if isinstance(correlation_id, str) and correlation_id.strip():
+        return correlation_id.strip()
+    return f"job-{job.id}"
+
+
+def _heartbeat_job_lock(bind: Engine, job_id: str, worker_id: str, stop_event: Event) -> None:
+    interval_seconds = max(1, settings.background_job_heartbeat_interval_seconds)
+    while not stop_event.wait(interval_seconds):
+        try:
+            with Session(bind) as session:
+                renewed = BackgroundJobService.from_session(session).renew_job_lock(job_id=job_id, worker_id=worker_id)
+                if not renewed:
+                    return
+        except Exception:
+            return
