@@ -127,31 +127,19 @@ def test_admin_search_index_rebuild_requires_admin_role(client: TestClient, db_s
 
 
 def test_admin_search_index_rebuild_returns_stable_shape(client: TestClient) -> None:
-    service = FakeBackgroundJobService()
-    app.dependency_overrides[get_background_job_service] = lambda: service
-    try:
-        response = client.post("/api/v1/admin/search-index/rebuild")
-    finally:
-        app.dependency_overrides.clear()
+    response = client.post("/api/v1/admin/search-index/rebuild")
 
-    assert response.status_code == 202
-    assert len(service.calls) == 1
+    assert response.status_code == 501
     assert response.json() == {
-        "id": "job-1",
-        "job_type": "search_index_rebuild",
-        "status": "queued",
-        "workspace_id": "00000000-0000-0000-0000-000000000001",
-        "requested_by_user_id": "00000000-0000-0000-0000-000000000001",
-        "filename": None,
-        "created_at": "2026-05-05T00:00:00Z",
-        "started_at": None,
-        "finished_at": None,
-        "progress_current": 0,
-        "progress_total": 1,
-        "progress_message": "Rebuild ist in Warteschlange",
-        "error_code": None,
-        "error_message": None,
-        "result": None,
+        "error": {
+            "code": "ADMIN_ACTION_NOT_IMPLEMENTED",
+            "message": "Search index rebuild is disabled until M4a, M4b and M4c gates are complete",
+            "details": {
+                "action": "search_index_rebuild",
+                "scope": "M4d read-only diagnostics",
+                "required_gates": ["M4a", "M4b", "M4c"],
+            },
+        }
     }
 
 

@@ -1,6 +1,6 @@
 # Projektstatus
 
-Stand: 2026-05-06
+Stand: 2026-05-07
 
 ## Paket-5-Abschlussstand
 
@@ -162,14 +162,14 @@ Stand des Abgleichs mit Code und Dokumentation am 2026-05-06:
 - M4 ist teilweise implementiert.
 - Die dafuer benoetigte M3c-Foundation ist abgeschlossen.
 
-M4 Statusmatrix am 2026-05-06:
+M4 Statusmatrix am 2026-05-07:
 
 | Bereich | Score | Status |
 |---|---:|---|
 | M4a Auth & Workspace Isolation | `82/100` | nicht abgeschlossen |
 | M4b Upload/API Stabilitaet | `88/100` | nicht abgeschlossen |
 | M4c Lifecycle | `88/100` | nicht abgeschlossen |
-| M4d Diagnostics | `58/100` | nur teilweise real implementiert |
+| M4d Diagnostics | `94/100` | read-only vorbereitet, nicht vollstaendig abgeschlossen |
 | M4e Backup/Restore | `18/100` | Konzept, nicht implementiert |
 
 Gesamtentscheidung fuer M4:
@@ -202,7 +202,7 @@ Stand des Abgleichs mit Code, Tests und Dokumentation am 2026-05-05:
 - Implementiert sind Auth-Middleware, Auth-Session-Pruefung, Workspace-Membership-Pruefung sowie serverseitig aufgeloester Request-Kontext fuer geschuetzte Endpunkte.
 - `POST /api/v1/auth/login` und `GET /api/v1/auth/me` sind im Code vorhanden.
 - Der Upload ist auth-gebunden und verwendet keinen Default-Workspace-/Default-User-Fallback mehr.
-- Teile des Frontends, insbesondere Chat und Admin-Diagnostik, verwenden weiterhin alte Query-/Token-Modelle und halten M4a insgesamt offen.
+- Die aktuellen Dokument-, Search-, Chat-, Upload- und Diagnostics-API-Clients nutzen den zentralen Request-Kontext. M4a bleibt dennoch offen, weil Login-/Logout-/Session-Produktfluss und geschuetzte Route-Guards nicht vollstaendig umgesetzt sind.
 
 Betroffene Endpunkte im aktuellen Stand:
 
@@ -301,7 +301,7 @@ Bekannte Einschraenkungen:
 - keine Darstellung von `warnings` im Upload-Ergebnis
 - Polling ohne exponentielles Backoff oder sichtbare Retry-Strategie
 - Dokumentseite nutzt den zentralen Request-Kontext fuer Upload und Dokumentliste
-- andere Frontend-Teile, insbesondere Chat und Link-Navigation, verwenden weiterhin `workspace_id` im Query-Kontext
+- ein vollstaendiger Login-/Logout-/Route-Guard-Produktfluss fehlt weiterhin
 
 Teststatus fuer M4b am 2026-05-05:
 
@@ -372,10 +372,11 @@ Bekannte Einschraenkungen:
 - `lifecycle_status=deleted` ist als Querywert formal akzeptiert, liefert im Listenpfad aber keine geloeschten Dokumente zurueck
 - kein separater Purge-/Hard-Delete-Betriebsprozess
 - keine dedizierte Admin-Ansicht fuer geloeschte Dokumente
+- Lifecycle-Mutationen sind auth-geschuetzt, aber der Lifecycle-Service wird derzeit nicht mit `workspace_id` aufgerufen; ein harter Fremdworkspace-Mutationstest fehlt
 - die GUI ist fuer Listenfilter, Archive, Restore und Soft-Delete ueber Vitest-Screen-Tests verifiziert
 - Search-/Reindex-Integrationsnachweise gegen PostgreSQL sind aktuell wegen nicht erreichbarer Test-Datenbank unvollstaendig
 - fuer neue Chat-Antworten gibt es keinen eigenen expliziten Lifecycle-Integrationstest jenseits des Retrieval-Ausschlusses
-- der letzte fokussierte Frontend-Lauf war fuer angrenzende Lifecycle-/Rebuild-Screens nicht vollstaendig gruen, weil ein separater Admin-Diagnostics-Test in `NETWORK_ERROR` lief
+- der aktuelle Admin-Diagnostics-Frontend-Slice ist fuer read-only Diagnostics gruen; ein vollstaendiger Browser-E2E fuer angrenzende Lifecycle-/Rebuild-Szenarien fehlt weiterhin
 
 Abschlussbewertung fuer M4c:
 
@@ -383,35 +384,43 @@ Abschlussbewertung fuer M4c:
 - Dokumentation: jetzt aktualisiert
 - Konsistenz mit dem implementierten Code: **teilweise, aber nicht vollstaendig hart abgesichert**
 - Teststatus: Backend-Lifecycle, Soft-Delete, historische Citations und GUI-Slice sind lokal gruen belegbar; der PostgreSQL-End-to-End-Pfad fuer Search/Reindex ist aktuell nicht erfolgreich verifiziert
-- Blocker: fehlender gruener PostgreSQL-Integrationslauf, kein eigener Lifecycle-Chat-End-to-End-Nachweis und kein vollstaendig gruener fokussierter Frontend-Lauf ueber angrenzende Lifecycle-/Rebuild-Screens
+- Blocker: fehlender gruener PostgreSQL-Integrationslauf, kein eigener Lifecycle-Chat-End-to-End-Nachweis, fehlender harter Workspace-Scope-Nachweis fuer Lifecycle-Mutationen und kein vollstaendiger Browser-E2E ueber angrenzende Lifecycle-/Rebuild-Szenarien
 - Entscheidung: `nicht abgeschlossen`
 
 ### M4d Diagnostics
 
-Stand des Abgleichs mit Code, Tests und Dokumentation am 2026-05-06:
+Stand des Abgleichs mit Code, Tests und Dokumentation am 2026-05-07:
 
-- Real implementiert sind eine Admin-Seite fuer Search-Index-Rebuild, ein Inconsistency-Report, Health-Endpunkte und Observability-Slices.
-- Nicht real implementiert ist der in Teilen der Dokumentation beschriebene aggregierte Backend-Endpunkt `GET /api/v1/admin/diagnostics`.
-- Die Admin-GUI nutzt den zentralen Auth-/Workspace-Kontext; Admin-Rechte werden ueber Membership/Role erzwungen statt ueber ein manuelles `x-admin-token`-Feld.
+- Real implementiert ist ein aggregierter read-only Diagnostics-Endpunkt `GET /api/v1/admin/diagnostics`.
+- Die Diagnostics-API liefert nur Systemstatus, DB-/Migrationstatus, aggregierte Counts, Import-Job-Status, Search-Index-Status sowie Auth-/Workspace-Status.
+- Die Admin-GUI `/admin/diagnostics` zeigt diesen read-only Aggregatvertrag als Statuskarten.
+- Admin-Rechte werden ueber AuthContext und Workspace-Membership/Role `owner` oder `admin` erzwungen.
+- Ohne Auth liefert Diagnostics `401 UNAUTHORIZED`, ohne Adminrolle oder bei fremdem Workspace `403 FORBIDDEN`.
+- Bei Diagnosefehlern liefert der Endpoint `500 DIAGNOSTICS_FAILED` mit redigierten Details.
+- Die vorher produktiv erreichbare Search-Index-Rebuild-Aktion ist fuer M4d read-only deaktiviert und antwortet mit `501 ADMIN_ACTION_NOT_IMPLEMENTED`.
 
-Dokumentierter Zustand:
+Sicherheits- und Scope-Grenzen:
 
-- Teile der Doku beschreiben fuer M4d noch einen Zielvertrag statt den aktuellen Ist-Stand.
-- Der dokumentierte Vollvertrag fuer aggregierte Diagnostics ist derzeit nicht durch Code oder Tests gedeckt.
+- Diagnostics ist strikt read-only.
+- Keine Reparaturaktionen.
+- Keine Reindex-, Cleanup- oder Backup-Aktionen.
+- Keine User- oder Workspace-Verwaltung.
+- Keine Dokumentreparatur.
+- Keine Dokumenttexte, Chunktexte, Chat-Fragen, Chat-Antworten, Prompts, Secrets, Tokens, Connection-Strings oder lokalen Dateipfade.
 
 Teststatus:
 
-- Search-Index-Rebuild und Inconsistency-Report sind backendseitig getestet.
-- Die vorhandene Admin-Seite ist ueber Screen-Tests fuer den Rebuild-Flow belegt.
-- Ein echter aggregierter Diagnostics-Endpunkt ist nicht getestet, weil er nicht implementiert ist.
+- Backend-Diagnostics und deaktivierter Admin-Rebuild sind fokussiert getestet: `11 passed`.
+- Frontend-Diagnostics-Screen ist fokussiert getestet: `4 passed`.
+- Tests decken ohne Auth, ohne Adminrolle, fremden Workspace, DB-Fehler, Content-/Secret-Redaction, API down, degraded Status und fehlende mutierende UI-Aktionen ab.
 
 Abschlussbewertung fuer M4d:
 
-- Score: `58/100`
-- Dokumentation: nur teilweise konsistent mit dem aktuellen Code
-- Konsistenz mit dem implementierten Code: **nicht ausreichend fuer Abschluss**
-- Blocker: dokumentierter Zielvertrag ohne Implementierung, kein belastbarer Gesamt-Diagnostics-Vertrag
-- Entscheidung: `nicht abgeschlossen`
+- Score: `94/100` fuer den read-only Slice
+- Dokumentation: auf read-only Zustand aktualisiert
+- Konsistenz mit dem implementierten Code: **ausreichend fuer read-only Vorbereitung**
+- Blocker fuer vollstaendiges M4d: M4a, M4b und M4c sind noch nicht gruen; deshalb bleiben alle write/admin actions blockiert
+- Entscheidung: `read-only vorbereitet`, **nicht vollstaendig abgeschlossen**
 
 ### M4e Backup/Restore
 
@@ -455,7 +464,7 @@ Entscheidung:
 
 - Status fuer M4: `partial`
 - Gesamtentscheidung: `teilweise stabil`
-- Go/No-Go fuer M4d: `No-Go`
+- Go/No-Go fuer M4d: `Read-only Go`, vollstaendiges M4d `No-Go`
 - Go/No-Go fuer M4e: `No-Go`
 - Startfreigabe fuer weitere M4-Slices: `No-Go`, solange das M4-Gate fuer `M4a`, `M4b` und `M4c` nicht erreicht ist
 
@@ -652,7 +661,7 @@ Relevante Migrationen:
 - DOC-Import funktioniert nur, wenn LibreOffice lokal verfuegbar ist.
 - Quellenanker sind API-seitig normalisiert, aber Parser liefern noch nicht fuer alle Formate vollstaendige `page`, `paragraph`, `char_start` und `char_end`-Werte.
 - DOCX-Quellenanker sind als `docx_paragraph` typisiert, Paragraphenpositionen sind aber noch nicht durchgehend granular gefuellt.
-- Mehrbenutzerfaehigkeit ist datenmodellseitig vorbereitet, aber ohne Authentifizierung, Rollen und Rechtepruefung.
+- Mehrbenutzerfaehigkeit besitzt inzwischen einen technischen Auth-/Membership-Kern, ist aber als vollstaendiger Produktflow noch nicht freigegeben.
 - `updated_at` wird teilweise explizit gesetzt, aber nicht generell per DB-Trigger oder ORM-Event gepflegt.
 - `/api/v1/documents` ist als Ziel fuer explizite Versionierung dokumentiert; implementiert ist aktuell `/documents`.
 - Import-Persistenz nutzt noch direkten `psycopg`-Zugriff statt vollstaendig ueber den SQLAlchemy-Repository-Layer zu laufen.
@@ -661,7 +670,7 @@ Relevante Migrationen:
 ## Missing
 
 - OCR-Engine fuer gescannte PDFs oder Bilder.
-- Authentifizierung und Autorisierung.
+- vollstaendiger M4a-Produktflow fuer Auth, Logout, Frontend-Route-Guards und durchgaengige Freigabe.
 - Benutzer- und Workspace-Verwaltung als echte Produktfunktion.
 - Vollstaendige Quellenpositions-Erfassung pro Chunk fuer alle Parser.
 - Analyse-Fachlogik oberhalb der vorbereiteten Tabellen.

@@ -74,7 +74,7 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 - ✅ Jobbasierter Upload-Vertrag `POST /documents/import -> 202 -> Job-Polling` ist implementiert.
 - ✅ Dokument-Lifecycle mit `active`, `archived`, `deleted` und Soft Delete ist implementiert.
 - ✅ Historische Chat-Citations mit `source_status` sind implementiert.
-- ✅ Search-Index-Rebuild und Inkonsistenzpruefung sind implementiert.
+- ✅ M4d read-only Diagnostics-Aggregat, Search-Index-Inkonsistenzpruefung und blockierter Rebuild-Pfad sind implementiert.
 
 ### Partial
 
@@ -83,6 +83,7 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 - M4a Auth und Workspace-Isolation sind nur teilweise abgeschlossen.
 - M4b Upload/API-Stabilitaet ist nur teilweise abgeschlossen.
 - M4c Lifecycle ist fachlich implementiert, aber fuer den Abschluss nicht vollstaendig hart nachgewiesen.
+- M4d Diagnostics ist nur read-only vorbereitet; vollstaendige Admin-Aktionen bleiben blockiert.
 - PDF-Parser erkennt OCR-Bedarf, fuehrt aber kein OCR aus.
 - DOC-Parser haengt von lokal verfuegbarem LibreOffice ab.
 - Quellenanker sind API-seitig normalisiert, aber Parser liefern nicht fuer alle Formate vollstaendige Positionsdaten.
@@ -92,7 +93,7 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 ### Missing
 
 - OCR-Engine.
-- Authentifizierung und Autorisierung fuer regulare Fachendpunkte.
+- vollstaendig freigegebener M4a-Produktflow fuer Auth/Logout/Frontend-Route-Guards.
 - echte Workspace-/User-Verwaltung mit Memberships und Sessionkontext.
 - Embeddings.
 - Analyse-/Merge-/Refine-Fachlogik.
@@ -173,7 +174,7 @@ Noch zu vereinheitlichen:
 
 ### Frontend
 
-React/Vite ist die gesetzte V1-GUI-Basis. Der GUI-Start war bewusst an das Paket-5-Gate gekoppelt und wurde danach fuer M3a umgesetzt. Aktuell existieren eine Dokument-GUI, Retrieval-Suche, Chat-Oberflaeche, Upload-Job-UI und Admin-Diagnostik gegen die echte API. M4a ist dabei noch nicht konsistent abgeschlossen, weil Login, Sessionkontext und echte Workspace-Isolation in der GUI nicht nachweisbar umgesetzt sind.
+React/Vite ist die gesetzte V1-GUI-Basis. Der GUI-Start war bewusst an das Paket-5-Gate gekoppelt und wurde danach fuer M3a umgesetzt. Aktuell existieren eine Dokument-GUI, Retrieval-Suche, Chat-Oberflaeche, Upload-Job-UI und read-only Admin-Diagnostik gegen die echte API. M4a ist dabei noch nicht konsistent abgeschlossen, weil Login, Sessionkontext und echte Workspace-Isolation in der GUI nicht nachweisbar umgesetzt sind.
 
 ### Datenbank
 
@@ -376,7 +377,7 @@ Erlaubte Typen:
 - Auth-Middleware und Header-basierter Request-Kontext sind implementiert.
 - `POST /api/v1/auth/login` und `GET /api/v1/auth/me` existieren als technischer Kern.
 - Search, Dokument-Read, Upload und Teile der Admin-/Chat-Pfade nutzen bereits den Auth-Kontext.
-- M4a ist trotzdem nicht abgeschlossen, weil die Sicherheitsgrenze noch nicht fuer alle Mutationen konsistent durchgezogen ist.
+- M4a ist trotzdem nicht abgeschlossen, weil die Sicherheitsgrenze noch nicht fuer alle Mutationen konsistent durchgezogen ist; insbesondere Lifecycle-Mutationen uebergeben aktuell keinen Workspace an den Service.
 
 ### Freigabekriterien
 
@@ -457,18 +458,24 @@ Erlaubte Typen:
 
 ---
 
-## M4c+ - Rest pausiert
+## M4c+ - Gate-Abhaengigkeit
 
-**Status:** pausiert.
+**Status:** teilweise vorbereitet, nicht vollstaendig freigegeben.
 
-Nicht aktiver Implementierungsscope vor erfolgreichem Gate fuer `M4a` und `M4b`:
+Seit der urspruenglichen Stop-Regel wurden M4c und M4d in begrenzten Slices vorbereitet:
 
-- M4c Lifecycle-Ausbau als Produktflow
-- M4d Admin- und Diagnose-UX
-- M4e Backup/Restore
+- M4c Lifecycle ist fachlich implementiert, bleibt aber Gate-pflichtig.
+- Lifecycle-Mutationen brauchen noch einen harten workspace-scoped Service-/API-Nachweis.
+- M4d Diagnostics ist nur read-only vorbereitet.
+- M4e Backup/Restore bleibt Konzept.
+
+Nicht freigegeben vor erfolgreichen M4a/M4b/M4c-Gates:
+
+- produktive Reindex-/Repair-/Cleanup-/Backup-Admin-Aktionen
+- vollstaendige Admin-UX
 - weitere Produktisierung, Komfortfeatures und Ausbaupfade
 
-Diese Themen duerfen erst wieder aktiv geplant oder implementiert werden, wenn `M4a` und `M4b` beide freigegeben sind.
+M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 
 ---
 
@@ -881,6 +888,7 @@ Diese Themen duerfen erst wieder aktiv geplant oder implementiert werden, wenn `
 - M3c liefert Chat-API, RAG-Orchestrierung und Fehlerstandard, die in M4 betrieblich abgesichert werden.
 - M4 setzt voraus, dass M3b und M3c funktional abgeschlossen oder nur noch in nicht-blockierenden Restpunkten offen sind.
 - M4 darf keine neuen fachlichen Antworten oder neue Intelligenzlogik erzwingen, sondern stabilisiert die vorhandenen M3-Faehigkeiten.
+- M4d ist vor Abschluss von M4a/M4b/M4c nur als read-only Diagnostics-Slice freigegeben; Admin-Aktionen bleiben blockiert.
 
 ### Akzeptanzkriterien
 
@@ -889,14 +897,14 @@ Diese Themen duerfen erst wieder aktiv geplant oder implementiert werden, wenn `
 - Dokumente koennen ueber eine GUI hochgeladen und ueber ihren Lifecycle nachvollziehbar verfolgt werden.
 - Historische Citations bleiben bei archivierten oder geloeschten Dokumenten lesbar; neue Retrieval-Treffer bleiben auf `active` beschraenkt.
 
-Aktueller M4-Gate-Stand am 2026-05-06:
+Aktueller M4-Gate-Stand am 2026-05-07:
 
 | Bereich | Score | Status | Gate-Relevanz |
 |---|---:|---|---|
 | M4a | `82/100` | nicht abgeschlossen | blockiert M5 |
 | M4b | `88/100` | nicht abgeschlossen | blockiert M5 |
 | M4c | `88/100` | nicht abgeschlossen | blockiert M5 |
-| M4d | `58/100` | nur teilweise real implementiert | `No-Go` |
+| M4d | `94/100` | read-only vorbereitet, nicht vollstaendig abgeschlossen | read-only akzeptiert, Admin-Aktionen blockiert |
 | M4e | `18/100` | Konzept, nicht implementiert | `No-Go` |
 
 Gate-Regel fuer M5:
@@ -916,7 +924,7 @@ Aktueller M4c-Befund:
 - Frontend-Lifecycle-Slice ist im fokussierten Vitest-Lauf gruen.
 - Search- und Reindex-Integrationslauf gegen PostgreSQL ist aktuell nicht erfolgreich, weil die konfigurierte Test-Datenbank im letzten Lauf nicht erreichbar war.
 - Der M4c-Produktstatus bleibt deshalb vorerst `nicht abgeschlossen`.
-- Admin- und Diagnoseansicht sind nur teilweise real vorhanden; ein aggregierter Diagnostics-Vertrag ist dokumentiert, aber nicht implementiert.
+- Admin- und Diagnoseansicht sind als read-only Diagnostics real vorhanden; Reparatur-, Reindex-, Cleanup- und Backup-Aktionen sind nicht freigegeben.
 - Zentrale Fehler, Health-Informationen und Betriebsmetriken sind beobachtbar.
 - Backup und Restore sind aktuell als Konzept und Runbook beschrieben, aber nicht real implementiert oder getestet.
 - Read-, Retrieval- und Chat-Pfade halten definierte lokale Performancebudgets ein.
@@ -934,7 +942,7 @@ Aktueller M4c-Befund:
 
 Freigabeentscheidung:
 
-- Go fuer M4d: `No-Go`
+- Go fuer M4d: `Read-only Go`, vollstaendiges M4d `No-Go`
 - Go fuer M4e: `No-Go`
 - Go fuer M5: `No-Go`
 

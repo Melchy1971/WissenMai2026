@@ -1,10 +1,10 @@
 # Frontend M3a, M3b Retrieval-UI, M3c Chat/RAG-Foundation-UI und M4-Produktisierungsstand
 
-Stand: 2026-05-05
+Stand: 2026-05-07
 
 ## Status
 
-Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erweitert, fuer M3c um eine dokumentgestuetzte Chat-Oberflaeche ergaenzt und in M4 um Upload- sowie Admin-Diagnostik-Slices erweitert. Der Upload-Slice nutzt bereits den zentralen Auth-/Workspace-Kontext; ein voll integriertes Frontend-Modell fuer Chat, Admin und Navigation ist aber noch nicht konsistent abgeschlossen.
+Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erweitert, fuer M3c um eine dokumentgestuetzte Chat-Oberflaeche ergaenzt und in M4 um Upload-, Lifecycle- sowie read-only Admin-Diagnostics-Slices erweitert. Der Upload- und Diagnostics-Slice nutzen den zentralen Auth-/Workspace-Kontext; ein voll integriertes Frontend-Modell fuer Chat und Navigation ist aber noch nicht konsistent abgeschlossen.
 
 ## Umgesetzter Scope
 
@@ -17,7 +17,7 @@ Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erw
 - Link vom Suchtreffer zum Dokumentdetail.
 - Route `/chat` und `/chat/:id` fuer Chat-Sessions.
 - Upload-Block auf `/documents` mit Hintergrundjob-Polling.
-- Admin-Diagnostik fuer Search-Index-Rebuild mit Hintergrundjob-Polling.
+- Read-only Admin-Diagnostics unter `/admin/diagnostics`.
 - Lifecycle-Filter, Archive, Restore und Soft-Delete in der Dokument-GUI.
 - Sessionliste fuer Chat.
 - Formular fuer neue Session.
@@ -30,7 +30,37 @@ Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erw
 - POST-Message-Response wird als Assistant-Message mit Citations und Confidence gemappt.
 - Lade-, Leer- und Fehlerzustaende.
 - Sichtbare Fehlercodes im UI.
-- Normalisierte Jobstatuslabels fuer Upload und Admin-Rebuild.
+- Normalisierte Jobstatuslabels fuer Upload.
+
+## M4d Read-only Diagnostics-GUI im aktuellen Stand
+
+Nachweisbar implementiert:
+
+- Route `/admin/diagnostics`
+- API-Client `GET /api/v1/admin/diagnostics`
+- Statuskarten fuer Systemstatus, DB Status, Migration Status, Dokument-/Version-/Chunk-Zahlen, Import Job Status, Search Index Status und Auth/Workspace Status
+- Zugriff nur fuer AuthContext-Memberships mit Rolle `owner` oder `admin`
+- sichtbarer Fehlerzustand fuer API down und API-Fehler wie `DIAGNOSTICS_FAILED`
+- sichtbarer degraded Status
+
+Bewusst nicht gerendert:
+
+- keine Reindex-Buttons
+- keine Cleanup-Buttons
+- keine Backup-Buttons
+- keine Admin-Token-Eingabe
+- keine Roh-JSON-Anzeige mit unbekannten Zusatzfeldern
+- keine Dokumenttexte, Chunktexte, Chat-Fragen, Chat-Antworten oder Secrets
+
+Teststatus:
+
+- Fokussierter Screen-Test: `AdminDiagnosticsPage.test.jsx`, `4 passed`.
+- Tests decken Nicht-Admin-Zugriff, API down, degraded Status und Redaction gegen sensible Zusatzfelder ab.
+
+Freigabegrenze:
+
+- M4d ist damit nur als read-only vorbereitet.
+- Vollstaendige M4d-Admin-Aktionen bleiben blockiert, bis M4a/M4b/M4c gruen sind.
 
 ## M4b Upload-GUI im aktuellen Stand
 
@@ -94,7 +124,7 @@ Bekannte Einschraenkungen im Lifecycle-Slice:
 
 - Die GUI dokumentiert, dass archivierte Dokumente nicht in Suche oder Chat erscheinen, stützt sich dafuer aber auf Backend-Verhalten statt auf eigenen Browser-E2E-Nachweis.
 - Der Lifecycle-Slice ist ueber Screen-Tests verifiziert, nicht ueber Browser-E2E gegen ein laufendes Gesamtsystem.
-- Der letzte fokussierte Frontend-Lauf fuer angrenzende Lifecycle-/Rebuild-Screens war nicht vollstaendig gruen, weil ein separater Admin-Diagnostics-Test in einen `NETWORK_ERROR` lief.
+- Der aktuelle fokussierte Diagnostics-Frontend-Lauf ist fuer den read-only Screen gruen; ein Browser-E2E gegen ein laufendes Gesamtsystem fehlt weiterhin.
 
 ## Bewusst nicht umgesetzt
 
@@ -141,17 +171,17 @@ Aktuell verifiziert:
 - Kein Direktlink in die Dokumentdetailansicht nach erfolgreichem Upload.
 - Keine Darstellung von `warnings` im Upload-Ergebnis.
 - Polling nutzt festen 250-ms-Takt ohne Backoff.
-- Dokumente und Chat ziehen den Workspace weiterhin aus `workspace_id` im Query-String.
-- Dokumente und Chat fallen teilweise auf einen hart codierten Default-Workspace zurueck.
+- Dokument-, Search- und Chat-API-Clients senden keinen `workspace_id` mehr in Query oder Body, sondern nutzen den zentralen Request-Kontext fuer `X-Workspace-Id`.
+- Ein vollstaendiger Frontend-Produktflow fuer Login, Logout, Sessionwiederherstellung und geschuetzte Route-Guards fehlt weiterhin.
 - Kein Login-Screen, kein Logout und kein serverseitig aufgeloester Benutzerkontext in der GUI.
-- Admin-Diagnostik nutzt den zentralen Auth-/Workspace-Kontext; die GUI zeigt keinen manuellen `x-admin-token`-Pfad mehr.
+- Admin-Diagnostik nutzt den zentralen Auth-/Workspace-Kontext; die GUI zeigt keinen manuellen `x-admin-token`-Pfad und keine mutierenden Admin-Aktionen mehr.
 
 ## M4a Konsistenzstand im Frontend
 
 Nachweisbar implementiert:
 
 - Fehlerabbildung fuer `AUTH_REQUIRED`, `ADMIN_REQUIRED`, `WORKSPACE_REQUIRED`
-- Admin-Diagnostik mit Membership-/Rollenpruefung aus dem AuthContext
+- Read-only Admin-Diagnostik mit Membership-/Rollenpruefung aus dem AuthContext
 - Workspace-Sichtbarkeit in Dokument- und Chat-Routen
 
 Nicht nachweisbar implementiert:
@@ -160,8 +190,8 @@ Nicht nachweisbar implementiert:
 - Logout-Flow
 - Sessionwiederherstellung
 - geschuetzter Route-Guard aus einem echten Auth-Kontext
-- Vermeidung freier `workspace_id`-Navigation fuer Dokumente und Chat
+- vollstaendige geschuetzte Navigation ohne manuelle Workspace-Kontextannahmen
 
 ## Fazit
 
-Der Frontend-Schnitt deckt Dokumente, Suche, Chat sowie erste M4-Produktisierungs-Slices fuer Upload, Lifecycle und Admin-Rebuild ab. Der Lifecycle-Flow fuer Dokumentliste und Dokumentdetail ist ueber Screen-Tests nachgewiesen. Fuer M4c darf daraus aber nur gefolgert werden, dass die Dokument-GUI lokal konsistent wirkt; ein vollstaendig gruener angrenzender Frontend-Gesamtnachweis lag im letzten fokussierten Lauf nicht vor.
+Der Frontend-Schnitt deckt Dokumente, Suche, Chat sowie erste M4-Produktisierungs-Slices fuer Upload, Lifecycle und read-only Diagnostics ab. Der Lifecycle-Flow fuer Dokumentliste und Dokumentdetail ist ueber Screen-Tests nachgewiesen. M4d ist im Frontend nur read-only vorbereitet; Reparatur-, Reindex-, Cleanup- und Backup-Aktionen sind nicht Teil des freigegebenen UI-Scope.

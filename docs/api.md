@@ -1,6 +1,6 @@
 # API fuer M3a GUI, M3b Retrieval-UI, M3c Chat/RAG und M4-Produktisierung
 
-Stand: 2026-05-05
+Stand: 2026-05-07
 
 ## Zweck
 
@@ -8,23 +8,25 @@ Dieses Dokument beschreibt die API-Abhaengigkeit der aktuellen GUI auf hoher Ebe
 
 ## M4a Konsistenzstand
 
-Der dokumentierte Zielzustand fuer M4a waere ein serverseitig aufgeloester Auth- und Workspace-Kontext. Im vorliegenden Code ist dieser Zustand noch nicht erreicht.
+Der dokumentierte Zielzustand fuer M4a ist ein durchgaengig serverseitig aufgeloester Auth- und Workspace-Kontext fuer alle geschuetzten Pfade. Im vorliegenden Code ist ein technischer Backend-Kern vorhanden, M4a ist aber wegen fehlendem durchgaengigem Produkt-/Frontend-Flow und verbleibenden Gate-Nachweisen nicht abgeschlossen.
 
-Fuer Admin-Diagnostics ist der Legacy-Header `x-admin-token` nicht mehr Teil des aktiven Frontend-Vertrags. Der Backend-Endpunkt toleriert einen gesendeten Header derzeit nur aus Rueckwaertskompatibilitaet, autorisiert aber ausschliesslich ueber Session + Workspace-Membership/Rolle.
+Fuer Admin-Diagnostics ist der Legacy-Header `x-admin-token` nicht Teil des aktiven Vertrags. Diagnostics autorisiert ausschliesslich ueber AuthContext, aktiven Workspace und Workspace-Membership/Rolle.
 
 Nachweisbar implementiert:
 
-- `AUTH_REQUIRED` und `ADMIN_REQUIRED` fuer den Admin-Rebuild ueber serverseitigen Auth-/Membership-Kontext
+- `UNAUTHORIZED`, `FORBIDDEN` und `DIAGNOSTICS_FAILED` fuer den read-only Diagnostics-Endpunkt
+- `AUTH_REQUIRED` und `ADMIN_REQUIRED` fuer sonstige Admin-Pfade ueber serverseitigen Auth-/Membership-Kontext
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/me`
+- serverseitige Membership-Pruefung ueber Auth-Middleware fuer geschuetzte Fachendpunkte
 - `WORKSPACE_REQUIRED` fuer mehrere fachliche Endpunkte mit explizitem Workspace-Parameter
-- serverseitiger Default-Kontext fuer Uploads statt clientseitig frei uebergebener `workspace_id`
+- Uploads verwenden Workspace und Benutzer aus dem serverseitigen Auth-Kontext statt clientseitig frei uebergebener `workspace_id`
 
 Nicht nachweisbar implementiert:
 
-- `POST /auth/login`
 - `POST /auth/logout`
-- `GET /auth/me`
-- Cookie-Session oder JWT-basierte Benutzeridentitaet
-- Membership-Validierung gegen einen Workspace
+- Cookie-Session-Produktflow oder JWT-basierte Benutzeridentitaet als finaler Produktstandard
+- vollstaendiger Frontend-Login-/Logout-/Route-Guard-Flow
 
 ## Aktuell implementierte Endpunkte
 
@@ -52,8 +54,9 @@ M3c Chat:
 
 M4d Admin/Diagnostics:
 
-- `POST /api/v1/admin/search-index/rebuild`
-- `GET /api/v1/jobs/{job_id}`
+- `GET /api/v1/admin/diagnostics`
+- `GET /api/v1/admin/search-index/inconsistencies`
+- `POST /api/v1/admin/search-index/rebuild` ist fuer M4d read-only blockiert und liefert `501 ADMIN_ACTION_NOT_IMPLEMENTED`
 
 M4e Backup/Restore:
 
@@ -69,7 +72,6 @@ Query Parameter:
 
 | Name | Typ | Required | Default | Limit / Regel |
 |---|---|---:|---:|---|
-| `workspace_id` | string | ja | - | `min_length=1` |
 | `q` | string | ja | - | `min_length=1`, wird im Service getrimmt |
 | `limit` | integer | nein | `20` | `1..100` |
 | `offset` | integer | nein | `0` | `>= 0` |
@@ -77,8 +79,10 @@ Query Parameter:
 Request-Beispiel:
 
 ```text
-GET /api/v1/search/chunks?workspace_id=e1000000-0000-0000-0000-000000000001&q=rankingterm%20orderterm&limit=20&offset=0
+GET /api/v1/search/chunks?q=rankingterm%20orderterm&limit=20&offset=0
 ```
+
+Der Workspace wird serverseitig aus dem AuthContext abgeleitet.
 
 Response `200`:
 
@@ -150,7 +154,7 @@ Index-/FTS-Verhalten:
 
 Filterverhalten:
 
-- Es werden nur Chunks aus dem angefragten `workspace_id` geliefert.
+- Es werden nur Chunks aus dem aktiven Workspace des AuthContext geliefert.
 - Es werden nur Chunks der aktuellen Dokumentversion geliefert.
 - Dokumente mit `import_status in ('parsed', 'chunked')` sind suchbar.
 - Es werden nur Dokumente mit `lifecycle_status = 'active'` beruecksichtigt.
@@ -187,9 +191,10 @@ Alle Fehler folgen dem Standardformat:
 
 | HTTP Status | Code | Ursache |
 |---:|---|---|
-| `422` | `WORKSPACE_REQUIRED` | `workspace_id` fehlt oder ist leer |
 | `422` | `INVALID_QUERY` | `q` fehlt oder ist leer |
 | `422` | `INVALID_PAGINATION` | `limit` oder `offset` ist ausserhalb der Grenzen |
+| `401` | `AUTH_REQUIRED` | Authentifizierung fehlt |
+| `403` | `WORKSPACE_ACCESS_FORBIDDEN` | kein Zugriff auf den aktiven Workspace |
 | `503` | `SERVICE_UNAVAILABLE` | Search-Backend ist nicht verfuegbar oder nicht PostgreSQL |
 | `500` | `INTERNAL_ERROR` | unerwarteter interner Fehler oder fehlende DB-Konfiguration ausserhalb des Search-Backend-Checks |
 
@@ -205,8 +210,8 @@ Alle Fehler folgen dem Standardformat:
 
 Hinweis:
 
-- Die generischen Begriffe `UNAUTHORIZED` und `FORBIDDEN` werden im aktuellen Code nicht als eigene Fehlercodes ausgeliefert.
-- Die konkrete Implementierung mappt `UNAUTHORIZED` auf `AUTH_REQUIRED` oder `AUTH_INVALID_CREDENTIALS` und `FORBIDDEN` auf `WORKSPACE_ACCESS_FORBIDDEN` oder `ADMIN_REQUIRED`.
+- `GET /api/v1/admin/diagnostics` verwendet vertragsgemaess `UNAUTHORIZED` und `FORBIDDEN`.
+- Andere geschuetzte Endpunkte verwenden weiterhin die aelteren Codes wie `AUTH_REQUIRED`, `WORKSPACE_ACCESS_FORBIDDEN` oder `ADMIN_REQUIRED`.
 
 ## Upload Contract
 
@@ -468,7 +473,7 @@ Vertragsregeln:
 
 - Es duerfen keine rohen Exceptions an die API durchgereicht werden.
 - Die maximale Dateigroesse ist konfigurierbar.
-- Der Workspace fuer den Import wird serverseitig aus dem Request-Kontext abgeleitet; aktuell basiert dieser Kontext aber noch auf `settings.default_workspace_id` statt auf einer echten Benutzersession.
+- Der Workspace fuer den Import wird serverseitig aus dem AuthContext abgeleitet; ein Default-Workspace-/Default-User-Fallback ist im Upload-Flow nicht aktiv.
 
 ## Upload-bezogene Fehlercodes
 
@@ -679,7 +684,6 @@ Request:
 
 ```json
 {
-  "workspace_id": "workspace-1",
   "title": "Arbeitsvertrag"
 }
 ```
@@ -700,130 +704,101 @@ Response `201` `ChatSessionSummary`:
 
 Listet Sessions eines Workspaces.
 
-## M4d Admin Diagnostics Current State
+## M4d Read-only Admin Diagnostics
 
-Der aktuell nachweisbare M4d-Slice besteht aus:
+Der aktuell nachweisbare M4d-Slice ist **read-only vorbereitet**, aber M4d ist nicht vollstaendig abgeschlossen. Mutierende Admin-Aktionen bleiben blockiert, bis M4a, M4b und M4c ihre Gates erreicht haben.
 
-- `POST /api/v1/admin/search-index/rebuild`
+Nachweisbar implementiert:
+
+- `GET /api/v1/admin/diagnostics`
 - `GET /api/v1/admin/search-index/inconsistencies`
-- `GET /api/v1/jobs/{job_id}` fuer das Polling des Rebuild-Jobs
+- `POST /api/v1/admin/search-index/rebuild` als blockierter Pfad mit `501 ADMIN_ACTION_NOT_IMPLEMENTED`
 
-Nicht nachweisbar implementiert ist derzeit ein aggregierter Endpoint `GET /api/v1/admin/diagnostics`.
+Nicht freigegeben:
 
-Die folgenden Diagnostics-Strukturen sind daher **Zielvertrag**, nicht aktueller Ist-Vertrag.
+- Reindex ausloesen
+- Cleanup ausloesen
+- Backup ausloesen
+- Restore ausloesen
+- User verwalten
+- Workspace mutieren
+- Dokumente reparieren
 
 ### `GET /api/v1/admin/diagnostics`
 
-Liefert eine redigierte Systemdiagnose fuer Administratoren.
+Liefert eine redigierte read-only Systemdiagnose fuer Administratoren.
 
 Autorisierung:
 
-- gueltige Session erforderlich
-- Admin- oder Owner-Rolle erforderlich
+- gueltige Session/AuthContext erforderlich
+- aktiver Workspace aus dem Request-Kontext erforderlich
+- Admin- oder Owner-Rolle im aktiven Workspace erforderlich
 
 Response `200`:
 
 ```json
 {
-  "generated_at": "2026-05-05T14:00:00Z",
-  "workspace_scope": "workspace-1",
-  "overall_status": "ok",
-  "cards": {
-    "database": {
-      "status": "ok",
-      "label": "DB erreichbar",
-      "details": {
-        "reachable": true,
-        "latency_ms": 18
-      }
-    },
-    "migrations": {
-      "status": "ok",
-      "label": "Migration Head aktuell",
-      "details": {
-        "current_revision": "20260505_0013",
-        "head_revision": "20260505_0013",
-        "at_head": true
-      }
-    },
-    "documents": {
-      "status": "ok",
-      "label": "Dokumente und Chunks",
-      "details": {
-        "document_count": 128,
-        "chunk_count": 6421,
-        "archived_document_count": 12,
-        "deleted_document_count": 3
-      }
-    },
-    "imports": {
-      "status": "warning",
-      "label": "Import-Stabilitaet",
-      "details": {
-        "parser_error_rate_24h": 0.083,
-        "successful_imports_24h": 44,
-        "failed_imports_24h": 4,
-        "last_imports": [
-          {
-            "import_id": "imp-1",
-            "finished_at": "2026-05-05T13:42:00Z",
-            "status": "failed",
-            "error_code": "PARSER_FAILED"
-          }
-        ]
-      }
-    },
-    "search": {
-      "status": "ok",
-      "label": "Search Index",
-      "details": {
-        "backend": "postgresql_fts",
-        "index_ready": true,
-        "missing_search_vectors": 0,
-        "stale_current_documents": 0
-      }
-    },
-    "chat_rag": {
-      "status": "warning",
-      "label": "Chat/RAG",
-      "details": {
-        "chat_error_rate_24h": 0.041,
-        "retrieval_error_rate_24h": 0.018,
-        "llm_unavailable_rate_24h": 0.006
-      }
-    }
+  "system": {
+    "status": "ok",
+    "version": "0.1.0",
+    "environment": "local"
   },
-  "errors": [
-    {
-      "id": "diag-1",
-      "severity": "warning",
-      "source": "imports",
-      "code": "PARSER_FAILED",
-      "message": "Parser-Fehlerquote der letzten 24h liegt ueber dem Grenzwert.",
-      "technical_details": {
-        "window_hours": 24,
-        "failed_imports": 4,
-        "successful_imports": 44,
-        "threshold": 0.05
-      }
-    }
-  ]
+  "database": {
+    "reachable": true,
+    "migration_head": "20260505_0016",
+    "current_revision": "20260505_0016",
+    "is_current": true
+  },
+  "counts": {
+    "documents": 0,
+    "versions": 0,
+    "chunks": 0,
+    "chat_sessions": 0,
+    "chat_messages": 0
+  },
+  "imports": {
+    "running_jobs": 0,
+    "failed_jobs_last_24h": 0,
+    "last_error_code": null
+  },
+  "search": {
+    "index_available": true,
+    "indexed_chunks": 0,
+    "stale_index_entries": 0
+  },
+  "auth": {
+    "auth_enabled": true,
+    "workspace_isolation_enabled": true
+  }
 }
 ```
 
 Vertragsregeln:
 
-- nur aggregierte Kennzahlen und redigierte technische Details
-- keine Dokumenttexte, keine Chunk-Texte, keine Prompts, keine Chat-Inhalte
-- `workspace_scope` wird serverseitig aus dem Admin-Kontext abgeleitet
+- nur aggregierte Kennzahlen und redigierte technische Statuswerte
+- keine Reparaturaktionen oder Job-Erzeugung
+- keine Reindex-, Cleanup- oder Backup-Aktionen
+- keine Dokumenttexte, keine Chunk-Texte, keine Dokumenttitel, keine Prompts, keine Chat-Fragen oder Chat-Antworten
+- keine Secrets, Tokens, Header-Werte, Connection-Strings oder lokalen Dateipfade
+- der Workspace wird serverseitig aus dem AuthContext abgeleitet
 
 Fehler:
 
 | Status | Code | Bedeutung |
 |---:|---|---|
-| `401` | `AUTH_REQUIRED` | keine gueltige Session |
-| `403` | `ADMIN_REQUIRED` | kein Admin- oder Owner-Zugriff |
-| `503` | `SERVICE_UNAVAILABLE` | Diagnosedaten nicht oder nur teilweise verfuegbar |
+| `401` | `UNAUTHORIZED` | keine gueltige Session |
+| `403` | `FORBIDDEN` | kein Admin- oder Owner-Zugriff oder fremder Workspace |
+| `500` | `DIAGNOSTICS_FAILED` | Diagnosedaten konnten nicht redigiert aufgebaut werden |
+
+### `POST /api/v1/admin/search-index/rebuild`
+
+Dieser Pfad ist fuer M4d read-only nicht freigegeben.
+
+Response:
+
+- `501 ADMIN_ACTION_NOT_IMPLEMENTED`
+
+Die fruehere Rebuild-Aktion bleibt erst nach erfolgreichem M4a/M4b/M4c-Gate wieder entscheidbar.
 
 ## M4e Backup and Restore Proposal
 
@@ -858,9 +833,10 @@ Query Parameter:
 
 | Name | Typ | Required | Default | Limit / Regel |
 |---|---|---:|---:|---|
-| `workspace_id` | string | ja | - | `min_length=1` |
 | `limit` | integer | nein | `20` | `1..100` |
 | `offset` | integer | nein | `0` | `>= 0` |
+
+Der Workspace wird serverseitig aus dem AuthContext abgeleitet.
 
 Response `200`:
 
@@ -925,7 +901,6 @@ Request:
 
 ```json
 {
-  "workspace_id": "workspace-1",
   "question": "Welche Kuendigungsfrist gilt nach der Probezeit?",
   "retrieval_limit": 8
 }
@@ -935,7 +910,6 @@ Felder:
 
 | Feld | Typ | Required | Default | Limit / Regel |
 |---|---|---:|---:|---|
-| `workspace_id` | string | ja | - | `min_length=1` |
 | `question` | string | ja | - | `min_length=1` |
 | `retrieval_limit` | integer | nein | `8` | `1..100` |
 
@@ -996,7 +970,7 @@ Alle Chat/RAG-Fehler verwenden das gleiche Standardformat:
 | HTTP Status | Code | Ursache |
 |---:|---|---|
 | `404` | `CHAT_SESSION_NOT_FOUND` | Session existiert nicht |
-| `422` | `WORKSPACE_REQUIRED` | `workspace_id` fehlt oder ist leer |
+| `422` | `WORKSPACE_REQUIRED` | Header `x-workspace-id` fehlt oder ist leer |
 | `422` | `CHAT_MESSAGE_INVALID` | `question` oder `retrieval_limit` ungueltig |
 | `422` | `INSUFFICIENT_CONTEXT` | Retrieval-/Kontextlage reicht nicht fuer belegte Antwort |
 | `500` | `CHAT_PERSISTENCE_FAILED` | Speichern von Session, Message oder Citation fehlgeschlagen |
@@ -1010,7 +984,7 @@ Alle Chat/RAG-Fehler verwenden das gleiche Standardformat:
 - keine Embeddings
 - keine semantische Suche
 - kein Re-Ranking
-- keine Query-Filter ausser `workspace_id`, `q`, `limit`, `offset`
+- keine Query-Filter ausser `q`, `limit`, `offset`
 - keine Schreiboperationen
 
 ## Von der GUI verwendete Vertragsmerkmale

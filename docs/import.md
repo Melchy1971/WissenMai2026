@@ -94,7 +94,7 @@ Im Frontend-Mapping:
 - kein Byte-Fortschritt, nur Jobstatus
 - kein Direkt-Sprung in die Dokumentdetailansicht nach Erfolg
 - keine Darstellung von `warnings` im Upload-Ergebnis
-- Dokumentansicht nutzt fuer den Upload den zentralen Request-Kontext; andere Frontend-Teile verwenden weiterhin `workspace_id` im Query-Kontext
+- Dokumentansicht und aktuelle API-Clients nutzen den zentralen Request-Kontext; ein vollstaendiger Login-/Logout-/Route-Guard-Produktfluss fehlt weiterhin
 
 ## Teststatus
 

@@ -1,13 +1,227 @@
 # M4d - Admin- und Diagnoseansicht
 
-Stand: 2026-05-05
+Stand: 2026-05-07
 
-## Realer Status am 2026-05-06
+## M4d Minimal Scope - Read-only Systemdiagnose
 
-- Real implementiert sind aktuell die Search-Index-Rebuild-Aktion, der Inconsistency-Report, Health-Endpunkte und Observability-Slices.
-- Die Frontend-Seite `/admin/diagnostics` existiert, bildet derzeit aber nur den Rebuild-/Resultat-Flow ab.
+M4d wird bis zum Abschluss von M4a, M4b und M4c nur als **read-only Systemdiagnose** definiert. M4d darf parallel vorbereitet werden, darf aber keine Reparatur-, Reindex-, Cleanup-, Backup-, User- oder Workspace-Aktionen produktiv freischalten.
+
+Dieser Abschnitt ist der aktuell gueltige M4d-Vertrag. Weiter unten beschriebene Admin- oder Maintenance-Zielbilder sind nur spaetere Ausbaustufen und gelten nicht als freigegeben.
+
+### Minimaler In-Scope
+
+- Systemstatus lesen
+- DB-Verbindung pruefen
+- Migration Head pruefen
+- Dokumentanzahl lesen
+- Chunkanzahl lesen
+- Import-Job-Status lesen
+- Search-Index-Status lesen
+- letzte redigierte Fehler anzeigen
+- Health Summary read-only anzeigen
+
+### Stabiler read-only API-Vertrag
+
+#### `GET /api/v1/admin/diagnostics`
+
+Status:
+
+- Minimalvertrag fuer M4d read-only.
+- Darf parallel zu M4a/M4b/M4c vorbereitet werden.
+- Liefert ausschliesslich aggregierte, redigierte Betriebsdaten.
+- Darf keine Mutationen, Reparaturen oder Job-Enqueues ausloesen.
+- Der Response-Vertrag ist stabil. Neue Felder duerfen spaeter nur kompatibel ergaenzt werden; bestehende Felder, Typen und Bedeutungen duerfen ohne neue API-Version nicht geaendert werden.
+
+Auth:
+
+- authentifizierte Session erforderlich
+- aktiver Workspace-Kontext erforderlich
+- Rolle `owner` oder `admin` im aktiven Workspace erforderlich
+
+Constraints:
+
+- keine Dokumenttexte
+- keine Chunktexte
+- keine Chat-Inhalte
+- keine Prompts oder LLM-Antworten
+- keine Secrets, Tokens, Header-Werte, Connection-Strings oder lokalen Dateipfade
+- keine frei vom Client steuerbaren Workspace-Wechsel innerhalb des Diagnose-Endpunkts
+- read-only: keine Writes, keine Locks, keine Job-Erzeugung, keine Reparatur- oder Admin-Aktion
+
+Response `200`:
+
+```json
+{
+  "system": {
+    "status": "ok",
+    "version": "0.1.0",
+    "environment": "local"
+  },
+  "database": {
+    "reachable": true,
+    "head_revision": "20260505_0016",
+    "current_revision": "20260505_0016",
+    "is_current": true
+  },
+  "counts": {
+    "documents": 128,
+    "versions": 132,
+    "chunks": 6421,
+    "chat_sessions": 14,
+    "chat_messages": 93
+  },
+  "imports": {
+    "running_jobs": 0,
+    "failed_jobs_last_24h": 2,
+    "last_error_code": "PARSER_FAILED"
+  },
+  "search": {
+    "index_available": true,
+    "indexed_chunks": 6421,
+    "stale_index_entries": 0
+  },
+  "auth": {
+    "auth_enabled": true,
+    "workspace_isolation_enabled": true
+  }
+}
+```
+
+#### Response Schema
+
+Top-Level:
+
+| Feld | Typ | Nullable | Bedeutung |
+|---|---|---:|---|
+| `system` | object | nein | API-/Runtime-Zustand ohne Secrets |
+| `database` | object | nein | DB-Erreichbarkeit und Alembic-Revisionszustand |
+| `counts` | object | nein | aggregierte Zaehler im aktiven Workspace |
+| `imports` | object | nein | aggregierter Import-Job-Zustand |
+| `search` | object | nein | read-only Search-Index-Zustand |
+| `auth` | object | nein | aktivierte Sicherheitsgrenzen |
+
+`system`:
+
+| Feld | Typ | Nullable | Bedeutung |
+|---|---|---:|---|
+| `status` | `"ok"` \| `"degraded"` \| `"error"` | nein | Gesamtstatus der Diagnose |
+| `version` | string | nein | API-/Build-Version, z. B. FastAPI-App-Version |
+| `environment` | `"local"` \| `"test"` \| `"production"` | nein | redigierter Laufzeitkontext |
+
+`database`:
+
+| Feld | Typ | Nullable | Bedeutung |
+|---|---|---:|---|
+| `reachable` | boolean | nein | `true`, wenn ein einfacher DB-Read erfolgreich ist |
+| `head_revision` | string \| null | ja | Alembic-Head, falls bestimmbar |
+| `current_revision` | string \| null | ja | aktuell angewandte DB-Revision, falls bestimmbar |
+| `is_current` | boolean | nein | `true`, wenn `current_revision == head_revision` |
+
+`counts`:
+
+| Feld | Typ | Nullable | Bedeutung |
+|---|---|---:|---|
+| `documents` | integer | nein | Dokumente im aktiven Workspace |
+| `versions` | integer | nein | Dokumentversionen im aktiven Workspace |
+| `chunks` | integer | nein | Chunks im aktiven Workspace |
+| `chat_sessions` | integer | nein | Chat-Sessions im aktiven Workspace |
+| `chat_messages` | integer | nein | Chat-Nachrichten im aktiven Workspace |
+
+`imports`:
+
+| Feld | Typ | Nullable | Bedeutung |
+|---|---|---:|---|
+| `running_jobs` | integer | nein | laufende `document_import` Jobs im aktiven Workspace |
+| `failed_jobs_last_24h` | integer | nein | fehlgeschlagene `document_import` Jobs der letzten 24 Stunden |
+| `last_error_code` | string \| null | ja | letzter redigierter Import-Fehlercode, keine Fehlermeldung mit Dateinamen |
+
+`search`:
+
+| Feld | Typ | Nullable | Bedeutung |
+|---|---|---:|---|
+| `index_available` | boolean | nein | Search-Index/FTS-Pruefung verfuegbar |
+| `indexed_chunks` | integer | nein | suchbare/indexierte Chunks im aktiven Workspace |
+| `stale_index_entries` | integer | nein | stale oder inkonsistente Indexeintraege, soweit read-only bestimmbar |
+
+`auth`:
+
+| Feld | Typ | Nullable | Bedeutung |
+|---|---|---:|---|
+| `auth_enabled` | boolean | nein | Auth-Middleware/Session-Kontext aktiv |
+| `workspace_isolation_enabled` | boolean | nein | Workspace-Kontext wird serverseitig erzwungen |
+
+#### Fehlervertrag
+
+| Status | Code | Bedeutung |
+|---:|---|---|
+| `401` | `UNAUTHORIZED` | keine gueltige Session oder Authentifizierung fehlt |
+| `403` | `FORBIDDEN` | Benutzer ist kein Admin/Owner im aktiven Workspace |
+| `500` | `DIAGNOSTICS_FAILED` | Diagnose konnte nicht stabil aufgebaut werden |
+
+Error Envelope:
+
+```json
+{
+  "error": {
+    "code": "DIAGNOSTICS_FAILED",
+    "message": "Diagnostics failed",
+    "details": {
+      "failed_check": "database"
+    }
+  }
+}
+```
+
+Fehlerdetails muessen redigiert bleiben. `details` darf keine Secrets, Connection-Strings, Dateipfade, Dokumenttitel, Dokumenttexte, Chunktexte, Prompts oder Chat-Inhalte enthalten.
+
+#### Bereits vorhandene verwertbare Daten im Code
+
+| Diagnosepunkt | Ist-Quelle | Status |
+|---|---|---|
+| Systemstatus | `GET /health`, `GET /api/v1/health` | vorhanden |
+| DB-Verbindung | `GET /health/db`, `app.core.database.check_database_connection()` | vorhanden |
+| Migration Head | Alembic unter `backend/migrations`, Tests in `backend/tests/integration/test_migrations.py` | pruefbar, noch kein Admin-API-Aggregat |
+| Dokumentanzahl | `documents` Modell/Repository | vorhanden, Aggregat fehlt |
+| Chunkanzahl | `document_chunks` Modell/Repository | vorhanden, Aggregat fehlt |
+| Import-Job-Status | `background_jobs` Modell, `GET /api/v1/jobs/{job_id}` | vorhanden fuer Einzeljob, Aggregat fehlt |
+| Search-Index-Status | `GET /api/v1/admin/search-index/inconsistencies` | vorhanden, read-only |
+| Letzte Fehler | `background_jobs.error_code/error_message`, Observability-Logging | teilweise vorhanden, redigiertes Aggregat fehlt |
+| Health Summary | Health-Endpunkte plus obige Quellen | Zielaggregat fehlt |
+
+### Nicht-Scope fuer M4d read-only
+
+- Reindex ausloesen
+- Cleanup ausloesen
+- Backup ausloesen
+- Restore ausloesen
+- User verwalten
+- Workspace erstellen, wechseln, bearbeiten oder loeschen
+- Dokumente reparieren, wiederherstellen oder mutieren
+- freie SQL-/Admin-Kommandos
+- Anzeige von Dokumenttexten, Chunktexten, Prompts, Chatantworten, Secrets, Tokens, Connection-Strings oder lokalen Dateipfaden
+
+### Freigabeabhaengigkeiten
+
+- M4d read-only darf parallel zu M4a, M4b und M4c vorbereitet und getestet werden.
+- M4d write/admin actions bleiben bis zum erfolgreichen M4a/M4b/M4c-Gate deaktiviert oder `not_implemented`.
+- Erst nach M4a-Gate duerfen Admin-Aktionen auf den finalen Auth-/Workspace-Kontext bauen.
+- Erst nach M4b-Gate duerfen Import- und Job-Aktionen produktiv erweitert werden.
+- Erst nach M4c-Gate duerfen Lifecycle-nahe Reparatur-, Reindex- oder Restore-Aktionen produktiv freigegeben werden.
+- Jede spaetere mutierende Admin-Aktion braucht einen eigenen API-Vertrag, Auth-Test, Audit-/Observability-Regel und Rollback-/Failure-Mode-Dokumentation.
+
+### Aktuelle Code-Markierung
+
+- `POST /api/v1/admin/search-index/rebuild` ist serverseitig als `501 ADMIN_ACTION_NOT_IMPLEMENTED` markiert.
+- Die Admin-Diagnostics-UI rendert keine Reindex-, Cleanup-, Backup- oder sonstigen mutierenden Admin-Aktionsbuttons.
+- `GET /api/v1/admin/search-index/inconsistencies` bleibt als read-only Diagnosequelle verfuegbar.
+
+## Realer Status am 2026-05-07
+
+- Real implementiert sind aktuell der read-only Inconsistency-Report, Health-Endpunkte und Observability-Slices.
+- Die vorher produktiv erreichbare Search-Index-Rebuild-Aktion ist fuer M4d read-only deaktiviert und antwortet mit `501 ADMIN_ACTION_NOT_IMPLEMENTED`.
+- Die Frontend-Seite `/admin/diagnostics` existiert und bildet den read-only Diagnostics-Aggregatvertrag ab; mutierende Aktionsbuttons werden nicht gerendert.
 - Nicht real implementiert ist ein aggregierter Backend-Endpunkt `GET /api/v1/admin/diagnostics` mit den unten beschriebenen Statuskarten.
-- Dieses Dokument beschreibt daher gemischt aus Ist-Stand und Zielvertrag; der Zielvertrag ist noch nicht freigegeben.
+- Dieses Dokument beschreibt daher den Minimalvertrag plus vorhandene Teilquellen; ein breiteres Zielbild ist noch nicht freigegeben.
 
 ## Ziel
 

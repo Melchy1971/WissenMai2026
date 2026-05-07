@@ -1,11 +1,64 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AuthProvider } from '../../auth/AuthContext.jsx';
 import { AdminDiagnosticsPage } from '../../pages/AdminDiagnosticsPage.jsx';
 
-function renderPage(initialAuthState = { token: 'test-token', user: null, active_workspace_id: 'workspace-1', memberships: [{ workspace_id: 'workspace-1', role: 'owner' }] }) {
+const adminAuthState = {
+  token: 'test-token',
+  user: null,
+  active_workspace_id: 'workspace-1',
+  memberships: [{ workspace_id: 'workspace-1', role: 'owner' }],
+};
+
+function diagnosticsPayload(overrides = {}) {
+  return {
+    system: {
+      status: 'ok',
+      version: '0.1.0',
+      environment: 'test',
+      secret: 'must-not-render',
+      ...overrides.system,
+    },
+    database: {
+      reachable: true,
+      migration_head: '20260505_0016',
+      current_revision: '20260505_0016',
+      is_current: true,
+      ...overrides.database,
+    },
+    counts: {
+      documents: 2,
+      versions: 2,
+      chunks: 7,
+      chat_sessions: 1,
+      chat_messages: 3,
+      ...overrides.counts,
+    },
+    imports: {
+      running_jobs: 0,
+      failed_jobs_last_24h: 0,
+      last_error_code: null,
+      error_message: 'Sensitive filename.pdf',
+      ...overrides.imports,
+    },
+    search: {
+      index_available: true,
+      indexed_chunks: 7,
+      stale_index_entries: 0,
+      ...overrides.search,
+    },
+    auth: {
+      auth_enabled: true,
+      workspace_isolation_enabled: true,
+      token: 'secret-token',
+      ...overrides.auth,
+    },
+  };
+}
+
+function renderPage(initialAuthState = adminAuthState) {
   return render(
     <AuthProvider initialAuthState={initialAuthState}>
       <MemoryRouter initialEntries={['/admin/diagnostics']}>
@@ -23,193 +76,9 @@ describe('AdminDiagnosticsPage', () => {
     cleanup();
   });
 
-  it('renders diagnostics rebuild action', async () => {
-    renderPage();
+  it('blocks access without admin role', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
 
-    expect(screen.getByText('Admin-Diagnostik')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Search Index neu aufbauen/i })).toBeInTheDocument();
-    expect(screen.getByText(/Keine Aktion ausgefuehrt/i)).toBeInTheDocument();
-    expect(screen.queryByPlaceholderText(/x-admin-token/i)).not.toBeInTheDocument();
-  });
-
-  it('executes rebuild and renders copyable technical details', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({
-          id: 'job-1',
-          job_type: 'search_index_rebuild',
-          status: 'queued',
-          workspace_id: 'workspace-1',
-          requested_by_user_id: null,
-          filename: null,
-          created_at: '2026-05-05T00:00:00Z',
-          started_at: null,
-          finished_at: null,
-          progress_current: 0,
-          progress_total: 1,
-          progress_message: 'Rebuild ist in Warteschlange',
-          error_code: null,
-          error_message: null,
-          result: null,
-        }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({
-          id: 'job-1',
-          job_type: 'search_index_rebuild',
-          status: 'completed',
-          workspace_id: 'workspace-1',
-          requested_by_user_id: null,
-          filename: null,
-          created_at: '2026-05-05T00:00:00Z',
-          started_at: '2026-05-05T00:00:01Z',
-          finished_at: '2026-05-05T00:00:02Z',
-          progress_current: 1,
-          progress_total: 1,
-          progress_message: 'Search-Index-Rebuild abgeschlossen',
-          error_code: null,
-          error_message: null,
-          result: {
-            workspace_id: 'workspace-1',
-            reindexed_chunk_count: 12,
-            reindexed_document_count: 3,
-            index_name: 'ix_document_chunks_search_vector',
-            index_action: 'reindexed',
-            status: 'completed',
-          },
-        }),
-      });
-    const clipboardWriteText = vi.fn().mockResolvedValue(undefined);
-    vi.stubGlobal('navigator', { clipboard: { writeText: clipboardWriteText } });
-
-    renderPage();
-
-    fireEvent.click(screen.getByRole('button', { name: /Search Index neu aufbauen/i }));
-
-    expect(await screen.findByText('Technische Details')).toBeInTheDocument();
-    expect(screen.getByText('reindexed')).toBeInTheDocument();
-    expect(screen.getByText('12')).toBeInTheDocument();
-    expect(screen.getByText('job-1')).toBeInTheDocument();
-    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
-
-    fireEvent.click(screen.getByRole('button', { name: /Details kopieren/i }));
-    await waitFor(() => {
-      expect(clipboardWriteText).toHaveBeenCalledTimes(1);
-    });
-    expect(clipboardWriteText.mock.calls[0][0]).toContain('"reindexed_chunk_count": 12');
-  });
-
-  it('shows API errors when rebuild fails', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({
-          id: 'job-1',
-          job_type: 'search_index_rebuild',
-          status: 'queued',
-          workspace_id: 'workspace-1',
-          requested_by_user_id: null,
-          filename: null,
-          created_at: '2026-05-05T00:00:00Z',
-          started_at: null,
-          finished_at: null,
-          progress_current: 0,
-          progress_total: 1,
-          progress_message: 'Rebuild ist in Warteschlange',
-          error_code: null,
-          error_message: null,
-          result: null,
-        }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({
-          id: 'job-1',
-          job_type: 'search_index_rebuild',
-          status: 'failed',
-          workspace_id: 'workspace-1',
-          requested_by_user_id: null,
-          filename: null,
-          created_at: '2026-05-05T00:00:00Z',
-          started_at: '2026-05-05T00:00:01Z',
-          finished_at: '2026-05-05T00:00:02Z',
-          progress_current: 1,
-          progress_total: 1,
-          progress_message: 'Search-Index-Rebuild fehlgeschlagen',
-          error_code: 'ADMIN_REQUIRED',
-          error_message: 'Admin access required',
-          result: null,
-        }),
-      });
-
-    renderPage();
-
-    fireEvent.click(screen.getByRole('button', { name: /Search Index neu aufbauen/i }));
-
-    expect(await screen.findByText(/Admin-Zugriff erforderlich/i)).toBeInTheDocument();
-    expect(screen.getByText(/Fehlercode: ADMIN_REQUIRED/i)).toBeInTheDocument();
-  });
-
-  it('renders normalized queued rebuild job status labels', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({
-          id: 'job-1',
-          job_type: 'search_index_rebuild',
-          status: 'queued',
-          workspace_id: 'workspace-1',
-          requested_by_user_id: null,
-          filename: null,
-          created_at: '2026-05-05T00:00:00Z',
-          started_at: null,
-          finished_at: null,
-          progress_current: 0,
-          progress_total: 1,
-          progress_message: null,
-          error_code: null,
-          error_message: null,
-          result: null,
-        }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({
-          id: 'job-1',
-          job_type: 'search_index_rebuild',
-          status: 'queued',
-          workspace_id: 'workspace-1',
-          requested_by_user_id: null,
-          filename: null,
-          created_at: '2026-05-05T00:00:00Z',
-          started_at: null,
-          finished_at: null,
-          progress_current: 0,
-          progress_total: 1,
-          progress_message: null,
-          error_code: null,
-          error_message: null,
-          result: null,
-        }),
-      });
-
-    renderPage();
-
-    fireEvent.click(screen.getByRole('button', { name: /Search Index neu aufbauen/i }));
-
-    expect(await screen.findByText('In Warteschlange')).toBeInTheDocument();
-    expect(screen.getByText('Rebuild wartet auf Ausfuehrung.')).toBeInTheDocument();
-  });
-
-  it('blocks rebuild in the UI when the active workspace membership is not admin-capable', async () => {
     renderPage({
       token: 'test-token',
       user: null,
@@ -217,7 +86,70 @@ describe('AdminDiagnosticsPage', () => {
       memberships: [{ workspace_id: 'workspace-1', role: 'member' }],
     });
 
-    expect(screen.getByRole('button', { name: /Search Index neu aufbauen/i })).toBeDisabled();
-    expect(screen.getByText(/keine Adminrolle im aktiven Workspace/i)).toBeInTheDocument();
+    expect(screen.getByText('Systemdiagnose')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Kein Admin-Zugriff')).toBeInTheDocument();
+    });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('shows API down state', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new Error('connection refused'));
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('API nicht erreichbar')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Fehlercode: NETWORK_ERROR')).toBeInTheDocument();
+  });
+
+  it('renders degraded status visibly', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () =>
+        diagnosticsPayload({
+          system: { status: 'degraded' },
+          database: { current_revision: '20260505_0015', is_current: false },
+          imports: { failed_jobs_last_24h: 2, last_error_code: 'PARSER_FAILED' },
+          search: { stale_index_entries: 4 },
+        }),
+    });
+
+    renderPage();
+
+    expect(await screen.findByText('Systemstatus')).toBeInTheDocument();
+    expect(screen.getAllByText('degraded').length).toBeGreaterThan(0);
+    expect(screen.getByText('Migration Status')).toBeInTheDocument();
+    expect(screen.getByText('PARSER_FAILED')).toBeInTheDocument();
+    expect(screen.getByText('Stale Eintraege')).toBeInTheDocument();
+    expect(screen.getByText('4')).toBeInTheDocument();
+  });
+
+  it('renders diagnostics without sensitive content or admin actions', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => diagnosticsPayload(),
+    });
+
+    renderPage();
+
+    expect(await screen.findByText('DB Status')).toBeInTheDocument();
+    expect(screen.getByText('Dokumente und Chunks')).toBeInTheDocument();
+    expect(screen.getByText('Import Job Status')).toBeInTheDocument();
+    expect(screen.getByText('Search Index Status')).toBeInTheDocument();
+    expect(screen.getByText('Auth/Workspace Status')).toBeInTheDocument();
+    expect(globalThis.fetch.mock.calls[0][0]).toContain('/api/v1/admin/diagnostics');
+
+    expect(screen.queryByText(/Search Index neu aufbauen/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Reindex/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Cleanup/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Backup/i)).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/admin-token/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/must-not-render/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Sensitive filename/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/secret-token/i)).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,6 @@
 # Operations
 
-Stand: 2026-05-06
+Stand: 2026-05-07
 
 ## PostgreSQL-Integrationstests
 
@@ -34,6 +34,44 @@ Bekannte Einschraenkungen:
 - `DATABASE_URL` sollte fuer Alembic und `TEST_DATABASE_URL` fuer PostgreSQL-Tests auf dieselbe dedizierte Instanz zeigen, wenn der Testpfad lokal verifiziert wird.
 - Solange die Migrationskette zwei Heads hat, ist `alembic head aktuell` nicht als linearer Einzelzustand belegbar.
 
+## M4d Read-only Diagnostics im Betrieb
+
+M4d ist aktuell nur als read-only Systemdiagnose vorbereitet. Vollstaendige M4d-Admin-Aktionen bleiben blockiert, bis M4a, M4b und M4c ihre Gates erreicht haben.
+
+Verfuegbarer Betriebsendpunkt:
+
+- `GET /api/v1/admin/diagnostics`
+
+Der Endpunkt liefert:
+
+- Systemstatus
+- DB-Erreichbarkeit
+- Alembic current/head Revision
+- Dokument-, Version-, Chunk-, Chat-Session- und Chat-Message-Zaehler
+- Import-Job-Zustand
+- Search-Index-Zustand
+- Auth-/Workspace-Isolation-Status
+
+Betriebsgrenzen:
+
+- read-only, keine Writes
+- keine Reparaturaktionen
+- keine Reindex-, Cleanup- oder Backup-Aktionen
+- keine User- oder Workspace-Verwaltung
+- keine Dokumentreparatur
+- Zugriff nur mit Admin- oder Owner-Rolle im aktiven Workspace
+- keine Ausgabe von Dokumenttexten, Chunktexten, Chat-Inhalten, Secrets, Tokens, Connection-Strings oder lokalen Dateipfaden
+
+Fehlerverhalten:
+
+- ohne Auth: `401 UNAUTHORIZED`
+- ohne Adminrolle oder bei fremdem Workspace: `403 FORBIDDEN`
+- Diagnosefehler: `500 DIAGNOSTICS_FAILED` mit redigierten Details
+
+Blockierte Admin-Aktion:
+
+- `POST /api/v1/admin/search-index/rebuild` ist fuer M4d read-only nicht freigegeben und liefert `501 ADMIN_ACTION_NOT_IMPLEMENTED`.
+
 ## M4c Dokument-Lifecycle im Betrieb
 
 Dieses Dokument beschreibt nur den aktuell nachgewiesenen Betriebsstand des Dokument-Lifecycle.
@@ -63,7 +101,7 @@ Betriebsgrenze:
 
 - Der Service-Slice fuer Reindex ist getestet.
 - Der letzte echte PostgreSQL-Integrationslauf fuer Search und Reindex ist fehlgeschlagen, weil die konfigurierte Test-Datenbank per Connection-Timeout nicht erreichbar war.
-- Der letzte fokussierte Frontend-Lauf fuer die angrenzende Admin-Rebuild-UI war nicht vollstaendig gruen, weil ein Test statt des erwarteten Queue-Status einen `NETWORK_ERROR` sah.
+- Reindex bleibt als produktive Admin-Aktion fuer M4d blockiert, solange M4a/M4b/M4c nicht gruen sind.
 
 ## Chat- und Citation-Verhalten
 
@@ -81,11 +119,13 @@ Betriebsgrenze:
 - Soft Delete setzt `lifecycle_status = deleted` und `deleted_at`.
 - Versionen, Chunks und historische Citations bleiben physisch erhalten.
 - `deleted` ist im aktuellen Betrieb nicht wiederherstellbar.
+- Lifecycle-Mutationen sind auth-geschuetzt, aber aktuell nicht hart mit `workspace_id` in den Lifecycle-Service-Aufrufen verknuepft. Fremdworkspace-Mutationssicherheit bleibt deshalb ein M4a/M4c-Gatepunkt.
 
 ## Bekannte Einschraenkungen
 
 - keine Admin-Ansicht fuer geloeschte Dokumente
 - kein Purge-/Hard-Delete-Prozess
 - kein gesonderter historischer Retrieval-Modus fuer archivierte oder geloeschte Dokumente
+- kein gruener harter Fremdworkspace-Test fuer Lifecycle-Mutationen
 - keine gruen verifizierte PostgreSQL-End-to-End-Abdeckung fuer Search/Reindex im letzten Lauf
 - kein direkter Lifecycle-End-to-End-Test fuer neue Chat-Antworten

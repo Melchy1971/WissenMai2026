@@ -80,6 +80,9 @@ function mapErrorTitle(code) {
   const titles = {
     NETWORK_ERROR: 'API nicht erreichbar',
     SERVICE_UNAVAILABLE: 'Service nicht verfuegbar',
+    UNAUTHORIZED: 'Authentifizierung erforderlich',
+    FORBIDDEN: 'Kein Admin-Zugriff',
+    DIAGNOSTICS_FAILED: 'Diagnose fehlgeschlagen',
     AUTH_REQUIRED: 'Admin-Authentifizierung erforderlich',
     ADMIN_REQUIRED: 'Admin-Zugriff erforderlich',
     DOCUMENT_NOT_FOUND: 'Dokument nicht gefunden',

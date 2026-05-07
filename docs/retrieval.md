@@ -1,6 +1,6 @@
 # Retrieval
 
-Stand: 2026-05-05
+Stand: 2026-05-07
 
 Dieses Dokument definiert den stabilen M3b Retrieval-Vertrag fuer den implementierten Endpoint `GET /api/v1/search/chunks`.
 
@@ -25,10 +25,11 @@ Query Parameter:
 
 | Name | Typ | Required | Default | Limit / Regel |
 |---|---|---:|---:|---|
-| `workspace_id` | string | ja | - | nicht leer |
 | `q` | string | ja | - | nicht leer |
 | `limit` | integer | nein | `20` | `1..100` |
 | `offset` | integer | nein | `0` | `>= 0` |
+
+Der Workspace wird serverseitig aus dem AuthContext abgeleitet. Ein clientseitiger `workspace_id`-Queryparameter ist nicht Teil des aktuellen Vertrags.
 
 Der Endpoint akzeptiert aktuell keine weiteren Filterparameter.
 
@@ -97,7 +98,7 @@ Verhalten bei SQLite oder nicht verfuegbarem Search Backend:
 
 Ein Chunk darf nur als Treffer erscheinen, wenn alle Bedingungen gelten:
 
-- `documents.workspace_id = workspace_id`
+- `documents.workspace_id = auth_context.workspace_id`
 - `documents.current_version_id = document_versions.id`
 - `document_chunks.document_version_id = document_versions.id`
 - `document_chunks.search_vector @@ plainto_tsquery('simple', q)`
@@ -164,9 +165,10 @@ Fehlerformat:
 
 | HTTP Status | Code | Ursache |
 |---:|---|---|
-| `422` | `WORKSPACE_REQUIRED` | `workspace_id` fehlt oder ist leer |
 | `422` | `INVALID_QUERY` | `q` fehlt oder ist leer |
 | `422` | `INVALID_PAGINATION` | `limit > 100`, `limit < 1` oder `offset < 0` |
+| `401` | `AUTH_REQUIRED` | Authentifizierung fehlt |
+| `403` | `WORKSPACE_ACCESS_FORBIDDEN` | kein Zugriff auf den aktiven Workspace |
 | `503` | `SERVICE_UNAVAILABLE` | Search erfordert PostgreSQL oder Backend ist nicht verfuegbar |
 | `500` | `INTERNAL_ERROR` | unerwarteter interner Fehler |
 

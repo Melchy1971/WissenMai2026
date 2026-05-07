@@ -147,7 +147,7 @@ def test_chat_session_uses_authenticated_workspace_and_user(client: TestClient) 
     ]
 
 
-def test_admin_rebuild_uses_authenticated_workspace_and_user(client: TestClient) -> None:
+def test_admin_rebuild_is_blocked_until_m4a_m4b_m4c_gates(client: TestClient) -> None:
     service = FakeBackgroundJobService()
     app.dependency_overrides[get_background_job_service] = lambda: service
     try:
@@ -155,11 +155,6 @@ def test_admin_rebuild_uses_authenticated_workspace_and_user(client: TestClient)
     finally:
         app.dependency_overrides.clear()
 
-    assert response.status_code == 202
-    assert service.calls == [
-        {
-            "workspace_id": DEFAULT_WORKSPACE_ID,
-            "requested_by_user_id": DEFAULT_USER_ID,
-            "target_workspace_id": DEFAULT_WORKSPACE_ID,
-        }
-    ]
+    assert response.status_code == 501
+    assert response.json()["error"]["code"] == "ADMIN_ACTION_NOT_IMPLEMENTED"
+    assert service.calls == []

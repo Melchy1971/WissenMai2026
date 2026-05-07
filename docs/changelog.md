@@ -1,6 +1,29 @@
 # Changelog
 
-Stand: 2026-05-06
+Stand: 2026-05-07
+
+## 2026-05-07 - M4d Read-only Diagnostics Dokumentationssync
+
+### Changed
+
+- `docs/status.md`, `docs/api.md`, `docs/frontend.md`, `docs/operations.md`, `docs/security.md`, `docs/changelog.md` und `masterplan.md` auf den M4d-read-only-Stand aktualisiert.
+- `GET /api/v1/admin/diagnostics` als real implementierter read-only Aggregatvertrag dokumentiert.
+- M4d-Status explizit auf `read-only vorbereitet`, aber **nicht vollstaendig abgeschlossen** gesetzt.
+- Reindex-, Cleanup-, Backup-, Restore-, User-, Workspace- und Dokumentreparaturaktionen als nicht freigegeben dokumentiert.
+- Adminrolle, AuthContext, Workspace-Membership, Content-/Secret-Redaction und Fehlercodes `UNAUTHORIZED`, `FORBIDDEN`, `DIAGNOSTICS_FAILED` dokumentiert.
+
+### Findings
+
+- Backend-Diagnostics- und Admin-Grenztests sind fokussiert gruen: `11 passed`.
+- Frontend-Diagnostics-Screen ist fokussiert gruen: `4 passed`.
+- M4d Read-only Gate wurde mit `94/100` akzeptiert.
+- Vollstaendige M4d-Admin-Aktionen bleiben blockiert, weil M4a, M4b und M4c noch nicht gruen sind.
+
+### Decision
+
+- M4d read-only Diagnostics: `akzeptiert`.
+- Vollstaendiges M4d: `nicht abgeschlossen`.
+- M4d darf in keiner Dokumentation als vollstaendig abgeschlossen dargestellt werden.
 
 ## 2026-05-06 - Status- und Masterplan-Sync auf echten PostgreSQL-Stand
 
@@ -26,23 +49,24 @@ Stand: 2026-05-06
 
 ### Changed
 
+- Historischer Eintrag. Der M4d-Teil dieses Eintrags ist durch den 2026-05-07-Read-only-Diagnostics-Sync ueberholt.
 - `docs/status.md`, `docs/api.md`, `docs/m4d-admin-diagnostics.md`, `docs/m4e-backup-restore.md`, `docs/runbooks/backup-restore.md`, `docs/changelog.md` und `masterplan.md` auf den neu bewerteten M4-Gesamtstatus abgeglichen.
 - Scores, Blocker, Go/No-Go und die M5-Gate-Regel fuer `M4a`, `M4b` und `M4c` explizit dokumentiert.
-- M4d-Dokumentation als teilweise Zielvertrag markiert, weil der aggregierte Diagnostics-Endpunkt aktuell nicht implementiert ist.
+- M4d-Dokumentation damals als teilweise Zielvertrag markiert; dieser Punkt ist seit 2026-05-07 durch den real implementierten read-only Aggregatvertrag ueberholt.
 - M4e-Dokumentation als Konzept ohne reale Implementierung oder Testnachweis geschaerft.
 
 ### Findings
 
-- `M4a = 82/100`, `M4b = 88/100`, `M4c = 88/100`, `M4d = 58/100`, `M4e = 18/100`.
+- Damaliger Stand: `M4a = 82/100`, `M4b = 88/100`, `M4c = 88/100`, `M4d = 58/100`, `M4e = 18/100`; M4d read-only ist seit 2026-05-07 mit `94/100` akzeptiert, aber nicht vollstaendig abgeschlossen.
 - M4 ist damit `teilweise stabil`.
 - M5 bleibt blockiert, weil `M4a < 95`, `M4b < 90` und `M4c < 90`.
 - Der letzte PostgreSQL-Integrationslauf fuer Search/Reindex ist weiterhin an Connection-Timeouts gegen die konfigurierte Ziel-Datenbank gescheitert.
-- Die vorhandene Admin-Diagnostics-GUI bildet real nur den Search-Index-Rebuild-Flow ab.
+- Die damalige Admin-Diagnostics-GUI bildete nur den Search-Index-Rebuild-Flow ab; seit 2026-05-07 ist die UI read-only und ohne mutierende Aktionsbuttons.
 - Backup/Restore bleibt Runbook- und Konzeptstand ohne nachweisbare Implementierung.
 
 ### Decision
 
-- Go fuer M4d: `No-Go`
+- Damaliges Go fuer M4d: `No-Go`; aktueller Stand seit 2026-05-07: `Read-only Go`, vollstaendiges M4d `No-Go`.
 - Go fuer M4e: `No-Go`
 - Go fuer M5: `No-Go`
 
@@ -115,6 +139,7 @@ Stand: 2026-05-06
 
 ### Changed
 
+- Historischer Eintrag. Der Auth-/Membership-Teil dieses Eintrags ist durch spaetere M4a/M4d-Arbeit ueberholt; aktueller Stand ist in `docs/status.md` und `docs/security.md`.
 - `docs/status.md`, `docs/api.md`, `docs/data-model.md`, `docs/frontend.md` und `masterplan.md` wurden auf den nachweisbaren M4a-Stand abgeglichen.
 - neues Dokument `docs/security.md` fuer Auth-, Workspace- und Sicherheitslage erstellt.
 - M4a-Dokumentation beschreibt jetzt explizit den Unterschied zwischen Zielbild und aktuellem Codezustand.
@@ -123,9 +148,9 @@ Stand: 2026-05-06
 
 - `AUTH_REQUIRED`, `ADMIN_REQUIRED` und `WORKSPACE_REQUIRED` sind nachweisbar.
 - echte Login-/Logout-/Session-Endpunkte sind nicht nachweisbar.
-- `workspace_memberships` und `auth_sessions` sind nicht nachweisbar.
+- Damals waren `workspace_memberships` und `auth_sessions` nicht nachweisbar; sie sind inzwischen als technischer Backend-Kern vorhanden.
 - Dokumente und Chat verwenden weiterhin `workspace_id` aus Request oder URL-Kontext.
-- Upload nutzt weiterhin `settings.default_workspace_id` und `settings.default_user_id`.
+- Damals nutzte Upload noch Default-Kontext; inzwischen ist der Upload auth-gebunden und nutzt Workspace/Benutzer aus dem Auth-Kontext.
 
 ### Decision
 

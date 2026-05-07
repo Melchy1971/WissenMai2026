@@ -30,6 +30,12 @@ class AuthRequiredApiError(ApiError):
     message = "Authentication required"
 
 
+class UnauthorizedApiError(ApiError):
+    status_code = 401
+    code = "UNAUTHORIZED"
+    message = "Unauthorized"
+
+
 class AuthInvalidCredentialsApiError(ApiError):
     status_code = 401
     code = "AUTH_INVALID_CREDENTIALS"
@@ -46,6 +52,12 @@ class AdminRequiredApiError(ApiError):
     status_code = 403
     code = "ADMIN_REQUIRED"
     message = "Admin access required"
+
+
+class ForbiddenApiError(ApiError):
+    status_code = 403
+    code = "FORBIDDEN"
+    message = "Forbidden"
 
 
 class InvalidPaginationApiError(ApiError):
@@ -166,6 +178,18 @@ class ServiceUnavailableApiError(ApiError):
     status_code = 503
     code = "SERVICE_UNAVAILABLE"
     message = "Service unavailable"
+
+
+class AdminActionNotImplementedApiError(ApiError):
+    status_code = 501
+    code = "ADMIN_ACTION_NOT_IMPLEMENTED"
+    message = "Admin action is not implemented"
+
+
+class DiagnosticsFailedApiError(ApiError):
+    status_code = 500
+    code = "DIAGNOSTICS_FAILED"
+    message = "Diagnostics failed"
 
 
 class BackgroundJobNotFoundApiError(ApiError):
