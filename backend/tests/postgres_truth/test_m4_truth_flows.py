@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 import json
+import threading
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -455,6 +458,158 @@ def test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_r
     assert job_row.status == "retryable"
     assert job_row.error_code == "SERVICE_UNAVAILABLE"
     assert truth_session.execute(text("select lifecycle_status from documents where id = :id"), {"id": DOC_ARCHIVED}).scalar_one() == "archived"
+
+
+@pytest.mark.m4c_gate
+def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    truth_session.execute(
+        text(
+            """
+            insert into chat_sessions (id, workspace_id, owner_user_id, title, created_at, updated_at)
+            values (:session_id, :workspace_id, :user_id, 'truth chat', now(), now())
+            """
+        ),
+        {"session_id": "truth-chat-session-1", "workspace_id": TRUTH_WORKSPACE_ID, "user_id": TRUTH_USER_ID},
+    )
+    truth_session.execute(
+        text(
+            """
+            insert into chat_messages (id, session_id, message_index, role, content, basis_type, metadata, created_at)
+            values (:message_id, :session_id, 0, 'assistant', 'historical answer', 'knowledge_base', cast(:metadata as jsonb), now())
+            """
+        ),
+        {
+            "message_id": "truth-chat-message-1",
+            "session_id": "truth-chat-session-1",
+            "metadata": json.dumps({}),
+        },
+    )
+    truth_session.execute(
+        text(
+            """
+            insert into documents (
+                id, workspace_id, owner_user_id, current_version_id, title, source_type, mime_type,
+                content_hash, import_status, lifecycle_status, archived_at, deleted_at, created_at, updated_at
+            ) values (
+                :document_id, :workspace_id, :user_id, null, 'Truth citation document', 'upload', 'text/plain',
+                :content_hash, 'pending', 'active', null, null, now(), now()
+            )
+            """
+        ),
+        {
+            "document_id": DOC_ACTIVE,
+            "workspace_id": TRUTH_WORKSPACE_ID,
+            "user_id": TRUTH_USER_ID,
+            "content_hash": 'truth-chat-citation-hash',
+        },
+    )
+    truth_session.execute(
+        text(
+            """
+            insert into chat_citations (id, message_id, chunk_id, document_id, document_title, quote_preview, source_anchor, source_status)
+            values (:citation_id, :message_id, null, :document_id, 'Missing document', 'historical quote', cast(:source_anchor as jsonb), 'missing')
+            """
+        ),
+        {
+            "citation_id": "truth-chat-citation-1",
+            "message_id": "truth-chat-message-1",
+            "document_id": DOC_ACTIVE,
+            "source_anchor": json.dumps({"type": "text", "page": None, "paragraph": 1, "char_start": 0, "char_end": 16}),
+        },
+    )
+    truth_session.commit()
+
+    persisted = truth_session.execute(
+        text("select source_status from chat_citations where id = :id"),
+        {"id": "truth-chat-citation-1"},
+    ).scalar_one()
+    assert persisted == "missing"
+
+    with pytest.raises(IntegrityError):
+        truth_session.execute(
+            text(
+                """
+                insert into chat_citations (id, message_id, chunk_id, document_id, document_title, quote_preview, source_anchor, source_status)
+                values (:citation_id, :message_id, null, :document_id, 'Unknown document', 'historical quote', cast(:source_anchor as jsonb), 'unknown')
+                """
+            ),
+            {
+                "citation_id": "truth-chat-citation-2",
+                "message_id": "truth-chat-message-1",
+                "document_id": DOC_ACTIVE,
+                "source_anchor": json.dumps({"type": "text", "page": None, "paragraph": 1, "char_start": 0, "char_end": 16}),
+            },
+        )
+        truth_session.commit()
+    truth_session.rollback()
+
+
+def test_postgres_truth_parallel_replay_only_one_request_succeeds(
+    truth_seed: dict[str, str],
+    postgres_truth_database_url: str,
+) -> None:
+    engine = create_engine(postgres_truth_database_url.replace("postgresql://", "postgresql+psycopg://", 1), pool_pre_ping=True)
+    try:
+        with Session(engine) as seed_session:
+            seed_session.execute(
+                text(
+                    """
+                    insert into background_jobs (
+                        id, job_type, status, workspace_id, requested_by_user_id, payload, result,
+                        progress_current, progress_total, progress_message, error_code, error_message,
+                        attempt_count, locked_at, locked_by, created_at, started_at, finished_at
+                    ) values (
+                        :id, 'document_import', 'dead_letter', :workspace_id, :user_id, cast(:payload as jsonb), null,
+                        1, 1, 'Job in Dead Letter verschoben', 'IMPORT_FAILED', 'parallel replay failure',
+                        3, null, null, now(), now(), now()
+                    )
+                    """
+                ),
+                {
+                    "id": "truth-replay-job-1",
+                    "workspace_id": TRUTH_WORKSPACE_ID,
+                    "user_id": TRUTH_USER_ID,
+                    "payload": json.dumps({"filename": "broken.txt", "mime_type": "text/plain", "temp_file_path": "unused"}),
+                },
+            )
+            seed_session.commit()
+
+        barrier = threading.Barrier(2)
+        results: list[str] = []
+        errors: list[str] = []
+
+        def replay(label: str) -> None:
+            with Session(engine) as session:
+                service = BackgroundJobService.from_session(session)
+                try:
+                    barrier.wait(timeout=5)
+                    service.replay_job(job_id="truth-replay-job-1", replayed_by_user_id=label)
+                    results.append(label)
+                except Exception as exc:
+                    errors.append(type(exc).__name__)
+
+        t1 = threading.Thread(target=replay, args=("admin-a",))
+        t2 = threading.Thread(target=replay, args=("admin-b",))
+        t1.start()
+        t2.start()
+        t1.join(timeout=10)
+        t2.join(timeout=10)
+
+        assert len(results) == 1, {"results": results, "errors": errors}
+        assert len(errors) == 1, {"results": results, "errors": errors}
+
+        with Session(engine) as verify_session:
+            job = BackgroundJobService.from_session(verify_session).get_job("truth-replay-job-1")
+            response = BackgroundJobService.from_session(verify_session).to_response(job)
+            assert job.status == "pending"
+            assert response.previous_error is not None
+            assert response.previous_error.previous_error_code == "IMPORT_FAILED"
+            assert len(response.replay_history) == 1
+    finally:
+        engine.dispose()
 
 
 def _seed_search_documents(session: Session) -> None:

@@ -86,6 +86,17 @@ class FakeChatService:
     def list_messages(self, *, session_id: str):
         return [self.message]
 
+    def get_session_summary_metadata(self, *, session_id: str):
+        if session_id == "session-created":
+            return {
+                "message_count": 0,
+                "last_user_question_preview": None,
+            }
+        return {
+            "message_count": 1,
+            "last_user_question_preview": self.message.content,
+        }
+
     def list_citations(self, *, message_id: str):
         return [self.citation] if message_id == "message-1" else []
 
@@ -222,6 +233,8 @@ def test_create_chat_session_persists_session_and_returns_summary(client: TestCl
         "title": "Research",
         "created_at": "2026-05-01T12:00:00Z",
         "updated_at": "2026-05-01T12:00:00Z",
+        "message_count": 0,
+        "last_user_question_preview": None,
     }
 
 
@@ -254,6 +267,8 @@ def test_list_chat_sessions_uses_pagination_and_stable_response_shape(client: Te
             "title": "Research",
             "created_at": "2026-05-01T12:00:00Z",
             "updated_at": "2026-05-01T12:00:00Z",
+            "message_count": 1,
+            "last_user_question_preview": "Was steht im Dokument?",
         }
     ]
 

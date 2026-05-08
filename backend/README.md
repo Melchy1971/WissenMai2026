@@ -26,6 +26,8 @@ FastAPI-Anwendung fuer Wissensbasis V1.
 cd backend
 python -m venv .venv
 .venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
@@ -39,9 +41,23 @@ Relevante Umgebungsvariablen:
 
 ## FastAPI-Start
 
-```bash
-cd backend
-uvicorn app.main:app --reload
+```powershell
+Set-Location H:\WissenMai2026
+.\scripts\dev-db.ps1
+.\scripts\dev-backend.ps1
+```
+
+Lokaler Standard-Fallback fuer `DATABASE_URL`, falls nicht explizit gesetzt:
+
+```text
+postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test
+```
+
+Beim lokalen Start wird die Datenbank automatisch migriert und mit einem Default-Owner vorbereitet:
+
+```text
+Login: default-user
+Passwort: secret-password
 ```
 
 `GET /health` funktioniert ohne Datenbankkonfiguration. `GET /health/db` erwartet `DATABASE_URL`
@@ -128,6 +144,19 @@ alembic current
 cd backend
 pytest
 ```
+
+Reproduzierbarer Truth-Teststart mit Report:
+
+```powershell
+Set-Location H:\WissenMai2026
+$env:TEST_DATABASE_URL="postgresql://..."
+.\scripts\run-postgres-truth.ps1
+```
+
+Der Lauf schreibt:
+
+- `reports/postgres_truth_report.json`
+- `reports/postgres_truth_report.md`
 
 Unit-Tests benoetigen keine Datenbankverbindung und laufen ohne Konfiguration durch.
 Integrationstests, die PostgreSQL erfordern, sind mit `@pytest.mark.postgres` markiert.

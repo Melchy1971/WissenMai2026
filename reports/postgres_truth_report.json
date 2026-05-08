@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-05-08T09:40:55.356836Z",
+  "command": "python.exe -m pytest -m postgres_truth tests/postgres_truth -q",
+  "test_database_url_set": false,
+  "alembic_heads": [
+    "20260508_0014"
+  ],
+  "collected": 25,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 25,
+  "errors": 0,
+  "xfailed": 0,
+  "xpassed": 0,
+  "duration_seconds": 1.163,
+  "pytest_exit_code": 0,
+  "commit_hash": "7109332d3493b3f7b547f35607c4021511ba7e74"
+}

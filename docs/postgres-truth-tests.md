@@ -6,6 +6,12 @@ Die PostgreSQL Truth-Test-Suite ist der harte Nachweis fuer kritische M4-Flows g
 
 Die Suite liegt unter `backend/tests/postgres_truth/` und ist mit `postgres_truth` markiert.
 
+Aktueller Code-Stand:
+
+- Die Suite liegt unter `backend/tests/postgres_truth/test_*.py`.
+- Collection- und Laufzahlen muessen aus `reports/postgres_truth_report.json` oder `reports/postgres_truth_report.md` kommen.
+- Ob die Suite gruen ist, darf nur aus einem aktuellen Testreport mit gesetzter `TEST_DATABASE_URL` behauptet werden.
+
 Abgedeckte Bereiche:
 
 - Upload
@@ -20,9 +26,9 @@ Abgedeckte Bereiche:
 ## Ausfuehrung
 
 ```powershell
-Set-Location backend
+Set-Location H:\WissenMai2026
 $env:TEST_DATABASE_URL = "postgresql://..."
-pytest -m postgres_truth tests/postgres_truth
+.\scripts\run-postgres-truth.ps1
 ```
 
 Ohne `TEST_DATABASE_URL` darf die Suite skippen. Jeder andere Fehler ist ein echter Fehler.
@@ -36,6 +42,11 @@ Ohne `TEST_DATABASE_URL` darf die Suite skippen. Jeder andere Fehler ist ein ech
 - Tests nutzen deterministische IDs und Fixtures.
 - Truth-Testdaten werden vor und nach jedem Test entfernt.
 - Die Suite darf keine produktiven Admin-Aktionen freischalten.
+- Keine statischen Aussagen wie `18/18 gruen`, `24/24 gruen` oder aehnliche Zaehler ohne beigefuegten aktuellen Report.
+- Dokumentationsstatus fuer `postgres_truth` darf nur diese Formen verwenden, wenn kein aktueller Report beiliegt:
+	- Suite vorhanden
+	- letzter Lauf nur mit `TEST_DATABASE_URL` beweisbar
+	- Ergebnis muss aus aktuellem Testreport kommen
 
 ## Testarchitektur
 
@@ -52,37 +63,24 @@ Die Tests verwenden echte SQLAlchemy-/psycopg-Verbindungen gegen PostgreSQL. Feh
 
 ## Reportformat
 
-Jeder Lauf soll als Truth-Test-Report dokumentiert werden:
+Jeder Lauf schreibt zwei Artefakte:
 
-```text
-PostgreSQL Truth-Test-Report
-Datum:
-Command:
-TEST_DATABASE_URL: gesetzt, Wert redigiert
-Alembic target: head
+- `reports/postgres_truth_report.json`
+- `reports/postgres_truth_report.md`
 
-Summary:
-- Gesamt:
-- Passed:
-- Failed:
-- Skipped:
-- Dauer:
+Pflichtfelder:
 
-Matrix:
-| Bereich | Test | Deterministisch | Ergebnis | Hinweis |
-| Upload | tests/postgres_truth/test_m4_truth_flows.py::test_upload_and_duplicate_handling_use_real_postgresql_transactions | ja | pass/fail | echte Import-Transaktion |
-| Duplicate Handling | tests/postgres_truth/test_m4_truth_flows.py::test_upload_and_duplicate_handling_use_real_postgresql_transactions | ja | pass/fail | gleicher Inhalt, ein Dokument |
-| Lifecycle | tests/postgres_truth/test_m4_truth_flows.py::test_lifecycle_and_workspace_isolation_are_truth_checked | ja | pass/fail | archivieren/wiederherstellen, fremder Workspace blockiert |
-| Search | tests/postgres_truth/test_m4_truth_flows.py::test_search_chat_retrieval_and_reindex_use_real_postgresql_state | ja | pass/fail | nur aktive Workspace-Chunks |
-| Chat Retrieval | tests/postgres_truth/test_m4_truth_flows.py::test_search_chat_retrieval_and_reindex_use_real_postgresql_state | ja | pass/fail | echte Chat-Session, echte Retrieval-Quellen |
-| Search/Chat Consistency | tests/postgres_truth/test_m4_truth_flows.py::test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchors | ja | pass/fail | identischer Bestand, identische Query, gleiche active Chunks und source_anchor |
-| Reindex | tests/postgres_truth/test_m4_truth_flows.py::test_search_chat_retrieval_and_reindex_use_real_postgresql_state | ja | pass/fail | Service-Rebuild gegen echte Rows |
-| Auth/Workspace Isolation | tests/postgres_truth/test_m4_truth_flows.py::test_auth_workspace_truth_blocks_foreign_workspace_and_non_admin_diagnostics | ja | pass/fail | AuthContext und Workspace-Membership |
+- `generated_at`
+- `test_database_url_set`
+- `alembic_heads`
+- `collected`
+- `passed`
+- `failed`
+- `skipped`
+- `duration_seconds`
+- `commit_hash` optional
 
-Nicht deterministisch:
-- Keine bekannten nicht deterministischen Truth-Tests.
-- Parallel-Race-Tests werden erst aufgenommen, wenn sie ohne Timing-Abhaengigkeit stabil beweisbar sind.
-```
+Die Markdown-Datei ist nur die menschenlesbare Sicht auf denselben Lauf. Massgeblich fuer Automatisierung bleibt die JSON-Datei.
 
 ## Aktuelle Erwartung
 

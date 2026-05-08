@@ -1,4 +1,6 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+
+import { useAuth } from '../auth/AuthContext.jsx';
 
 function TelekomLogo() {
   return (
@@ -19,6 +21,14 @@ function TelekomLogo() {
 }
 
 export function AppShell() {
+  const navigate = useNavigate();
+  const { token, user, active_workspace_id: workspaceId, clearAuthState } = useAuth();
+
+  function handleLogout() {
+    clearAuthState();
+    navigate('/login', { replace: true });
+  }
+
   return (
     <div className="shell">
       <header className="shell__header">
@@ -36,6 +46,17 @@ export function AppShell() {
             <NavLink to="/admin/diagnostics">Admin</NavLink>
           </div>
         </nav>
+        <div className="shell__session">
+          <div className="shell__session-meta">
+            <strong>{token ? (user?.display_name || user?.login || 'Angemeldet') : 'Gast'}</strong>
+            <span>{workspaceId || 'Workspace fehlt'}</span>
+          </div>
+          {token ? (
+            <button type="button" className="button-secondary" onClick={handleLogout}>
+              Abmelden
+            </button>
+          ) : null}
+        </div>
       </header>
       <main className="shell__content">
         <Outlet />

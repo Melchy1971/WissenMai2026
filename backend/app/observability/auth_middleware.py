@@ -18,6 +18,7 @@ EXEMPT_PATHS = {
     "/redoc",
     "/api/v1/health",
     "/api/v1/auth/login",
+    "/api/v1/auth/me",
 }
 
 DIAGNOSTICS_PATHS = {
@@ -27,6 +28,9 @@ DIAGNOSTICS_PATHS = {
 
 class AuthContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         if request.url.path in EXEMPT_PATHS:
             return await call_next(request)
 

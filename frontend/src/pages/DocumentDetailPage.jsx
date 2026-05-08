@@ -9,10 +9,12 @@ import { EmptyState } from '../components/status/EmptyState.jsx';
 import { ErrorState } from '../components/status/ErrorState.jsx';
 import { LoadingState } from '../components/status/LoadingState.jsx';
 import { mapDocumentDetail, mapError } from '../view-models/mappers.js';
+import { useAuth } from '../auth/AuthContext.jsx';
 
 export function DocumentDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthReady } = useAuth();
   const [state, setState] = useState({ status: 'loading', document: null, error: null });
   const [mutationState, setMutationState] = useState({ status: 'idle', error: null });
 
@@ -35,11 +37,18 @@ export function DocumentDetailPage() {
   useEffect(() => {
     let cancelled = false;
 
+    if (!isAuthReady) {
+      setState({ status: 'loading', document: null, error: null });
+      return () => {
+        cancelled = true;
+      };
+    }
+
     void loadDocument({ cancelled });
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, isAuthReady]);
 
   async function handleArchive() {
     setMutationState({ status: 'loading', error: null });

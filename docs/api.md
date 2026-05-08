@@ -299,7 +299,7 @@ Nicht implementiert:
 - Neue Search-Treffer verwenden nur `active`e Dokumente.
 - Neues Chat-Retrieval folgt demselben Search-/Retrieval-Pfad und nutzt deshalb nur aktive Dokumente.
 - Historische Chat-Citations bleiben in der Chat-API sichtbar, auch wenn das referenzierte Dokument spaeter archiviert oder geloescht wurde.
-- Historische Citations tragen dafuer `source_status` wie `active`, `archived` oder `deleted`.
+- Historische Citations tragen dafuer `source_status` wie `active`, `archived`, `deleted` oder `missing`.
 
 Nachweisgrenze:
 
@@ -723,6 +723,12 @@ Nicht freigegeben:
 - User verwalten
 - Workspace mutieren
 - Dokumente reparieren
+
+Admin-Job-Replay:
+
+- `POST /api/v1/admin/jobs/{job_id}/replay` ist fuer `dead_letter`- und `retryable`-Jobs verfuegbar.
+- Die Response behaelt die letzte Fehlerursache in `previous_error`.
+- Replay-Audits bleiben in `replay_history` sichtbar mit `previous_error_code`, `previous_error_message`, `replayed_at` und `replayed_by_user_id`.
 
 ### `GET /api/v1/admin/diagnostics`
 

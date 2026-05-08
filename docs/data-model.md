@@ -219,6 +219,7 @@ Chat-spezifische Regeln:
 - `chat_messages` enthaelt `session_id`, `message_index`, `role`, `content`, `basis_type`, `metadata`, `created_at`.
 - `chat_citations` enthaelt `message_id`, `chunk_id`, `document_id`, `source_anchor`.
 - `chat_citations` enthaelt zusaetzliche Snapshot-Felder wie `document_title`, `quote_preview` und `source_status`.
+- `chat_citations.source_status` ist auf `active | archived | deleted | missing` begrenzt.
 - Citations referenzieren `documents` und `document_chunks` referenziell konsistent.
 - Fuer zitierte Dokumente und Chunks ist Loeschen bewusst restriktiv modelliert, damit historische Chat-Quellen nicht still brechen.
 - Historische Citations bleiben auch dann lesbar, wenn das referenzierte Dokument spaeter `deleted` ist.
@@ -249,6 +250,7 @@ Relevante Migrationen fuer das Dokumentmodell:
 - `20260505_0013_document_lifecycle.py`: Lifecycle-Felder, Constraint und Listenindex fuer `active|archived|deleted`.
 - `20260506_0012_chunk_searchability.py`: `document_chunks.is_searchable` und lifecycle-abhaengige Search-Indexierbarkeit.
 - `20260506_0013_historical_chat_citation_snapshots.py`: Snapshot-Felder fuer historische Citations und `source_status`.
+- `20260508_0014_chat_citation_missing_status.py`: Vereinheitlicht `chat_citations.source_status` auf `active|archived|deleted|missing` und migriert `unknown -> missing`.
 
 ## M4c Lifecycle-Auswirkungen auf Retrieval und Chat
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 JobType = Literal["document_import", "search_index_rebuild"]
@@ -31,6 +31,24 @@ class SearchIndexRebuildJobResult(BaseModel):
     status: str
 
 
+class JobPreviousError(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    previous_error_code: str | None
+    previous_error_message: str | None
+    replayed_at: datetime
+    replayed_by_user_id: str | None
+
+
+class JobReplayAuditEntry(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    previous_error_code: str | None
+    previous_error_message: str | None
+    replayed_at: datetime
+    replayed_by_user_id: str | None
+
+
 class JobResponse(BaseModel):
     model_config = ConfigDict(strict=True)
 
@@ -48,4 +66,6 @@ class JobResponse(BaseModel):
     progress_message: str | None
     error_code: str | None
     error_message: str | None
+    previous_error: JobPreviousError | None = None
+    replay_history: list[JobReplayAuditEntry] = Field(default_factory=list)
     result: ImportJobResult | SearchIndexRebuildJobResult | None = None

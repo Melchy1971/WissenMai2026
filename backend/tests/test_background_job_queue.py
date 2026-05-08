@@ -351,3 +351,75 @@ def test_process_search_index_rebuild_job_moves_exhausted_retry_to_dead_letter(d
     assert refreshed is not None
     assert refreshed.status == "dead_letter"
     assert refreshed.error_code == "SERVICE_UNAVAILABLE"
+
+
+def test_replay_dead_letter_preserves_previous_error_cause_and_audit(db_session) -> None:
+    job = make_job(status="dead_letter", attempt_count=settings.background_job_max_attempts)
+    job.error_code = "IMPORT_FAILED"
+    job.error_message = "database connection aborted"
+    db_session.add(job)
+    db_session.commit()
+
+    replayed = BackgroundJobService.from_session(db_session).replay_job(job_id=job.id, replayed_by_user_id="admin-1")
+    response = BackgroundJobService.from_session(db_session).to_response(replayed)
+
+    assert replayed.status == "pending"
+    assert replayed.error_code is None
+    assert replayed.error_message is None
+    assert response.previous_error is not None
+    assert response.previous_error.previous_error_code == "IMPORT_FAILED"
+    assert response.previous_error.previous_error_message == "database connection aborted"
+    assert response.previous_error.replayed_by_user_id == "admin-1"
+    assert len(response.replay_history) == 1
+    assert response.replay_history[0].previous_error_code == "IMPORT_FAILED"
+
+
+def test_replay_retryable_preserves_previous_error_cause_and_audit(db_session) -> None:
+    job = make_job(status="retryable", attempt_count=1)
+    job.error_code = "SERVICE_UNAVAILABLE"
+    job.error_message = "temporary parser outage"
+    db_session.add(job)
+    db_session.commit()
+
+    replayed = BackgroundJobService.from_session(db_session).replay_job(job_id=job.id, replayed_by_user_id="admin-2")
+    response = BackgroundJobService.from_session(db_session).to_response(replayed)
+
+    assert replayed.status == "pending"
+    assert response.previous_error is not None
+    assert response.previous_error.previous_error_code == "SERVICE_UNAVAILABLE"
+    assert response.previous_error.previous_error_message == "temporary parser outage"
+    assert response.replay_history[0].replayed_by_user_id == "admin-2"
+
+
+def test_parallel_replay_only_succeeds_once(db_session) -> None:
+    job = make_job(status="dead_letter", attempt_count=settings.background_job_max_attempts)
+    job.error_code = "IMPORT_FAILED"
+    job.error_message = "irrecoverable"
+    db_session.add(job)
+    db_session.commit()
+
+    service = BackgroundJobService.from_session(db_session)
+    replayed = service.replay_job(job_id=job.id, replayed_by_user_id="admin-1")
+    assert replayed.status == "pending"
+
+    with pytest.raises(Exception):
+        service.replay_job(job_id=job.id, replayed_by_user_id="admin-2")
+
+
+def test_replay_audit_is_visible_in_job_response(db_session) -> None:
+    job = make_search_job(status="retryable", attempt_count=2)
+    job.error_code = "SERVICE_UNAVAILABLE"
+    job.error_message = "index rebuild crashed"
+    db_session.add(job)
+    db_session.commit()
+
+    service = BackgroundJobService.from_session(db_session)
+    service.replay_job(job_id=job.id, replayed_by_user_id="admin-3")
+    refreshed = service.get_job(job.id)
+    response = service.to_response(refreshed)
+
+    assert response.previous_error is not None
+    assert response.previous_error.previous_error_code == "SERVICE_UNAVAILABLE"
+    assert response.previous_error.replayed_by_user_id == "admin-3"
+    assert response.replay_history
+    assert response.replay_history[0].previous_error_message == "index rebuild crashed"

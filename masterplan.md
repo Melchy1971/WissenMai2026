@@ -78,7 +78,9 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 - ✅ RC-3 Advisory-Lock-Service mit 5 Scopes (`document_import`, `lifecycle_transition`, `reindex`, `job_claim`, `job_replay`) via `pg_try_advisory_xact_lock` implementiert.
 - ✅ Dead-Letter-Replay-Endpoint `POST /api/v1/admin/jobs/{job_id}/replay` (admin-only) implementiert.
 - ✅ source_status Live-Lookup fuer Chat Citations implementiert (`active|archived|deleted|missing`).
-- ✅ postgres_truth-Testsuite: 18/18 gruen (9 M4-Truth-Flows + 9 RC-3-Chaos-Tests) gegen echte PostgreSQL-Instanz verifiziert.
+- ✅ postgres_truth-Testsuite ist vorhanden unter `backend/tests/postgres_truth/`.
+- Der massgebliche Laufstatus fuer M4-Freigabe darf nur aus `reports/postgres_truth_report.json` oder `reports/postgres_truth_report.md` abgeleitet werden.
+- Ohne aktuellen Report sind nur Strukturaussagen ueber die vorhandene Suite zulaessig; statische Gruen-Zaehler sind unzulaessig.
 - API-Fehlerstandard erweitert:
   - ✅ `RESOURCE_LOCKED` (409)
   - ✅ `JOB_NOT_REPLAYABLE` (409)
@@ -909,8 +911,8 @@ Aktueller M4-Gate-Stand am 2026-05-08:
 |---|---:|---|---|
 | M4 Hardening gesamt | `84/100` | in Arbeit | blockiert M4 und M5 |
 | M4a | wahrscheinlich `82/100` | nicht abgeschlossen | blockiert M5 |
-| M4b | `92/100` | Advisory Lock + PostgreSQL-Truth gruen | nahe Freigabe |
-| M4c | `91/100` | Lifecycle + source_status Live-Lookup gruen | nahe Freigabe |
+| M4b | `92/100` | fachlich nahe Freigabe, belastbarer Truth-Status nur per Report | nahe Freigabe |
+| M4c | `91/100` | fachlich nahe Freigabe, belastbarer Truth-Status nur per Report | nahe Freigabe |
 | M4d | read-only vorbereitet + Replay-Endpoint | nicht vollstaendig abgeschlossen | Admin-Aktionen blockiert |
 | M4e | Konzept | nicht implementiert | `No-Go` |
 
@@ -926,9 +928,9 @@ RC-3-Hardening-Nachweis (2026-05-08):
 | Dead-Letter-Replay mit Job-Replay-Lock | ✅ implementiert |
 | `POST /api/v1/admin/jobs/{job_id}/replay` | ✅ implementiert |
 | source_status Live-Lookup fuer Chat Citations | ✅ implementiert |
-| postgres_truth M4 Truth Flows | ✅ 9/9 gruen |
-| postgres_truth RC-3 Chaos Tests | ✅ 9/9 gruen |
-| **Gesamt postgres_truth** | **18/18 gruen** |
+| postgres_truth-Suite | vorhanden unter `backend/tests/postgres_truth/` |
+| Letzter beweisbarer Lauf | nur mit gesetzter `TEST_DATABASE_URL` und beigefuegtem aktuellem Report |
+| Ergebnisregel | kein statisches `gruen` ohne aktuellen Report |
 
 Gate-Regel fuer M5:
 
@@ -938,7 +940,7 @@ Gate-Regel fuer M5:
 
 Aktuelles Ergebnis:
 
-- M4b und M4c haben die 90-Schwelle erreicht (RC-3-Hardening-Nachweis gruen).
+- M4b und M4c liegen fachlich an oder ueber der 90-Schwelle; der belastbare PostgreSQL-Truth-Status muss aus `reports/postgres_truth_report.json` oder `reports/postgres_truth_report.md` kommen.
 - M4a ist weiterhin nicht abgeschlossen (Auth/Workspace-Isolation noch nicht konsistent durchgezogen).
 - M4 ist damit noch **nicht vollstaendig technisch stabilisiert**.
 - M5 bleibt blockiert bis M4a >= 95.
@@ -946,10 +948,10 @@ Aktuelles Ergebnis:
 
 Aktueller M4c-Befund:
 
-- Backend-Lifecycle-, Soft-Delete- und Citation-Slices sind im fokussierten Testlauf gruen.
+- Backend-Lifecycle-, Soft-Delete- und Citation-Slices sind fachlich implementiert; ob der PostgreSQL-Truth-Nachweis aktuell gruen ist, muss aus `reports/postgres_truth_report.json` oder `reports/postgres_truth_report.md` gelesen werden.
 - source_status Live-Lookup liefert `active|archived|deleted|missing` direkt aus der Datenbank — Chaos-Test verifiziert Zustandsuebergaenge.
-- Advisory-Lock-Chaos-Tests gegen echte PostgreSQL: 9/9 gruen; parallele Job-Claim-Race-Condition durch Barrier-Test nachgewiesen.
-- Search- und Reindex-Integrationslauf gegen PostgreSQL: postgres_truth 9/9 gruen.
+- Advisory-Lock-, Crash-, M4-Truth- und weitere PostgreSQL-Nachweise liegen als `postgres_truth`-Suite vor; der konkrete Status muss aus einem aktuellen Report kommen.
+- Search-, Reindex-, Crash- und Chaos-Nachweise gegen PostgreSQL sind nur mit gesetzter `TEST_DATABASE_URL` belastbar.
 - Admin- und Diagnoseansicht sind als read-only Diagnostics real vorhanden; Replay-Endpoint ist implementiert; weitergehende Reparatur-, Cleanup- und Backup-Aktionen sind nicht freigegeben.
 - Backup und Restore sind aktuell als Konzept und Runbook beschrieben, aber nicht real implementiert oder getestet.
 - Performance- und Betriebsdokumentation sind vorhanden, ersetzen aber keinen aktuellen Restore-Nachweis.

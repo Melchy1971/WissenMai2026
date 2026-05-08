@@ -33,3 +33,11 @@ class AuthLoginResponse(BaseModel):
     user: AuthUserResponse
     memberships: list[AuthMembershipResponse]
     active_workspace_id: str | None
+
+
+class AuthSessionResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    user: AuthUserResponse
+    memberships: list[AuthMembershipResponse]
+    active_workspace_id: str | None

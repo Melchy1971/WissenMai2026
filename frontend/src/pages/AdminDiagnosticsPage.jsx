@@ -127,7 +127,7 @@ function diagnosticsCards(diagnostics) {
 }
 
 export function AdminDiagnosticsPage() {
-  const { active_workspace_id: workspaceId, memberships } = useAuth();
+  const { active_workspace_id: workspaceId, memberships, isAuthReady } = useAuth();
   const [state, setState] = useState({ status: 'loading', diagnostics: null, error: null });
 
   const activeMembership = useMemo(() => membershipForWorkspace(memberships, workspaceId), [memberships, workspaceId]);
@@ -136,6 +136,13 @@ export function AdminDiagnosticsPage() {
 
   useEffect(() => {
     let cancelled = false;
+
+    if (!isAuthReady) {
+      setState({ status: 'loading', diagnostics: null, error: null });
+      return () => {
+        cancelled = true;
+      };
+    }
 
     async function loadDiagnostics() {
       if (!isWorkspaceAdmin) {
@@ -169,7 +176,7 @@ export function AdminDiagnosticsPage() {
     return () => {
       cancelled = true;
     };
-  }, [isWorkspaceAdmin]);
+  }, [isWorkspaceAdmin, isAuthReady]);
 
   return (
     <section className="page-stack">

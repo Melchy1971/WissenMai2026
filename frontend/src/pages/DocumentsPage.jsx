@@ -12,7 +12,7 @@ import { LoadingState } from '../components/status/LoadingState.jsx';
 import { mapDocumentListItem, mapError, mapJobStatus, mapSearchResult } from '../view-models/mappers.js';
 
 export function DocumentsPage() {
-  const { active_workspace_id: workspaceId } = useAuth();
+  const { active_workspace_id: workspaceId, isAuthReady } = useAuth();
   const [state, setState] = useState({ status: 'loading', items: [], error: null });
   const [searchState, setSearchState] = useState({ status: 'idle', items: [], error: null, query: '' });
   const [uploadState, setUploadState] = useState({ status: 'idle', fileName: '', job: null, result: null, error: null });
@@ -37,11 +37,18 @@ export function DocumentsPage() {
   useEffect(() => {
     let cancelled = false;
 
+    if (!isAuthReady) {
+      setState({ status: 'loading', items: [], error: null });
+      return () => {
+        cancelled = true;
+      };
+    }
+
     void loadDocuments({ cancelled });
     return () => {
       cancelled = true;
     };
-  }, [workspaceId, lifecycleFilter]);
+  }, [isAuthReady, workspaceId, lifecycleFilter]);
 
   useEffect(() => {
     return () => {
@@ -130,14 +137,6 @@ export function DocumentsPage() {
   function handleSearchReset() {
     setQueryInput('');
     setSearchState({ status: 'idle', items: [], error: null, query: '' });
-  }
-
-  if (state.status === 'loading') {
-    return <LoadingState label="Dokumente werden geladen..." />;
-  }
-
-  if (state.status === 'error') {
-    return <ErrorState error={state.error} />;
   }
 
   return (
@@ -284,7 +283,11 @@ export function DocumentsPage() {
       {searchState.status === 'success' && searchState.items.length > 0 ? (
         <SearchResultList items={searchState.items} query={searchState.query} />
       ) : null}
-      {state.items.length === 0 ? (
+      {state.status === 'loading' ? (
+        <LoadingState label="Dokumente werden geladen..." />
+      ) : state.status === 'error' ? (
+        <ErrorState error={state.error} />
+      ) : state.items.length === 0 ? (
         <EmptyState title="Keine Dokumente vorhanden" message="Fuer diesen Workspace liegen aktuell keine Dokumente vor." />
       ) : (
         <DocumentTable items={state.items} />

@@ -2,11 +2,13 @@ from datetime import UTC, datetime
 from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
+from sqlalchemy import delete
 
 from app.api.v1.admin import get_background_job_service
 from app.api.v1.chat import get_chat_service
 from app.api.v1.search import get_search_service
 from app.main import app
+from app.models.documents import AuthSession
 from app.schemas.search import SearchChunkResult
 from tests.conftest import DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID
 
@@ -56,6 +58,12 @@ class FakeChatService:
             created_at=now,
             updated_at=now,
         )
+
+    def get_session_summary_metadata(self, *, session_id: str):
+        return {
+            "message_count": 0,
+            "last_user_question_preview": None,
+        }
 
 
 class FakeBackgroundJobService:
@@ -158,3 +166,31 @@ def test_admin_rebuild_is_blocked_until_m4a_m4b_m4c_gates(client: TestClient) ->
     assert response.status_code == 501
     assert response.json()["error"]["code"] == "ADMIN_ACTION_NOT_IMPLEMENTED"
     assert service.calls == []
+
+
+def test_auth_me_returns_bootstrap_session_state(client: TestClient) -> None:
+    response = client.get("/api/v1/auth/me")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["user"]["id"] == DEFAULT_USER_ID
+    assert body["active_workspace_id"] == DEFAULT_WORKSPACE_ID
+    assert body["memberships"] == [{"workspace_id": DEFAULT_WORKSPACE_ID, "role": "owner"}]
+
+
+def test_auth_me_requires_valid_session_token(db_session, auth_fixture: dict[str, str]) -> None:
+    db_session.execute(delete(AuthSession))
+    db_session.commit()
+
+    client = TestClient(
+        app,
+        headers={
+            "Authorization": f"Bearer {auth_fixture['session_token']}",
+        },
+        raise_server_exceptions=False,
+    )
+
+    response = client.get("/api/v1/auth/me")
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTH_REQUIRED"

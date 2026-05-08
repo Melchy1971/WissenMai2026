@@ -4,7 +4,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import update
 
 from app.main import app
+from app.core.errors import JobNotReplayableApiError
 from app.models.documents import BackgroundJob, ChatMessage, ChatSession, WorkspaceMembership
+from app.services.jobs.background_jobs import BackgroundJobService
 from app.services.diagnostics import DiagnosticsService
 
 
@@ -33,7 +35,7 @@ def test_admin_diagnostics_rejects_foreign_workspace(client: TestClient) -> None
 
 
 def test_admin_diagnostics_returns_read_only_summary(client: TestClient, db_session, document_fixture) -> None:
-    created = datetime(2026, 5, 7, 10, 0, tzinfo=UTC)
+    created = datetime.now(UTC)
     db_session.add(
         ChatSession(
             id="chat-session-1",
@@ -144,3 +146,79 @@ def test_admin_diagnostics_maps_database_failure_to_diagnostics_failed(client: T
     }
     assert "secret database failure" not in response.text
     assert "RuntimeError" not in response.text
+
+
+def test_admin_replay_job_response_exposes_previous_error_and_replay_audit(client: TestClient, db_session) -> None:
+    created = datetime(2026, 5, 8, 10, 0, tzinfo=UTC)
+    db_session.add(
+        BackgroundJob(
+            id="job-replay-1",
+            job_type="document_import",
+            status="dead_letter",
+            workspace_id="00000000-0000-0000-0000-000000000001",
+            requested_by_user_id="00000000-0000-0000-0000-000000000001",
+            payload_={"filename": "broken.txt", "mime_type": "text/plain", "temp_file_path": "tmp"},
+            result_=None,
+            progress_current=1,
+            progress_total=1,
+            progress_message="Job in Dead Letter verschoben",
+            error_code="IMPORT_FAILED",
+            error_message="Original failure reason",
+            attempt_count=3,
+            locked_at=None,
+            locked_by=None,
+            created_at=created,
+            started_at=created,
+            finished_at=created,
+        )
+    )
+    db_session.commit()
+
+    response = client.post("/api/v1/admin/jobs/job-replay-1/replay")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "pending"
+    assert body["error_code"] is None
+    assert body["error_message"] is None
+    assert body["previous_error"] == {
+        "previous_error_code": "IMPORT_FAILED",
+        "previous_error_message": "Original failure reason",
+        "replayed_by_user_id": "00000000-0000-0000-0000-000000000001",
+        "replayed_at": body["previous_error"]["replayed_at"],
+    }
+    assert body["replay_history"] == [body["previous_error"]]
+
+
+def test_admin_replay_job_second_attempt_is_rejected_after_first_success(client: TestClient, db_session) -> None:
+    created = datetime(2026, 5, 8, 10, 5, tzinfo=UTC)
+    db_session.add(
+        BackgroundJob(
+            id="job-replay-2",
+            job_type="search_index_rebuild",
+            status="retryable",
+            workspace_id="00000000-0000-0000-0000-000000000001",
+            requested_by_user_id="00000000-0000-0000-0000-000000000001",
+            payload_={"target_workspace_id": "00000000-0000-0000-0000-000000000001"},
+            result_=None,
+            progress_current=1,
+            progress_total=1,
+            progress_message="Job fehlgeschlagen, Retry geplant",
+            error_code="SERVICE_UNAVAILABLE",
+            error_message="Index rebuild failed",
+            attempt_count=2,
+            locked_at=None,
+            locked_by=None,
+            created_at=created,
+            started_at=created,
+            finished_at=created,
+        )
+    )
+    db_session.commit()
+
+    first = client.post("/api/v1/admin/jobs/job-replay-2/replay")
+    second = client.post("/api/v1/admin/jobs/job-replay-2/replay")
+
+    assert first.status_code == 200
+    assert second.status_code == 409
+    assert second.json()["error"]["code"] == "JOB_NOT_REPLAYABLE"

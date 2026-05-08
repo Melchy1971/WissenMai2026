@@ -14,7 +14,7 @@ import { mapChatSessionDetail, mapChatSessionSummary, mapError, mapPostedChatRes
 export function ChatPage() {
   const navigate = useNavigate();
   const { id: activeSessionId } = useParams();
-  const { active_workspace_id: workspaceId } = useAuth();
+  const { active_workspace_id: workspaceId, isAuthReady } = useAuth();
 
   const [sessionsState, setSessionsState] = useState({ status: 'loading', items: [], error: null });
   const [detailState, setDetailState] = useState({ status: 'idle', item: null, error: null });
@@ -23,6 +23,13 @@ export function ChatPage() {
 
   useEffect(() => {
     let cancelled = false;
+
+    if (!isAuthReady) {
+      setSessionsState({ status: 'loading', items: [], error: null });
+      return () => {
+        cancelled = true;
+      };
+    }
 
     async function loadSessions() {
       setSessionsState({ status: 'loading', items: [], error: null });
@@ -44,10 +51,16 @@ export function ChatPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeSessionId, navigate, workspaceId]);
+  }, [activeSessionId, navigate, workspaceId, isAuthReady]);
 
   useEffect(() => {
     let cancelled = false;
+    if (!isAuthReady) {
+      setDetailState({ status: 'loading', item: null, error: null });
+      return () => {
+        cancelled = true;
+      };
+    }
     if (!activeSessionId) {
       setDetailState({ status: 'idle', item: null, error: null });
       return () => {
@@ -71,7 +84,7 @@ export function ChatPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeSessionId]);
+  }, [activeSessionId, isAuthReady]);
 
   async function handleCreateSession(event) {
     event.preventDefault();

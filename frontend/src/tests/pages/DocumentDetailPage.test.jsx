@@ -2,16 +2,24 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { AuthProvider } from '../../auth/AuthContext.jsx';
 import { DocumentDetailPage } from '../../pages/DocumentDetailPage.jsx';
 
 function renderPage() {
   return render(
-    <MemoryRouter initialEntries={['/documents/doc-1?workspace_id=workspace-1']}>
-      <Routes>
-        <Route path="/documents/:id" element={<DocumentDetailPage />} />
-        <Route path="/documents" element={<div>Dokumentliste</div>} />
-      </Routes>
-    </MemoryRouter>
+    <AuthProvider initialAuthState={{
+      token: 'test-token',
+      user: { id: 'user-1', login: 'admin' },
+      active_workspace_id: 'workspace-1',
+      memberships: [{ workspace_id: 'workspace-1', role: 'owner' }],
+    }}>
+      <MemoryRouter initialEntries={['/documents/doc-1?workspace_id=workspace-1']}>
+        <Routes>
+          <Route path="/documents/:id" element={<DocumentDetailPage />} />
+          <Route path="/documents" element={<div>Dokumentliste</div>} />
+        </Routes>
+      </MemoryRouter>
+    </AuthProvider>
   );
 }
 

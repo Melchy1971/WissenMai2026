@@ -16,7 +16,7 @@ from app.core.config import settings
 
 from app.core.errors import ApiError, JobNotReplayableApiError, ResourceLockedApiError
 from app.models.documents import BackgroundJob
-from app.schemas.jobs import ImportJobResult, JobResponse, SearchIndexRebuildJobResult
+from app.schemas.jobs import ImportJobResult, JobPreviousError, JobReplayAuditEntry, JobResponse, SearchIndexRebuildJobResult
 from app.services.advisory_lock import AdvisoryLockService
 from app.observability.logging import bind_observability_context, log_event
 from app.services.documents.import_executor import ImportExecutor
@@ -253,6 +253,22 @@ class BackgroundJobService:
                 message=f"Job {job_id!r} is in status {job.status!r} and cannot be replayed; only dead_letter and retryable jobs are eligible",
                 details={"job_id": job_id, "current_status": job.status},
             )
+        previous_error_code = job.error_code
+        previous_error_message = job.error_message
+        replayed_at = datetime.now(UTC)
+        payload = dict(job.payload_ or {}) if isinstance(job.payload_, dict) else {}
+        replay_history = list(payload.get("replay_history") or [])
+        replay_event = {
+            "previous_error_code": previous_error_code,
+            "previous_error_message": previous_error_message,
+            "replayed_at": replayed_at.isoformat(),
+            "replayed_by_user_id": replayed_by_user_id,
+        }
+        replay_history.append(replay_event)
+        payload["replay_history"] = replay_history
+        payload["previous_error"] = replay_event
+        payload["last_replayed_at"] = replay_event["replayed_at"]
+        payload["last_replayed_by_user_id"] = replayed_by_user_id
         job.status = "pending"
         job.error_code = None
         job.error_message = None
@@ -261,6 +277,7 @@ class BackgroundJobService:
         job.finished_at = None
         job.locked_at = None
         job.locked_by = None
+        job.payload_ = payload
         self._session.add(job)
         self._session.commit()
         self._session.refresh(job)
@@ -308,12 +325,15 @@ class BackgroundJobService:
 
     def to_response(self, job: BackgroundJob) -> JobResponse:
         result = job.result_ if isinstance(job.result_, dict) else None
+        payload = job.payload_ if isinstance(job.payload_, dict) else {}
         parsed_result = None
         if result is not None:
             if job.job_type == "document_import":
                 parsed_result = ImportJobResult(**result)
             elif job.job_type == "search_index_rebuild":
                 parsed_result = SearchIndexRebuildJobResult(**result)
+        previous_error = self._parse_previous_error(payload)
+        replay_history = self._parse_replay_history(payload)
         return JobResponse(
             id=job.id,
             job_type=job.job_type,
@@ -329,8 +349,45 @@ class BackgroundJobService:
             progress_message=job.progress_message,
             error_code=job.error_code,
             error_message=job.error_message,
+            previous_error=previous_error,
+            replay_history=replay_history,
             result=parsed_result,
         )
+
+    def _parse_previous_error(self, payload: dict) -> JobPreviousError | None:
+        raw_previous_error = payload.get("previous_error")
+        if not isinstance(raw_previous_error, dict):
+            return None
+        replayed_at = raw_previous_error.get("replayed_at")
+        if not isinstance(replayed_at, str):
+            return None
+        return JobPreviousError(
+            previous_error_code=raw_previous_error.get("previous_error_code") if isinstance(raw_previous_error.get("previous_error_code"), str) or raw_previous_error.get("previous_error_code") is None else None,
+            previous_error_message=raw_previous_error.get("previous_error_message") if isinstance(raw_previous_error.get("previous_error_message"), str) or raw_previous_error.get("previous_error_message") is None else None,
+            replayed_at=datetime.fromisoformat(replayed_at),
+            replayed_by_user_id=raw_previous_error.get("replayed_by_user_id") if isinstance(raw_previous_error.get("replayed_by_user_id"), str) or raw_previous_error.get("replayed_by_user_id") is None else None,
+        )
+
+    def _parse_replay_history(self, payload: dict) -> list[JobReplayAuditEntry]:
+        raw_history = payload.get("replay_history")
+        if not isinstance(raw_history, list):
+            return []
+        entries: list[JobReplayAuditEntry] = []
+        for entry in raw_history:
+            if not isinstance(entry, dict):
+                continue
+            replayed_at = entry.get("replayed_at")
+            if not isinstance(replayed_at, str):
+                continue
+            entries.append(
+                JobReplayAuditEntry(
+                    previous_error_code=entry.get("previous_error_code") if isinstance(entry.get("previous_error_code"), str) or entry.get("previous_error_code") is None else None,
+                    previous_error_message=entry.get("previous_error_message") if isinstance(entry.get("previous_error_message"), str) or entry.get("previous_error_message") is None else None,
+                    replayed_at=datetime.fromisoformat(replayed_at),
+                    replayed_by_user_id=entry.get("replayed_by_user_id") if isinstance(entry.get("replayed_by_user_id"), str) or entry.get("replayed_by_user_id") is None else None,
+                )
+            )
+        return entries
 
     @staticmethod
     def create_temp_upload_file(*, filename: str, source_bytes: bytes) -> str:

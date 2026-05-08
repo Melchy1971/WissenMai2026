@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from sqlalchemy import desc, select
+from sqlalchemy import desc, func, select
 from sqlalchemy.orm import Session
 
 from app.models.documents import ChatCitation, ChatMessage, ChatSession, Document
@@ -89,6 +89,21 @@ class ChatPersistenceService:
                 .offset(offset)
             )
         )
+
+    def get_session_summary_metadata(self, *, session_id: str) -> dict[str, int | str | None]:
+        message_count = self._session.scalar(
+            select(func.count()).select_from(ChatMessage).where(ChatMessage.session_id == session_id)
+        )
+        last_user_question_preview = self._session.scalar(
+            select(ChatMessage.content)
+            .where(ChatMessage.session_id == session_id, ChatMessage.role == "user")
+            .order_by(ChatMessage.message_index.desc(), ChatMessage.created_at.desc(), ChatMessage.id.desc())
+            .limit(1)
+        )
+        return {
+            "message_count": int(message_count or 0),
+            "last_user_question_preview": last_user_question_preview,
+        }
 
     def get_session(self, *, session_id: str) -> ChatSession:
         chat_session = self._session.get(ChatSession, session_id)
@@ -203,5 +218,5 @@ class ChatPersistenceService:
             raise ChatPersistenceError("citation source_anchor must be a dict")
         if citation.chunk_id is not None and not citation.chunk_id.strip():
             raise ChatPersistenceError("citation chunk_id must not be blank when provided")
-        if citation.source_status not in {"active", "archived", "deleted", "unknown"}:
-            raise ChatPersistenceError("citation source_status must be one of: active, archived, deleted, unknown")
+        if citation.source_status not in {"active", "archived", "deleted", "missing"}:
+            raise ChatPersistenceError("citation source_status must be one of: active, archived, deleted, missing")

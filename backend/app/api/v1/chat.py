@@ -80,7 +80,7 @@ def create_chat_session(
         )
     except ChatPersistenceError as exc:
         raise ChatPersistenceFailedApiError(message=str(exc)) from exc
-    return to_session_summary(chat_session)
+    return to_session_summary(chat_session, service=service)
 
 
 @router.get("/sessions", response_model=list[ChatSessionSummary])
@@ -94,7 +94,7 @@ def list_chat_sessions(
         sessions = service.list_sessions(workspace_id=auth_context.workspace_id, limit=limit, offset=offset)
     except ChatPersistenceError as exc:
         raise ChatPersistenceFailedApiError(message=str(exc)) from exc
-    return [to_session_summary(chat_session) for chat_session in sessions]
+    return [to_session_summary(chat_session, service=service) for chat_session in sessions]
 
 
 @router.get("/sessions/{session_id}", response_model=ChatSessionDetail)
@@ -123,7 +123,7 @@ def get_chat_session_detail(
         raise ChatPersistenceFailedApiError(message=str(exc)) from exc
 
     return ChatSessionDetail(
-        **to_session_summary(chat_session).model_dump(),
+        **to_session_summary(chat_session, service=service).model_dump(),
         messages=message_responses,
     )
 
@@ -143,13 +143,16 @@ def create_chat_message(
     )
 
 
-def to_session_summary(chat_session: ChatSession) -> ChatSessionSummary:
+def to_session_summary(chat_session: ChatSession, *, service: ChatPersistenceService | None = None) -> ChatSessionSummary:
+    metadata = service.get_session_summary_metadata(session_id=chat_session.id) if service is not None else {}
     return ChatSessionSummary(
         id=chat_session.id,
         workspace_id=chat_session.workspace_id,
         title=chat_session.title,
         created_at=chat_session.created_at,
         updated_at=chat_session.updated_at,
+        message_count=metadata.get("message_count", 0),
+        last_user_question_preview=metadata.get("last_user_question_preview"),
     )
 
 

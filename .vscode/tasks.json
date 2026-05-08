@@ -2,20 +2,31 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "dev: db",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "H:\\WissenMai2026\\scripts\\dev-db.ps1"
+      ]
+    },
+    {
       "label": "dev: backend",
       "type": "shell",
-      "command": "H:\\WissenMai2026\\backend\\.venv\\Scripts\\python.exe",
+      "dependsOn": [
+        "dev: db"
+      ],
+      "dependsOrder": "sequence",
+      "command": "powershell",
       "args": [
-        "-m",
-        "uvicorn",
-        "--app-dir",
-        "H:\\WissenMai2026\\backend",
-        "app.main:app",
-        "--reload",
-        "--host",
-        "127.0.0.1",
-        "--port",
-        "8000"
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "H:\\WissenMai2026\\scripts\\dev-backend.ps1"
       ],
       "isBackground": true,
       "problemMatcher": [

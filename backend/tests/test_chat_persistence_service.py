@@ -398,6 +398,61 @@ def test_historical_chat_replay_is_unchanged_by_search_index_state_changes(chat_
     assert after == before
 
 
+def test_live_status_lookup_returns_missing_for_absent_document(chat_session: Session) -> None:
+    service = ChatPersistenceService(chat_session)
+
+    statuses = service.list_document_live_statuses(["doc-1", "missing-doc"])
+
+    assert statuses == {"doc-1": "active", "missing-doc": "missing"}
+
+
+def test_service_accepts_missing_citation_source_status(chat_session: Session) -> None:
+    service = ChatPersistenceService(chat_session)
+    created_session = service.create_session(workspace_id="workspace-1", title="Missing Citation", owner_user_id="user-1")
+
+    message = service.create_message(
+        session_id=created_session.id,
+        role="assistant",
+        content="Antwort mit fehlender Quelle",
+        citations=[
+            ChatCitationPayload(
+                chunk_id=None,
+                document_id="doc-1",
+                document_title="Current Document",
+                quote_preview="Historische Quelle ohne Live-Dokument.",
+                source_anchor={"type": "text", "page": None, "paragraph": None, "char_start": 0, "char_end": 35},
+                source_status="missing",
+            )
+        ],
+    )
+
+    citation = service.list_citations(message_id=message.id)[0]
+
+    assert citation.source_status == "missing"
+
+
+def test_service_rejects_unknown_citation_source_status(chat_session: Session) -> None:
+    service = ChatPersistenceService(chat_session)
+    created_session = service.create_session(workspace_id="workspace-1", title="Invalid Citation", owner_user_id="user-1")
+
+    with pytest.raises(ChatPersistenceError, match="citation source_status must be one of: active, archived, deleted, missing"):
+        service.create_message(
+            session_id=created_session.id,
+            role="assistant",
+            content="Antwort mit ungueltiger Quelle",
+            citations=[
+                ChatCitationPayload(
+                    chunk_id=None,
+                    document_id="doc-1",
+                    document_title="Current Document",
+                    quote_preview="Historische Quelle ohne Live-Dokument.",
+                    source_anchor={"type": "text", "page": None, "paragraph": None, "char_start": 0, "char_end": 35},
+                    source_status="unknown",
+                )
+            ],
+        )
+
+
 def _create_assistant_message_with_citation(service: ChatPersistenceService):
     created_session = service.create_session(workspace_id="workspace-1", title="Replay", owner_user_id="user-1")
     return service.create_message(

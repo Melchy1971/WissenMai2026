@@ -49,6 +49,8 @@ Kurzstand am 2026-05-07:
 cd backend
 python -m venv .venv
 .venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
@@ -56,7 +58,7 @@ Benötigte Umgebungsvariablen fuer den vollstaendigen Backend-Betrieb:
 
 - `APP_ENV`: Laufzeitumgebung, lokal standardmaessig `local`.
 - `DATABASE_URL`: PostgreSQL-Verbindungsstring fuer Remote-DB, z. B. `postgresql+psycopg://user:password@host:5432/dbname`.
-- `TEST_DATABASE_URL`: PostgreSQL-Verbindungsstring fuer echte Integrationstests mit `@pytest.mark.postgres`.
+- `TEST_DATABASE_URL`: PostgreSQL-Verbindungsstring fuer echte Integrationstests mit `@pytest.mark.postgres` und `@pytest.mark.postgres_truth`.
 - `DEFAULT_WORKSPACE_ID`: vorbereitete Workspace-ID fuer V1 Single-User.
 - `DEFAULT_USER_ID`: vorbereitete User-ID fuer V1 Single-User.
 
@@ -66,8 +68,24 @@ erreichbare PostgreSQL-Datenbank.
 Backend starten:
 
 ```bash
-cd backend
-uvicorn app.main:app --reload
+Set-Location H:\WissenMai2026
+.\scripts\dev-db.ps1
+.\scripts\dev-backend.ps1
+```
+
+Der Dev-Start verwendet lokal standardmaessig:
+
+```text
+postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test
+```
+
+Wenn `DATABASE_URL` explizit gesetzt ist, hat dieser Wert Vorrang.
+
+Der Backend-Start fuehrt lokal automatisch `alembic upgrade head` aus und legt einen Default-Login an:
+
+```text
+Login: default-user
+Passwort: secret-password
 ```
 
 Tests ausfuehren:
@@ -77,14 +95,15 @@ cd backend
 pytest
 ```
 
-PostgreSQL-Integrationstests lokal aktivieren:
+PostgreSQL-Truth-Report lokal erzeugen:
 
 ```powershell
-cd backend
+Set-Location H:\WissenMai2026
 $env:TEST_DATABASE_URL="postgresql+psycopg://appuser:<password>@85.215.131.200:5432/wissen2026"
-$env:DATABASE_URL=$env:TEST_DATABASE_URL
-.\.venv\Scripts\python.exe -m pytest -m postgres -q
+.\scripts\run-postgres-truth.ps1
 ```
+
+Die Reports landen in `reports/postgres_truth_report.json` und `reports/postgres_truth_report.md`.
 
 Bekannte Einschraenkung:
 

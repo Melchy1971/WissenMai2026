@@ -99,9 +99,9 @@ describe('AdminDiagnosticsPage', () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText('API nicht erreichbar')).toBeInTheDocument();
+      expect(screen.getByText('Backend nicht erreichbar')).toBeInTheDocument();
     });
-    expect(screen.getByText('Fehlercode: NETWORK_ERROR')).toBeInTheDocument();
+    expect(screen.getByText('Fehlercode: API_UNREACHABLE')).toBeInTheDocument();
   });
 
   it('renders degraded status visibly', async () => {

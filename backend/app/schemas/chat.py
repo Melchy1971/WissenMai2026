@@ -24,6 +24,8 @@ class ChatSessionSummary(StrictChatModel):
     title: str
     created_at: datetime
     updated_at: datetime
+    message_count: int = 0
+    last_user_question_preview: str | None = None
 
 
 class ChatMessageCreateRequest(StrictChatModel):
@@ -37,7 +39,7 @@ class ChatCitationResponse(StrictChatModel):
     document_title: str
     source_anchor: DocumentChunkSourceAnchor
     quote_preview: str
-    source_status: Literal["active", "archived", "deleted", "unknown"]
+    source_status: Literal["active", "archived", "deleted", "missing"]
 
 
 class ChatConfidenceResponse(StrictChatModel):

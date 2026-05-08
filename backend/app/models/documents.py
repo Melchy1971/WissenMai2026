@@ -173,7 +173,7 @@ class ChatCitation(Base):
     __tablename__ = "chat_citations"
     __table_args__ = (
         CheckConstraint(
-            "source_status in ('active', 'archived', 'deleted', 'unknown')",
+            "source_status in ('active', 'archived', 'deleted', 'missing')",
             name="ck_chat_citations_source_status_allowed",
         ),
     )
