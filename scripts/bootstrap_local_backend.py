@@ -20,11 +20,25 @@ from app.models.documents import User, Workspace, WorkspaceMembership  # noqa: E
 from app.services.auth import hash_password  # noqa: E402
 
 
+def _load_local_env() -> None:
+    env_path = REPO_ROOT / ".env"
+    if not env_path.exists():
+        return
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip())
+
+
+_load_local_env()
+
 LOCAL_DEV_DATABASE_URL = "postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test"
 DEFAULT_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001"
 DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001"
-DEFAULT_LOGIN = "default-user"
-DEFAULT_PASSWORD = "secret-password"
+DEFAULT_LOGIN = os.environ.get("WISSEN_DEV_LOGIN", "default-user")
+DEFAULT_PASSWORD = os.environ.get("WISSEN_DEV_PASSWORD", "secret-password")
 
 
 def _database_url() -> str:
@@ -67,6 +81,11 @@ def _seed_defaults() -> None:
                         created_at=now,
                     )
                 )
+            else:
+                user.display_name = DEFAULT_LOGIN
+                user.login = DEFAULT_LOGIN
+                user.password_hash = hash_password(DEFAULT_PASSWORD, salt="devsalt")
+                user.is_active = True
 
             membership = session.scalar(
                 select(WorkspaceMembership).where(
@@ -97,7 +116,7 @@ def main() -> int:
     _seed_defaults()
     print(f"Bootstrapped local backend database at {os.environ['DATABASE_URL']}")
     print(f"Default login: {DEFAULT_LOGIN}")
-    print(f"Default password: {DEFAULT_PASSWORD}")
+    print("Default password: configured via local environment")
     return 0
 
 

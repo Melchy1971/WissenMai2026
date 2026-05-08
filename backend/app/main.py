@@ -14,7 +14,16 @@ app.add_middleware(CorrelationIdMiddleware)
 app.add_middleware(AuthContextMiddleware)
 app.add_middleware(
 	CORSMiddleware,
-	allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+	allow_origins=[
+		"http://127.0.0.1:5173",
+		"http://localhost:5173",
+		"http://127.0.0.1:5174",
+		"http://localhost:5174",
+		"http://127.0.0.1:7473",
+		"http://localhost:7473",
+		"http://127.0.0.1:7474",
+		"http://localhost:7474",
+	],
 	allow_credentials=False,
 	allow_methods=["*"],
 	allow_headers=["*"],
