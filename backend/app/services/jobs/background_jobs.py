@@ -14,9 +14,10 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 
-from app.core.errors import ApiError
+from app.core.errors import ApiError, JobNotReplayableApiError, ResourceLockedApiError
 from app.models.documents import BackgroundJob
 from app.schemas.jobs import ImportJobResult, JobResponse, SearchIndexRebuildJobResult
+from app.services.advisory_lock import AdvisoryLockService
 from app.observability.logging import bind_observability_context, log_event
 from app.services.documents.import_executor import ImportExecutor
 from app.services.search_index_service import SearchIndexRebuildService
@@ -86,6 +87,10 @@ class BackgroundJobService:
         return job
 
     def claim_job(self, *, job_id: str, worker_id: str, now: datetime | None = None) -> BackgroundJob:
+        try:
+            AdvisoryLockService.from_session(self._session).acquire_job_claim_lock(job_id=job_id)
+        except ResourceLockedApiError:
+            raise BackgroundJobAlreadyClaimedError(job_id)
         timestamp = now or datetime.now(UTC)
         stale_before = self._stale_lock_before(timestamp)
         claimed = self._session.execute(
@@ -234,6 +239,38 @@ class BackgroundJobService:
         if status == "dead_letter":
             return "Job in Dead Letter verschoben"
         return "Job fehlgeschlagen"
+
+    def replay_job(self, *, job_id: str, replayed_by_user_id: str) -> BackgroundJob:
+        try:
+            AdvisoryLockService.from_session(self._session).acquire_job_replay_lock(job_id=job_id)
+        except ResourceLockedApiError:
+            raise
+        job = self._session.get(BackgroundJob, job_id)
+        if job is None:
+            raise BackgroundJobNotFoundError(job_id)
+        if job.status not in ("dead_letter", "retryable"):
+            raise JobNotReplayableApiError(
+                message=f"Job {job_id!r} is in status {job.status!r} and cannot be replayed; only dead_letter and retryable jobs are eligible",
+                details={"job_id": job_id, "current_status": job.status},
+            )
+        job.status = "pending"
+        job.error_code = None
+        job.error_message = None
+        job.progress_message = f"Replay angefordert durch {replayed_by_user_id}"
+        job.started_at = None
+        job.finished_at = None
+        job.locked_at = None
+        job.locked_by = None
+        self._session.add(job)
+        self._session.commit()
+        self._session.refresh(job)
+        log_event(
+            "background_job_replayed",
+            workspace_id=job.workspace_id,
+            user_id=replayed_by_user_id,
+            status="pending",
+        )
+        return job
 
     def enqueue_search_index_rebuild_job(
         self,

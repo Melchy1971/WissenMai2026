@@ -21,7 +21,7 @@ depends_on: str | Sequence[str] | None = None
 
 
 def _id_type():
-    return sa.String().with_variant(postgresql.UUID(as_uuid=False), "postgresql")
+    return sa.String()
 
 
 def upgrade() -> None:
@@ -62,10 +62,11 @@ def upgrade() -> None:
     op.execute(
         "UPDATE chat_citations AS citation "
         "SET document_title = COALESCE(document.title, 'Unknown document'), "
-        "quote_preview = COALESCE(SUBSTR(chunk.content, 1, 300), 'Historical citation unavailable'), "
+        "quote_preview = COALESCE(SUBSTR("
+        "(SELECT content FROM document_chunks WHERE id = citation.chunk_id LIMIT 1)"
+        ", 1, 300), 'Historical citation unavailable'), "
         "source_status = COALESCE(document.lifecycle_status, 'unknown') "
         "FROM documents AS document "
-        "LEFT JOIN document_chunks AS chunk ON chunk.id = citation.chunk_id "
         "WHERE citation.document_id = document.id"
     )
     op.execute(

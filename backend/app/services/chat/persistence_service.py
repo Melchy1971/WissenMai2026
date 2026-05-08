@@ -7,7 +7,7 @@ from uuid import uuid4
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
-from app.models.documents import ChatCitation, ChatMessage, ChatSession
+from app.models.documents import ChatCitation, ChatMessage, ChatSession, Document
 
 
 CHAT_ROLES = {"system", "user", "assistant"}
@@ -114,6 +114,20 @@ class ChatPersistenceService:
                 .order_by(ChatCitation.id.asc())
             )
         )
+
+    def list_document_live_statuses(self, document_ids: list[str]) -> dict[str, str]:
+        """Live-lookup of lifecycle_status per document_id. Missing documents map to 'missing'."""
+        if not document_ids:
+            return {}
+        unique_ids = list(dict.fromkeys(document_ids))
+        rows = self._session.execute(
+            select(Document.id, Document.lifecycle_status).where(Document.id.in_(unique_ids))
+        ).all()
+        result = {str(row.id): row.lifecycle_status for row in rows}
+        for doc_id in unique_ids:
+            if doc_id not in result:
+                result[doc_id] = "missing"
+        return result
 
     def create_message(
         self,

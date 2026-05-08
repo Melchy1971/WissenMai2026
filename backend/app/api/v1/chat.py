@@ -108,8 +108,14 @@ def get_chat_session_detail(
         if chat_session.workspace_id != auth_context.workspace_id:
             raise ChatSessionNotFoundError(session_id)
         messages = service.list_messages(session_id=session_id)
+        all_citations: list[list[ChatCitation]] = [
+            service.list_citations(message_id=message.id) for message in messages
+        ]
+        all_document_ids = [c.document_id for clist in all_citations for c in clist]
+        live_statuses = service.list_document_live_statuses(all_document_ids)
         message_responses = [
-            to_message_response(message, service.list_citations(message_id=message.id)) for message in messages
+            to_message_response(message, citations, live_statuses)
+            for message, citations in zip(messages, all_citations)
         ]
     except ChatSessionNotFoundError as exc:
         raise ChatSessionNotFoundApiError(details={"session_id": session_id}) from exc
@@ -147,7 +153,11 @@ def to_session_summary(chat_session: ChatSession) -> ChatSessionSummary:
     )
 
 
-def to_message_response(message: ChatMessage, citations: list[ChatCitation]) -> ChatMessageResponse:
+def to_message_response(
+    message: ChatMessage,
+    citations: list[ChatCitation],
+    live_statuses: dict[str, str] | None = None,
+) -> ChatMessageResponse:
     return ChatMessageResponse(
         id=message.id,
         session_id=message.session_id,
@@ -155,17 +165,22 @@ def to_message_response(message: ChatMessage, citations: list[ChatCitation]) -> 
         content=message.content,
         basis_type=message.basis_type,
         created_at=message.created_at,
-        citations=[to_citation_response(citation) for citation in citations],
+        citations=[to_citation_response(citation, live_statuses) for citation in citations],
         confidence=None,
     )
 
 
-def to_citation_response(citation: ChatCitation) -> ChatCitationResponse:
+def to_citation_response(citation: ChatCitation, live_statuses: dict[str, str] | None = None) -> ChatCitationResponse:
+    source_status = citation.source_status
+    if live_statuses is not None:
+        live = live_statuses.get(citation.document_id)
+        if live is not None:
+            source_status = live
     return ChatCitationResponse(
         chunk_id=citation.chunk_id,
         document_id=citation.document_id,
         document_title=citation.document_title,
         source_anchor=citation.source_anchor,
         quote_preview=citation.quote_preview,
-        source_status=citation.source_status,
+        source_status=source_status,
     )

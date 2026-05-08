@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 
 revision: str = "20260506_0012"
-down_revision: str | None = "20260504_0011"
+down_revision: str | None = "20260505_0016"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

@@ -21,8 +21,8 @@ depends_on: str | Sequence[str] | None = None
 def upgrade() -> None:
     op.create_table(
         "categories",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("workspace_id", postgresql.UUID(as_uuid=False), nullable=False),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("workspace_id", sa.String(), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
@@ -40,8 +40,8 @@ def upgrade() -> None:
 
     op.create_table(
         "tags",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("workspace_id", postgresql.UUID(as_uuid=False), nullable=False),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("workspace_id", sa.String(), nullable=False),
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("normalized_name", sa.String(length=255), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
@@ -61,11 +61,11 @@ def upgrade() -> None:
 
     op.create_table(
         "document_tags",
-        sa.Column("document_id", postgresql.UUID(as_uuid=False), nullable=False),
-        sa.Column("tag_id", postgresql.UUID(as_uuid=False), nullable=False),
+        sa.Column("document_id", sa.String(), nullable=False),
+        sa.Column("tag_id", sa.String(), nullable=False),
         sa.Column("source", sa.String(length=32), nullable=False),
         sa.Column("confidence", sa.Numeric(precision=5, scale=4), nullable=True),
-        sa.Column("created_by_user_id", postgresql.UUID(as_uuid=False), nullable=True),
+        sa.Column("created_by_user_id", sa.String(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.CheckConstraint("source in ('manual', 'ki', 'import')", name="ck_document_tags_source_allowed"),
         sa.CheckConstraint(

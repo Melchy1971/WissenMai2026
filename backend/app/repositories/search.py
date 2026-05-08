@@ -32,11 +32,8 @@ class SearchRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def _uuid_param(self, value: str):
-        bind = self._session.get_bind()
-        if bind is not None and bind.dialect.name == "postgresql":
-            return cast(value, postgresql.UUID(as_uuid=False))
-        return value
+    def _uuid_param(self, value: str) -> str:
+        return str(value)
 
     def search_chunks(
         self,

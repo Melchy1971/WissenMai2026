@@ -43,7 +43,7 @@ def upgrade() -> None:
             name="ck_background_jobs_job_type_allowed",
         ),
         sa.CheckConstraint(
-            "status in ('queued', 'running', 'completed', 'failed', 'cancelled')",
+            "status in ('pending', 'running', 'completed', 'retryable', 'failed', 'dead_letter')",
             name="ck_background_jobs_status_allowed",
         ),
         sa.CheckConstraint("attempt_count >= 0", name="ck_background_jobs_attempt_count_non_negative"),

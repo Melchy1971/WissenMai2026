@@ -4,12 +4,22 @@ from fastapi import APIRouter, Depends, status
 
 from app.api.dependencies.auth import RequestAuthContext, require_workspace_admin, require_workspace_member
 from app.core.database import DatabaseConfigurationError
-from app.core.errors import AdminActionNotImplementedApiError, ApiError, DiagnosticsFailedApiError, ForbiddenApiError
+from app.core.errors import (
+    AdminActionNotImplementedApiError,
+    ApiError,
+    BackgroundJobNotFoundApiError,
+    DiagnosticsFailedApiError,
+    ForbiddenApiError,
+    JobNotReplayableApiError,
+    ReplayFailedApiError,
+    ResourceLockedApiError,
+)
 from app.db.session import get_session
 from app.schemas.admin import DiagnosticsResponse, SearchIndexDriftReportResponse, SearchIndexInconsistencyReportResponse
+from app.schemas.jobs import JobResponse
 from app.services.diagnostics import DiagnosticsService
 from app.services.search_index_service import SearchIndexRebuildService
-from app.services.jobs.background_jobs import BackgroundJobService
+from app.services.jobs.background_jobs import BackgroundJobNotFoundError, BackgroundJobService
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -92,3 +102,22 @@ def get_search_index_drift(
     return SearchIndexDriftReportResponse.model_validate(
         service.inspect_drift(workspace_id=auth_context.workspace_id)
     )
+
+
+@router.post("/jobs/{job_id}/replay", response_model=JobResponse)
+def replay_job(
+    job_id: str,
+    auth_context: Annotated[RequestAuthContext, Depends(require_workspace_admin)],
+    service: Annotated[BackgroundJobService, Depends(get_background_job_service)],
+) -> JobResponse:
+    try:
+        job = service.replay_job(job_id=job_id, replayed_by_user_id=auth_context.user_id)
+        return service.to_response(job)
+    except BackgroundJobNotFoundError:
+        raise BackgroundJobNotFoundApiError(details={"job_id": job_id})
+    except JobNotReplayableApiError:
+        raise
+    except ResourceLockedApiError:
+        raise
+    except Exception as exc:
+        raise ReplayFailedApiError(details={"job_id": job_id}) from exc

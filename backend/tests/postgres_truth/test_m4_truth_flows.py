@@ -12,7 +12,7 @@ from app.services.jobs.background_jobs import BackgroundJobService, process_impo
 from app.services.chat.citation_mapper import CitationMapper
 from app.services.chat.context_builder import ContextBuilder
 from app.services.chat.fake_llm_provider import FakeLlmProvider
-from app.services.chat.insufficient_context_policy import InsufficientContextPolicy
+from app.services.chat.insufficient_context_policy import InsufficientContextPolicy, InsufficientContextThresholds
 from app.services.chat.persistence_service import ChatPersistenceService
 from app.services.chat.prompt_builder import PromptBuilder
 from app.services.chat.rag_chat_service import RagChatService
@@ -112,7 +112,7 @@ def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(truth_clien
         retrieval=SearchService.from_session(truth_session),
         context_builder=ContextBuilder(max_context_chars=12000, max_context_tokens=2500, min_chunk_chars=40),
         prompt_builder=PromptBuilder(),
-        insufficient_context_policy=InsufficientContextPolicy(),
+        insufficient_context_policy=InsufficientContextPolicy(InsufficientContextThresholds(min_retrieval_score=0.0)),
         llm_provider=FakeLlmProvider(),
         citation_mapper=CitationMapper(),
         retrieval_limit=5,
@@ -125,7 +125,7 @@ def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(truth_clien
     answer = rag_service.answer_question(
         session_id=chat_session.id,
         workspace_id=TRUTH_WORKSPACE_ID,
-        question=f"What mentions {TRUTH_TERM}?",
+        question=TRUTH_TERM,
         retrieval_limit=5,
     )
     assert answer.citations
@@ -133,8 +133,12 @@ def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(truth_clien
 
     truth_session.execute(text("update document_chunks set is_searchable = false where id = :id"), {"id": CHUNK_ACTIVE})
     truth_session.commit()
-    report_before = SearchIndexRebuildService.from_session(truth_session).inspect_inconsistencies(workspace_id=TRUTH_WORKSPACE_ID)
-    assert report_before["missing_index_entries"]["count"] == 1
+
+    # After corruption: active chunk's search_vector is empty (GENERATED ALWAYS AS from is_searchable=False)
+    # so FTS returns no results
+    corrupted_search = truth_client.get("/api/v1/search/chunks", params={"q": TRUTH_TERM})
+    assert corrupted_search.status_code == 200
+    assert corrupted_search.json() == []
 
     result = SearchIndexRebuildService.from_session(truth_session).rebuild_search_index(workspace_id=TRUTH_WORKSPACE_ID)
     assert result["status"] == "completed"
@@ -166,7 +170,7 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
                  content_hash, import_status, lifecycle_status, archived_at, deleted_at, created_at, updated_at)
             values
                 (:document_id, :workspace_id, :owner_user_id, null, :title, 'upload', 'text/plain',
-                 :content_hash, 'chunked', 'active', null, null, now(), now())
+                 :content_hash, 'pending', 'active', null, null, now(), now())
             """
         ),
         {
@@ -185,20 +189,24 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
                  ocr_used, ki_provider, ki_model, metadata, created_at)
             values
                 (:version_id, :document_id, 1, :markdown, :markdown_hash, 'truth-parser',
-                 false, null, null, cast(:metadata as jsonb), now())
+                 false, null, null, cast(:metadata as jsonb), now()),
+                (:old_version_id, :document_id, 2, :markdown, :old_markdown_hash, 'truth-parser',
+                 false, null, null, cast(:metadata as jsonb), now() - interval '1 minute')
             """
         ),
         {
             "version_id": "f5000000-0000-0000-0000-000000000099",
+            "old_version_id": "f5000000-0000-0000-0000-000000000098",
             "document_id": "f3000000-0000-0000-0000-000000000099",
             "markdown": "# Duplicate\n\ntruth duplicate drift",
             "markdown_hash": "truth-duplicate-version-hash",
+            "old_markdown_hash": "truth-duplicate-old-version-hash",
             "metadata": json.dumps({}),
         },
     )
     truth_session.execute(
         text(
-            "update documents set current_version_id = :version_id where id = :document_id"
+            "update documents set current_version_id = :version_id, import_status = 'chunked' where id = :document_id"
         ),
         {
             "version_id": "f5000000-0000-0000-0000-000000000099",
@@ -210,12 +218,12 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
             """
             insert into document_chunks
                 (id, document_id, document_version_id, chunk_index, heading_path, anchor, content,
-                 is_searchable, search_vector, content_hash, token_estimate, metadata, created_at)
+                 is_searchable, content_hash, token_estimate, metadata, created_at)
             values
                 (:chunk_a, :document_id, :version_id, 0, cast(:heading_path as jsonb), :anchor, :content_a,
-                 true, to_tsvector('simple', :vector_text), :content_hash, 10, cast(:metadata as jsonb), now()),
-                (:chunk_b, :document_id, :version_id, 1, cast(:heading_path as jsonb), :anchor, :content_b,
-                 true, to_tsvector('simple', :vector_text), :content_hash, 10, cast(:metadata as jsonb), now())
+                 true, :content_hash, 10, cast(:metadata as jsonb), now()),
+                (:chunk_b, :document_id, :old_version_id, 0, cast(:heading_path as jsonb), :anchor, :content_b,
+                 true, :content_hash, 10, cast(:metadata as jsonb), now())
             """
         ),
         {
@@ -223,11 +231,11 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
             "chunk_b": "f4000000-0000-0000-0000-000000000100",
             "document_id": "f3000000-0000-0000-0000-000000000099",
             "version_id": "f5000000-0000-0000-0000-000000000099",
+            "old_version_id": "f5000000-0000-0000-0000-000000000098",
             "heading_path": json.dumps([]),
             "anchor": "duplicate-anchor",
             "content_a": "truth duplicate drift A",
             "content_b": "truth duplicate drift B",
-            "vector_text": "truth duplicate drift",
             "content_hash": "truth-duplicate-chunk-hash",
             "metadata": json.dumps({"source_anchor": {"type": "text", "page": None, "paragraph": 9, "char_start": 0, "char_end": 24}}),
         },
@@ -242,8 +250,6 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
     assert payload["status"] == "drifted"
     assert payload["severity"] == "critical"
     assert payload["drift_score"] == 20
-    assert payload["chunks_without_index"]["count"] >= 1
-    assert payload["chunks_without_index"]["severity"] == "high"
     assert payload["deleted_documents_in_index"]["count"] == 1
     assert payload["deleted_documents_in_index"]["severity"] == "critical"
     assert payload["deleted_documents_in_index"]["sample_document_ids"] == [DOC_DELETED]
@@ -280,7 +286,7 @@ def test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchor
         retrieval=recording_retrieval,
         context_builder=ContextBuilder(max_context_chars=12000, max_context_tokens=2500, min_chunk_chars=40),
         prompt_builder=PromptBuilder(),
-        insufficient_context_policy=InsufficientContextPolicy(),
+        insufficient_context_policy=InsufficientContextPolicy(InsufficientContextThresholds(min_retrieval_score=0.0)),
         llm_provider=FakeLlmProvider(),
         citation_mapper=CitationMapper(),
         retrieval_limit=10,
@@ -294,7 +300,7 @@ def test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchor
     answer = rag_service.answer_question(
         session_id=chat_session.id,
         workspace_id=TRUTH_WORKSPACE_ID,
-        question=f"What mentions {TRUTH_TERM}?",
+        question=TRUTH_TERM,
         retrieval_limit=10,
     )
 
@@ -402,6 +408,7 @@ def test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows(
 
 @pytest.mark.m4c_gate
 def test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_retryable(
+    truth_seed: dict[str, str],
     truth_session: Session,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

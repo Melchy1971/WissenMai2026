@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import ServiceUnavailableApiError
 from app.models.documents import Chunk, Document
 from app.observability.logging import bind_observability_context, log_event
+from app.services.advisory_lock import AdvisoryLockService
 
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,9 @@ class SearchIndexRebuildService:
         self._require_postgresql("Search index rebuild requires PostgreSQL")
 
         normalized_workspace_id = workspace_id.strip() if workspace_id else None
+        AdvisoryLockService.from_session(self._session).acquire_reindex_lock(
+            workspace_id=normalized_workspace_id or "__global__"
+        )
         active_conditions = [Document.lifecycle_status == "active"]
         scoped_conditions: list = []
         if normalized_workspace_id:
@@ -449,8 +453,5 @@ class SearchIndexRebuildService:
         if bind is None or bind.dialect.name != "postgresql":
             raise ServiceUnavailableApiError(message=message)
 
-    def _uuid_param(self, value: str):
-        bind = self._session.get_bind()
-        if bind is not None and bind.dialect.name == "postgresql":
-            return cast(value, postgresql.UUID(as_uuid=False))
-        return value
+    def _uuid_param(self, value: str) -> str:
+        return str(value)

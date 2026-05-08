@@ -196,3 +196,21 @@ class BackgroundJobNotFoundApiError(ApiError):
     status_code = 404
     code = "JOB_NOT_FOUND"
     message = "Background job not found"
+
+
+class ResourceLockedApiError(ApiError):
+    status_code = 409
+    code = "RESOURCE_LOCKED"
+    message = "Resource is currently locked by another operation"
+
+
+class JobNotReplayableApiError(ApiError):
+    status_code = 409
+    code = "JOB_NOT_REPLAYABLE"
+    message = "Job is not in a replayable state"
+
+
+class ReplayFailedApiError(ApiError):
+    status_code = 500
+    code = "REPLAY_FAILED"
+    message = "Job replay failed"

@@ -21,7 +21,7 @@ depends_on: str | Sequence[str] | None = None
 
 
 def _id_type():
-    return sa.String().with_variant(postgresql.UUID(as_uuid=False), "postgresql")
+    return sa.String()
 
 
 def _json_type():

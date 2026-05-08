@@ -6,6 +6,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from app.models.documents import ChatCitation, Chunk, Document
+from app.services.advisory_lock import AdvisoryLockService
 
 
 class DocumentLifecycleNotFoundError(LookupError):
@@ -37,6 +38,7 @@ class DocumentLifecycleService:
         return cls(session)
 
     def archive(self, document_id: str, *, workspace_id: str):
+        AdvisoryLockService.from_session(self._session).acquire_lifecycle_lock(document_id=document_id)
         document = self._get_document(document_id, workspace_id=workspace_id)
         if document.lifecycle_status == "archived":
             raise DocumentAlreadyArchivedError("Document is already archived")
@@ -58,6 +60,7 @@ class DocumentLifecycleService:
         return document
 
     def restore(self, document_id: str, *, workspace_id: str):
+        AdvisoryLockService.from_session(self._session).acquire_lifecycle_lock(document_id=document_id)
         document = self._get_document(document_id, workspace_id=workspace_id)
         if document.lifecycle_status == "deleted":
             raise DocumentAlreadyDeletedError("Deleted documents require an explicit admin restore")
@@ -79,6 +82,7 @@ class DocumentLifecycleService:
         return document
 
     def delete(self, document_id: str, *, workspace_id: str):
+        AdvisoryLockService.from_session(self._session).acquire_lifecycle_lock(document_id=document_id)
         document = self._get_document(document_id, workspace_id=workspace_id)
         if document.lifecycle_status == "deleted":
             raise DocumentAlreadyDeletedError("Document is already deleted")

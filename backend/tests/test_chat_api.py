@@ -89,6 +89,9 @@ class FakeChatService:
     def list_citations(self, *, message_id: str):
         return [self.citation] if message_id == "message-1" else []
 
+    def list_document_live_statuses(self, document_ids: list[str]) -> dict[str, str]:
+        return {doc_id: self.citation.source_status for doc_id in document_ids}
+
     def create_message(
         self,
         *,

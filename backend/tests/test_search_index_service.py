@@ -36,6 +36,8 @@ class FakeSession:
     def execute(self, statement, params=None):
         self.executed.append((statement, params))
         rendered = str(statement)
+        if "pg_try_advisory_xact_lock" in rendered:
+            return FakeExecuteResult(scalar_value=True)
         if "SELECT EXISTS" in rendered:
             return FakeExecuteResult(scalar_value=self.index_exists)
         if "CREATE INDEX" in rendered or "REINDEX INDEX" in rendered:

@@ -27,9 +27,9 @@ ANALYSIS_RESULT_TYPES = "'merge', 'compare', 'refine'"
 def upgrade() -> None:
     op.create_table(
         "chat_sessions",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("workspace_id", postgresql.UUID(as_uuid=False), nullable=False),
-        sa.Column("owner_user_id", postgresql.UUID(as_uuid=False), nullable=False),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("workspace_id", sa.String(), nullable=False),
+        sa.Column("owner_user_id", sa.String(), nullable=False),
         sa.Column("title", sa.String(length=500), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
@@ -53,8 +53,8 @@ def upgrade() -> None:
 
     op.create_table(
         "chat_messages",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("session_id", postgresql.UUID(as_uuid=False), nullable=False),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("session_id", sa.String(), nullable=False),
         sa.Column("message_index", sa.Integer(), nullable=False),
         sa.Column("role", sa.String(length=32), nullable=False),
         sa.Column("content", sa.Text(), nullable=False),
@@ -90,9 +90,9 @@ def upgrade() -> None:
 
     op.create_table(
         "analysis_groups",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("workspace_id", postgresql.UUID(as_uuid=False), nullable=False),
-        sa.Column("owner_user_id", postgresql.UUID(as_uuid=False), nullable=False),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("workspace_id", sa.String(), nullable=False),
+        sa.Column("owner_user_id", sa.String(), nullable=False),
         sa.Column("title", sa.String(length=500), nullable=False),
         sa.Column("status", sa.String(length=32), nullable=False, server_default="draft"),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
@@ -119,9 +119,9 @@ def upgrade() -> None:
 
     op.create_table(
         "analysis_group_documents",
-        sa.Column("analysis_group_id", postgresql.UUID(as_uuid=False), nullable=False),
-        sa.Column("document_id", postgresql.UUID(as_uuid=False), nullable=False),
-        sa.Column("document_version_id", postgresql.UUID(as_uuid=False), nullable=True),
+        sa.Column("analysis_group_id", sa.String(), nullable=False),
+        sa.Column("document_id", sa.String(), nullable=False),
+        sa.Column("document_version_id", sa.String(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
         sa.ForeignKeyConstraint(
             ["analysis_group_id"],
@@ -152,8 +152,8 @@ def upgrade() -> None:
 
     op.create_table(
         "analysis_results",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("analysis_group_id", postgresql.UUID(as_uuid=False), nullable=False),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("analysis_group_id", sa.String(), nullable=False),
         sa.Column("result_type", sa.String(length=32), nullable=False),
         sa.Column("status", sa.String(length=32), nullable=False, server_default="draft"),
         sa.Column("result_markdown", sa.Text(), nullable=True),
@@ -181,11 +181,11 @@ def upgrade() -> None:
 
     op.create_table(
         "analysis_result_sources",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("analysis_result_id", postgresql.UUID(as_uuid=False), nullable=False),
-        sa.Column("document_id", postgresql.UUID(as_uuid=False), nullable=True),
-        sa.Column("document_version_id", postgresql.UUID(as_uuid=False), nullable=True),
-        sa.Column("document_chunk_id", postgresql.UUID(as_uuid=False), nullable=True),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("analysis_result_id", sa.String(), nullable=False),
+        sa.Column("document_id", sa.String(), nullable=True),
+        sa.Column("document_version_id", sa.String(), nullable=True),
+        sa.Column("document_chunk_id", sa.String(), nullable=True),
         sa.Column("anchor", sa.String(length=255), nullable=True),
         sa.Column("metadata", postgresql.JSONB(astext_type=sa.Text()), nullable=False, server_default=sa.text("'{}'::jsonb")),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),

@@ -24,7 +24,7 @@ DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001"
 def upgrade() -> None:
     op.create_table(
         "workspaces",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
+        sa.Column("id", sa.String(), primary_key=True),
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("is_default", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
@@ -40,7 +40,7 @@ def upgrade() -> None:
 
     op.create_table(
         "users",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
+        sa.Column("id", sa.String(), primary_key=True),
         sa.Column("display_name", sa.String(length=255), nullable=False),
         sa.Column("is_default", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.text("now()")),
@@ -56,13 +56,13 @@ def upgrade() -> None:
 
     workspaces = sa.table(
         "workspaces",
-        sa.column("id", postgresql.UUID(as_uuid=False)),
+        sa.column("id", sa.String()),
         sa.column("name", sa.String()),
         sa.column("is_default", sa.Boolean()),
     )
     users = sa.table(
         "users",
-        sa.column("id", postgresql.UUID(as_uuid=False)),
+        sa.column("id", sa.String()),
         sa.column("display_name", sa.String()),
         sa.column("is_default", sa.Boolean()),
     )
@@ -77,10 +77,10 @@ def upgrade() -> None:
 
     op.create_table(
         "documents",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("workspace_id", postgresql.UUID(as_uuid=False), nullable=False),
-        sa.Column("owner_user_id", postgresql.UUID(as_uuid=False), nullable=False),
-        sa.Column("current_version_id", postgresql.UUID(as_uuid=False), nullable=True),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("workspace_id", sa.String(), nullable=False),
+        sa.Column("owner_user_id", sa.String(), nullable=False),
+        sa.Column("current_version_id", sa.String(), nullable=True),
         sa.Column("title", sa.String(length=500), nullable=False),
         sa.Column("source_type", sa.String(length=64), nullable=False),
         sa.Column("mime_type", sa.String(length=255), nullable=True),
@@ -110,8 +110,8 @@ def upgrade() -> None:
 
     op.create_table(
         "document_versions",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("document_id", postgresql.UUID(as_uuid=False), nullable=False),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("document_id", sa.String(), nullable=False),
         sa.Column("version_number", sa.Integer(), nullable=False),
         sa.Column("normalized_markdown", sa.Text(), nullable=False),
         sa.Column("markdown_hash", sa.String(length=128), nullable=False),

@@ -3,16 +3,14 @@ from time import perf_counter
 from uuid import uuid4
 
 import psycopg
-from psycopg import IntegrityError
 from psycopg.types.json import Jsonb
 
 from app.core.database import get_connection
 from app.models.import_models import NormalizedDocument
 from app.observability.logging import log_event, log_import_event
+from app.services.advisory_lock import advisory_lock_on_connection
 from app.services.chunking_service import MarkdownChunkingService
 
-
-DOCUMENT_CONTENT_HASH_UNIQUE_CONSTRAINT = "uq_documents_workspace_content_hash"
 
 
 @dataclass(frozen=True)
@@ -73,12 +71,16 @@ class DocumentImportPersistenceService:
         content_hash: str,
         document: NormalizedDocument,
     ) -> PersistedImportDocument:
-        existing = self._fetch_existing(connection, workspace_id=workspace_id, content_hash=content_hash)
-        if existing is not None:
-            log_event("import_duplicate_detected", workspace_id=workspace_id, status="completed")
-            return existing
+        with advisory_lock_on_connection(
+            connection,
+            scope_name="document_import",
+            resource_key=f"{workspace_id}:{content_hash}",
+        ):
+            existing = self._fetch_existing(connection, workspace_id=workspace_id, content_hash=content_hash)
+            if existing is not None:
+                log_event("import_duplicate_detected", workspace_id=workspace_id, status="completed")
+                return existing
 
-        try:
             return self._insert_document(
                 connection,
                 workspace_id=workspace_id,
@@ -88,19 +90,6 @@ class DocumentImportPersistenceService:
                 content_hash=content_hash,
                 document=document,
             )
-        except IntegrityError as exc:
-            if not self._is_content_hash_conflict(exc):
-                raise
-            connection.rollback()
-            existing = self._fetch_existing(
-                connection,
-                workspace_id=workspace_id,
-                content_hash=content_hash,
-            )
-            if existing is None:
-                raise
-            log_event("import_duplicate_detected", workspace_id=workspace_id, status="completed")
-            return existing
 
     def _insert_document(
         self,
@@ -331,10 +320,6 @@ class DocumentImportPersistenceService:
             duplicate_existing=True,
             import_status="duplicate",
         )
-
-    def _is_content_hash_conflict(self, exc: IntegrityError) -> bool:
-        return getattr(exc.diag, "constraint_name", None) == DOCUMENT_CONTENT_HASH_UNIQUE_CONSTRAINT
-
 
 def source_anchor_type_for_document(document: NormalizedDocument) -> str:
     mime_type = str(document.metadata.get("mime_type") or "")

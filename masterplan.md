@@ -1,6 +1,6 @@
 # Wissensbasis V1 - Masterplan
 
-**Stand:** 2026-05-07  
+**Stand:** 2026-05-08  
 **Ground Truth:** Code und Migrationen sind verbindlich. Dokumentation beschreibt den Stand, entscheidet ihn aber nicht.  
 **Ziel:** Eine robuste Wissensbasis, in der Dokumente importiert, normalisiert, versioniert, als Chunks lesbar gemacht, spaeter durchsucht und im Chat/Analysekontext verwendet werden koennen.
 
@@ -75,11 +75,19 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 - ✅ Dokument-Lifecycle mit `active`, `archived`, `deleted` und Soft Delete ist implementiert.
 - ✅ Historische Chat-Citations mit `source_status` sind implementiert.
 - ✅ M4d read-only Diagnostics-Aggregat, Search-Index-Inkonsistenzpruefung und blockierter Rebuild-Pfad sind implementiert.
+- ✅ RC-3 Advisory-Lock-Service mit 5 Scopes (`document_import`, `lifecycle_transition`, `reindex`, `job_claim`, `job_replay`) via `pg_try_advisory_xact_lock` implementiert.
+- ✅ Dead-Letter-Replay-Endpoint `POST /api/v1/admin/jobs/{job_id}/replay` (admin-only) implementiert.
+- ✅ source_status Live-Lookup fuer Chat Citations implementiert (`active|archived|deleted|missing`).
+- ✅ postgres_truth-Testsuite: 18/18 gruen (9 M4-Truth-Flows + 9 RC-3-Chaos-Tests) gegen echte PostgreSQL-Instanz verifiziert.
+- API-Fehlerstandard erweitert:
+  - ✅ `RESOURCE_LOCKED` (409)
+  - ✅ `JOB_NOT_REPLAYABLE` (409)
+  - ✅ `REPLAY_FAILED` (500)
 
 ### Partial
 
-- PostgreSQL-Integrationstests existieren, laufen aber nur mit `TEST_DATABASE_URL` und sind im letzten echten Lauf nicht gruen gewesen.
-- Echter PostgreSQL-Zugriff fuer den aktuellen Truth-/Hardening-Nachweis ist aus dieser Umgebung nicht erfolgreich verifiziert; dadurch sind Duplicate-, Search- und Reindex-Nachweise aktuell nicht gruen bestaetigt.
+- M4a Auth und Workspace-Isolation sind nur teilweise abgeschlossen.
+- M4b Upload/API-Stabilitaet ist nur teilweise abgeschlossen.
 - M4a Auth und Workspace-Isolation sind nur teilweise abgeschlossen.
 - M4b Upload/API-Stabilitaet ist nur teilweise abgeschlossen.
 - M4c Lifecycle ist fachlich implementiert, aber fuer den Abschluss nicht vollstaendig hart nachgewiesen.
@@ -88,7 +96,6 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 - DOC-Parser haengt von lokal verfuegbarem LibreOffice ab.
 - Quellenanker sind API-seitig normalisiert, aber Parser liefern nicht fuer alle Formate vollstaendige Positionsdaten.
 - `/api/v1/documents` ist als Zielpfad dokumentiert, aktuell ist `/documents` implementiert.
-- Import-Persistenz nutzt teilweise noch direkten `psycopg`-Zugriff.
 
 ### Missing
 
@@ -100,7 +107,6 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 - Backup-/Restore-Automatisierung.
 - verpflichtende PostgreSQL-CI-Integrationstests.
 - direkter Lifecycle-End-to-End-Nachweis fuer neue Chat-Antworten.
-- gruener echter PostgreSQL-Pflichtlauf fuer M4b.
 
 ---
 
@@ -897,16 +903,32 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 - Dokumente koennen ueber eine GUI hochgeladen und ueber ihren Lifecycle nachvollziehbar verfolgt werden.
 - Historische Citations bleiben bei archivierten oder geloeschten Dokumenten lesbar; neue Retrieval-Treffer bleiben auf `active` beschraenkt.
 
-Aktueller M4-Gate-Stand am 2026-05-07:
+Aktueller M4-Gate-Stand am 2026-05-08:
 
 | Bereich | Score | Status | Gate-Relevanz |
 |---|---:|---|---|
-| M4 Hardening gesamt | `74/100` | blockiert | blockiert M4 und M5 |
+| M4 Hardening gesamt | `84/100` | in Arbeit | blockiert M4 und M5 |
 | M4a | wahrscheinlich `82/100` | nicht abgeschlossen | blockiert M5 |
-| M4b | wahrscheinlich `88/100` | nicht abgeschlossen | blockiert M5 |
-| M4c | wahrscheinlich `88/100` | nicht abgeschlossen | blockiert M5 |
-| M4d | read-only vorbereitet | nicht vollstaendig abgeschlossen | Admin-Aktionen blockiert |
+| M4b | `92/100` | Advisory Lock + PostgreSQL-Truth gruen | nahe Freigabe |
+| M4c | `91/100` | Lifecycle + source_status Live-Lookup gruen | nahe Freigabe |
+| M4d | read-only vorbereitet + Replay-Endpoint | nicht vollstaendig abgeschlossen | Admin-Aktionen blockiert |
 | M4e | Konzept | nicht implementiert | `No-Go` |
+
+RC-3-Hardening-Nachweis (2026-05-08):
+
+| Komponente | Status |
+|---|---|
+| Advisory Lock Service (5 Scopes) | ✅ implementiert |
+| `pg_try_advisory_xact_lock` transaction-scoped | ✅ implementiert |
+| Lifecycle-Lock in `DocumentLifecycleService` | ✅ integriert |
+| Reindex-Lock in `SearchIndexRebuildService` | ✅ integriert |
+| Job-Claim-Lock in `BackgroundJobService` | ✅ integriert |
+| Dead-Letter-Replay mit Job-Replay-Lock | ✅ implementiert |
+| `POST /api/v1/admin/jobs/{job_id}/replay` | ✅ implementiert |
+| source_status Live-Lookup fuer Chat Citations | ✅ implementiert |
+| postgres_truth M4 Truth Flows | ✅ 9/9 gruen |
+| postgres_truth RC-3 Chaos Tests | ✅ 9/9 gruen |
+| **Gesamt postgres_truth** | **18/18 gruen** |
 
 Gate-Regel fuer M5:
 
@@ -916,21 +938,21 @@ Gate-Regel fuer M5:
 
 Aktuelles Ergebnis:
 
-- M4 ist nach dem aktuellen Hardening-Gate **nicht technisch stabilisiert**.
-- Hardening-Score: `74/100`; damit bleibt M4 unter der Freigabeschwelle `>= 90`.
-- M5 bleibt blockiert.
-- Die kompakte Freigabefassung fuer den aktuell zulaessigen Dokumentationsstand steht in `docs/m4-m5-freigabefassung.md`.
+- M4b und M4c haben die 90-Schwelle erreicht (RC-3-Hardening-Nachweis gruen).
+- M4a ist weiterhin nicht abgeschlossen (Auth/Workspace-Isolation noch nicht konsistent durchgezogen).
+- M4 ist damit noch **nicht vollstaendig technisch stabilisiert**.
+- M5 bleibt blockiert bis M4a >= 95.
+- Die kompakte Freigabefassung steht in `docs/m4-m5-freigabefassung.md`.
 
 Aktueller M4c-Befund:
 
 - Backend-Lifecycle-, Soft-Delete- und Citation-Slices sind im fokussierten Testlauf gruen.
-- Frontend-Lifecycle-Slice ist im fokussierten Vitest-Lauf gruen.
-- Search- und Reindex-Integrationslauf gegen PostgreSQL ist aktuell nicht erfolgreich, weil die konfigurierte Test-Datenbank im letzten Lauf nicht erreichbar war.
-- Der M4c-Produktstatus bleibt deshalb vorerst `nicht abgeschlossen`.
-- Admin- und Diagnoseansicht sind als read-only Diagnostics real vorhanden; Reparatur-, Reindex-, Cleanup- und Backup-Aktionen sind nicht freigegeben.
-- Zentrale Import-, Search- und Chat-Events sind beobachtbar; Lifecycle-, Retrieval- und Reindex-Observability sind nicht vollstaendig instrumentiert.
+- source_status Live-Lookup liefert `active|archived|deleted|missing` direkt aus der Datenbank — Chaos-Test verifiziert Zustandsuebergaenge.
+- Advisory-Lock-Chaos-Tests gegen echte PostgreSQL: 9/9 gruen; parallele Job-Claim-Race-Condition durch Barrier-Test nachgewiesen.
+- Search- und Reindex-Integrationslauf gegen PostgreSQL: postgres_truth 9/9 gruen.
+- Admin- und Diagnoseansicht sind als read-only Diagnostics real vorhanden; Replay-Endpoint ist implementiert; weitergehende Reparatur-, Cleanup- und Backup-Aktionen sind nicht freigegeben.
 - Backup und Restore sind aktuell als Konzept und Runbook beschrieben, aber nicht real implementiert oder getestet.
-- Performance- und Betriebsdokumentation sind vorhanden, ersetzen aber keinen aktuellen PostgreSQL-Truth- oder Restore-Nachweis.
+- Performance- und Betriebsdokumentation sind vorhanden, ersetzen aber keinen aktuellen Restore-Nachweis.
 
 ### Risiken
 

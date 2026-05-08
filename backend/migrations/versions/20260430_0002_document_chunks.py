@@ -27,9 +27,9 @@ def upgrade() -> None:
 
     op.create_table(
         "document_chunks",
-        sa.Column("id", postgresql.UUID(as_uuid=False), primary_key=True),
-        sa.Column("document_id", postgresql.UUID(as_uuid=False), nullable=False),
-        sa.Column("document_version_id", postgresql.UUID(as_uuid=False), nullable=False),
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("document_id", sa.String(), nullable=False),
+        sa.Column("document_version_id", sa.String(), nullable=False),
         sa.Column("chunk_index", sa.Integer(), nullable=False),
         sa.Column("heading_path", postgresql.JSONB(astext_type=sa.Text()), nullable=False, server_default=sa.text("'[]'::jsonb")),
         sa.Column("anchor", sa.String(length=255), nullable=False),

@@ -223,9 +223,9 @@ def truth_client(truth_seed: dict[str, str], truth_connection: Connection) -> Te
 def _cleanup_truth_rows(database_url: str) -> None:
     with psycopg.connect(_psycopg_url(database_url)) as connection:
         with connection.cursor() as cursor:
-            cursor.execute("delete from chat_citations where id like 'truth-%'")
-            cursor.execute("delete from chat_messages where id like 'truth-%'")
-            cursor.execute("delete from chat_sessions where id like 'truth-%'")
+            cursor.execute("delete from chat_citations where id::text like 'truth-%'")
+            cursor.execute("delete from chat_messages where id::text like 'truth-%'")
+            cursor.execute("delete from chat_sessions where id::text like 'truth-%'")
             cursor.execute("delete from background_jobs where id like 'truth-%' or workspace_id::text like 'f1000000-%'")
             cursor.execute("delete from document_chunks where id::text like 'f4000000-%'")
             cursor.execute("update documents set current_version_id = null where id::text like 'f3000000-%'")

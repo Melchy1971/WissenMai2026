@@ -6,8 +6,7 @@ from hashlib import pbkdf2_hmac, sha256
 from secrets import token_urlsafe
 from uuid import uuid4
 
-from sqlalchemy import cast, select
-from sqlalchemy.dialects import postgresql
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.documents import AuthSession, User, WorkspaceMembership
@@ -60,12 +59,6 @@ class AuthService:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def _uuid_param(self, value: str):
-        bind = self._session.get_bind()
-        if bind is not None and bind.dialect.name == "postgresql":
-            return cast(str(value), postgresql.UUID(as_uuid=False))
-        return value
-
     def login(self, *, login: str, password: str) -> tuple[str, AuthSession, User, list[WorkspaceMembership]]:
         normalized_login = login.strip()
         if not normalized_login or not password.strip():
@@ -78,7 +71,7 @@ class AuthService:
         memberships = list(
             self._session.scalars(
                 select(WorkspaceMembership)
-                .where(WorkspaceMembership.user_id == self._uuid_param(str(user.id)))
+                .where(WorkspaceMembership.user_id == str(user.id))
                 .order_by(WorkspaceMembership.workspace_id.asc())
             )
         )
@@ -112,15 +105,15 @@ class AuthService:
             raise AuthenticationError("Authentication required")
 
         user = self._session.scalar(
-            select(User).where(User.id == self._uuid_param(str(auth_session.user_id)))
+            select(User).where(User.id == str(auth_session.user_id))
         )
         if user is None or not user.is_active or not user.login:
             raise AuthenticationError("Authentication required")
 
         membership = self._session.scalar(
             select(WorkspaceMembership).where(
-                WorkspaceMembership.user_id == self._uuid_param(str(user.id)),
-                WorkspaceMembership.workspace_id == self._uuid_param(normalized_workspace_id),
+                WorkspaceMembership.user_id == str(user.id),
+                WorkspaceMembership.workspace_id == normalized_workspace_id,
             )
         )
         if membership is None:
