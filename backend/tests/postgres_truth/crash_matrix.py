@@ -32,7 +32,7 @@ def load_crash_consistency_matrix(database_url: str, *, workspace_id: str) -> Cr
                     coalesce(sum(case when status = 'retryable' then 1 else 0 end), 0),
                     coalesce(sum(case when status = 'dead_letter' then 1 else 0 end), 0)
                 from background_jobs
-                where workspace_id = %s::uuid
+                where workspace_id = %s
                 """,
                 (workspace_id,),
             )
@@ -43,7 +43,7 @@ def load_crash_consistency_matrix(database_url: str, *, workspace_id: str) -> Cr
                 select count(*)
                 from documents d
                 left join document_versions v on v.id = d.current_version_id
-                where d.workspace_id = %s::uuid
+                where d.workspace_id = %s
                   and d.current_version_id is not null
                   and v.id is null
                 """,
@@ -112,7 +112,7 @@ def load_crash_consistency_matrix(database_url: str, *, workspace_id: str) -> Cr
                 select count(*)
                 from document_chunks c
                 join documents d on d.id = c.document_id
-                where d.workspace_id = %s::uuid
+                where d.workspace_id = %s
                   and d.lifecycle_status = 'archived'
                   and c.is_searchable = true
                 """,
@@ -125,7 +125,7 @@ def load_crash_consistency_matrix(database_url: str, *, workspace_id: str) -> Cr
                 select count(*)
                 from document_chunks c
                 join documents d on d.id = c.document_id
-                where d.workspace_id = %s::uuid
+                where d.workspace_id = %s
                   and d.lifecycle_status = 'deleted'
                   and c.is_searchable = true
                 """,

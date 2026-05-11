@@ -111,6 +111,9 @@ def replay_job(
     service: Annotated[BackgroundJobService, Depends(get_background_job_service)],
 ) -> JobResponse:
     try:
+        existing_job = service.get_job(job_id)
+        if existing_job.workspace_id != auth_context.workspace_id:
+            raise BackgroundJobNotFoundError(job_id)
         job = service.replay_job(job_id=job_id, replayed_by_user_id=auth_context.user_id)
         return service.to_response(job)
     except BackgroundJobNotFoundError:

@@ -1,0 +1,43 @@
+{
+  "app_version": "0.1.0",
+  "backup_dir": "H:\\WissenMai2026\\backend\\backups\\backup-2026-05-11T09-46-54Z",
+  "backup_format_version": 1,
+  "config_files": [
+    "config/app-config.json"
+  ],
+  "created_at": "2026-05-11T09:46:54.631181+00:00",
+  "database_dump_format": "table-json",
+  "database_files": [
+    "data/workspaces.json",
+    "data/users.json",
+    "data/workspace_memberships.json",
+    "data/auth_sessions.json",
+    "data/documents.json",
+    "data/document_versions.json",
+    "data/document_chunks.json",
+    "data/chat_sessions.json",
+    "data/chat_messages.json",
+    "data/chat_citations.json",
+    "data/background_jobs.json"
+  ],
+  "file_count": 0,
+  "migration_heads": [
+    "20260508_0014_chat_citation_missing_status"
+  ],
+  "original_file_root": "H:\\WissenMai2026\\backend\\data\\originals",
+  "search_index_included": false,
+  "table_counts": {
+    "auth_sessions": 4,
+    "background_jobs": 1,
+    "chat_citations": 0,
+    "chat_messages": 2,
+    "chat_sessions": 1,
+    "document_chunks": 26,
+    "document_versions": 1,
+    "documents": 1,
+    "users": 1,
+    "workspace_memberships": 1,
+    "workspaces": 1
+  },
+  "workspace_scope": "all"
+}

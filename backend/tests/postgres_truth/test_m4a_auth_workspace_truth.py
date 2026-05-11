@@ -9,59 +9,52 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.main import app
-from tests.postgres_truth.support import (
-    TRUTH_OTHER_WORKSPACE_ID,
-    TRUTH_SESSION_TOKEN,
-    TRUTH_USER_ID,
-    TRUTH_WORKSPACE_ID,
-)
+from tests.postgres_truth.support import TruthIds
 
 
 pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4a_gate]
 
-DOC_WORKSPACE_A = "f3000000-0000-0000-0000-0000000000a1"
-DOC_WORKSPACE_B = "f3000000-0000-0000-0000-0000000000b1"
-VER_WORKSPACE_A = "f5000000-0000-0000-0000-0000000000a1"
-VER_WORKSPACE_B = "f5000000-0000-0000-0000-0000000000b1"
-CHUNK_WORKSPACE_A = "f4000000-0000-0000-0000-0000000000a1"
-CHUNK_WORKSPACE_B = "f4000000-0000-0000-0000-0000000000b1"
-CHAT_WORKSPACE_B = "truth-chat-session-workspace-b"
-M4A_TERM = "m4aworkspaceisolationtruth"
-
 
 def test_m4a_user_a_lists_only_documents_from_workspace_a(
     truth_client: TestClient,
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
     truth_session: Session,
 ) -> None:
+    term = truth_ids.term("m4a-workspace-isolation")
+    doc_workspace_a = truth_ids.document_id("workspace-a")
+    doc_workspace_b = truth_ids.document_id("workspace-b")
     _seed_workspace_document(
         truth_session,
-        document_id=DOC_WORKSPACE_A,
-        version_id=VER_WORKSPACE_A,
-        chunk_id=CHUNK_WORKSPACE_A,
-        workspace_id=TRUTH_WORKSPACE_ID,
-        title="Workspace A Truth",
-        content=f"{M4A_TERM} workspace A visible document",
+        truth_ids=truth_ids,
+        document_id=doc_workspace_a,
+        version_id=truth_ids.version_id("workspace-a"),
+        chunk_id=truth_ids.chunk_id("workspace-a"),
+        workspace_id=truth_seed["workspace_id"],
+        title=f"Workspace A Truth {truth_ids.slug}",
+        content=f"{term} workspace A visible document",
     )
     _seed_workspace_document(
         truth_session,
-        document_id=DOC_WORKSPACE_B,
-        version_id=VER_WORKSPACE_B,
-        chunk_id=CHUNK_WORKSPACE_B,
-        workspace_id=TRUTH_OTHER_WORKSPACE_ID,
-        title="Workspace B Truth",
-        content=f"{M4A_TERM} workspace B hidden document",
+        truth_ids=truth_ids,
+        document_id=doc_workspace_b,
+        version_id=truth_ids.version_id("workspace-b"),
+        chunk_id=truth_ids.chunk_id("workspace-b"),
+        workspace_id=truth_seed["other_workspace_id"],
+        title=f"Workspace B Truth {truth_ids.slug}",
+        content=f"{term} workspace B hidden document",
     )
 
     response = truth_client.get("/documents")
 
     assert response.status_code == 200
     document_ids = {item["id"] for item in response.json()}
-    assert DOC_WORKSPACE_A in document_ids
-    assert DOC_WORKSPACE_B not in document_ids
+    assert doc_workspace_a in document_ids
+    assert doc_workspace_b not in document_ids
 
 
 def test_m4a_user_a_cannot_import_into_workspace_b(truth_seed: dict[str, str], truth_session: Session) -> None:
-    client = _client(token=truth_seed["token"], workspace_id=TRUTH_OTHER_WORKSPACE_ID)
+    client = _client(token=truth_seed["token"], workspace_id=truth_seed["other_workspace_id"])
 
     response = client.post(
         "/documents/import",
@@ -73,25 +66,27 @@ def test_m4a_user_a_cannot_import_into_workspace_b(truth_seed: dict[str, str], t
     assert (
         truth_session.execute(
             text("select count(*) from background_jobs where workspace_id = :workspace_id"),
-            {"workspace_id": TRUTH_OTHER_WORKSPACE_ID},
+            {"workspace_id": truth_seed["other_workspace_id"]},
         ).scalar_one()
         == 0
     )
 
 
-def test_m4a_user_a_cannot_search_workspace_b(truth_seed: dict[str, str]) -> None:
-    client = _client(token=truth_seed["token"], workspace_id=TRUTH_OTHER_WORKSPACE_ID)
+def test_m4a_user_a_cannot_search_workspace_b(truth_ids: TruthIds, truth_seed: dict[str, str]) -> None:
+    client = _client(token=truth_seed["token"], workspace_id=truth_seed["other_workspace_id"])
 
-    response = client.get("/api/v1/search/chunks", params={"q": M4A_TERM})
+    response = client.get("/api/v1/search/chunks", params={"q": truth_ids.term("m4a-workspace-isolation")})
 
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "WORKSPACE_ACCESS_FORBIDDEN"
 
 
 def test_m4a_user_a_cannot_use_chat_session_from_workspace_b(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     truth_session: Session,
 ) -> None:
+    chat_workspace_b = truth_ids.chat_session_id("workspace-b")
     truth_session.execute(
         text(
             """
@@ -100,18 +95,18 @@ def test_m4a_user_a_cannot_use_chat_session_from_workspace_b(
             """
         ),
         {
-            "id": CHAT_WORKSPACE_B,
-            "workspace_id": TRUTH_OTHER_WORKSPACE_ID,
-            "user_id": TRUTH_USER_ID,
+            "id": chat_workspace_b,
+            "workspace_id": truth_seed["other_workspace_id"],
+            "user_id": truth_seed["user_id"],
         },
     )
     truth_session.commit()
-    client = _client(token=truth_seed["token"], workspace_id=TRUTH_WORKSPACE_ID)
+    client = _client(token=truth_seed["token"], workspace_id=truth_seed["workspace_id"])
 
-    detail_response = client.get(f"/api/v1/chat/sessions/{CHAT_WORKSPACE_B}")
+    detail_response = client.get(f"/api/v1/chat/sessions/{chat_workspace_b}")
     message_response = client.post(
-        f"/api/v1/chat/sessions/{CHAT_WORKSPACE_B}/messages",
-        json={"question": M4A_TERM, "retrieval_limit": 3},
+        f"/api/v1/chat/sessions/{chat_workspace_b}/messages",
+        json={"question": truth_ids.term("m4a-workspace-isolation"), "retrieval_limit": 3},
     )
 
     assert detail_response.status_code == 404
@@ -121,7 +116,7 @@ def test_m4a_user_a_cannot_use_chat_session_from_workspace_b(
 
 
 def test_m4a_manipulated_x_workspace_id_is_forbidden(truth_seed: dict[str, str]) -> None:
-    client = _client(token=truth_seed["token"], workspace_id=TRUTH_OTHER_WORKSPACE_ID)
+    client = _client(token=truth_seed["token"], workspace_id=truth_seed["other_workspace_id"])
 
     response = client.get("/documents")
 
@@ -154,10 +149,10 @@ def test_m4a_admin_diagnostics_without_admin_role_is_forbidden(
             where user_id = :user_id and workspace_id = :workspace_id
             """
         ),
-        {"user_id": TRUTH_USER_ID, "workspace_id": TRUTH_WORKSPACE_ID},
+        {"user_id": truth_seed["user_id"], "workspace_id": truth_seed["workspace_id"]},
     )
     truth_session.commit()
-    client = _client(token=truth_seed["token"], workspace_id=TRUTH_WORKSPACE_ID)
+    client = _client(token=truth_seed["token"], workspace_id=truth_seed["workspace_id"])
 
     response = client.get("/api/v1/admin/diagnostics")
 
@@ -165,7 +160,125 @@ def test_m4a_admin_diagnostics_without_admin_role_is_forbidden(
     assert response.json()["error"]["code"] == "FORBIDDEN"
 
 
-def _client(*, token: str = TRUTH_SESSION_TOKEN, workspace_id: str) -> TestClient:
+def test_m4a_user_a_cannot_read_or_replay_workspace_b_queue_job(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    created = datetime(2026, 5, 8, 12, 0, tzinfo=UTC)
+    job_id = truth_ids.job_id("workspace-b-dead-letter")
+    truth_session.execute(
+        text(
+            """
+            insert into background_jobs (
+                id, job_type, status, workspace_id, requested_by_user_id, payload, result,
+                progress_current, progress_total, progress_message, error_code, error_message,
+                attempt_count, locked_at, locked_by, created_at, started_at, finished_at
+            ) values (
+                :id, 'document_import', 'dead_letter', :workspace_id, :user_id, cast(:payload as jsonb), null,
+                1, 1, 'Job in Dead Letter verschoben', 'IMPORT_FAILED', 'foreign workspace failure',
+                3, null, null, :created_at, :created_at, :created_at
+            )
+            """
+        ),
+        {
+            "id": job_id,
+            "workspace_id": truth_seed["other_workspace_id"],
+            "user_id": truth_seed["other_user_id"],
+            "payload": json.dumps({"filename": f"{truth_ids.slug}-foreign.txt"}),
+            "created_at": created,
+        },
+    )
+    truth_session.commit()
+    client = _client(token=truth_seed["token"], workspace_id=truth_seed["workspace_id"])
+
+    read_response = client.get(f"/api/v1/jobs/{job_id}")
+    replay_response = client.post(f"/api/v1/admin/jobs/{job_id}/replay")
+
+    assert read_response.status_code == 404
+    assert read_response.json()["error"]["code"] == "JOB_NOT_FOUND"
+    assert replay_response.status_code == 404
+    assert replay_response.json()["error"]["code"] == "JOB_NOT_FOUND"
+    row = truth_session.execute(
+        text("select status, payload from background_jobs where id = :id"),
+        {"id": job_id},
+    ).one()
+    assert row.status == "dead_letter"
+    assert "replay_history" not in row.payload
+
+
+def test_m4a_user_a_cannot_archive_workspace_b_document(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    doc_id = truth_ids.document_id("workspace-b-archive-target")
+    _seed_workspace_document(
+        truth_session,
+        truth_ids=truth_ids,
+        document_id=doc_id,
+        version_id=truth_ids.version_id("workspace-b-archive-target"),
+        chunk_id=truth_ids.chunk_id("workspace-b-archive-target"),
+        workspace_id=truth_seed["other_workspace_id"],
+        title=f"Workspace B Archive Target {truth_ids.slug}",
+        content=f"{truth_ids.term('m4a-lifecycle-isolation')} archive target",
+    )
+    client = _client(token=truth_seed["token"], workspace_id=truth_seed["workspace_id"])
+
+    response = client.patch(f"/documents/{doc_id}/archive")
+
+    assert response.status_code == 404
+    row = truth_session.execute(
+        text("select lifecycle_status from documents where id = :id"),
+        {"id": doc_id},
+    ).one()
+    assert row.lifecycle_status == "active"
+
+
+def test_m4a_user_a_cannot_delete_workspace_b_document(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    doc_id = truth_ids.document_id("workspace-b-delete-target")
+    _seed_workspace_document(
+        truth_session,
+        truth_ids=truth_ids,
+        document_id=doc_id,
+        version_id=truth_ids.version_id("workspace-b-delete-target"),
+        chunk_id=truth_ids.chunk_id("workspace-b-delete-target"),
+        workspace_id=truth_seed["other_workspace_id"],
+        title=f"Workspace B Delete Target {truth_ids.slug}",
+        content=f"{truth_ids.term('m4a-lifecycle-isolation')} delete target",
+    )
+    client = _client(token=truth_seed["token"], workspace_id=truth_seed["workspace_id"])
+
+    response = client.delete(f"/documents/{doc_id}")
+
+    assert response.status_code == 404
+    row = truth_session.execute(
+        text("select lifecycle_status from documents where id = :id"),
+        {"id": doc_id},
+    ).one()
+    assert row.lifecycle_status == "active"
+
+
+def test_m4a_logout_revokes_session(truth_seed: dict[str, str]) -> None:
+    client = TestClient(
+        app,
+        headers={"Authorization": f"Bearer {truth_seed['token']}"},
+        raise_server_exceptions=False,
+    )
+
+    logout_response = client.post("/api/v1/auth/logout")
+    me_response = client.get("/api/v1/auth/me")
+
+    assert logout_response.status_code == 204
+    assert me_response.status_code == 401
+    assert me_response.json()["error"]["code"] == "AUTH_REQUIRED"
+
+
+def _client(*, token: str, workspace_id: str) -> TestClient:
     return TestClient(
         app,
         headers={
@@ -179,6 +292,7 @@ def _client(*, token: str = TRUTH_SESSION_TOKEN, workspace_id: str) -> TestClien
 def _seed_workspace_document(
     session: Session,
     *,
+    truth_ids: TruthIds,
     document_id: str,
     version_id: str,
     chunk_id: str,
@@ -201,9 +315,9 @@ def _seed_workspace_document(
         {
             "document_id": document_id,
             "workspace_id": workspace_id,
-            "owner_user_id": TRUTH_USER_ID,
+            "owner_user_id": truth_ids.user_id,
             "title": title,
-            "content_hash": f"hash-{document_id}",
+            "content_hash": truth_ids.content_hash(f"workspace-document-{document_id}"),
             "created_at": created,
         },
     )
@@ -245,7 +359,7 @@ def _seed_workspace_document(
             "heading_path": json.dumps([]),
             "anchor": f"truth-{chunk_id}",
             "content": content,
-            "content_hash": f"chunk-{chunk_id}",
+            "content_hash": truth_ids.content_hash(f"workspace-chunk-{chunk_id}"),
             "metadata": json.dumps(
                 {
                     "source_anchor": {

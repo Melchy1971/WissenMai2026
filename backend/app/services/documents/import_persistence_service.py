@@ -10,6 +10,7 @@ from app.models.import_models import NormalizedDocument
 from app.observability.logging import log_event, log_import_event
 from app.services.advisory_lock import advisory_lock_on_connection
 from app.services.chunking_service import MarkdownChunkingService
+from app.services.original_file_store import OriginalFileStore
 
 
 
@@ -24,8 +25,13 @@ class PersistedImportDocument:
 
 
 class DocumentImportPersistenceService:
-    def __init__(self, chunking_service: MarkdownChunkingService | None = None) -> None:
+    def __init__(
+        self,
+        chunking_service: MarkdownChunkingService | None = None,
+        original_file_store: OriginalFileStore | None = None,
+    ) -> None:
         self._chunking_service = chunking_service or MarkdownChunkingService()
+        self._original_file_store = original_file_store or OriginalFileStore()
 
     def persist_import(
         self,
@@ -36,6 +42,8 @@ class DocumentImportPersistenceService:
         mime_type: str,
         content_hash: str,
         document: NormalizedDocument,
+        source_filename: str,
+        source_bytes: bytes,
         connection: psycopg.Connection | None = None,
     ) -> PersistedImportDocument:
         if connection is not None:
@@ -47,6 +55,8 @@ class DocumentImportPersistenceService:
                 mime_type=mime_type,
                 content_hash=content_hash,
                 document=document,
+                source_filename=source_filename,
+                source_bytes=source_bytes,
             )
 
         with get_connection() as managed_connection:
@@ -58,6 +68,8 @@ class DocumentImportPersistenceService:
                 mime_type=mime_type,
                 content_hash=content_hash,
                 document=document,
+                source_filename=source_filename,
+                source_bytes=source_bytes,
             )
 
     def _persist_import_on_connection(
@@ -70,6 +82,8 @@ class DocumentImportPersistenceService:
         mime_type: str,
         content_hash: str,
         document: NormalizedDocument,
+        source_filename: str,
+        source_bytes: bytes,
     ) -> PersistedImportDocument:
         with advisory_lock_on_connection(
             connection,
@@ -89,6 +103,8 @@ class DocumentImportPersistenceService:
                 mime_type=mime_type,
                 content_hash=content_hash,
                 document=document,
+                source_filename=source_filename,
+                source_bytes=source_bytes,
             )
 
     def _insert_document(
@@ -101,9 +117,20 @@ class DocumentImportPersistenceService:
         mime_type: str,
         content_hash: str,
         document: NormalizedDocument,
+        source_filename: str,
+        source_bytes: bytes,
     ) -> PersistedImportDocument:
         document_id = str(uuid4())
         version_id = str(uuid4())
+        original_file = self._original_file_store.store_source_file(
+            workspace_id=workspace_id,
+            document_id=document_id,
+            content_hash=content_hash,
+            filename=source_filename,
+            source_bytes=source_bytes,
+        )
+        version_metadata = dict(document.metadata)
+        version_metadata["backup_original"] = original_file
         parser_type = parser_type_from_document(document)
         chunking_start = perf_counter()
         log_import_event(
@@ -208,7 +235,7 @@ class DocumentImportPersistenceService:
                         document.ocr_used,
                         document.ki_provider,
                         document.ki_model,
-                        Jsonb(document.metadata),
+                        Jsonb(version_metadata),
                     ),
                 )
                 cursor.execute(

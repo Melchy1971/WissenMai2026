@@ -5,7 +5,6 @@ from pathlib import Path
 import time
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.db import session as db_session_module
@@ -39,8 +38,7 @@ def main() -> int:
     db_session_module._engine = engine
     jobs_module.SearchIndexRebuildService = CrashRebuildService
     try:
-        with Session(engine) as session:
-            process_search_index_rebuild_job(job_id, session.connection())
+        process_search_index_rebuild_job(job_id, engine)
     finally:
         engine.dispose()
     return 0

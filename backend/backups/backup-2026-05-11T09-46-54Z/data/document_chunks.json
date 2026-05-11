@@ -1,0 +1,863 @@
+[
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0000",
+    "chunk_index": 0,
+    "content": "Anleitung: DHCP-Server unter Windows Server 2016 einrichten\n\nAnleitung: DHCP-Server unter Windows Server 2016 einrichten\n",
+    "content_hash": "282b6900902c9a3f3daccf6933b1ece45f542f6292b32c4a52bec11bb7fe07b1",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [],
+    "id": "0384b0ef-919f-4981-acf1-15b3ceed0b96",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "paragraph",
+        "paragraph"
+      ],
+      "char_count": 121,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 120,
+        "char_start": 0,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'2016':8,17 'anleitung':1,10 'dhcp':3,12 'dhcp-server':2,11 'einrichten':9,18 'server':4,7,13,16 'unter':5,14 'windows':6,15",
+    "token_estimate": 31
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0011",
+    "chunk_index": 11,
+    "content": "# 3. DHCP-Server autorisieren (falls Mitglied einer Dom\u00e4ne)\n",
+    "content_hash": "774f1fcb98023389d2e6d242bda77f4be72e65a4068272e8a20cc46dd216ba32",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "3. DHCP-Server autorisieren (falls Mitglied einer Dom\u00e4ne)"
+    ],
+    "id": "157f034f-55f0-46fa-9592-2d20d9a07b58",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 60,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 888,
+        "char_start": 829,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'3':1 'autorisieren':5 'dhcp':3 'dhcp-server':2 'dom\u00e4ne':9 'einer':8 'falls':6 'mitglied':7 'server':4",
+    "token_estimate": 15
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0020",
+    "chunk_index": 20,
+    "content": "# 4. Bereich aktivieren ausw\u00e4hlen.\n",
+    "content_hash": "b16236e2c9eb783905c085002fc703d65f08b83610c544f27b3c93a5188aacdb",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "4. Bereich aktivieren ausw\u00e4hlen."
+    ],
+    "id": "1888568d-732b-4687-82da-50984ebb63f6",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 35,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 1774,
+        "char_start": 1740,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'4':1 'aktivieren':3 'ausw\u00e4hlen':4 'bereich':2",
+    "token_estimate": 9
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0003",
+    "chunk_index": 3,
+    "content": "# a) \u00dcber den Server-Manager:\n",
+    "content_hash": "8d2cf8bab033b9165534543dd60e11ec2b9569d90600e19b6a572b9ad330f813",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "a) \u00dcber den Server-Manager:"
+    ],
+    "id": "29b86538-3971-4215-ad82-afb8ab4cbacd",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 30,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 413,
+        "char_start": 384,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'a':1 'den':3 'manager':6 'server':5 'server-manager':4 '\u00fcber':2",
+    "token_estimate": 8
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0022",
+    "chunk_index": 22,
+    "content": "# 6. DHCP-Server testen\n\n- - Client in das Netzwerk einbinden und auf automatische IP-Konfiguration stellen.\n\n- - Mit ipconfig /renew (Windows) die Adresse neu anfordern.\n\n- - \u00dcberpr\u00fcfen, ob die gew\u00fcnschte IP-Adresse, Gateway und DNS zugewiesen wurden.\n",
+    "content_hash": "cb1429d976654eb40b1a27eddd322aaf32aef45d8ddb07ea1f406bc40d1c078c",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "6. DHCP-Server testen"
+    ],
+    "id": "3f232951-4dc6-408c-9c19-339106926a9a",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading",
+        "paragraph",
+        "paragraph",
+        "paragraph"
+      ],
+      "char_count": 253,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 2304,
+        "char_start": 2052,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'/renew':20 '6':1 'adresse':23,32 'anfordern':25 'auf':12 'automatische':13 'client':6 'das':8 'dhcp':3 'dhcp-server':2 'die':22,28 'dns':35 'einbinden':10 'gateway':33 'gew\u00fcnschte':29 'in':7 'ip':15,31 'ip-adresse':30 'ip-konfiguration':14 'ipconfig':19 'konfiguration':16 'mit':18 'netzwerk':9 'neu':24 'ob':27 'server':4 'stellen':17 'testen':5 'und':11,34 'windows':21 'wurden':37 'zugewiesen':36 '\u00fcberpr\u00fcfen':26",
+    "token_estimate": 64
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0010",
+    "chunk_index": 10,
+    "content": "# 7. Nach Abschluss den Assistenten zur DHCP-Konfiguration \u00f6ffnen (Popup beachten).\n",
+    "content_hash": "d5d8647c9ca87b70e6032dcbd992b64bf2ad5fc8aa1c32c4d733d7dc0023ea44",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "7. Nach Abschluss den Assistenten zur DHCP-Konfiguration \u00f6ffnen (Popup beachten)."
+    ],
+    "id": "4b029f01-4618-4547-8ec5-13d7f23c5de4",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 84,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 827,
+        "char_start": 744,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'7':1 'abschluss':3 'assistenten':5 'beachten':12 'den':4 'dhcp':8 'dhcp-konfiguration':7 'konfiguration':9 'nach':2 'popup':11 'zur':6 '\u00f6ffnen':10",
+    "token_estimate": 21
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0006",
+    "chunk_index": 6,
+    "content": "# 3. Den aktuellen Server ausw\u00e4hlen.\n",
+    "content_hash": "ea61e311511c2e114591529f40e0b6244b7050c650edc0c72b42deaf6a487d11",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "3. Den aktuellen Server ausw\u00e4hlen."
+    ],
+    "id": "563cf4cb-1808-4bd8-ba0e-0ce1b749f3d4",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 37,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 589,
+        "char_start": 553,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'3':1 'aktuellen':3 'ausw\u00e4hlen':5 'den':2 'server':4",
+    "token_estimate": 10
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0019",
+    "chunk_index": 19,
+    "content": "# 3. Assistenten durchgehen und folgende Daten eingeben:\n\n- - Name: Z. B. \u201eLAN-Bereich\u201c\n\n- - Start-IP: Z. B. 192.168.1.100\n\n- - End-IP: Z. B. 192.168.1.200\n\n- - Subnetzmaske: Z. B. 255.255.255.0\n\n- - Ausschl\u00fcsse: Optional (Adressen, die NICHT vergeben werden sollen)\n\n- - Lease-Dauer: Standard (z. B. 8 Tage) oder anpassen\n\n- - Gateway (Router): IP-Adresse des Routers eintragen\n\n- - DNS-Server: Lokalen oder externen DNS eintragen\n\n- - WINS: In der Regel leer lassen\n",
+    "content_hash": "23c73461f05137ffba7b0206b2d348ff8a4b18783a1b475bc3f9f75a412761b8",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "3. Assistenten durchgehen und folgende Daten eingeben:"
+    ],
+    "id": "5d9f8e78-cb4d-4038-9c4d-2e581ffe2605",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph"
+      ],
+      "char_count": 468,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 1738,
+        "char_start": 1271,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'192.168.1.100':19 '192.168.1.200':25 '255.255.255.0':29 '3':1 '8':44 'adresse':52 'adressen':32 'anpassen':47 'assistenten':2 'ausschl\u00fcsse':30 'b':10,18,24,28,43 'bereich':13 'daten':6 'dauer':40 'der':66 'des':53 'die':33 'dns':57,62 'dns-server':56 'durchgehen':3 'eingeben':7 'eintragen':55,63 'end':21 'end-ip':20 'externen':61 'folgende':5 'gateway':48 'in':65 'ip':16,22,51 'ip-adresse':50 'lan':12 'lan-bereich':11 'lassen':69 'lease':39 'lease-dauer':38 'leer':68 'lokalen':59 'name':8 'nicht':34 'oder':46,60 'optional':31 'regel':67 'router':49 'routers':54 'server':58 'sollen':37 'standard':41 'start':15 'start-ip':14 'subnetzmaske':26 'tage':45 'und':4 'vergeben':35 'werden':36 'wins':64 'z':9,17,23,27,42",
+    "token_estimate": 117
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0012",
+    "chunk_index": 12,
+    "content": "# 1. Nach der Installation im Server-Manager auf das gelbe Warndreieck klicken.\n",
+    "content_hash": "284c0c1f16f4220b93178a8d06cbb4b47ffb8aea7c4db3ee206608e1d9b7f1ce",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "1. Nach der Installation im Server-Manager auf das gelbe Warndreieck klicken."
+    ],
+    "id": "5fc6e725-5f86-433a-87b4-493b18daa16c",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 80,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 969,
+        "char_start": 890,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'1':1 'auf':9 'das':10 'der':3 'gelbe':11 'im':5 'installation':4 'klicken':13 'manager':8 'nach':2 'server':7 'server-manager':6 'warndreieck':12",
+    "token_estimate": 20
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0001",
+    "chunk_index": 1,
+    "content": "# 1. Voraussetzungen pr\u00fcfen\n\n- - Windows Server 2016 installiert\n\n- - Lokale oder Dom\u00e4nen-Administratorrechte\n\n- - Feste IP-Adresse f\u00fcr den Server (kein DHCP!)\n\n- - Netzwerkgrundlagen (IP-Bereich, Subnetzmaske etc.) bekannt\n",
+    "content_hash": "c0a70d1ebbf9279fdb1cb63cd9aadd4a589708e39cbbbbc30a7219e3f778a311",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "1. Voraussetzungen pr\u00fcfen"
+    ],
+    "id": "7044c971-a00b-47fa-bdd1-ab0bb82885b4",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph"
+      ],
+      "char_count": 224,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 345,
+        "char_start": 122,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'1':1 '2016':6 'administratorrechte':12 'adresse':16 'bekannt':28 'bereich':25 'den':18 'dhcp':21 'dom\u00e4nen':11 'dom\u00e4nen-administratorrechte':10 'etc':27 'feste':13 'f\u00fcr':17 'installiert':7 'ip':15,24 'ip-adresse':14 'ip-bereich':23 'kein':20 'lokale':8 'netzwerkgrundlagen':22 'oder':9 'pr\u00fcfen':3 'server':5,19 'subnetzmaske':26 'voraussetzungen':2 'windows':4",
+    "token_estimate": 56
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0009",
+    "chunk_index": 9,
+    "content": "# 6. Installation mit Installieren starten.\n",
+    "content_hash": "5671e4461d16065e97198c946646cdf7ee5eb03259f8b9849f646f59464597dc",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "6. Installation mit Installieren starten."
+    ],
+    "id": "8b9f62e3-4bbf-4e1e-8729-cca8eb61ba8b",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 44,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 742,
+        "char_start": 699,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'6':1 'installation':2 'installieren':4 'mit':3 'starten':5",
+    "token_estimate": 11
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0015",
+    "chunk_index": 15,
+    "content": "# 4. Best\u00e4tigen.\n",
+    "content_hash": "66814faf87891b7df62378c87f40cf78bb554cde40eb1c04282ccb1989a54df3",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "4. Best\u00e4tigen."
+    ],
+    "id": "8e0f889e-a069-4066-8aad-4467d1a65c26",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 17,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 1102,
+        "char_start": 1086,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'4':1 'best\u00e4tigen':2",
+    "token_estimate": 5
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0013",
+    "chunk_index": 13,
+    "content": "# 2. DHCP-Konfiguration abschlie\u00dfen ausw\u00e4hlen.\n",
+    "content_hash": "b81ec292412354c89627c2783ee621864e28eae8f1bc876cf33d0f5314aff3f3",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "2. DHCP-Konfiguration abschlie\u00dfen ausw\u00e4hlen."
+    ],
+    "id": "8f7c13d6-f6c1-450a-933f-1c2548d206f3",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 47,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 1017,
+        "char_start": 971,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'2':1 'abschlie\u00dfen':5 'ausw\u00e4hlen':6 'dhcp':3 'dhcp-konfiguration':2 'konfiguration':4",
+    "token_estimate": 12
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0007",
+    "chunk_index": 7,
+    "content": "# 4. Die Rolle \u201eDHCP-Server\u201c markieren.\n",
+    "content_hash": "b057adc414c7036aa1eb9fea2e1f9ca1f5b2c26173249dc1810fc2ce996ca0f3",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "4. Die Rolle \u201eDHCP-Server\u201c markieren."
+    ],
+    "id": "93922951-ed97-4f00-b73e-dac6e4410dc0",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 40,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 630,
+        "char_start": 591,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'4':1 'dhcp':5 'dhcp-server':4 'die':2 'markieren':7 'rolle':3 'server':6",
+    "token_estimate": 10
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0005",
+    "chunk_index": 5,
+    "content": "# 2. \u201eRollenbasierte oder featurebasierte Installation\u201c ausw\u00e4hlen.\n",
+    "content_hash": "475d4b76571409c4ffee3af5101ab7244374d9351ad4b5fb2b61a67a82652f00",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "2. \u201eRollenbasierte oder featurebasierte Installation\u201c ausw\u00e4hlen."
+    ],
+    "id": "b5d6f6c4-02c8-4af4-920b-d8d9b7ffc115",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 67,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 551,
+        "char_start": 485,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'2':1 'ausw\u00e4hlen':6 'featurebasierte':4 'installation':5 'oder':3 'rollenbasierte':2",
+    "token_estimate": 17
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0023",
+    "chunk_index": 23,
+    "content": "# 7. Typische Fehlerquellen\n\n- - Server hat selbst eine dynamische IP: DHCP-Server verlangt eine statische IP!\n\n- - DHCP-Service ist nicht gestartet: In den Diensten pr\u00fcfen.\n\n- - Firewall blockiert DHCP: UDP-Port 67 und 68 m\u00fcssen offen sein.\n\n- - Bereich ist deaktiviert oder keine freien Adressen mehr vorhanden.\n",
+    "content_hash": "e0f753a5e260da9558c9875a76f178ed42167402e3df1ab21886eb52ce1347da",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "7. Typische Fehlerquellen"
+    ],
+    "id": "b7ad613c-4a89-4b29-bf8e-82ba64dcb6c2",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph"
+      ],
+      "char_count": 314,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 2619,
+        "char_start": 2306,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'67':33 '68':35 '7':1 'adressen':45 'bereich':39 'blockiert':28 'deaktiviert':41 'den':24 'dhcp':11,18,29 'dhcp-server':10 'dhcp-service':17 'diensten':25 'dynamische':8 'eine':7,14 'fehlerquellen':3 'firewall':27 'freien':44 'gestartet':22 'hat':5 'in':23 'ip':9,16 'ist':20,40 'keine':43 'mehr':46 'm\u00fcssen':36 'nicht':21 'oder':42 'offen':37 'port':32 'pr\u00fcfen':26 'sein':38 'selbst':6 'server':4,12 'service':19 'statische':15 'typische':2 'udp':31 'udp-port':30 'und':34 'verlangt':13 'vorhanden':47",
+    "token_estimate": 79
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0016",
+    "chunk_index": 16,
+    "content": "# 4. DHCP-Bereich (Scope) anlegen\n",
+    "content_hash": "dceb2688cf373de353f80b83b58088e2c5848f9476d9b8c4440ea0d9fd6b6e81",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "4. DHCP-Bereich (Scope) anlegen"
+    ],
+    "id": "c63b954a-d93d-4f9d-9c35-7d790b4adad0",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 34,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 1137,
+        "char_start": 1104,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'4':1 'anlegen':6 'bereich':4 'dhcp':3 'dhcp-bereich':2 'scope':5",
+    "token_estimate": 9
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0014",
+    "chunk_index": 14,
+    "content": "# 3. Benutzerkonto f\u00fcr die Autorisierung angeben (Dom\u00e4nen-Admin).\n",
+    "content_hash": "bf7d55a3a5c290268782d4c16b9d05a9d41ef56e64e4bd95e32928d82e0b6d74",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "3. Benutzerkonto f\u00fcr die Autorisierung angeben (Dom\u00e4nen-Admin)."
+    ],
+    "id": "d4a29455-5a0f-43fb-b695-f8983284aeb1",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 66,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 1084,
+        "char_start": 1019,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'3':1 'admin':9 'angeben':6 'autorisierung':5 'benutzerkonto':2 'die':4 'dom\u00e4nen':8 'dom\u00e4nen-admin':7 'f\u00fcr':3",
+    "token_estimate": 17
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0018",
+    "chunk_index": 18,
+    "content": "# 2. Im linken Baum auf den Servernamen \u2192 IPv4 \u2192 Rechtsklick \u2192 Neuer Bereich.\n",
+    "content_hash": "b2d22cf7b0569d713fb31d475fc5e466d3474afa520774f5e0ce04542a1f114a",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "2. Im linken Baum auf den Servernamen \u2192 IPv4 \u2192 Rechtsklick \u2192 Neuer Bereich."
+    ],
+    "id": "d5f9e424-0102-493a-bb1b-42329605d9b7",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 78,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 1269,
+        "char_start": 1192,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'2':1 'auf':5 'baum':4 'bereich':11 'den':6 'im':2 'ipv4':8 'linken':3 'neuer':10 'rechtsklick':9 'servernamen':7",
+    "token_estimate": 20
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0004",
+    "chunk_index": 4,
+    "content": "# 1. Im Server-Manager auf \u201eRollen und Features hinzuf\u00fcgen\u201c klicken.\n",
+    "content_hash": "0f5a3a27a2cea0ce51717974f494c434a7ebbba397be61074dd4e7a139136206",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "1. Im Server-Manager auf \u201eRollen und Features hinzuf\u00fcgen\u201c klicken."
+    ],
+    "id": "d7131f7d-46c4-4479-8423-efbae26024b9",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 69,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 483,
+        "char_start": 415,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'1':1 'auf':6 'features':9 'hinzuf\u00fcgen':10 'im':2 'klicken':11 'manager':5 'rollen':7 'server':4 'server-manager':3 'und':8",
+    "token_estimate": 18
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0017",
+    "chunk_index": 17,
+    "content": "# 1. Im Server-Manager unter \u201eTools\u201c \u2192 DHCP \u00f6ffnen.\n",
+    "content_hash": "c706710b58389ded643a093faf57864ac2eaae2259286c7fa508b4dd33ac83db",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "1. Im Server-Manager unter \u201eTools\u201c \u2192 DHCP \u00f6ffnen."
+    ],
+    "id": "d914443b-60e3-4bdc-9db5-01525ebb884b",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 52,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 1190,
+        "char_start": 1139,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'1':1 'dhcp':8 'im':2 'manager':5 'server':4 'server-manager':3 'tools':7 'unter':6 '\u00f6ffnen':9",
+    "token_estimate": 13
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0025",
+    "chunk_index": 25,
+    "content": "# Hinweis:\n\nDiese Anleitung basiert auf Microsoft-Best-Practice und verzichtet bewusst auf nicht dokumentierte Einstellungen oder Spekulationen. Bei Sonderf\u00e4llen (z. B. mehreren Subnetzen, VLANs, Filterregeln) ist eine erweiterte Konfiguration n\u00f6tig.\n",
+    "content_hash": "24aa63dcde26503fd5ed7774bf1d0be9221404eeefdc29d76169df4f993d5864",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "Hinweis:"
+    ],
+    "id": "e8d29243-1bda-4a14-b659-994fde544788",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading",
+        "paragraph"
+      ],
+      "char_count": 251,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 3292,
+        "char_start": 3042,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'anleitung':3 'auf':5,13 'b':22 'basiert':4 'bei':19 'best':8 'bewusst':12 'diese':2 'dokumentierte':15 'eine':28 'einstellungen':16 'erweiterte':29 'filterregeln':26 'hinweis':1 'ist':27 'konfiguration':30 'mehreren':23 'microsoft':7 'microsoft-best-practice':6 'nicht':14 'n\u00f6tig':31 'oder':17 'practice':9 'sonderf\u00e4llen':20 'spekulationen':18 'subnetzen':24 'und':10 'verzichtet':11 'vlans':25 'z':21",
+    "token_estimate": 63
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0002",
+    "chunk_index": 2,
+    "content": "# 2. DHCP-Server-Rolle installieren\n",
+    "content_hash": "88edd39f01d560d9a9fb70084c3c62cb269d31dc73d6331e89edd962b29842a8",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "2. DHCP-Server-Rolle installieren"
+    ],
+    "id": "ef284010-456e-4a56-a477-02f5d833a066",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 36,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 382,
+        "char_start": 347,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'2':1 'dhcp':3 'dhcp-server-rolle':2 'installieren':6 'rolle':5 'server':4",
+    "token_estimate": 9
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0024",
+    "chunk_index": 24,
+    "content": "# 8. DHCP-Backup und Verwaltung\n\n- - Backup: Standardm\u00e4\u00dfig unter C:\\Windows\\System32\\dhcp\\backup\\\n\n- - Verwaltung: Per DHCP-Konsole, PowerShell oder Remote-Tools m\u00f6glich\n\nPowerShell: DHCP-Bereich anlegen (optional)\n\nAdd-DhcpServerv4Scope -Name \"LAN\" -StartRange 192.168.1.100 -EndRange 192.168.1.200 -SubnetMask 255.255.255.0\n\nSet-DhcpServerv4OptionValue -ScopeId 192.168.1.0 -Router 192.168.1.1 -DnsServer 192.168.1.10\n",
+    "content_hash": "9e3a92ecc8a28bcd6c9c5906365866743253237657734644b145ef11bc13951d",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "8. DHCP-Backup und Verwaltung"
+    ],
+    "id": "f08f2ec8-fa51-47b5-bafb-cd3a2fd1c4fe",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph"
+      ],
+      "char_count": 420,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 3040,
+        "char_start": 2621,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'192.168.1.0':47 '192.168.1.1':49 '192.168.1.10':51 '192.168.1.100':38 '192.168.1.200':40 '255.255.255.0':42 '8':1 'add':33 'add-dhcpserverv4scope':32 'anlegen':30 'backup':4,7,14 'bereich':29 'c':10 'dhcp':3,13,18,28 'dhcp-backup':2 'dhcp-bereich':27 'dhcp-konsole':17 'dhcpserverv4optionvalue':45 'dhcpserverv4scope':34 'dnsserver':50 'endrange':39 'konsole':19 'lan':36 'm\u00f6glich':25 'name':35 'oder':21 'optional':31 'per':16 'powershell':20,26 'remote':23 'remote-tools':22 'router':48 'scopeid':46 'set':44 'set-dhcpserverv4optionvalue':43 'standardm\u00e4\u00dfig':8 'startrange':37 'subnetmask':41 'system32':12 'tools':24 'und':5 'unter':9 'verwaltung':6,15 'windows':11",
+    "token_estimate": 105
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0008",
+    "chunk_index": 8,
+    "content": "# 5. Eventuelle Abh\u00e4ngigkeiten best\u00e4tigen und auf Weiter klicken.\n",
+    "content_hash": "a3b1bb8b155c8c6226d71eb3414a5862b0d5fe0d2f20cb79371e04172533cb86",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "5. Eventuelle Abh\u00e4ngigkeiten best\u00e4tigen und auf Weiter klicken."
+    ],
+    "id": "f25ac009-1b08-4933-bdb2-4c868d269e43",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading"
+      ],
+      "char_count": 66,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 697,
+        "char_start": 632,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'5':1 'abh\u00e4ngigkeiten':3 'auf':6 'best\u00e4tigen':4 'eventuelle':2 'klicken':8 'und':5 'weiter':7",
+    "token_estimate": 17
+  },
+  {
+    "anchor": "dv:04b1a28e-64fa-4377-909c-8bac07d30601:c0021",
+    "chunk_index": 21,
+    "content": "# 5. DHCP-Optionen konfigurieren (optional, aber empfohlen)\n\n- - Rechtsklick auf den neuen Bereich \u2192 Bereichsoptionen konfigurieren\n\n- - 003 Router: Gateway-IP (z. B. 192.168.1.1)\n\n- - 006 DNS-Server: DNS-IP (z. B. 192.168.1.10)\n\n- - 015 DNS-Dom\u00e4nenname: z. B. \u201efirma.local\u201c\n",
+    "content_hash": "2fcb302d62f0c688724d9b2a2a8681b6c45c190ab1fa6ba458a989a0131c769e",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "document_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "heading_path": [
+      "5. DHCP-Optionen konfigurieren (optional, aber empfohlen)"
+    ],
+    "id": "fcbaa05d-9993-435e-8ce0-36bc0b68080f",
+    "is_searchable": true,
+    "metadata": {
+      "block_types": [
+        "heading",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "paragraph"
+      ],
+      "char_count": 275,
+      "contains_code": false,
+      "contains_table": false,
+      "max_chars": 2400,
+      "source_anchor": {
+        "char_end": 2050,
+        "char_start": 1776,
+        "page": null,
+        "paragraph": null,
+        "type": "docx_paragraph"
+      }
+    },
+    "search_vector": "'003':16 '006':24 '015':34 '192.168.1.1':23 '192.168.1.10':33 '5':1 'aber':7 'auf':10 'b':22,32,39 'bereich':13 'bereichsoptionen':14 'den':11 'dhcp':3 'dhcp-optionen':2 'dns':26,29,36 'dns-dom\u00e4nenname':35 'dns-ip':28 'dns-server':25 'dom\u00e4nenname':37 'empfohlen':8 'firma.local':40 'gateway':19 'gateway-ip':18 'ip':20,30 'konfigurieren':5,15 'neuen':12 'optional':6 'optionen':4 'rechtsklick':9 'router':17 'server':27 'z':21,31,38",
+    "token_estimate": 69
+  }
+]

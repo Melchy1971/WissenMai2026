@@ -22,10 +22,10 @@ function TelekomLogo() {
 
 export function AppShell() {
   const navigate = useNavigate();
-  const { token, user, active_workspace_id: workspaceId, clearAuthState } = useAuth();
+  const { token, user, active_workspace_id: workspaceId, signOut } = useAuth();
 
-  function handleLogout() {
-    clearAuthState();
+  async function handleLogout() {
+    await signOut();
     navigate('/login', { replace: true });
   }
 

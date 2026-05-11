@@ -1,0 +1,15 @@
+{
+  "config/app-config.json": "3957f2f1688652fed9592ca8d438b16e604fbfdf0b812351b632d6d7beb9ffcc",
+  "data/auth_sessions.json": "47f561da765819e494dcb6fde36fcf0fa89d059b793799b3fcc834ca56f6151e",
+  "data/background_jobs.json": "c3df36687d21bcfe517482448b496a9d9b90dd7baa35649be03d5dc69a4601e7",
+  "data/chat_citations.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+  "data/chat_messages.json": "bbaddf5b47912b9044152a5a1504dcb910c7db8538d3ddf645ccf04b353c0a91",
+  "data/chat_sessions.json": "653ba1285e5a270c1e5ccb3fb49f72355da058b57f96a2273e6c94ec8e3de234",
+  "data/document_chunks.json": "887d98440d981576a0b3f847a4c70e79c59e423828926a60071065eb230d4a0f",
+  "data/document_versions.json": "30e200c829e0d41357a85ce1e41415fe1f6b0ea5d81574c0342758b0c83515b2",
+  "data/documents.json": "898fc57d3240452ac79cfeb683ac9f1dc48c3102d27f8cc40df54a64e5c2a72e",
+  "data/users.json": "125738e5edc12c173ab09232896ecd441476de8e172db11bb2a030e687b9d9ca",
+  "data/workspace_memberships.json": "57c67d806b51023b88385af51e0b03806245cd152a67c93deb2b275279188cfe",
+  "data/workspaces.json": "6205112f2985947cd75c981b5b7bea6dc24a4222165e0a94117eb33613559717",
+  "manifest.json": "21ae425c74eeebde7f6d10e1bff6b42b2e1df93ec079911195b15aee63a01d02"
+}

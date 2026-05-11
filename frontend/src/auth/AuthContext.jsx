@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
-import { getAuthSession } from '../api/auth.js';
+import { getAuthSession, logout } from '../api/auth.js';
 import { getApiRequestContext, setApiRequestContext } from '../api/client.js';
 
 const AUTH_STATE_STORAGE_KEY = 'wissen.authState';
@@ -277,6 +277,17 @@ export function AuthProvider({ children, initialAuthState = null }) {
       setBootstrapError(null);
       applyApiContext({});
       setAuthState(normalizeAuthState());
+    },
+    async signOut() {
+      try {
+        if (authState.token) {
+          await logout();
+        }
+      } finally {
+        setBootstrapError(null);
+        applyApiContext({});
+        setAuthState(normalizeAuthState());
+      }
     },
   }), [authState, bootstrapError, isBootstrapping]);
 

@@ -222,6 +222,8 @@ class ImportExecutor:
                 mime_type=mime_type,
                 content_hash=import_result.source_content_hash,
                 document=import_result.document,
+                source_filename=filename,
+                source_bytes=source_bytes,
                 connection=connection,
             )
         except ChunkingError as exc:

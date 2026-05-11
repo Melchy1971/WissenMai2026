@@ -166,18 +166,21 @@ M4 Statusmatrix am 2026-05-07:
 
 | Bereich | Gate-Quelle | Status |
 |---|---|---|
-| M4 Truth Gate | `reports/postgres_truth_report.json` + `scripts/validate_m4_truth_gate.py` | blockiert |
+| M4 Truth Gate | `reports/postgres_truth_report.json` + `scripts/validate_m4_truth_gate.py` | PASS |
 | M4a Auth & Workspace Isolation | nur ueber JSON-Report als Teil von `postgres_truth` | nicht manuell freigegeben |
 | M4b Upload/API Stabilitaet | nur ueber JSON-Report als Teil von `postgres_truth` | nicht manuell freigegeben |
 | M4c Lifecycle | nur ueber JSON-Report als Teil von `postgres_truth` | nicht manuell freigegeben |
 | M4d Diagnostics | read-only vorbereitet | nicht vollstaendig abgeschlossen |
-| M4e Backup/Restore | Konzept | nicht implementiert |
+| M4e Backup/Restore | Minimal-Scope vor M5 erforderlich | nicht implementiert |
 
 Gesamtentscheidung fuer M4:
 
-- M4 ist nach dem aktuellen Truth-Gate **nicht technisch stabilisiert**.
-- M5 bleibt blockiert, bis `scripts/validate_m4_truth_gate.py` auf Basis von `reports/postgres_truth_report.json` `M4 Truth Gate = PASS` liefert.
+- Das aktuelle Truth-Gate steht auf `PASS`, stabilisiert M4 aber nicht allein.
+- M4 ist trotz gruenem Truth-Gate insgesamt noch **nicht technisch stabilisiert**.
+- M5 bleibt nicht mehr am Truth-Gate selbst haengen, sondern an offenen Restgates.
+- M5 bleibt zusaetzlich blockiert, bis M4e im Minimal-Scope nachgewiesen ist.
 - M5 bleibt zusaetzlich bis zu einer vollstaendigen Dokumentationspruefung blockiert.
+- M4d read-only bleibt der einzig zulaessige Diagnostics-Scope; M4d full mit mutierenden Admin-Aktionen bleibt blockiert.
 - Die kompakte Freigabefassung fuer den aktuell zulaessigen Dokumentationsstand steht in `docs/m4-m5-freigabefassung.md`.
 
 ### Finale Wahrheitsmatrix fuer M4-Dokumentation
@@ -191,7 +194,7 @@ Gesamtentscheidung fuer M4:
 | PostgreSQL Truth-Tests ersetzen ohne `TEST_DATABASE_URL` einen echten Nachweis | falsch | Skip ohne Test-DB ist kein Stabilitaetsnachweis |
 | Search/Chat-Konsistenz ist als Truth-Test vorbereitet | bewiesen | darf als vorbereitet dokumentiert werden |
 | Search/Chat-Konsistenz ist aktuell mit echter PostgreSQL-DB gruen bewiesen | unbelegt | darf nicht als Freigabegrund dokumentiert werden |
-| Lifecycle-Mutationen sind hart workspace-scoped | falsch | als M4a/M4c-Blocker dokumentieren |
+| Lifecycle-Mutationen sind fuer Fremdworkspace-Zugriffe im API-/Service-Slice nachgewiesen blockiert | bewiesen | darf fuer den vorhandenen Slice dokumentiert werden |
 | Chat-Message-Write ist ueber den aktuellen Request-Kontext workspace-gebunden, aber nicht als vollstaendig abgeschlossener M4a-Endzustand belegt | wahrscheinlich | nicht als Abschlussbeweis fuer M4a verwenden |
 | Historische Citation-Snapshots speichern `quote_preview`, `source_anchor`, `document_title` und `source_status` | bewiesen | darf dokumentiert werden |
 | Observability ist fuer Lifecycle/Retrieval/Reindex vollstaendig | falsch | als fehlende Instrumentierung dokumentieren |
@@ -219,9 +222,9 @@ Stand des Abgleichs mit Code, Tests und Dokumentation am 2026-05-05:
 
 - Ein technischer M4a-Auth-Kern ist im Backend nachweisbar.
 - Implementiert sind Auth-Middleware, Auth-Session-Pruefung, Workspace-Membership-Pruefung sowie serverseitig aufgeloester Request-Kontext fuer geschuetzte Endpunkte.
-- `POST /api/v1/auth/login` und `GET /api/v1/auth/me` sind im Code vorhanden.
+- `POST /api/v1/auth/login`, `POST /api/v1/auth/logout` und `GET /api/v1/auth/me` sind im Code vorhanden.
 - Der Upload ist auth-gebunden und verwendet keinen Default-Workspace-/Default-User-Fallback mehr.
-- Die aktuellen Dokument-, Search-, Chat-, Upload- und Diagnostics-API-Clients nutzen den zentralen Request-Kontext. M4a bleibt dennoch offen, weil Login-/Logout-/Session-Produktfluss und geschuetzte Route-Guards nicht vollstaendig umgesetzt sind.
+- Die aktuellen Dokument-, Search-, Chat-, Upload- und Diagnostics-API-Clients nutzen den zentralen Request-Kontext. Route-Guards, Login-Bootstrap und Logout-Revocation sind vorhanden. M4a bleibt dennoch offen, weil der Produktfluss noch nicht als vollstaendiger Abschluss mit allen Restnachweisen bewertet ist.
 
 Betroffene Endpunkte im aktuellen Stand:
 
@@ -243,9 +246,8 @@ Nachweisbare Fehlercodes mit M4a-Bezug:
 
 Bekannte Einschraenkungen:
 
-- `POST /api/v1/auth/logout` ist nicht implementiert
 - keine CSRF- oder Cookie-Session-Implementierung
-- Frontend nutzt fuer Fachrequests den zentralen Request-Kontext mit `X-Workspace-Id`; ein vollstaendiger Login-/Logout-/Route-Guard-Produktfluss fehlt weiterhin.
+- Frontend nutzt fuer Fachrequests den zentralen Request-Kontext mit `X-Workspace-Id`; der Login-/Logout-/Route-Guard-Produktfluss ist vorhanden, aber noch nicht der gesamte M4a-Endzustand.
 
 Nicht-Scope, das weiterhin nicht geliefert ist:
 
@@ -257,11 +259,11 @@ Nicht-Scope, das weiterhin nicht geliefert ist:
 
 Abschlussbewertung fuer M4a:
 
-- Score: `82/100`
+- Score: `86/100`
 - Dokumentation: jetzt aktualisiert
 - Konsistenz mit dem implementierten Code: **nicht ausreichend fuer Abschluss**
 - Teststatus: Backend-Auth- und Workspace-Schutz sind gut abgedeckt; ein gleichwertiger Frontend-Nachweis fuer einen durchgezogenen Session-Produktfluss fehlt
-- Blocker: Admin- und Teile der GUI arbeiten weiterhin mit altem Query-/Token-Modell statt mit einem voll konsistenten M4a-Session-Kontext
+- Blocker: M4a ist trotz vorhandenem Login-/Logout-/Route-Guard-Slice noch nicht vollstaendig ueber alle angrenzenden Betriebs- und Nachweispfade abgeschlossen
 - Entscheidung: `nicht abgeschlossen`
 
 ### M4b Upload-GUI
@@ -391,7 +393,7 @@ Bekannte Einschraenkungen:
 - `lifecycle_status=deleted` ist als Querywert formal akzeptiert, liefert im Listenpfad aber keine geloeschten Dokumente zurueck
 - kein separater Purge-/Hard-Delete-Betriebsprozess
 - keine dedizierte Admin-Ansicht fuer geloeschte Dokumente
-- Lifecycle-Mutationen sind auth-geschuetzt, aber der Lifecycle-Service wird derzeit nicht mit `workspace_id` aufgerufen; ein harter Fremdworkspace-Mutationstest fehlt
+- Lifecycle-Mutationen sind auth-geschuetzt und der API-/Service-Slice blockiert Fremdworkspace-Mutationen nachweisbar; offen bleiben die vollstaendigen End-to-End-Nachweise gegen reale PostgreSQL-Umgebung
 - die GUI ist fuer Listenfilter, Archive, Restore und Soft-Delete ueber Vitest-Screen-Tests verifiziert
 - Search-/Reindex-Integrationsnachweise gegen PostgreSQL sind aktuell wegen nicht erreichbarer Test-Datenbank unvollstaendig
 - fuer neue Chat-Antworten gibt es keinen eigenen expliziten Lifecycle-Integrationstest jenseits des Retrieval-Ausschlusses
@@ -399,11 +401,11 @@ Bekannte Einschraenkungen:
 
 Abschlussbewertung fuer M4c:
 
-- Score: `88/100`
+- Score: `86/100`
 - Dokumentation: jetzt aktualisiert
 - Konsistenz mit dem implementierten Code: **teilweise, aber nicht vollstaendig hart abgesichert**
 - Teststatus: Backend-Lifecycle, Soft-Delete, historische Citations und GUI-Slice sind lokal gruen belegbar; der PostgreSQL-End-to-End-Pfad fuer Search/Reindex ist aktuell nicht erfolgreich verifiziert
-- Blocker: fehlender gruener PostgreSQL-Integrationslauf, kein eigener Lifecycle-Chat-End-to-End-Nachweis, fehlender harter Workspace-Scope-Nachweis fuer Lifecycle-Mutationen und kein vollstaendiger Browser-E2E ueber angrenzende Lifecycle-/Rebuild-Szenarien
+- Blocker: fehlender gruener PostgreSQL-Integrationslauf, kein eigener Lifecycle-Chat-End-to-End-Nachweis und kein vollstaendiger Browser-E2E ueber angrenzende Lifecycle-/Rebuild-Szenarien
 - Entscheidung: `nicht abgeschlossen`
 
 ### M4d Diagnostics
@@ -445,25 +447,26 @@ Abschlussbewertung fuer M4d:
 
 Stand des Abgleichs mit Code, Tests und Dokumentation am 2026-05-06:
 
-- M4e ist als Konzept definiert.
-- Das bestehende System speichert Originaldateien aktuell noch nicht dauerhaft; ein vollstaendiges M4e-Backup erfordert daher eine neue technische Dateiablage fuer Restore-Zwecke.
-- Backup ist fuer M4e als CLI-first Betriebsprozess definiert.
+- M4e ist als Konzept definiert und als CLI-first Minimalpfad teilweise implementiert.
+- Das System speichert technische Originaldatei-Kopien nun im Importpfad und referenziert sie in Versions-Metadaten fuer Restore-Zwecke.
+- Backup ist fuer M4e als CLI-first Betriebsprozess implementiert.
 - Search-Index ist als rekonstruierbar spezifiziert, nicht als primaeres Backup-Artefakt.
-- Ein nachweisbarer Backup- oder Restore-Codepfad ist im aktuellen Repository nicht implementiert.
-- Es gibt keine echten Backup-/Restore-Tests.
+- Ein nachweisbarer Backup-/Validate-/Restore-/Reindex-Codepfad ist im aktuellen Repository vorhanden unter `app.cli` und `app.services.backup_restore`.
+- Fokussierte Unit-Tests fuer Dateiablage, Backup-Validierung und Restore-Orchestrierung sind vorhanden.
+- Ein praktischer End-to-End-Restore gegen eine leere reale lokale PostgreSQL-Ziel-DB ist nachgewiesen.
 
 Entscheidung:
 
-- Status fuer M4e: `defined`
-- Implementierungsstatus: `missing`
+- Status fuer M4e: `partial`
+- Implementierungsstatus: `partial`
 
 Abschlussbewertung fuer M4e:
 
-- Score: `18/100`
-- Dokumentation: als Konzept konsistent, aber nicht als Implementierung belegt
-- Teststatus: keine operativen Backup-/Restore-Tests
-- Blocker: keine CLI, keine API, keine Restore-Faehigkeit und keine persistierte Originaldatei-Kopie fuer vollstaendige Wiederherstellung
-- Entscheidung: `nicht abgeschlossen`
+- Score: `74/100`
+- Dokumentation: Konzept, Codepfad und lokaler Restore-Nachweis sind nun konsistent dokumentierbar
+- Teststatus: fokussierte Unit-Tests vorhanden; lokaler Restore-Lauf gegen leere reale PostgreSQL-Ziel-DB ist praktisch nachgewiesen
+- Blocker: table-json statt echter externer DB-Dump, Reindex-Ergebnis im Restore-Lauf noch nicht separat ausgabeseitig belegt, keine produktionsnahe externe Zielumgebungs-Validierung
+- Entscheidung: `partial`, noch nicht freigegeben abgeschlossen
 
 Nicht-Scope fuer M4:
 

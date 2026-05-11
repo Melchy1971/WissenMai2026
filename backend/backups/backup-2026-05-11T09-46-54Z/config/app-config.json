@@ -1,0 +1,8 @@
+{
+  "app_env": "local",
+  "default_user_id": "00000000-0000-0000-0000-000000000001",
+  "default_workspace_id": "00000000-0000-0000-0000-000000000001",
+  "import_jobs_temp_dir": null,
+  "max_upload_size_bytes": 52428800,
+  "original_file_store_dir": "H:\\WissenMai2026\\backend\\data\\originals"
+}

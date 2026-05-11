@@ -309,4 +309,39 @@ describe('Auth bootstrap', () => {
       );
     });
   });
+
+  it('revokes the session on logout and returns to login', async () => {
+    window.localStorage.setItem(AUTH_STATE_STORAGE_KEY, JSON.stringify({
+      token: 'real-api-token',
+      user: { id: 'user-1', login: 'mdickscheit', display_name: 'Login User' },
+      memberships: [{ workspace_id: 'workspace-1', role: 'owner' }],
+      active_workspace_id: 'workspace-1',
+    }));
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 204,
+        statusText: 'No Content',
+        headers: new Headers(),
+        json: async () => null,
+      });
+
+    renderApp('/documents');
+
+    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Abmelden' }));
+
+    expect(await screen.findByText('Anmeldung')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v1/auth/logout'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({ Authorization: 'Bearer real-api-token' }),
+        }),
+      );
+    });
+  });
 });

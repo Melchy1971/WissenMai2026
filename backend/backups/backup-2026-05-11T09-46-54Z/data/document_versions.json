@@ -1,0 +1,34 @@
+[
+  {
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "document_id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "ki_model": null,
+    "ki_provider": null,
+    "markdown_hash": "6d4c861406e9182a9702ef290497801decff3f7f6eef8f0b46f0ed35a41baefe",
+    "metadata": {
+      "byte_size": 38267,
+      "filename": "Anleitung_DHCP_Server2016.docx",
+      "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "normalization_metadata": {
+        "changed": true,
+        "collapsed_blank_lines": true,
+        "ensured_final_newline": true,
+        "line_endings": "lf",
+        "normalizer_name": "deterministic-markdown-normalizer",
+        "normalizer_version": "1.0",
+        "removed_extra_blank_lines": 0,
+        "trimmed_line_edges": true
+      },
+      "paragraph_count": 57,
+      "parser_name": "docx-parser",
+      "parser_version": "1.0",
+      "source_filename": "Anleitung_DHCP_Server2016.docx",
+      "table_count": 0
+    },
+    "normalized_markdown": "Anleitung: DHCP-Server unter Windows Server 2016 einrichten\n\nAnleitung: DHCP-Server unter Windows Server 2016 einrichten\n\n# 1. Voraussetzungen pr\u00fcfen\n\n- - Windows Server 2016 installiert\n\n- - Lokale oder Dom\u00e4nen-Administratorrechte\n\n- - Feste IP-Adresse f\u00fcr den Server (kein DHCP!)\n\n- - Netzwerkgrundlagen (IP-Bereich, Subnetzmaske etc.) bekannt\n\n# 2. DHCP-Server-Rolle installieren\n\n# a) \u00dcber den Server-Manager:\n\n# 1. Im Server-Manager auf \u201eRollen und Features hinzuf\u00fcgen\u201c klicken.\n\n# 2. \u201eRollenbasierte oder featurebasierte Installation\u201c ausw\u00e4hlen.\n\n# 3. Den aktuellen Server ausw\u00e4hlen.\n\n# 4. Die Rolle \u201eDHCP-Server\u201c markieren.\n\n# 5. Eventuelle Abh\u00e4ngigkeiten best\u00e4tigen und auf Weiter klicken.\n\n# 6. Installation mit Installieren starten.\n\n# 7. Nach Abschluss den Assistenten zur DHCP-Konfiguration \u00f6ffnen (Popup beachten).\n\n# 3. DHCP-Server autorisieren (falls Mitglied einer Dom\u00e4ne)\n\n# 1. Nach der Installation im Server-Manager auf das gelbe Warndreieck klicken.\n\n# 2. DHCP-Konfiguration abschlie\u00dfen ausw\u00e4hlen.\n\n# 3. Benutzerkonto f\u00fcr die Autorisierung angeben (Dom\u00e4nen-Admin).\n\n# 4. Best\u00e4tigen.\n\n# 4. DHCP-Bereich (Scope) anlegen\n\n# 1. Im Server-Manager unter \u201eTools\u201c \u2192 DHCP \u00f6ffnen.\n\n# 2. Im linken Baum auf den Servernamen \u2192 IPv4 \u2192 Rechtsklick \u2192 Neuer Bereich.\n\n# 3. Assistenten durchgehen und folgende Daten eingeben:\n\n- - Name: Z. B. \u201eLAN-Bereich\u201c\n\n- - Start-IP: Z. B. 192.168.1.100\n\n- - End-IP: Z. B. 192.168.1.200\n\n- - Subnetzmaske: Z. B. 255.255.255.0\n\n- - Ausschl\u00fcsse: Optional (Adressen, die NICHT vergeben werden sollen)\n\n- - Lease-Dauer: Standard (z. B. 8 Tage) oder anpassen\n\n- - Gateway (Router): IP-Adresse des Routers eintragen\n\n- - DNS-Server: Lokalen oder externen DNS eintragen\n\n- - WINS: In der Regel leer lassen\n\n# 4. Bereich aktivieren ausw\u00e4hlen.\n\n# 5. DHCP-Optionen konfigurieren (optional, aber empfohlen)\n\n- - Rechtsklick auf den neuen Bereich \u2192 Bereichsoptionen konfigurieren\n\n- - 003 Router: Gateway-IP (z. B. 192.168.1.1)\n\n- - 006 DNS-Server: DNS-IP (z. B. 192.168.1.10)\n\n- - 015 DNS-Dom\u00e4nenname: z. B. \u201efirma.local\u201c\n\n# 6. DHCP-Server testen\n\n- - Client in das Netzwerk einbinden und auf automatische IP-Konfiguration stellen.\n\n- - Mit ipconfig /renew (Windows) die Adresse neu anfordern.\n\n- - \u00dcberpr\u00fcfen, ob die gew\u00fcnschte IP-Adresse, Gateway und DNS zugewiesen wurden.\n\n# 7. Typische Fehlerquellen\n\n- - Server hat selbst eine dynamische IP: DHCP-Server verlangt eine statische IP!\n\n- - DHCP-Service ist nicht gestartet: In den Diensten pr\u00fcfen.\n\n- - Firewall blockiert DHCP: UDP-Port 67 und 68 m\u00fcssen offen sein.\n\n- - Bereich ist deaktiviert oder keine freien Adressen mehr vorhanden.\n\n# 8. DHCP-Backup und Verwaltung\n\n- - Backup: Standardm\u00e4\u00dfig unter C:\\Windows\\System32\\dhcp\\backup\\\n\n- - Verwaltung: Per DHCP-Konsole, PowerShell oder Remote-Tools m\u00f6glich\n\nPowerShell: DHCP-Bereich anlegen (optional)\n\nAdd-DhcpServerv4Scope -Name \"LAN\" -StartRange 192.168.1.100 -EndRange 192.168.1.200 -SubnetMask 255.255.255.0\n\nSet-DhcpServerv4OptionValue -ScopeId 192.168.1.0 -Router 192.168.1.1 -DnsServer 192.168.1.10\n\n# Hinweis:\n\nDiese Anleitung basiert auf Microsoft-Best-Practice und verzichtet bewusst auf nicht dokumentierte Einstellungen oder Spekulationen. Bei Sonderf\u00e4llen (z. B. mehreren Subnetzen, VLANs, Filterregeln) ist eine erweiterte Konfiguration n\u00f6tig.\n",
+    "ocr_used": false,
+    "parser_version": "1.0",
+    "version_number": 1
+  }
+]

@@ -211,6 +211,36 @@ def test_restore_document_moves_archived_document_back_to_active(
     assert payload["deleted_at"] is None
 
 
+def test_archive_document_cannot_mutate_foreign_workspace_document(
+    client: TestClient,
+    db_session: Session,
+) -> None:
+    foreign_document_id = "00000000-0000-0000-0000-000000000499"
+    created = datetime(2026, 5, 3, 10, 0, tzinfo=UTC)
+    db_session.add(
+        Document(
+            id=foreign_document_id,
+            workspace_id="workspace-foreign",
+            owner_user_id=DEFAULT_USER_ID,
+            current_version_id=None,
+            title="Foreign Document",
+            source_type="upload",
+            mime_type="text/plain",
+            content_hash="foreign-hash",
+            import_status="chunked",
+            lifecycle_status="active",
+            created_at=created,
+            updated_at=created,
+        )
+    )
+    db_session.commit()
+
+    response = client.patch(f"/documents/{foreign_document_id}/archive")
+
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "DOCUMENT_NOT_FOUND"
+
+
 def test_delete_document_soft_deletes_document(
     client: TestClient,
     db_session: Session,

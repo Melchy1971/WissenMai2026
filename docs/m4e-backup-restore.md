@@ -2,12 +2,70 @@
 
 Stand: 2026-05-05
 
-## Realer Status am 2026-05-06
+## Realer Status am 2026-05-11
 
-- Dieses Dokument beschreibt weiterhin ein Zielkonzept, keinen real implementierten Betriebsprozess.
-- Im aktuellen Repository gibt es keinen nachweisbaren Backup-CLI- oder Restore-Codepfad.
-- Es gibt keine echten Backup-/Restore-Tests.
-- M4e ist deshalb fachlich definiert, aber technisch weiterhin `missing`.
+- Dieses Dokument beschreibt weiterhin das Zielbild, aber nicht mehr nur ein reines Konzept.
+- Im aktuellen Repository gibt es nun einen nachweisbaren CLI-first Codepfad fuer `backup create`, `backup validate`, `backup restore` und `search rebuild-index`.
+- Technische Originaldatei-Kopien werden im Importpfad persistiert und in den Versions-Metadaten referenziert.
+- Es gibt fokussierte Unit-Tests fuer Dateiablage, Backup-Validierung und Restore-Orchestrierung.
+- Ein praktischer Restore-Nachweis gegen eine leere reale lokale PostgreSQL-Ziel-DB ist erfolgt.
+- M4e ist deshalb fachlich definiert und technisch `partial` mit realem Minimal-Nachweis, aber noch nicht freigabefaehig abgeschlossen.
+- Vor M5 wird nur ein manueller Minimal-Scope verlangt, kein voll ausgebauter Backup-Stack.
+
+## Go/No-Go vor M5
+
+Entscheidung:
+
+- M4e ist **vor M5 im Minimal-Scope erforderlich**.
+- M4e ist **nicht** als voll ausgebautes Betriebs- oder Cloud-Backup-Thema vor M5 erforderlich.
+
+Begruendung:
+
+- M5 baut auf einem lokalen Wissenssystem auf, das Auth, Upload, Lifecycle, Chat und Suchzustand produktionsnah betreibt.
+- Ohne manuellen Restore-Nachweis bleibt ein lokaler Bedien-, DB- oder Host-Fehler irreversibel.
+- Fuer einen lokalen Produktpfad ist das kein spaeterer Komfortpunkt, sondern ein Mindestschutz gegen Totalausfall.
+- Gleichzeitig wuerde ein Vollausbau mit Scheduler, Cloud-Zielen, Inkrementen oder Schluesselverwaltung M4 unnoetig verbreitern.
+
+Daraus folgt:
+
+- **Go vor M5** nur mit M4e-Minimal-Scope.
+- **No-Go vor M5** fuer erweitertes Backup-Produktisieren ausserhalb dieses Minimal-Scope.
+
+## M4e Minimal-Scope vor M5
+
+Pflichtbestandteile:
+
+- DB-Dump
+- technische Originaldatei-Kopien
+- Konfigurationsartefakt
+- Restore-Anleitung als Runbook
+- Search-Index ausdruecklich als rekonstruierbar; Reindex nach Restore ist Pflicht
+
+Minimaler Betriebszuschnitt:
+
+- manuell ausloesbarer Backup-Pfad
+- manuell ausfuehrbarer Restore-Pfad auf leere Ziel-Datenbank
+- kein Zwang zu Web-UI oder mutierender Admin-API
+- kein Zwang zu periodischer Automatisierung in M4e-Minimal
+
+## Expliziter Nicht-Scope vor M5
+
+- automatische Cloud-Backups
+- inkrementelle Backups
+- verschluesselte Backupverwaltung
+- Aufbewahrungs- und Rotationssysteme
+- mandantenuebergreifende Backup-Orchestrierung
+- vollautomatischer Restore ueber Web-API
+
+## Minimal-Gate vor M5
+
+Alle Bedingungen muessen erfuellt sein:
+
+- Ein Backup ist manuell erzeugbar und enthaelt DB-Dump, Datei-Artefakte, Konfiguration und Manifest.
+- Ein Restore auf eine leere Datenbank ist per Runbook erfolgreich durchfuehrbar.
+- Nach Restore ist `alembic upgrade head` erfolgreich.
+- Der Search-Index ist nach Restore neu aufbaubar.
+- Der Restore-Nachweis ist nicht nur beschrieben, sondern einmal praktisch gegen eine leere Ziel-DB durchgefuehrt.
 
 ## Ziel
 
@@ -37,13 +95,13 @@ Die Backup-Kopie dient ausschliesslich:
 
 ## Zu sichernde Bestandteile
 
-Pflichtbestandteile eines vollstaendigen M4e-Backups:
+Pflichtbestandteile eines M4e-Minimal-Backups vor M5:
 
 - Datenbank
 - hochgeladene Originaldateien als technische Backup-Kopie
 - Konfiguration
 
-Optional rekonstruierbar statt direkt sicherungspflichtig:
+Nicht primaer sicherungspflichtig, sondern rekonstruierbar:
 
 - Search-Index
 
@@ -60,7 +118,17 @@ Enthaelt mindestens:
 
 Backup-Einheit:
 
-- konsistenter DB-Dump pro Sicherungslauf
+- aktuell: schema-basierter Tabellenexport im `table-json`-Format pro Sicherungslauf
+- Zielbild spaeter: externer DB-Dump bleibt moeglich, ist aber fuer den aktuellen Minimalpfad noch nicht umgesetzt
+
+Praktischer Nachweis am 2026-05-11:
+
+- lokales Backup erfolgreich erzeugt
+- Backup erfolgreich validiert
+- Ziel-DB auf leeren Schema-Zustand gebracht
+- Restore gegen lokale PostgreSQL-Ziel-DB erfolgreich durchgefuehrt
+- `alembic upgrade head` als Restore-Vorbereitung erfolgreich
+- Reindex ist im Restore-Codepfad enthalten; die separate Ausgabebestaetigung bleibt noch zu schaerfen
 
 ### 2. Originaldateien
 
@@ -148,7 +216,31 @@ Empfohlenes Format:
 
 - ein versionsiertes Backup-Verzeichnis oder ein einzelnes Archivpaket pro Lauf
 
-Struktur:
+Aktueller Implementierungsstand:
+
+```text
+backup-2026-05-11T14-30-00Z/
+  manifest.json
+  checksums.json
+  data/
+    workspaces.json
+    users.json
+    workspace_memberships.json
+    auth_sessions.json
+    documents.json
+    document_versions.json
+    document_chunks.json
+    chat_sessions.json
+    chat_messages.json
+    chat_citations.json
+    background_jobs.json
+  files/
+    <workspace_id>/...
+  config/
+    app-config.json
+```
+
+Zielbild spaeter:
 
 ```text
 backup-2026-05-05T14-30-00Z/
@@ -169,7 +261,7 @@ Manifest-Inhalt:
 - `app_version`
 - `migration_revision`
 - `workspace_scope`
-- `database_dump_file`
+- `database_files`
 - `file_count`
 - `config_files`
 - `search_index_included`
@@ -276,16 +368,16 @@ Validierungsregel:
 
 ## CLI
 
-Empfohlene erste Schnittstelle:
-
-- CLI zuerst, weil Backup/Restore ein Betriebsprozess und keine normale Endnutzerfunktion ist
-
-Vorschlaege:
+Aktuelle erste Schnittstelle:
 
 - `python -m app.cli backup create --output <path>`
 - `python -m app.cli backup validate --input <path>`
-- `python -m app.cli backup restore --input <path> --target <env>`
+- `python -m app.cli backup restore --input <path>`
 - `python -m app.cli search rebuild-index`
+
+Empfohlene weitere Entwicklung:
+
+- CLI zuerst, weil Backup/Restore ein Betriebsprozess und keine normale Endnutzerfunktion ist
 
 Optionale Flags:
 
@@ -383,8 +475,8 @@ Gegenmassnahme:
 
 ## Akzeptanzkriterien
 
-- Ein manuelles Vollbackup erzeugt DB-Dump, Datei-Backup, Konfigurationsartefakt und Manifest.
-- Ein Restore kann den Systemzustand vollstaendig wiederherstellen.
+- Ein manuelles Minimal-Backup erzeugt DB-Dump, Datei-Backup, Konfigurationsartefakt und Manifest.
+- Ein Restore auf leere Ziel-Datenbank kann den benoetigten Systemzustand wiederherstellen.
 - Nach Restore laufen Migrationen auf `head`.
 - Alle referenzierten Backup-Dateien sind vorhanden und geprueft.
 - Chunks sind aus Persistenz oder Reimportpfad rekonstruierbar.

@@ -39,6 +39,20 @@ def login(request: AuthLoginRequest, service: Annotated[AuthService, Depends(get
     )
 
 
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    authorization: Annotated[str | None, Header(alias="Authorization")] = None,
+    service: Annotated[AuthService, Depends(get_auth_service)] = None,
+) -> None:
+    bearer_value = (authorization or "").strip()
+    if not bearer_value.startswith("Bearer "):
+        raise AuthRequiredApiError()
+    bearer_token = bearer_value.removeprefix("Bearer ").strip()
+    if not bearer_token:
+        raise AuthRequiredApiError()
+    service.revoke_session(bearer_token=bearer_token)
+
+
 @router.get("/me", response_model=AuthSessionResponse)
 def me(
     authorization: Annotated[str | None, Header(alias="Authorization")] = None,

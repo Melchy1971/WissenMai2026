@@ -194,3 +194,14 @@ def test_auth_me_requires_valid_session_token(db_session, auth_fixture: dict[str
 
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "AUTH_REQUIRED"
+
+
+def test_auth_logout_revokes_current_session(client: TestClient) -> None:
+    logout_response = client.post("/api/v1/auth/logout")
+
+    assert logout_response.status_code == 204
+
+    me_response = client.get("/api/v1/auth/me")
+
+    assert me_response.status_code == 401
+    assert me_response.json()["error"]["code"] == "AUTH_REQUIRED"

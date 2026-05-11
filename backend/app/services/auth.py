@@ -139,6 +139,15 @@ class AuthService:
             role=role,
         )
 
+    def revoke_session(self, *, bearer_token: str) -> None:
+        session_token_hash = hash_token(bearer_token)
+        auth_session = self._session.scalar(select(AuthSession).where(AuthSession.token_hash == session_token_hash))
+        if auth_session is None or auth_session.revoked_at is not None:
+            return
+        auth_session.revoked_at = datetime.now(UTC)
+        self._session.add(auth_session)
+        self._session.commit()
+
     def get_session_state(self, *, bearer_token: str) -> tuple[User, list[WorkspaceMembership]]:
         session_token_hash = hash_token(bearer_token)
         auth_session = self._session.scalar(select(AuthSession).where(AuthSession.token_hash == session_token_hash))

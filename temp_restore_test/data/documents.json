@@ -1,0 +1,18 @@
+[
+  {
+    "archived_at": null,
+    "content_hash": "2b1d660bc1ecdda951af7555b34e5ef14de869f44687c55d0d41dd9165a79050",
+    "created_at": "2026-05-08 12:43:08.238589+00:00",
+    "current_version_id": "04b1a28e-64fa-4377-909c-8bac07d30601",
+    "deleted_at": null,
+    "id": "c8928f82-9ff5-46b1-9b17-4701099f752d",
+    "import_status": "chunked",
+    "lifecycle_status": "active",
+    "mime_type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "owner_user_id": "00000000-0000-0000-0000-000000000001",
+    "source_type": "upload",
+    "title": "Anleitung_DHCP_Server2016",
+    "updated_at": "2026-05-08 12:43:08.238589+00:00",
+    "workspace_id": "00000000-0000-0000-0000-000000000001"
+  }
+]

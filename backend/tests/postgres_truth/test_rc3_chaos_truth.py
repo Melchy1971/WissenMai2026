@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import threading
 from datetime import UTC, datetime
+import json
 from uuid import uuid4
 
 import psycopg
@@ -26,18 +27,23 @@ from app.services.advisory_lock import AdvisoryLockService, advisory_lock_on_con
 from app.services.documents.lifecycle_service import DocumentLifecycleService
 from app.services.jobs.background_jobs import BackgroundJobAlreadyClaimedError, BackgroundJobService
 from app.services.search_index_service import SearchIndexRebuildService
-from tests.postgres_truth.support import TRUTH_USER_ID, TRUTH_WORKSPACE_ID
+from tests.postgres_truth.support import TruthIds
 
 
 pytestmark = pytest.mark.postgres_truth
 
-CHAOS_DOC_ID = "f3000000-0000-0000-0000-000000000200"
-CHAOS_JOB_ID = "truth-chaos-job-001"
-CHAOS_CONTENT_HASH = "chaos-content-hash-rc3"
-
-
 def _psycopg_url(database_url: str) -> str:
     return database_url.replace("postgresql+psycopg://", "postgresql://", 1)
+
+
+def json_payload(truth_ids: TruthIds, filename: str) -> str:
+    return json.dumps(
+        {
+            "filename": f"{truth_ids.slug}-{filename}",
+            "mime_type": "text/plain",
+            "temp_file_path": f"/tmp/{truth_ids.slug}-{filename}",
+        }
+    )
 
 
 def _acquire_lock_on_raw_connection(
@@ -55,22 +61,25 @@ def _acquire_lock_on_raw_connection(
         return bool(row[0]) if row else False
 
 
-def test_chaos_cleanup_starts_without_stale_state(truth_session: Session) -> None:
+def test_chaos_cleanup_starts_without_stale_state(truth_ids: TruthIds, truth_session: Session) -> None:
     """Baseline: no chaos test rows from previous runs."""
+    chaos_doc_id = truth_ids.document_id("chaos-cleanup")
+    chaos_job_id = truth_ids.job_id("chaos-cleanup")
     count = truth_session.execute(
         text("SELECT count(*) FROM documents WHERE id = :id"),
-        {"id": CHAOS_DOC_ID},
+        {"id": chaos_doc_id},
     ).scalar_one()
     assert count == 0
 
     count = truth_session.execute(
         text("SELECT count(*) FROM background_jobs WHERE id = :id"),
-        {"id": CHAOS_JOB_ID},
+        {"id": chaos_job_id},
     ).scalar_one()
     assert count == 0
 
 
 def test_chaos_advisory_lock_document_import_scope_blocks_concurrent_session(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     postgres_truth_database_url: str,
 ) -> None:
@@ -80,7 +89,7 @@ def test_chaos_advisory_lock_document_import_scope_blocks_concurrent_session(
     Verifies: RESOURCE_LOCKED is correctly raised for concurrent import attempts.
     """
     raw_url = _psycopg_url(postgres_truth_database_url)
-    resource_key = f"{TRUTH_WORKSPACE_ID}:{CHAOS_CONTENT_HASH}"
+    resource_key = f"{truth_seed['workspace_id']}:{truth_ids.content_hash('chaos-import-lock')}"
 
     with psycopg.connect(raw_url) as session1, psycopg.connect(raw_url) as session2:
         session1.autocommit = False
@@ -125,6 +134,7 @@ def test_chaos_advisory_lock_document_import_scope_blocks_concurrent_session(
 
 
 def test_chaos_lifecycle_lock_blocks_concurrent_session(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     postgres_truth_database_url: str,
 ) -> None:
@@ -134,6 +144,7 @@ def test_chaos_lifecycle_lock_blocks_concurrent_session(
     Verifies advisory lock enforces serialized lifecycle transitions.
     """
     raw_url = _psycopg_url(postgres_truth_database_url)
+    chaos_doc_id = truth_ids.document_id("chaos-lifecycle-lock")
 
     with psycopg.connect(raw_url) as session1, psycopg.connect(raw_url) as session2:
         session1.autocommit = False
@@ -141,13 +152,13 @@ def test_chaos_lifecycle_lock_blocks_concurrent_session(
 
         session1.execute("BEGIN")
         locked = _acquire_lock_on_raw_connection(
-            session1, scope_name="lifecycle_transition", resource_key=CHAOS_DOC_ID
+            session1, scope_name="lifecycle_transition", resource_key=chaos_doc_id
         )
         assert locked
 
         session2.execute("BEGIN")
         blocked = _acquire_lock_on_raw_connection(
-            session2, scope_name="lifecycle_transition", resource_key=CHAOS_DOC_ID
+            session2, scope_name="lifecycle_transition", resource_key=chaos_doc_id
         )
         assert not blocked, "Lifecycle lock must block concurrent access to same document"
 
@@ -171,13 +182,13 @@ def test_chaos_reindex_lock_blocks_concurrent_session(
 
         session1.execute("BEGIN")
         locked = _acquire_lock_on_raw_connection(
-            session1, scope_name="reindex", resource_key=TRUTH_WORKSPACE_ID
+            session1, scope_name="reindex", resource_key=truth_seed["workspace_id"]
         )
         assert locked
 
         session2.execute("BEGIN")
         blocked = _acquire_lock_on_raw_connection(
-            session2, scope_name="reindex", resource_key=TRUTH_WORKSPACE_ID
+            session2, scope_name="reindex", resource_key=truth_seed["workspace_id"]
         )
         assert not blocked, "Reindex lock must block concurrent reindex for same workspace"
 
@@ -193,6 +204,7 @@ def test_chaos_reindex_lock_blocks_concurrent_session(
 
 
 def test_chaos_lifecycle_and_reindex_locks_are_independent(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     postgres_truth_database_url: str,
 ) -> None:
@@ -201,6 +213,7 @@ def test_chaos_lifecycle_and_reindex_locks_are_independent(
     Verifies: archive-during-reindex and delete-during-search do not deadlock.
     """
     raw_url = _psycopg_url(postgres_truth_database_url)
+    chaos_doc_id = truth_ids.document_id("chaos-lifecycle-reindex")
 
     with psycopg.connect(raw_url) as session1, psycopg.connect(raw_url) as session2:
         session1.autocommit = False
@@ -208,14 +221,14 @@ def test_chaos_lifecycle_and_reindex_locks_are_independent(
 
         session1.execute("BEGIN")
         got_lifecycle = _acquire_lock_on_raw_connection(
-            session1, scope_name="lifecycle_transition", resource_key=CHAOS_DOC_ID
+            session1, scope_name="lifecycle_transition", resource_key=chaos_doc_id
         )
         assert got_lifecycle
 
         session2.execute("BEGIN")
         # Reindex on same workspace uses a DIFFERENT scope → not blocked
         got_reindex = _acquire_lock_on_raw_connection(
-            session2, scope_name="reindex", resource_key=TRUTH_WORKSPACE_ID
+            session2, scope_name="reindex", resource_key=truth_seed["workspace_id"]
         )
         assert got_reindex, "Lifecycle and reindex locks are independent scopes"
 
@@ -223,7 +236,9 @@ def test_chaos_lifecycle_and_reindex_locks_are_independent(
         session2.rollback()
 
 
+@pytest.mark.m4b_gate
 def test_chaos_two_workers_claiming_same_job_only_one_succeeds(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     truth_session: Session,
 ) -> None:
@@ -233,6 +248,7 @@ def test_chaos_two_workers_claiming_same_job_only_one_succeeds(
     The losing worker raises BackgroundJobAlreadyClaimedError.
     """
     now = datetime(2026, 5, 7, 10, 0, tzinfo=UTC)
+    chaos_job_id = truth_ids.job_id("chaos-claim")
     truth_session.execute(
         text(
             """
@@ -249,10 +265,10 @@ def test_chaos_two_workers_claiming_same_job_only_one_succeeds(
             """
         ),
         {
-            "id": CHAOS_JOB_ID,
-            "workspace_id": TRUTH_WORKSPACE_ID,
-            "user_id": TRUTH_USER_ID,
-            "payload": '{"filename": "chaos-test.txt", "mime_type": "text/plain", "temp_file_path": "/tmp/chaos.txt"}',
+            "id": chaos_job_id,
+            "workspace_id": truth_seed["workspace_id"],
+            "user_id": truth_seed["user_id"],
+            "payload": json_payload(truth_ids, "chaos-test.txt"),
             "now": now,
         },
     )
@@ -270,7 +286,7 @@ def test_chaos_two_workers_claiming_same_job_only_one_succeeds(
             service = BackgroundJobService.from_session(session)
             barrier.wait()
             try:
-                service.claim_job(job_id=CHAOS_JOB_ID, worker_id=worker_id)
+                service.claim_job(job_id=chaos_job_id, worker_id=worker_id)
                 results.append(f"claimed-{worker_id}")
             except BackgroundJobAlreadyClaimedError:
                 results.append(f"blocked-{worker_id}")
@@ -292,6 +308,7 @@ def test_chaos_two_workers_claiming_same_job_only_one_succeeds(
 
 
 def test_chaos_dead_letter_replay_blocks_concurrent_session(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     postgres_truth_database_url: str,
 ) -> None:
@@ -300,7 +317,7 @@ def test_chaos_dead_letter_replay_blocks_concurrent_session(
     Verifies: dead-letter replay is serialized — no double-replay is possible.
     """
     raw_url = _psycopg_url(postgres_truth_database_url)
-    job_id = "truth-chaos-replay-job"
+    job_id = truth_ids.job_id("chaos-replay-lock")
 
     with psycopg.connect(raw_url) as session1, psycopg.connect(raw_url) as session2:
         session1.autocommit = False
@@ -323,6 +340,7 @@ def test_chaos_dead_letter_replay_blocks_concurrent_session(
 
 
 def test_chaos_job_claim_and_replay_locks_are_independent(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     postgres_truth_database_url: str,
 ) -> None:
@@ -331,8 +349,8 @@ def test_chaos_job_claim_and_replay_locks_are_independent(
     does not block replaying a DIFFERENT job.
     """
     raw_url = _psycopg_url(postgres_truth_database_url)
-    claim_job_id = "truth-chaos-claim-job"
-    replay_job_id = "truth-chaos-replay-job"
+    claim_job_id = truth_ids.job_id("chaos-independent-claim")
+    replay_job_id = truth_ids.job_id("chaos-independent-replay")
 
     with psycopg.connect(raw_url) as session1, psycopg.connect(raw_url) as session2:
         session1.autocommit = False
@@ -354,7 +372,9 @@ def test_chaos_job_claim_and_replay_locks_are_independent(
         session2.rollback()
 
 
+@pytest.mark.m4c_gate
 def test_chaos_source_status_live_lookup_reflects_lifecycle_transitions(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     truth_session: Session,
 ) -> None:
@@ -365,8 +385,8 @@ def test_chaos_source_status_live_lookup_reflects_lifecycle_transitions(
     """
     from app.services.chat.persistence_service import ChatPersistenceService
 
-    doc_id = "f3000000-0000-0000-0000-000000000200"
-    fake_id = "f3000000-0000-0000-0000-000000000999"
+    doc_id = truth_ids.document_id("chaos-live-status")
+    fake_id = truth_ids.document_id("chaos-live-status-missing")
 
     # Insert a minimal document in active state
     # import_status='pending' satisfies ck_documents_readable_status_requires_current_version
@@ -379,7 +399,7 @@ def test_chaos_source_status_live_lookup_reflects_lifecycle_transitions(
                 'chaos-live-hash', 'pending', 'active')
             """
         ),
-        {"id": doc_id, "workspace_id": TRUTH_WORKSPACE_ID, "user_id": TRUTH_USER_ID},
+        {"id": doc_id, "workspace_id": truth_seed["workspace_id"], "user_id": truth_seed["user_id"]},
     )
     truth_session.commit()
 

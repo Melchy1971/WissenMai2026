@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import UTC, datetime
 import json
 import threading
@@ -24,30 +25,47 @@ from app.services.search_index_service import SearchIndexRebuildService
 from app.main import app
 
 from tests.postgres_truth.support import (
-    TRUTH_OTHER_WORKSPACE_ID,
-    TRUTH_USER_ID,
-    TRUTH_WORKSPACE_ID,
+    TruthIds,
     assert_no_truth_rows,
 )
 
 
 pytestmark = pytest.mark.postgres_truth
 
-DOC_ACTIVE = "f3000000-0000-0000-0000-000000000001"
-DOC_ARCHIVED = "f3000000-0000-0000-0000-000000000002"
-DOC_OTHER_WS = "f3000000-0000-0000-0000-000000000003"
-DOC_DELETED = "f3000000-0000-0000-0000-000000000004"
-VER_ACTIVE = "f5000000-0000-0000-0000-000000000001"
-VER_ARCHIVED = "f5000000-0000-0000-0000-000000000002"
-VER_OTHER_WS = "f5000000-0000-0000-0000-000000000003"
-VER_DELETED = "f5000000-0000-0000-0000-000000000004"
-CHUNK_ACTIVE = "f4000000-0000-0000-0000-000000000001"
-CHUNK_ARCHIVED = "f4000000-0000-0000-0000-000000000002"
-CHUNK_OTHER_WS = "f4000000-0000-0000-0000-000000000003"
-CHUNK_DELETED = "f4000000-0000-0000-0000-000000000004"
-TRUTH_TERM = "truthretrievalterm"
-TRUTH_IMPORT_JOB_ID = "truth-job-import-1"
-TRUTH_REINDEX_JOB_ID = "truth-job-reindex-1"
+
+@dataclass(frozen=True)
+class SearchTruthIds:
+    doc_active: str
+    doc_archived: str
+    doc_other_ws: str
+    doc_deleted: str
+    ver_active: str
+    ver_archived: str
+    ver_other_ws: str
+    ver_deleted: str
+    chunk_active: str
+    chunk_archived: str
+    chunk_other_ws: str
+    chunk_deleted: str
+    term: str
+
+
+def _search_truth_ids(truth_ids: TruthIds) -> SearchTruthIds:
+    return SearchTruthIds(
+        doc_active=truth_ids.document_id("active"),
+        doc_archived=truth_ids.document_id("archived"),
+        doc_other_ws=truth_ids.document_id("other-workspace"),
+        doc_deleted=truth_ids.document_id("deleted"),
+        ver_active=truth_ids.version_id("active"),
+        ver_archived=truth_ids.version_id("archived"),
+        ver_other_ws=truth_ids.version_id("other-workspace"),
+        ver_deleted=truth_ids.version_id("deleted"),
+        chunk_active=truth_ids.chunk_id("active"),
+        chunk_archived=truth_ids.chunk_id("archived"),
+        chunk_other_ws=truth_ids.chunk_id("other-workspace"),
+        chunk_deleted=truth_ids.chunk_id("deleted"),
+        term=truth_ids.term("retrieval"),
+    )
 
 
 def test_truth_cleanup_starts_without_stale_state(truth_session: Session) -> None:
@@ -55,14 +73,19 @@ def test_truth_cleanup_starts_without_stale_state(truth_session: Session) -> Non
 
 
 @pytest.mark.m4b_gate
-def test_upload_and_duplicate_handling_use_real_postgresql_transactions(truth_client: TestClient, truth_session: Session) -> None:
+def test_upload_and_duplicate_handling_use_real_postgresql_transactions(
+    truth_client: TestClient,
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
     first = truth_client.post(
         "/documents/import",
-        files={"file": ("truth.txt", b"# Truth\n\nsame duplicate content\n", "text/plain")},
+        files={"file": (f"{truth_ids.slug}.txt", f"# Truth\n\nsame duplicate content {truth_ids.namespace}\n".encode(), "text/plain")},
     )
     second = truth_client.post(
         "/documents/import",
-        files={"file": ("truth.txt", b"# Truth\n\nsame duplicate content\n", "text/plain")},
+        files={"file": (f"{truth_ids.slug}.txt", f"# Truth\n\nsame duplicate content {truth_ids.namespace}\n".encode(), "text/plain")},
     )
 
     assert first.status_code == 202
@@ -77,38 +100,70 @@ def test_upload_and_duplicate_handling_use_real_postgresql_transactions(truth_cl
     assert sorted(result["import_status"] for result in results) == ["chunked", "duplicate"]
     assert len({result["document_id"] for result in results}) == 1
 
-    assert truth_session.execute(text("select count(*) from documents where workspace_id = :workspace_id"), {"workspace_id": TRUTH_WORKSPACE_ID}).scalar_one() == 1
-    assert truth_session.execute(text("select count(*) from document_versions")).scalar_one() == 1
-    assert truth_session.execute(text("select count(*) from document_chunks")).scalar_one() == 1
+    assert truth_session.execute(text("select count(*) from documents where workspace_id = :workspace_id"), {"workspace_id": truth_seed["workspace_id"]}).scalar_one() == 1
+    assert truth_session.execute(
+        text(
+            """
+            select count(*)
+            from document_versions v
+            join documents d on d.id = v.document_id
+            where d.workspace_id = :workspace_id
+            """
+        ),
+        {"workspace_id": truth_seed["workspace_id"]},
+    ).scalar_one() == 1
+    assert truth_session.execute(
+        text(
+            """
+            select count(*)
+            from document_chunks c
+            join documents d on d.id = c.document_id
+            where d.workspace_id = :workspace_id
+            """
+        ),
+        {"workspace_id": truth_seed["workspace_id"]},
+    ).scalar_one() == 1
 
 
 @pytest.mark.m4a_gate
 @pytest.mark.m4c_gate
-def test_lifecycle_and_workspace_isolation_are_truth_checked(truth_client: TestClient, truth_session: Session) -> None:
-    _seed_search_documents(truth_session)
+def test_lifecycle_and_workspace_isolation_are_truth_checked(
+    truth_client: TestClient,
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    ids = _search_truth_ids(truth_ids)
+    _seed_search_documents(truth_session, truth_ids=truth_ids, truth_seed=truth_seed, ids=ids)
 
-    archive = truth_client.patch(f"/documents/{DOC_ACTIVE}/archive")
+    archive = truth_client.patch(f"/documents/{ids.doc_active}/archive")
     assert archive.status_code == 200
     assert archive.json()["lifecycle_status"] == "archived"
-    assert truth_session.execute(text("select is_searchable from document_chunks where id = :id"), {"id": CHUNK_ACTIVE}).scalar_one() is False
+    assert truth_session.execute(text("select is_searchable from document_chunks where id = :id"), {"id": ids.chunk_active}).scalar_one() is False
 
-    restore = truth_client.patch(f"/documents/{DOC_ACTIVE}/restore")
+    restore = truth_client.patch(f"/documents/{ids.doc_active}/restore")
     assert restore.status_code == 200
     assert restore.json()["lifecycle_status"] == "active"
-    assert truth_session.execute(text("select is_searchable from document_chunks where id = :id"), {"id": CHUNK_ACTIVE}).scalar_one() is True
+    assert truth_session.execute(text("select is_searchable from document_chunks where id = :id"), {"id": ids.chunk_active}).scalar_one() is True
 
-    forbidden = truth_client.patch(f"/documents/{DOC_OTHER_WS}/archive")
+    forbidden = truth_client.patch(f"/documents/{ids.doc_other_ws}/archive")
     assert forbidden.status_code in {403, 404}
-    assert truth_session.execute(text("select lifecycle_status from documents where id = :id"), {"id": DOC_OTHER_WS}).scalar_one() == "active"
+    assert truth_session.execute(text("select lifecycle_status from documents where id = :id"), {"id": ids.doc_other_ws}).scalar_one() == "active"
 
 
 @pytest.mark.m4c_gate
-def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(truth_client: TestClient, truth_session: Session) -> None:
-    _seed_search_documents(truth_session)
+def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(
+    truth_client: TestClient,
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    ids = _search_truth_ids(truth_ids)
+    _seed_search_documents(truth_session, truth_ids=truth_ids, truth_seed=truth_seed, ids=ids)
 
-    search = truth_client.get("/api/v1/search/chunks", params={"q": TRUTH_TERM})
+    search = truth_client.get("/api/v1/search/chunks", params={"q": ids.term})
     assert search.status_code == 200
-    assert [item["document_id"] for item in search.json()] == [DOC_ACTIVE]
+    assert [item["document_id"] for item in search.json()] == [ids.doc_active]
 
     rag_service = RagChatService(
         persistence=ChatPersistenceService(truth_session),
@@ -121,39 +176,47 @@ def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(truth_clien
         retrieval_limit=5,
     )
     chat_session = ChatPersistenceService(truth_session).create_session(
-        workspace_id=TRUTH_WORKSPACE_ID,
-        title="truth chat",
-        owner_user_id=TRUTH_USER_ID,
+        workspace_id=truth_seed["workspace_id"],
+        title=f"truth chat {truth_ids.slug}",
+        owner_user_id=truth_seed["user_id"],
     )
     answer = rag_service.answer_question(
         session_id=chat_session.id,
-        workspace_id=TRUTH_WORKSPACE_ID,
-        question=TRUTH_TERM,
+        workspace_id=truth_seed["workspace_id"],
+        question=ids.term,
         retrieval_limit=5,
     )
     assert answer.citations
-    assert {citation.document_id for citation in answer.citations} == {DOC_ACTIVE}
+    assert {citation.document_id for citation in answer.citations} == {ids.doc_active}
 
-    truth_session.execute(text("update document_chunks set is_searchable = false where id = :id"), {"id": CHUNK_ACTIVE})
+    truth_session.execute(text("update document_chunks set is_searchable = false where id = :id"), {"id": ids.chunk_active})
     truth_session.commit()
 
     # After corruption: active chunk's search_vector is empty (GENERATED ALWAYS AS from is_searchable=False)
     # so FTS returns no results
-    corrupted_search = truth_client.get("/api/v1/search/chunks", params={"q": TRUTH_TERM})
+    corrupted_search = truth_client.get("/api/v1/search/chunks", params={"q": ids.term})
     assert corrupted_search.status_code == 200
     assert corrupted_search.json() == []
 
-    result = SearchIndexRebuildService.from_session(truth_session).rebuild_search_index(workspace_id=TRUTH_WORKSPACE_ID)
+    result = SearchIndexRebuildService.from_session(truth_session).rebuild_search_index(workspace_id=truth_seed["workspace_id"])
     assert result["status"] == "completed"
-    assert truth_session.execute(text("select is_searchable from document_chunks where id = :id"), {"id": CHUNK_ACTIVE}).scalar_one() is True
+    assert truth_session.execute(text("select is_searchable from document_chunks where id = :id"), {"id": ids.chunk_active}).scalar_one() is True
 
 
 @pytest.mark.m4c_gate
 def test_search_index_drift_endpoint_reports_real_postgresql_drift(
     truth_client: TestClient,
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
     truth_session: Session,
 ) -> None:
-    _seed_search_documents(truth_session)
+    ids = _search_truth_ids(truth_ids)
+    duplicate_document_id = truth_ids.document_id("duplicate-drift")
+    duplicate_version_id = truth_ids.version_id("duplicate-drift-current")
+    duplicate_old_version_id = truth_ids.version_id("duplicate-drift-old")
+    duplicate_chunk_id = truth_ids.chunk_id("duplicate-drift-current")
+    duplicate_old_chunk_id = truth_ids.chunk_id("duplicate-drift-old")
+    _seed_search_documents(truth_session, truth_ids=truth_ids, truth_seed=truth_seed, ids=ids)
 
     truth_session.execute(
         text(
@@ -163,7 +226,7 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
             where id = :chunk_id
             """
         ),
-        {"chunk_id": CHUNK_ACTIVE},
+        {"chunk_id": ids.chunk_active},
     )
     truth_session.execute(
         text(
@@ -177,11 +240,11 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
             """
         ),
         {
-            "document_id": "f3000000-0000-0000-0000-000000000099",
-            "workspace_id": TRUTH_WORKSPACE_ID,
-            "owner_user_id": TRUTH_USER_ID,
-            "title": "Truth Duplicate",
-            "content_hash": "truth-duplicate-drift",
+            "document_id": duplicate_document_id,
+            "workspace_id": truth_seed["workspace_id"],
+            "owner_user_id": truth_seed["user_id"],
+            "title": f"Truth Duplicate {truth_ids.slug}",
+            "content_hash": truth_ids.content_hash("duplicate-drift"),
         },
     )
     truth_session.execute(
@@ -198,12 +261,12 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
             """
         ),
         {
-            "version_id": "f5000000-0000-0000-0000-000000000099",
-            "old_version_id": "f5000000-0000-0000-0000-000000000098",
-            "document_id": "f3000000-0000-0000-0000-000000000099",
+            "version_id": duplicate_version_id,
+            "old_version_id": duplicate_old_version_id,
+            "document_id": duplicate_document_id,
             "markdown": "# Duplicate\n\ntruth duplicate drift",
-            "markdown_hash": "truth-duplicate-version-hash",
-            "old_markdown_hash": "truth-duplicate-old-version-hash",
+            "markdown_hash": truth_ids.content_hash("duplicate-drift-version"),
+            "old_markdown_hash": truth_ids.content_hash("duplicate-drift-old-version"),
             "metadata": json.dumps({}),
         },
     )
@@ -212,8 +275,8 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
             "update documents set current_version_id = :version_id, import_status = 'chunked' where id = :document_id"
         ),
         {
-            "version_id": "f5000000-0000-0000-0000-000000000099",
-            "document_id": "f3000000-0000-0000-0000-000000000099",
+            "version_id": duplicate_version_id,
+            "document_id": duplicate_document_id,
         },
     )
     truth_session.execute(
@@ -230,16 +293,16 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
             """
         ),
         {
-            "chunk_a": "f4000000-0000-0000-0000-000000000099",
-            "chunk_b": "f4000000-0000-0000-0000-000000000100",
-            "document_id": "f3000000-0000-0000-0000-000000000099",
-            "version_id": "f5000000-0000-0000-0000-000000000099",
-            "old_version_id": "f5000000-0000-0000-0000-000000000098",
+            "chunk_a": duplicate_chunk_id,
+            "chunk_b": duplicate_old_chunk_id,
+            "document_id": duplicate_document_id,
+            "version_id": duplicate_version_id,
+            "old_version_id": duplicate_old_version_id,
             "heading_path": json.dumps([]),
             "anchor": "duplicate-anchor",
             "content_a": "truth duplicate drift A",
             "content_b": "truth duplicate drift B",
-            "content_hash": "truth-duplicate-chunk-hash",
+            "content_hash": truth_ids.content_hash("duplicate-drift-chunk"),
             "metadata": json.dumps({"source_anchor": {"type": "text", "page": None, "paragraph": 9, "char_start": 0, "char_end": 24}}),
         },
     )
@@ -249,17 +312,17 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["workspace_id"] == TRUTH_WORKSPACE_ID
+    assert payload["workspace_id"] == truth_seed["workspace_id"]
     assert payload["status"] == "drifted"
     assert payload["severity"] == "critical"
     assert payload["drift_score"] == 20
     assert payload["deleted_documents_in_index"]["count"] == 1
     assert payload["deleted_documents_in_index"]["severity"] == "critical"
-    assert payload["deleted_documents_in_index"]["sample_document_ids"] == [DOC_DELETED]
+    assert payload["deleted_documents_in_index"]["sample_document_ids"] == [ids.doc_deleted]
     assert payload["archived_documents_in_active_index"]["count"] == 1
-    assert payload["archived_documents_in_active_index"]["sample_document_ids"] == [DOC_ARCHIVED]
+    assert payload["archived_documents_in_active_index"]["sample_document_ids"] == [ids.doc_archived]
     assert payload["duplicate_index_entries"]["count"] == 1
-    assert payload["duplicate_index_entries"]["sample_document_ids"] == ["f3000000-0000-0000-0000-000000000099"]
+    assert payload["duplicate_index_entries"]["sample_document_ids"] == [duplicate_document_id]
     assert payload["invalid_lifecycle_status"]["count"] >= 3
     assert payload["index_without_chunk"]["status"] == "not_applicable"
     assert "reindexing the workspace" in payload["repair_recommendation"]
@@ -268,17 +331,20 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
 @pytest.mark.m4c_gate
 def test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchors(
     truth_client: TestClient,
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
     truth_session: Session,
 ) -> None:
-    _seed_search_documents(truth_session)
+    ids = _search_truth_ids(truth_ids)
+    _seed_search_documents(truth_session, truth_ids=truth_ids, truth_seed=truth_seed, ids=ids)
 
     search_service = SearchService.from_session(truth_session)
-    search_response = truth_client.get("/api/v1/search/chunks", params={"q": TRUTH_TERM, "limit": 10})
+    search_response = truth_client.get("/api/v1/search/chunks", params={"q": ids.term, "limit": 10})
     assert search_response.status_code == 200
     search_api_results = search_response.json()
     search_results = search_service.search_chunks(
-        workspace_id=TRUTH_WORKSPACE_ID,
-        query=TRUTH_TERM,
+        workspace_id=truth_seed["workspace_id"],
+        query=ids.term,
         limit=10,
         offset=0,
     )
@@ -295,15 +361,15 @@ def test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchor
         retrieval_limit=10,
     )
     chat_session = ChatPersistenceService(truth_session).create_session(
-        workspace_id=TRUTH_WORKSPACE_ID,
-        title="truth consistency chat",
-        owner_user_id=TRUTH_USER_ID,
+        workspace_id=truth_seed["workspace_id"],
+        title=f"truth consistency chat {truth_ids.slug}",
+        owner_user_id=truth_seed["user_id"],
     )
 
     answer = rag_service.answer_question(
         session_id=chat_session.id,
-        workspace_id=TRUTH_WORKSPACE_ID,
-        question=TRUTH_TERM,
+        workspace_id=truth_seed["workspace_id"],
+        question=ids.term,
         retrieval_limit=10,
     )
 
@@ -323,10 +389,10 @@ def test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchor
         "search_chunks": search_chunks,
         "chat_chunks": chat_chunks,
     }
-    assert citation_chunks == [CHUNK_ACTIVE]
-    assert [item.chunk_id for item in search_results] == [CHUNK_ACTIVE]
-    assert CHUNK_ARCHIVED not in [item.chunk_id for item in search_results]
-    assert CHUNK_DELETED not in [item.chunk_id for item in search_results]
+    assert citation_chunks == [ids.chunk_active]
+    assert [item.chunk_id for item in search_results] == [ids.chunk_active]
+    assert ids.chunk_archived not in [item.chunk_id for item in search_results]
+    assert ids.chunk_deleted not in [item.chunk_id for item in search_results]
     assert all(item.source_anchor.model_dump() == chat_retrieval_results[index].source_anchor.model_dump() for index, item in enumerate(search_results))
 
 
@@ -338,7 +404,7 @@ def test_auth_workspace_truth_blocks_foreign_workspace_and_non_admin_diagnostics
         app,
         headers={
             "Authorization": f"Bearer {truth_seed['token']}",
-            "X-Workspace-Id": TRUTH_OTHER_WORKSPACE_ID,
+            "X-Workspace-Id": truth_seed["other_workspace_id"],
         },
     )
     response = foreign_workspace_client.get("/api/v1/admin/diagnostics")
@@ -348,9 +414,14 @@ def test_auth_workspace_truth_blocks_foreign_workspace_and_non_admin_diagnostics
 
 @pytest.mark.m4b_gate
 def test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
     truth_session: Session,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    import_job_id = truth_ids.job_id("import-retry")
+    doc_active = truth_ids.document_id("retry-active")
+    ver_active = truth_ids.version_id("retry-active")
     truth_session.execute(
         text(
             """
@@ -366,12 +437,12 @@ def test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows(
             """
         ),
         {
-            "id": TRUTH_IMPORT_JOB_ID,
-            "workspace_id": TRUTH_WORKSPACE_ID,
-            "user_id": TRUTH_USER_ID,
+            "id": import_job_id,
+            "workspace_id": truth_seed["workspace_id"],
+            "user_id": truth_seed["user_id"],
             "payload": json.dumps(
                 {
-                    "filename": "truth-retry.txt",
+                    "filename": f"truth-retry-{truth_ids.slug}.txt",
                     "mime_type": "text/plain",
                     "temp_file_path": "unused-in-monkeypatch",
                 }
@@ -386,10 +457,10 @@ def test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows(
     class SuccessfulImportExecutor:
         def execute(self, **_kwargs):
             return {
-                "document_id": DOC_ACTIVE,
-                "version_id": VER_ACTIVE,
+                "document_id": doc_active,
+                "version_id": ver_active,
                 "import_status": "duplicate",
-                "duplicate_of_document_id": DOC_ACTIVE,
+                "duplicate_of_document_id": doc_active,
                 "chunk_count": 1,
                 "parser_type": "txt-parser",
                 "warnings": [],
@@ -398,11 +469,11 @@ def test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows(
     monkeypatch.setattr("app.services.jobs.background_jobs.ImportExecutor", SuccessfulImportExecutor)
     monkeypatch.setattr("app.services.jobs.background_jobs.Path.read_bytes", lambda _self: b"truth payload")
 
-    process_import_job(TRUTH_IMPORT_JOB_ID, truth_session.connection())
+    process_import_job(import_job_id, truth_session.connection())
 
     job_row = truth_session.execute(
         text("select status, attempt_count, error_code from background_jobs where id = :id"),
-        {"id": TRUTH_IMPORT_JOB_ID},
+        {"id": import_job_id},
     ).one()
     assert job_row.status == "completed"
     assert job_row.attempt_count == 2
@@ -411,11 +482,14 @@ def test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows(
 
 @pytest.mark.m4c_gate
 def test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_retryable(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     truth_session: Session,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _seed_search_documents(truth_session)
+    ids = _search_truth_ids(truth_ids)
+    reindex_job_id = truth_ids.job_id("reindex-failure")
+    _seed_search_documents(truth_session, truth_ids=truth_ids, truth_seed=truth_seed, ids=ids)
     truth_session.execute(
         text(
             """
@@ -431,10 +505,10 @@ def test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_r
             """
         ),
         {
-            "id": TRUTH_REINDEX_JOB_ID,
-            "workspace_id": TRUTH_WORKSPACE_ID,
-            "user_id": TRUTH_USER_ID,
-            "payload": json.dumps({"target_workspace_id": TRUTH_WORKSPACE_ID}),
+            "id": reindex_job_id,
+            "workspace_id": truth_seed["workspace_id"],
+            "user_id": truth_seed["user_id"],
+            "payload": json.dumps({"target_workspace_id": truth_seed["workspace_id"]}),
         },
     )
     truth_session.commit()
@@ -449,22 +523,28 @@ def test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_r
 
     monkeypatch.setattr("app.services.jobs.background_jobs.SearchIndexRebuildService", CrashingRebuildService)
 
-    process_search_index_rebuild_job(TRUTH_REINDEX_JOB_ID, truth_session.connection())
+    process_search_index_rebuild_job(reindex_job_id, truth_session.connection())
 
     job_row = truth_session.execute(
         text("select status, error_code from background_jobs where id = :id"),
-        {"id": TRUTH_REINDEX_JOB_ID},
+        {"id": reindex_job_id},
     ).one()
     assert job_row.status == "retryable"
     assert job_row.error_code == "SERVICE_UNAVAILABLE"
-    assert truth_session.execute(text("select lifecycle_status from documents where id = :id"), {"id": DOC_ARCHIVED}).scalar_one() == "archived"
+    assert truth_session.execute(text("select lifecycle_status from documents where id = :id"), {"id": ids.doc_archived}).scalar_one() == "archived"
 
 
 @pytest.mark.m4c_gate
 def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     truth_session: Session,
 ) -> None:
+    document_id = truth_ids.document_id("chat-citation")
+    session_id = truth_ids.chat_session_id("citation")
+    message_id = truth_ids.chat_message_id("citation")
+    citation_id = truth_ids.citation_id("missing")
+    unknown_citation_id = truth_ids.citation_id("unknown")
     truth_session.execute(
         text(
             """
@@ -472,7 +552,7 @@ def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
             values (:session_id, :workspace_id, :user_id, 'truth chat', now(), now())
             """
         ),
-        {"session_id": "truth-chat-session-1", "workspace_id": TRUTH_WORKSPACE_ID, "user_id": TRUTH_USER_ID},
+        {"session_id": session_id, "workspace_id": truth_seed["workspace_id"], "user_id": truth_seed["user_id"]},
     )
     truth_session.execute(
         text(
@@ -482,8 +562,8 @@ def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
             """
         ),
         {
-            "message_id": "truth-chat-message-1",
-            "session_id": "truth-chat-session-1",
+            "message_id": message_id,
+            "session_id": session_id,
             "metadata": json.dumps({}),
         },
     )
@@ -500,10 +580,10 @@ def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
             """
         ),
         {
-            "document_id": DOC_ACTIVE,
-            "workspace_id": TRUTH_WORKSPACE_ID,
-            "user_id": TRUTH_USER_ID,
-            "content_hash": 'truth-chat-citation-hash',
+            "document_id": document_id,
+            "workspace_id": truth_seed["workspace_id"],
+            "user_id": truth_seed["user_id"],
+            "content_hash": truth_ids.content_hash("chat-citation"),
         },
     )
     truth_session.execute(
@@ -514,9 +594,9 @@ def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
             """
         ),
         {
-            "citation_id": "truth-chat-citation-1",
-            "message_id": "truth-chat-message-1",
-            "document_id": DOC_ACTIVE,
+            "citation_id": citation_id,
+            "message_id": message_id,
+            "document_id": document_id,
             "source_anchor": json.dumps({"type": "text", "page": None, "paragraph": 1, "char_start": 0, "char_end": 16}),
         },
     )
@@ -524,7 +604,7 @@ def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
 
     persisted = truth_session.execute(
         text("select source_status from chat_citations where id = :id"),
-        {"id": "truth-chat-citation-1"},
+        {"id": citation_id},
     ).scalar_one()
     assert persisted == "missing"
 
@@ -537,9 +617,9 @@ def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
                 """
             ),
             {
-                "citation_id": "truth-chat-citation-2",
-                "message_id": "truth-chat-message-1",
-                "document_id": DOC_ACTIVE,
+                "citation_id": unknown_citation_id,
+                "message_id": message_id,
+                "document_id": document_id,
                 "source_anchor": json.dumps({"type": "text", "page": None, "paragraph": 1, "char_start": 0, "char_end": 16}),
             },
         )
@@ -547,10 +627,13 @@ def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
     truth_session.rollback()
 
 
+@pytest.mark.m4b_gate
 def test_postgres_truth_parallel_replay_only_one_request_succeeds(
+    truth_ids: TruthIds,
     truth_seed: dict[str, str],
     postgres_truth_database_url: str,
 ) -> None:
+    replay_job_id = truth_ids.job_id("parallel-replay")
     engine = create_engine(postgres_truth_database_url.replace("postgresql://", "postgresql+psycopg://", 1), pool_pre_ping=True)
     try:
         with Session(engine) as seed_session:
@@ -569,10 +652,10 @@ def test_postgres_truth_parallel_replay_only_one_request_succeeds(
                     """
                 ),
                 {
-                    "id": "truth-replay-job-1",
-                    "workspace_id": TRUTH_WORKSPACE_ID,
-                    "user_id": TRUTH_USER_ID,
-                    "payload": json.dumps({"filename": "broken.txt", "mime_type": "text/plain", "temp_file_path": "unused"}),
+                    "id": replay_job_id,
+                    "workspace_id": truth_seed["workspace_id"],
+                    "user_id": truth_seed["user_id"],
+                    "payload": json.dumps({"filename": f"broken-{truth_ids.slug}.txt", "mime_type": "text/plain", "temp_file_path": "unused"}),
                 },
             )
             seed_session.commit()
@@ -586,7 +669,7 @@ def test_postgres_truth_parallel_replay_only_one_request_succeeds(
                 service = BackgroundJobService.from_session(session)
                 try:
                     barrier.wait(timeout=5)
-                    service.replay_job(job_id="truth-replay-job-1", replayed_by_user_id=label)
+                    service.replay_job(job_id=replay_job_id, replayed_by_user_id=label)
                     results.append(label)
                 except Exception as exc:
                     errors.append(type(exc).__name__)
@@ -602,7 +685,7 @@ def test_postgres_truth_parallel_replay_only_one_request_succeeds(
         assert len(errors) == 1, {"results": results, "errors": errors}
 
         with Session(engine) as verify_session:
-            job = BackgroundJobService.from_session(verify_session).get_job("truth-replay-job-1")
+            job = BackgroundJobService.from_session(verify_session).get_job(replay_job_id)
             response = BackgroundJobService.from_session(verify_session).to_response(job)
             assert job.status == "pending"
             assert response.previous_error is not None
@@ -612,58 +695,64 @@ def test_postgres_truth_parallel_replay_only_one_request_succeeds(
         engine.dispose()
 
 
-def _seed_search_documents(session: Session) -> None:
+def _seed_search_documents(
+    session: Session,
+    *,
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    ids: SearchTruthIds,
+) -> None:
     created = datetime(2026, 5, 7, 10, 0, tzinfo=UTC)
     rows = [
         (
-            DOC_ACTIVE,
-            TRUTH_WORKSPACE_ID,
-            "Truth Active",
+            ids.doc_active,
+            truth_seed["workspace_id"],
+            f"Truth Active {truth_ids.slug}",
             "active",
             None,
             None,
-            VER_ACTIVE,
-            CHUNK_ACTIVE,
-            f"{TRUTH_TERM} active source with enough supporting text for chat retrieval consistency.",
+            ids.ver_active,
+            ids.chunk_active,
+            f"{ids.term} active source with enough supporting text for chat retrieval consistency.",
             True,
             {"source_anchor": {"type": "text", "page": None, "paragraph": 1, "char_start": 0, "char_end": 82}},
         ),
         (
-            DOC_ARCHIVED,
-            TRUTH_WORKSPACE_ID,
-            "Truth Archived",
+            ids.doc_archived,
+            truth_seed["workspace_id"],
+            f"Truth Archived {truth_ids.slug}",
             "archived",
             created,
             None,
-            VER_ARCHIVED,
-            CHUNK_ARCHIVED,
-            f"{TRUTH_TERM} archived source with enough supporting text that must not appear.",
+            ids.ver_archived,
+            ids.chunk_archived,
+            f"{ids.term} archived source with enough supporting text that must not appear.",
             True,
             {"source_anchor": {"type": "text", "page": None, "paragraph": 2, "char_start": 0, "char_end": 72}},
         ),
         (
-            DOC_OTHER_WS,
-            TRUTH_OTHER_WORKSPACE_ID,
-            "Truth Other",
+            ids.doc_other_ws,
+            truth_seed["other_workspace_id"],
+            f"Truth Other {truth_ids.slug}",
             "active",
             None,
             None,
-            VER_OTHER_WS,
-            CHUNK_OTHER_WS,
-            f"{TRUTH_TERM} other workspace source with enough supporting text that must not appear.",
+            ids.ver_other_ws,
+            ids.chunk_other_ws,
+            f"{ids.term} other workspace source with enough supporting text that must not appear.",
             True,
             {"source_anchor": {"type": "text", "page": None, "paragraph": 3, "char_start": 0, "char_end": 81}},
         ),
         (
-            DOC_DELETED,
-            TRUTH_WORKSPACE_ID,
-            "Truth Deleted",
+            ids.doc_deleted,
+            truth_seed["workspace_id"],
+            f"Truth Deleted {truth_ids.slug}",
             "deleted",
             None,
             created,
-            VER_DELETED,
-            CHUNK_DELETED,
-            f"{TRUTH_TERM} deleted source with enough supporting text that must not appear.",
+            ids.ver_deleted,
+            ids.chunk_deleted,
+            f"{ids.term} deleted source with enough supporting text that must not appear.",
             True,
             {"source_anchor": {"type": "text", "page": None, "paragraph": 4, "char_start": 0, "char_end": 72}},
         ),
@@ -695,9 +784,9 @@ def _seed_search_documents(session: Session) -> None:
             {
                 "document_id": document_id,
                 "workspace_id": workspace_id,
-                "owner_user_id": TRUTH_USER_ID,
+                "owner_user_id": truth_seed["user_id"],
                 "title": title,
-                "content_hash": f"hash-{document_id}",
+                "content_hash": truth_ids.content_hash(f"search-doc-{document_id}"),
                 "lifecycle_status": lifecycle_status,
                 "archived_at": archived_at,
                 "deleted_at": deleted_at,
@@ -741,7 +830,7 @@ def _seed_search_documents(session: Session) -> None:
                 "anchor": f"truth-{chunk_id}",
                 "content": content,
                 "is_searchable": is_searchable,
-                "content_hash": f"chunk-{chunk_id}",
+                "content_hash": truth_ids.content_hash(f"search-chunk-{chunk_id}"),
                 "metadata": json.dumps(metadata),
                 "created_at": created,
             },

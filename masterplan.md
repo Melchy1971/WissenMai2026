@@ -910,12 +910,13 @@ Aktueller M4-Gate-Stand am 2026-05-11:
 
 M4-Freigabe wird nicht mehr ueber manuelle Scores abgeleitet. Die einzige Gate-Quelle ist `reports/postgres_truth_report.json`, geprueft durch `scripts/validate_m4_truth_gate.py`.
 
-Der aktuelle Report weist `pytest_exit_code = 1`, `failed = 3`, `skipped = 0` und `passed = 26` aus. Damit gilt:
+Der aktuelle Report weist `pytest_exit_code = 0`, `failed = 0`, `skipped = 0` und `passed = 33` aus. Damit gilt:
 
-- `M4 Truth Gate = FAIL`
-- M4 bleibt blockiert.
+- `M4 Truth Gate = PASS`
+- Das PostgreSQL-Truth-Gate ist aktuell gruen.
+- M4 bleibt dennoch insgesamt blockiert.
 - M5 bleibt blockiert.
-- Manuelle Score-Freigaben sind fuer M4 unzulaessig, solange der Validator FAIL liefert.
+- Manuelle Score-Freigaben bleiben fuer M4 unzulaessig; der Validator ist Gate-Quelle, ersetzt aber keine offenen Restgates ausserhalb des Truth-Reports.
 
 RC-3-Hardening-Nachweis (2026-05-08):
 
@@ -941,11 +942,72 @@ Gate-Regel fuer M5:
 
 Aktuelles Ergebnis:
 
-- Der aktuelle Validator-Status ist FAIL; daraus folgt keine M4-Freigabe.
-- Fachliche Teilbewertungen koennen nur Kontext liefern, aber keine Gate-Freigabe.
-- M4 ist damit noch **nicht vollstaendig technisch stabilisiert**.
-- M5 bleibt blockiert bis `M4 Truth Gate = PASS`.
+- Der aktuelle Validator-Status ist PASS; das Truth-Gate selbst blockiert M4 derzeit nicht.
+- Fachliche Teilbewertungen koennen nur Kontext liefern, aber keine formale Freigabe ersetzen.
+- M4 ist dennoch noch **nicht vollstaendig technisch stabilisiert**, weil M4e-Minimal und die vollstaendige Dokumentationspruefung weiter offen sind.
+- M5 bleibt blockiert trotz `M4 Truth Gate = PASS`.
 - Die kompakte Freigabefassung steht in `docs/m4-m5-freigabefassung.md`.
+
+Finales M4 Exit Gate am 2026-05-11:
+
+Formale Gate-Quellen:
+
+- `reports/postgres_truth_report.json`
+- `docs/status.md`
+- `docs/m4-m5-freigabefassung.md`
+- dieser Masterplan
+
+Exit-Gate Report:
+
+| Voraussetzung | Soll | Ist | Ergebnis |
+|---|---|---|---|
+| postgres_truth `passed = collected` | Pflicht | `33 = 33` | PASS |
+| postgres_truth `failed = 0` | Pflicht | `0` | PASS |
+| postgres_truth `errors = 0` | Pflicht | `0` | PASS |
+| postgres_truth `skipped = 0` | Pflicht | `0` | PASS |
+| pytest `exit_code = 0` | Pflicht | `0` | PASS |
+| M4a Score | `>= 95` | `86` | FAIL |
+| M4b Score | `>= 90` | `88` | FAIL |
+| M4c Score | `>= 90` | `86` | FAIL |
+| M4d read-only Score | `>= 85` | aktuell nicht numerisch belegt | FAIL |
+| M4e Entscheidung dokumentiert | Pflicht | `ja` | PASS |
+| Masterplan aktuell | Pflicht | `ja` | PASS |
+| `docs/status.md` aktuell | Pflicht | `ja, mit Restpunkten` | PASS |
+| keine falschen gruenen Aussagen | Pflicht | `ja` | PASS |
+| Truth-Report referenziert | Pflicht | `ja` | PASS |
+
+Scorematrix:
+
+| Bereich | Ist | Gate | Ergebnis |
+|---|---:|---:|---|
+| M4a Auth/Workspace Isolation | 86 | 95 | FAIL |
+| M4b Upload-GUI | 88 | 90 | FAIL |
+| M4c Dokument-Lifecycle | 86 | 90 | FAIL |
+| M4d Diagnostics read-only | nicht numerisch belegt | 85 | FAIL |
+| M4e Entscheidung dokumentiert | ja | Pflicht | PASS |
+
+Entscheidung:
+
+- M4 abgeschlossen: `nein`
+- M4 teilweise abgeschlossen: `ja`
+- M4 blockiert: `ja`
+
+Begruendung:
+
+- Das PostgreSQL-Truth-Gate ist formal gruen.
+- Das finale M4 Exit Gate ist dennoch nicht bestanden, weil `M4a`, `M4b` und `M4c` ihre Zielschwellen verfehlen.
+- Fuer `M4d` read-only liegt aktuell kein belastbarer numerischer Gate-Score `>= 85` vor.
+- `M4e` ist dokumentiert, aber nur als partiell umgesetzter Minimalpfad bewertet.
+
+Go/No-Go fuer M5:
+
+- M5: `No-Go`
+
+Ableitung:
+
+- Das Truth-Gate hebt nur den formalen PostgreSQL-Nachweis-Blocker auf.
+- Es ersetzt nicht die Exit-Schwellen fuer die M4-Teilslices.
+- M5 bleibt blockiert, bis das finale M4 Exit Gate vollstaendig erfuellt ist.
 
 Aktueller M4c-Befund:
 
@@ -970,8 +1032,147 @@ Aktueller M4c-Befund:
 Freigabeentscheidung:
 
 - Go fuer M4d: `Read-only Go`, vollstaendiges M4d `No-Go`
-- Go fuer M4e: `No-Go`
+- Go fuer M4e: `Go` nur fuer den manuellen Minimal-Scope, `No-Go` fuer erweiterten Ausbau
 - Go fuer M5: `No-Go`
+
+Entscheidungsmatrix fuer mutierende Admin-Aktionen:
+
+| Aktion | Status in M4d | Entscheidung | Einordnung |
+|---|---|---|---|
+| Reindex ausloesen | nicht freigegeben | blockiert | operative Nutzung erst nach M5; vor M5 nur als M4e-Restore-Folgeschritt erforderlich |
+| Cleanup ausloesen | nicht freigegeben | blockiert | nach M5 verschoben |
+| Backup ausloesen | nicht freigegeben | blockiert als allgemeine Admin-Aktion | fuer M4e-Minimal vor M5 fachlich noetig, aber vorzugsweise ueber CLI/Runbook statt M4d-Web-Admin |
+| Repair Jobs | nicht freigegeben | blockiert | nach M5 verschoben |
+| Userverwaltung | nicht freigegeben | blockiert | nach M5 verschoben |
+
+Dokumentationsregel fuer M4d:
+
+- M4d read-only ist abgeschlossen bzw. vorbereitet, soweit reale Diagnose-Endpunkte ohne Mutation vorliegen.
+- M4d full mit mutierenden Admin-Aktionen ist nicht freigegeben.
+- Die fuer M4e-Minimal noetigen Betriebsaktionen zaehlen nicht als Freigabe eines allgemeinen M4d-Full-Admin-Slices.
+
+Produktionsreife-Score am 2026-05-11:
+
+Hinweis:
+
+- Dieser Score ist ein Management- und Reifeindikator.
+- Er ersetzt nicht das formale Gate aus `reports/postgres_truth_report.json` plus `scripts/validate_m4_truth_gate.py`.
+
+| Komponente | Gewicht | Score | Gewichteter Beitrag |
+|---|---:|---:|---:|
+| PostgreSQL Truth Tests | 30 % | 95 | 28.5 |
+| Auth/Workspace Isolation | 20 % | 86 | 17.2 |
+| Recovery/Queue | 15 % | 87 | 13.1 |
+| Lifecycle/Retrieval Konsistenz | 15 % | 86 | 12.9 |
+| Observability/Dokumentation | 10 % | 72 | 7.2 |
+| Backup/Restore | 10 % | 74 | 7.4 |
+
+Gesamtscore:
+
+- `86.3 / 100`
+
+Gate-Einordnung fuer den Management-Score:
+
+- `>= 90`: produktionsnah
+- `75-89`: stabilisiert, aber nicht final
+- `< 75`: nicht produktionsreif
+
+Aktuelle Einordnung:
+
+- `86.3 / 100` = stabilisiert, aber nicht final
+
+Differenz zu Feature-Fortschritt:
+
+- Feature-Fortschritt als Liefer-/Scope-Proxy: `84.1 / 100`
+- Produktionsreife: `86.3 / 100`
+- Differenz: `-2.2` Punkte
+
+Begruendung fuer die Differenz:
+
+- Features sind in grossen Teilen sichtbar oder implementiert.
+- Der praktische Restore-Nachweis hat den frueheren Reifeverlust in M4e deutlich reduziert.
+- Produktionsreife bleibt weiter unter `produktionsnah`, weil Observability, explizite Reindex-Ausgabe im Restore-Nachweis und vollstaendige End-to-End-Nachweise noch offen sind.
+- Der groesste verbleibende Reifeverlust kommt aktuell aus unvollstaendiger Observability und nicht voll abgeschlossenen End-to-End-Nachweisen.
+
+Priorisierte Restblocker fuer `>= 90 / 100` Produktionsreife:
+
+1. M4e-Minimal real implementieren und praktisch nachweisen.
+  - Backup erzeugbar
+  - Restore auf leere Datenbank lokal nachgewiesen
+  - `alembic upgrade head` nach Restore erfolgreich
+  - Reindex-Ergebnis im Restore-Pfad noch explizit ausgabeseitig absichern
+
+2. Observability und Betriebsnachweise auf Abschlussniveau heben.
+  - Lifecycle/Retrieval/Reindex-Instrumentierung vollstaendig und belastbar
+  - Dokumentation ohne Widerspruch zwischen Truth-Report, Freigabefassung und Statusmatrix
+  - klare operative Nachweise statt nur Konzept-/Runbook-Stand
+
+3. Auth/Workspace-Isolation bis zum Endzustand schliessen.
+  - vollstaendiger Login-/Logout-/Session-Produktfluss
+  - harter Workspace-Scope-Nachweis fuer angrenzende Mutationspfade
+  - kein Abschluss nur ueber Backend-Teilstuecke
+
+4. Lifecycle/Retrieval-Konsistenz mit harten End-to-End-Nachweisen abrunden.
+  - gruener Integrationsnachweis fuer Lifecycle/Reindex/Search auf realer PostgreSQL-Testumgebung
+  - expliziter Nachweis, dass neue Chat-Antworten archivierte/geloeschte Inhalte nicht mehr retrieven
+
+5. Recovery/Queue von stark gehaertet auf operativ voll abgesichert bringen.
+  - Replay-/Dead-Letter-/Queue-Verhalten bleibt nachweisbar stabil
+  - keine Freigabe allgemeiner Repair-Admin-Aktionen vor M5, aber klarer Betriebsnachweis der Minimalpfade
+
+Erwartete Hebelwirkung auf den Score:
+
+- Der groesste verbleibende Hebel ist Observability/Dokumentation.
+- M4e Backup/Restore ist vom Konzept-Blocker zu einem partiell nachgewiesenen Minimalpfad geworden.
+- Auth/Workspace und Lifecycle/Retrieval entscheiden danach ueber den Sprung von `stabilisiert` zu `produktionsnah`.
+
+M4 Stabilization Sprint Board:
+
+Sprint-Regeln:
+
+- keine neuen Features
+- nur Fixes an bestehenden Masterplan-Bestandteilen
+- Errors vor Failures
+- Flakiness nach Failures
+- Doku erst nach Testgruen finalisieren
+
+| Ticket | Titel | Status | Reihenfolge | Check | Done-Definition |
+|---|---|---|---|---|---|
+| T1 | Truth-Gate Repro sichern | todo | 1 | `pytest -m postgres_truth tests/postgres_truth -q` | `errors = 0`, `failures = 0`, `skipped = 0`, `exit_code = 0` |
+| T2 | Truth-Errors sofort schliessen | todo | 2 | neue `errors` isolieren | kein offener Infrastruktur-, Schema-, Loader- oder Import-Error |
+| T3 | Deterministische Failures schliessen | todo | 3 | rote Assertions vor weiterer Sprintarbeit beheben | keine offenen deterministischen Testfailures |
+| T4 | Recovery-/Queue-Flakiness pruefen | todo | 4 | Replay-, Dead-Letter- und Claim-Slices mehrfach laufen lassen | keine intermittierenden Race-/Timing-Ausfaelle |
+| T5 | M4e-Minimal final absichern | todo | 5 | `backup create`, `backup validate`, `backup restore`, `search rebuild-index` | lokaler Restore auf leere PostgreSQL-DB nachgewiesen, `reindex_result` explizit belegt |
+| T6 | Observability-Luecken schliessen | todo | 6 | Backup/Restore/Reindex/Lifecycle/Retrieval-Events pruefen | kritische M4-Pfade haben belastbare Events ohne blinde Stellen |
+| T7 | Auth/Workspace-Endzustand absichern | todo | 7 | Login, Logout, Bootstrap, Route-Guard, Fremdworkspace-Mutation | vorhandener Produktfluss ist durch Tests und reale Request-Kontexte hart belegt |
+| T8 | Lifecycle/Retrieval PostgreSQL E2E | todo | 8 | Lifecycle, Reindex, Search, Retrieval unter realer PostgreSQL-Testumgebung | archivierte/geloeschte Inhalte werden fuer neue Antworten nicht mehr retrievt |
+| T9 | Browsernahe Stabilitaetskanten pruefen | todo | 9 | bestehende Frontend-Slices fuer Auth/Lifecycle/Diagnostics pruefen | keine offene UI-Regressionskante im bestehenden Scope |
+| T10 | Completion Matrix einfrieren | todo | 10 | Matrix gegen Report, Tests und Code abgleichen | keine unbelegten `Go`, `PASS`, `abgeschlossen`-Aussagen |
+| T11 | Finaldoku nach Testgruen | todo | 11 | Masterplan, Status, Freigabefassung, Runbooks synchronisieren | alle Quellen sind widerspruchsfrei und nur auf gruener Evidenz aufgebaut |
+
+Abnahmekriterien fuer den Sprint:
+
+- Truth-Gate bleibt gruen
+- keine offenen Errors
+- keine offenen deterministischen Failures
+- keine offene Flakiness in kritischen M4-Pfaden
+- M4e-Minimal praktisch und explizit belegt
+- Observability ausreichend fuer Betriebsnachweis
+- Finaldoku erst nach stabilem Testgruen
+
+Stop-Regeln fuer den Sprint:
+
+- Stop bei neuem `error`
+- Stop bei neuem `failure`
+- Stop bei neuem Scope ausserhalb des Masterplans
+- Stop bei Doku-Finalisierung vor Testgruen
+- Stop bei Architekturdrift Richtung neue Features, neue Admin-Aktionen oder neues Betriebsmodell
+
+Empfohlene 3-Phasen-Ausfuehrung:
+
+- Phase 1 `Gate Protection`: `T1-T4`
+- Phase 2 `Hard Proofs`: `T5-T9`
+- Phase 3 `Final Freeze`: `T10-T11`
 
 ### M4a - Authentifizierung und Workspace-Isolation
 

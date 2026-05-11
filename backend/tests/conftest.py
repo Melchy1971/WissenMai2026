@@ -1,7 +1,6 @@
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
-import shutil
 import tempfile
 
 import pytest
@@ -53,10 +52,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 def local_temp_dir(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     TEST_TEMP_ROOT.mkdir(exist_ok=True)
     monkeypatch.setattr(tempfile, "tempdir", str(TEST_TEMP_ROOT))
-    try:
-        yield
-    finally:
-        shutil.rmtree(TEST_TEMP_ROOT, ignore_errors=True)
+    yield
 
 
 @pytest.fixture

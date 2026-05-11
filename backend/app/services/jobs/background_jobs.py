@@ -93,12 +93,20 @@ class BackgroundJobService:
             raise BackgroundJobAlreadyClaimedError(job_id)
         timestamp = now or datetime.now(UTC)
         stale_before = self._stale_lock_before(timestamp)
+        backoff_before = self._backoff_before(timestamp)
         claimed = self._session.execute(
             update(BackgroundJob)
             .where(
                 BackgroundJob.id == job_id,
                 or_(
-                    BackgroundJob.status.in_(("pending", "retryable")),
+                    BackgroundJob.status == "pending",
+                    and_(
+                        BackgroundJob.status == "retryable",
+                        or_(
+                            BackgroundJob.finished_at.is_(None),
+                            BackgroundJob.finished_at < backoff_before,
+                        ),
+                    ),
                     and_(
                         BackgroundJob.status == "running",
                         BackgroundJob.locked_at.is_not(None),
@@ -232,6 +240,11 @@ class BackgroundJobService:
         from datetime import timedelta
 
         return timestamp - timedelta(seconds=settings.background_job_lock_timeout_seconds)
+
+    def _backoff_before(self, timestamp: datetime) -> datetime:
+        from datetime import timedelta
+
+        return timestamp - timedelta(seconds=settings.background_job_retry_backoff_seconds)
 
     def _failure_progress_message(self, status: str) -> str:
         if status == "retryable":
