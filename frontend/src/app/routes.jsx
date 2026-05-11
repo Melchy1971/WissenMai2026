@@ -12,7 +12,7 @@ import { LoginPage } from '../pages/LoginPage.jsx';
 
 function ProtectedRoute() {
   const location = useLocation();
-  const { token, isAuthReady, bootstrapError } = useAuth();
+  const { token, isAuthReady, bootstrapError, retryBootstrap } = useAuth();
 
   if (!isAuthReady) {
     return <LoadingState label="Authentifizierung wird initialisiert..." />;
@@ -23,7 +23,13 @@ function ProtectedRoute() {
   }
 
   if (bootstrapError) {
-    return <ErrorState error={bootstrapError} />;
+    return (
+      <ErrorState
+        error={bootstrapError}
+        actionLabel={bootstrapError.code === 'API_UNREACHABLE' || bootstrapError.code === 'CORS_ERROR' || bootstrapError.code === 'TIMEOUT' ? 'Erneut versuchen' : ''}
+        onAction={bootstrapError.code === 'API_UNREACHABLE' || bootstrapError.code === 'CORS_ERROR' || bootstrapError.code === 'TIMEOUT' ? retryBootstrap : null}
+      />
+    );
   }
 
   return <AppShell />;

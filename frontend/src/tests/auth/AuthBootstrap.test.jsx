@@ -82,7 +82,53 @@ describe('Auth bootstrap', () => {
 
     expect(await screen.findByText('Backend nicht erreichbar')).toBeInTheDocument();
     expect(screen.getByText('Fehlercode: API_UNREACHABLE')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Erneut versuchen' })).toBeInTheDocument();
     expect(screen.queryByText(/API is not reachable/i)).not.toBeInTheDocument();
+  });
+
+  it('retries bootstrap after transient backend-down state', async () => {
+    storeTokenOnly();
+    let authBootstrapAttempts = 0;
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+
+      if (url.includes('/api/v1/auth/me')) {
+        authBootstrapAttempts += 1;
+        if (authBootstrapAttempts === 1) {
+          throw new Error('connection refused');
+        }
+
+        return jsonResponse({
+          user: { id: 'user-1', login: 'admin' },
+          memberships: [{ workspace_id: 'workspace-1', role: 'owner' }],
+          active_workspace_id: 'workspace-1',
+        });
+      }
+
+      if (url.includes('/documents?limit=20&offset=0&lifecycle_status=active')) {
+        return jsonResponse([]);
+      }
+
+      throw new Error(`unexpected fetch call: ${url}`);
+    });
+
+    renderApp('/documents');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Erneut versuchen' }));
+
+    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(authBootstrapAttempts).toBe(2);
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('/documents?limit=20&offset=0&lifecycle_status=active'),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test-token',
+            'X-Workspace-Id': 'workspace-1',
+          }),
+        }),
+      );
+    });
   });
 
   it('shows expired-session state on 401', async () => {

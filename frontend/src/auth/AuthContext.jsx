@@ -132,6 +132,10 @@ function mapBootstrapFailure(error) {
   });
 }
 
+function isRetryableBootstrapError(error) {
+  return error?.code === 'API_UNREACHABLE' || error?.code === 'CORS_ERROR' || error?.code === 'TIMEOUT';
+}
+
 function applyApiContext(authState) {
   const normalized = normalizeAuthState(authState);
   setApiRequestContext({
@@ -277,6 +281,9 @@ export function AuthProvider({ children, initialAuthState = null }) {
       setBootstrapError(null);
       applyApiContext({});
       setAuthState(normalizeAuthState());
+    },
+    retryBootstrap() {
+      setBootstrapError((current) => (isRetryableBootstrapError(current) ? null : current));
     },
     async signOut() {
       try {
