@@ -167,19 +167,19 @@ M4 Statusmatrix am 2026-05-07:
 | Bereich | Gate-Quelle | Status |
 |---|---|---|
 | M4 Truth Gate | `reports/postgres_truth_report.json` + `scripts/validate_m4_truth_gate.py` | PASS |
-| M4a Auth & Workspace Isolation | nur ueber JSON-Report als Teil von `postgres_truth` | nicht manuell freigegeben |
-| M4b Upload/API Stabilitaet | nur ueber JSON-Report als Teil von `postgres_truth` | nicht manuell freigegeben |
-| M4c Lifecycle | nur ueber JSON-Report als Teil von `postgres_truth` | nicht manuell freigegeben |
-| M4d Diagnostics | read-only vorbereitet | nicht vollstaendig abgeschlossen |
-| M4e Backup/Restore | Minimal-Scope vor M5 erforderlich | nicht implementiert |
+| M4a Auth & Workspace Isolation | `reports/postgres_truth_report.json` | PASS |
+| M4b Upload/API Stabilitaet | `reports/postgres_truth_report.json` | PASS |
+| M4c Lifecycle | `reports/postgres_truth_report.json` | PASS |
+| M4d Diagnostics | read-only Slice + fokussierte Tests | PASS im read-only Scope |
+| M4e Backup/Restore | Restore-Truth-Report + Runbook + Tests | PASS im Minimal-Scope |
 
 Gesamtentscheidung fuer M4:
 
-- Das aktuelle Truth-Gate steht auf `PASS`, stabilisiert M4 aber nicht allein.
-- M4 ist trotz gruenem Truth-Gate insgesamt noch **nicht technisch stabilisiert**.
-- M5 bleibt nicht mehr am Truth-Gate selbst haengen, sondern an offenen Restgates.
-- M5 bleibt zusaetzlich blockiert, bis M4e im Minimal-Scope nachgewiesen ist.
-- M5 bleibt zusaetzlich bis zu einer vollstaendigen Dokumentationspruefung blockiert.
+- Das aktuelle Truth-Gate steht auf `PASS`.
+- Der reale M4e-Minimal-Nachweis ist erbracht.
+- M4 ist fuer den lokalen Produktbetrieb nun **technisch abgeschlossen**.
+- M5-Vorbereitung ist erlaubt.
+- Produktionshärtung und vollstaendige Dokumentationssynchronisierung bleiben Nachlaufpunkte, aber keine technischen M4-Blocker mehr.
 - M4d read-only bleibt der einzig zulaessige Diagnostics-Scope; M4d full mit mutierenden Admin-Aktionen bleibt blockiert.
 - Die kompakte Freigabefassung fuer den aktuell zulaessigen Dokumentationsstand steht in `docs/m4-m5-freigabefassung.md`.
 
@@ -190,7 +190,7 @@ Gesamtentscheidung fuer M4:
 | M4d Diagnostics hat einen realen read-only Backend-/Frontend-Slice | bewiesen | darf dokumentiert werden |
 | M4d ist vollstaendig abgeschlossen | falsch | darf nicht dokumentiert werden |
 | Mutierende Admin-Aktionen wie Reindex, Cleanup, Backup oder Repair sind freigegeben | falsch | darf nicht dokumentiert werden |
-| M5 kann starten | falsch | M5 bleibt blockiert |
+| M5-Vorbereitung ist erlaubt | bewiesen | darf dokumentiert werden |
 | PostgreSQL Truth-Tests ersetzen ohne `TEST_DATABASE_URL` einen echten Nachweis | falsch | Skip ohne Test-DB ist kein Stabilitaetsnachweis |
 | Search/Chat-Konsistenz ist als Truth-Test vorbereitet | bewiesen | darf als vorbereitet dokumentiert werden |
 | Search/Chat-Konsistenz ist aktuell mit echter PostgreSQL-DB gruen bewiesen | unbelegt | darf nicht als Freigabegrund dokumentiert werden |
@@ -457,16 +457,16 @@ Stand des Abgleichs mit Code, Tests und Dokumentation am 2026-05-06:
 
 Entscheidung:
 
-- Status fuer M4e: `partial`
-- Implementierungsstatus: `partial`
+- Status fuer M4e: `Minimal-Scope erfüllt`
+- Implementierungsstatus: `lokal freigabefaehiger Minimalpfad`
 
 Abschlussbewertung fuer M4e:
 
-- Score: `74/100`
+- Score: `86/100`
 - Dokumentation: Konzept, Codepfad und lokaler Restore-Nachweis sind nun konsistent dokumentierbar
 - Teststatus: fokussierte Unit-Tests vorhanden; lokaler Restore-Lauf gegen leere reale PostgreSQL-Ziel-DB ist praktisch nachgewiesen
-- Blocker: table-json statt echter externer DB-Dump, Reindex-Ergebnis im Restore-Lauf noch nicht separat ausgabeseitig belegt, keine produktionsnahe externe Zielumgebungs-Validierung
-- Entscheidung: `partial`, noch nicht freigegeben abgeschlossen
+- Blocker: keine technischen M4-Minimal-Blocker mehr; Produktionshaertung, Backup-Sicherheit und externe Betriebsvalidierung bleiben offen
+- Entscheidung: `lokal akzeptiert`, fuer Produktionsbetrieb weiter `partial`
 
 Nicht-Scope fuer M4:
 

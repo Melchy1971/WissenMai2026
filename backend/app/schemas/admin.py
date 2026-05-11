@@ -129,3 +129,52 @@ class DiagnosticsResponse(BaseModel):
     imports: DiagnosticsImportsResponse
     search: DiagnosticsSearchResponse
     auth: DiagnosticsAuthResponse
+
+
+class BackupVerificationRequest(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    input_dir: str
+
+
+class BackupVerificationIssueResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    code: str
+    path: str
+    detail: str
+
+
+class BackupVerificationCheckResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    status: str
+    path: str | None = None
+    missing_paths: list[str] | None = None
+    mismatches: list[str] | None = None
+    invalid_entries: list[str] | None = None
+    details: str | None = None
+    declared_file_count: int | None = None
+    actual_file_count: int | None = None
+    missing_fields: list[str] | None = None
+
+
+class BackupIntegrityReportResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    checks: dict[str, BackupVerificationCheckResponse]
+    issue_count: int
+    issues: list[BackupVerificationIssueResponse]
+
+
+class BackupVerificationResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    status: str
+    backup_dir: str
+    checked_at: datetime
+    integrity_report: BackupIntegrityReportResponse
+    error_classes: list[str]
+    mismatch_count: int
+    mismatches: list[str]
+    manifest: dict[str, object]

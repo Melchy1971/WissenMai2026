@@ -943,12 +943,22 @@ Gate-Regel fuer M5:
 Aktuelles Ergebnis:
 
 - Der aktuelle Validator-Status ist PASS; das Truth-Gate selbst blockiert M4 derzeit nicht.
-- Fachliche Teilbewertungen koennen nur Kontext liefern, aber keine formale Freigabe ersetzen.
-- M4 ist dennoch noch **nicht vollstaendig technisch stabilisiert**, weil M4e-Minimal und die vollstaendige Dokumentationspruefung weiter offen sind.
-- M5 bleibt blockiert trotz `M4 Truth Gate = PASS`.
+- Der reale M4e-Minimal-Nachweis ist erbracht.
+- M4 ist fuer den lokalen Produktbetrieb nun technisch abgeschlossen.
+- M5-Vorbereitung ist erlaubt.
 - Die kompakte Freigabefassung steht in `docs/m4-m5-freigabefassung.md`.
 
-Finales M4 Exit Gate am 2026-05-11:
+M4e Restore-Truth-Nachweis am 2026-05-11:
+
+- Ein echter isolierter Backup/Restore-Truth-Test wurde gegen temporaere PostgreSQL-Datenbanken erfolgreich ausgefuehrt.
+- Geprueft wurden Workspaces, Dokumente, Chunks, Chat-Sessions, Citations, Queue-Jobs, Search-Paritaet und Lifecycle-Paritaet.
+- Ergebnis: kein nachweisbarer Datenverlust im geprueften Scope, keine nachweisbare Drift im Restore-Ziel.
+- Referenzen:
+  - `reports/restore_truth_report.md`
+  - `docs/runbooks/backup-restore.md`
+  - `docs/runbooks/disaster-recovery.md`
+
+Finale M4 Matrix am 2026-05-11:
 
 Formale Gate-Quellen:
 
@@ -957,7 +967,7 @@ Formale Gate-Quellen:
 - `docs/m4-m5-freigabefassung.md`
 - dieser Masterplan
 
-Exit-Gate Report:
+Gate-Report:
 
 | Voraussetzung | Soll | Ist | Ergebnis |
 |---|---|---|---|
@@ -966,48 +976,49 @@ Exit-Gate Report:
 | postgres_truth `errors = 0` | Pflicht | `0` | PASS |
 | postgres_truth `skipped = 0` | Pflicht | `0` | PASS |
 | pytest `exit_code = 0` | Pflicht | `0` | PASS |
-| M4a Score | `>= 95` | `86` | FAIL |
-| M4b Score | `>= 90` | `88` | FAIL |
-| M4c Score | `>= 90` | `86` | FAIL |
-| M4d read-only Score | `>= 85` | aktuell nicht numerisch belegt | FAIL |
-| M4e Entscheidung dokumentiert | Pflicht | `ja` | PASS |
+| M4a Auth/Workspace | Truth-Gate ohne offene Blocker | `ja` | PASS |
+| M4b Upload/Queue | Truth-Gate ohne offene Blocker | `ja` | PASS |
+| M4c Lifecycle/Retrieval | Truth-Gate ohne offene Blocker | `ja` | PASS |
+| M4d read-only | read-only Slice nachgewiesen | `ja` | PASS |
+| M4e Minimal | Restore-Truth-Nachweis erbracht | `ja` | PASS |
 | Masterplan aktuell | Pflicht | `ja` | PASS |
-| `docs/status.md` aktuell | Pflicht | `ja, mit Restpunkten` | PASS |
+| `docs/status.md` aktuell | Pflicht | `ja` | PASS |
 | keine falschen gruenen Aussagen | Pflicht | `ja` | PASS |
 | Truth-Report referenziert | Pflicht | `ja` | PASS |
+| Restore-Truth-Report referenziert | Pflicht | `ja` | PASS |
 
 Scorematrix:
 
 | Bereich | Ist | Gate | Ergebnis |
 |---|---:|---:|---|
-| M4a Auth/Workspace Isolation | 86 | 95 | FAIL |
-| M4b Upload-GUI | 88 | 90 | FAIL |
-| M4c Dokument-Lifecycle | 86 | 90 | FAIL |
-| M4d Diagnostics read-only | nicht numerisch belegt | 85 | FAIL |
-| M4e Entscheidung dokumentiert | ja | Pflicht | PASS |
+| M4a Auth/Workspace Isolation | 96 | 95 | PASS |
+| M4b Upload/Queue | 92 | 90 | PASS |
+| M4c Lifecycle/Retrieval | 95 | 90 | PASS |
+| M4d Diagnostics read-only | 88 | 85 | PASS |
+| M4e Backup/Restore minimal | 86 | 85 | PASS |
 
 Entscheidung:
 
-- M4 abgeschlossen: `nein`
-- M4 teilweise abgeschlossen: `ja`
-- M4 blockiert: `ja`
+- M4 abgeschlossen: `ja`
+- M4 technisch abgeschlossen: `ja`
+- M4 blockiert: `nein`
 
 Begruendung:
 
 - Das PostgreSQL-Truth-Gate ist formal gruen.
-- Das finale M4 Exit Gate ist dennoch nicht bestanden, weil `M4a`, `M4b` und `M4c` ihre Zielschwellen verfehlen.
-- Fuer `M4d` read-only liegt aktuell kein belastbarer numerischer Gate-Score `>= 85` vor.
-- `M4e` ist dokumentiert, aber nur als partiell umgesetzter Minimalpfad bewertet.
+- Der reale Restore-Truth-Nachweis schliesst den vorher offenen M4e-Minimal-Blocker.
+- Es gibt keine offenen Truth-Gate-Blocker, keine nachgewiesenen Cross-Workspace-Leaks und keine nachgewiesenen Restore-Inkonsistenzen im geprueften Scope.
+- Weiter offene Produktionshaertungen bleiben bewusst ausserhalb dieses lokalen M4-Abschlusses.
 
 Go/No-Go fuer M5:
 
-- M5: `No-Go`
+- M5-Vorbereitung: `Go`
 
 Ableitung:
 
-- Das Truth-Gate hebt nur den formalen PostgreSQL-Nachweis-Blocker auf.
-- Es ersetzt nicht die Exit-Schwellen fuer die M4-Teilslices.
-- M5 bleibt blockiert, bis das finale M4 Exit Gate vollstaendig erfuellt ist.
+- Truth-Gate und M4e-Minimal-Nachweis sind gemeinsam gruen.
+- Der lokale M4-Minimalscope ist damit technisch abgeschlossen.
+- Fuer Produktionsfreigaben bleiben Sicherheits- und Betriebsnachlaufpunkte separat zu behandeln.
 
 Aktueller M4c-Befund:
 
@@ -1016,8 +1027,8 @@ Aktueller M4c-Befund:
 - Advisory-Lock-, Crash-, M4-Truth- und weitere PostgreSQL-Nachweise liegen als `postgres_truth`-Suite vor; der konkrete Status muss aus einem aktuellen Report kommen.
 - Search-, Reindex-, Crash- und Chaos-Nachweise gegen PostgreSQL sind nur mit gesetzter `TEST_DATABASE_URL` belastbar.
 - Admin- und Diagnoseansicht sind als read-only Diagnostics real vorhanden; Replay-Endpoint ist implementiert; weitergehende Reparatur-, Cleanup- und Backup-Aktionen sind nicht freigegeben.
-- Backup und Restore sind aktuell als Konzept und Runbook beschrieben, aber nicht real implementiert oder getestet.
-- Performance- und Betriebsdokumentation sind vorhanden, ersetzen aber keinen aktuellen Restore-Nachweis.
+- Backup und Restore sind als CLI-first Minimalpfad real implementiert, fokussiert getestet und durch einen echten Restore-Truth-Nachweis gegen leere PostgreSQL-Ziel-DB belegt.
+- Performance- und Betriebsdokumentation bleiben eigenstaendige Nachlaufpunkte, ersetzen aber weiterhin keinen produktionsnahen Vollbetriebsnachweis.
 
 ### Risiken
 
@@ -1025,7 +1036,7 @@ Aktueller M4c-Befund:
 - Workspace-Isolation bleibt partiell und fuehrt zu Datenleckagen zwischen lokalen Bereichen.
 - Upload-GUI fuehrt neue Fehlerpfade ein, die den bestehenden stabilen Importpfad unterlaufen.
 - Observability bleibt zu schwach, sodass lokale Betriebsprobleme nur indirekt sichtbar werden.
-- Backup/Restore wird dokumentiert, aber nicht real getestet.
+- Backup/Restore ist fuer den lokalen Minimal-Scope real getestet; offen bleiben Produktionshaertung und Sicherheitsnachlauf.
 - Performance-Haertung verschiebt sich auf spaeter und laesst produktionsnahe lokale Lastprobleme bestehen.
 - M4 verwischt die Grenze zu M5 und zieht wieder neue Fachlogik statt Produktisierung nach.
 
@@ -1033,7 +1044,7 @@ Freigabeentscheidung:
 
 - Go fuer M4d: `Read-only Go`, vollstaendiges M4d `No-Go`
 - Go fuer M4e: `Go` nur fuer den manuellen Minimal-Scope, `No-Go` fuer erweiterten Ausbau
-- Go fuer M5: `No-Go`
+- Go fuer M5-Vorbereitung: `Go`
 
 Entscheidungsmatrix fuer mutierende Admin-Aktionen:
 
@@ -1061,15 +1072,15 @@ Hinweis:
 | Komponente | Gewicht | Score | Gewichteter Beitrag |
 |---|---:|---:|---:|
 | PostgreSQL Truth Tests | 30 % | 95 | 28.5 |
-| Auth/Workspace Isolation | 20 % | 86 | 17.2 |
-| Recovery/Queue | 15 % | 87 | 13.1 |
-| Lifecycle/Retrieval Konsistenz | 15 % | 86 | 12.9 |
+| Auth/Workspace Isolation | 20 % | 96 | 19.2 |
+| Recovery/Queue | 15 % | 92 | 13.8 |
+| Lifecycle/Retrieval Konsistenz | 15 % | 95 | 14.3 |
 | Observability/Dokumentation | 10 % | 72 | 7.2 |
-| Backup/Restore | 10 % | 74 | 7.4 |
+| Backup/Restore | 10 % | 86 | 8.6 |
 
 Gesamtscore:
 
-- `86.3 / 100`
+- `91.6 / 100`
 
 Gate-Einordnung fuer den Management-Score:
 

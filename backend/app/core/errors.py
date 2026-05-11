@@ -214,3 +214,9 @@ class ReplayFailedApiError(ApiError):
     status_code = 500
     code = "REPLAY_FAILED"
     message = "Job replay failed"
+
+
+class BackupValidationFailedApiError(ApiError):
+    status_code = 422
+    code = "BACKUP_VALIDATION_FAILED"
+    message = "Backup validation failed"

@@ -1,4 +1,5 @@
-from typing import Annotated, Iterator
+from datetime import datetime
+from typing import Annotated, Any, Iterator
 
 from fastapi import APIRouter, Depends, status
 
@@ -7,6 +8,7 @@ from app.core.database import DatabaseConfigurationError
 from app.core.errors import (
     AdminActionNotImplementedApiError,
     ApiError,
+    BackupValidationFailedApiError,
     BackgroundJobNotFoundApiError,
     DiagnosticsFailedApiError,
     ForbiddenApiError,
@@ -15,8 +17,15 @@ from app.core.errors import (
     ResourceLockedApiError,
 )
 from app.db.session import get_session
-from app.schemas.admin import DiagnosticsResponse, SearchIndexDriftReportResponse, SearchIndexInconsistencyReportResponse
+from app.schemas.admin import (
+    BackupVerificationRequest,
+    BackupVerificationResponse,
+    DiagnosticsResponse,
+    SearchIndexDriftReportResponse,
+    SearchIndexInconsistencyReportResponse,
+)
 from app.schemas.jobs import JobResponse
+from app.services.backup_restore import BackupRestoreError, BackupRestoreService
 from app.services.diagnostics import DiagnosticsService
 from app.services.search_index_service import SearchIndexRebuildService
 from app.services.jobs.background_jobs import BackgroundJobNotFoundError, BackgroundJobService
@@ -47,6 +56,13 @@ def get_diagnostics_service() -> Iterator[DiagnosticsService]:
             yield DiagnosticsService.from_session(session)
     except DatabaseConfigurationError as exc:
         raise DiagnosticsFailedApiError(details={"failed_check": "database"}) from exc
+
+
+def get_backup_restore_service() -> Iterator[BackupRestoreService]:
+    try:
+        yield BackupRestoreService()
+    except DatabaseConfigurationError as exc:
+        raise ApiError(message=str(exc)) from exc
 
 
 def require_diagnostics_admin(
@@ -102,6 +118,24 @@ def get_search_index_drift(
     return SearchIndexDriftReportResponse.model_validate(
         service.inspect_drift(workspace_id=auth_context.workspace_id)
     )
+
+
+@router.post("/backup/verify", response_model=BackupVerificationResponse)
+def verify_backup(
+    payload: BackupVerificationRequest,
+    auth_context: Annotated[RequestAuthContext, Depends(require_workspace_admin)],
+    service: Annotated[BackupRestoreService, Depends(get_backup_restore_service)],
+) -> BackupVerificationResponse:
+    del auth_context
+    try:
+        result = service.verify_backup(input_dir=payload.input_dir)
+        checked_at = result.get("checked_at")
+        if isinstance(checked_at, str):
+            result = dict(result)
+            result["checked_at"] = datetime.fromisoformat(checked_at)
+        return BackupVerificationResponse.model_validate(result)
+    except BackupRestoreError as exc:
+        raise BackupValidationFailedApiError(details={"message": str(exc), "input_dir": payload.input_dir}) from exc
 
 
 @router.post("/jobs/{job_id}/replay", response_model=JobResponse)

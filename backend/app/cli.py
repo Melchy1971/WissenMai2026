@@ -24,6 +24,9 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser = backup_subparsers.add_parser("validate")
     validate_parser.add_argument("--input", required=True)
 
+    verify_parser = backup_subparsers.add_parser("verify-backup")
+    verify_parser.add_argument("--input", required=True)
+
     restore_parser = backup_subparsers.add_parser("restore")
     restore_parser.add_argument("--input", required=True)
 
@@ -46,6 +49,9 @@ def main() -> int:
         return 0
     if args.command == "backup" and args.backup_command == "validate":
         _print_payload(service.validate_backup(input_dir=args.input))
+        return 0
+    if args.command == "backup" and args.backup_command == "verify-backup":
+        _print_payload(service.verify_backup(input_dir=args.input))
         return 0
     if args.command == "backup" and args.backup_command == "restore":
         _print_payload(service.restore_backup(input_dir=args.input))

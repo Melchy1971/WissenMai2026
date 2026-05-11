@@ -16,9 +16,16 @@ Dokumentationsbereich fuer Architektur-, Entscheidungs- und Betriebswissen der W
 - `prompts/`: Hilfsdokumente fuer Reviews und Task-Vertraege.
 - `runbooks/`: Betriebs- und Wiederherstellungsablaeufe.
 
+Wichtige Runbooks im aktuellen Stand:
+
+- [docs/runbooks/backup-restore.md](H:/WissenMai2026/docs/runbooks/backup-restore.md): operativer M4e-Minimalpfad fuer Backup und Restore
+- [docs/runbooks/disaster-recovery.md](H:/WissenMai2026/docs/runbooks/disaster-recovery.md): szenariobasiertes DR-Runbook mit Operator-Guide und Checklisten
+
 ## Aktueller Freigabestand
 
 Die kompakte Freigabefassung fuer den aktuell zulaessigen M4/M5-Dokumentationsstand steht in `docs/m4-m5-freigabefassung.md`.
+
+Der aktuelle echte Restore-Truth-Nachweis steht in [reports/restore_truth_report.md](H:/WissenMai2026/reports/restore_truth_report.md).
 
 Sie ist die bevorzugte Kurzreferenz fuer:
 

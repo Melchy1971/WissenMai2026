@@ -6,6 +6,8 @@ from sqlalchemy import update
 from app.main import app
 from app.core.errors import JobNotReplayableApiError
 from app.models.documents import BackgroundJob, ChatMessage, ChatSession, WorkspaceMembership
+from app.api.v1.admin import get_backup_restore_service
+from app.services.backup_restore import BackupRestoreError
 from app.services.jobs.background_jobs import BackgroundJobService
 from app.services.diagnostics import DiagnosticsService
 
@@ -146,6 +148,60 @@ def test_admin_diagnostics_maps_database_failure_to_diagnostics_failed(client: T
     }
     assert "secret database failure" not in response.text
     assert "RuntimeError" not in response.text
+
+
+def test_admin_verify_backup_returns_integrity_report(client: TestClient) -> None:
+    class FakeBackupRestoreService:
+        def verify_backup(self, *, input_dir: str):
+            assert input_dir == "backup-dir"
+            return {
+                "status": "ok",
+                "backup_dir": "backup-dir",
+                "checked_at": datetime.now(UTC).isoformat(),
+                "integrity_report": {
+                    "checks": {
+                        "db_dump_readable": {"status": "ok", "path": "db/database.sql"},
+                        "required_files_present": {"status": "ok", "missing_paths": []},
+                        "manifest_consistent": {"status": "ok", "declared_file_count": 0, "actual_file_count": 0, "missing_fields": []},
+                        "checksums_valid": {"status": "ok", "mismatches": [], "missing_paths": [], "invalid_entries": []},
+                        "upload_files_complete": {"status": "ok", "missing_paths": []},
+                        "restore_dry_run": {"status": "ok", "details": "psql available and SQL restore statements detected"},
+                    },
+                    "issue_count": 0,
+                    "issues": [],
+                },
+                "error_classes": [],
+                "mismatch_count": 0,
+                "mismatches": [],
+                "manifest": {"created_at": "2026-05-11T00:00:00Z"},
+            }
+
+    app.dependency_overrides[get_backup_restore_service] = lambda: FakeBackupRestoreService()
+    try:
+        response = client.post("/api/v1/admin/backup/verify", json={"input_dir": "backup-dir"})
+    finally:
+        app.dependency_overrides.pop(get_backup_restore_service, None)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["integrity_report"]["issue_count"] == 0
+    assert body["integrity_report"]["checks"]["restore_dry_run"]["status"] == "ok"
+
+
+def test_admin_verify_backup_maps_service_failure(client: TestClient) -> None:
+    class FakeBackupRestoreService:
+        def verify_backup(self, *, input_dir: str):
+            raise BackupRestoreError(f"broken backup: {input_dir}")
+
+    app.dependency_overrides[get_backup_restore_service] = lambda: FakeBackupRestoreService()
+    try:
+        response = client.post("/api/v1/admin/backup/verify", json={"input_dir": "backup-dir"})
+    finally:
+        app.dependency_overrides.pop(get_backup_restore_service, None)
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "BACKUP_VALIDATION_FAILED"
 
 
 def test_admin_replay_job_response_exposes_previous_error_and_replay_audit(client: TestClient, db_session) -> None:

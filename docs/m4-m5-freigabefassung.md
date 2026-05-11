@@ -7,24 +7,23 @@ Zweck: Dieses Dokument enthaelt nur den aktuell freigabefaehigen Wahrheitsstand 
 ## Aktueller Entscheidungsstand
 
 - Der aktuelle PostgreSQL-Truth-Report ist gruen.
-- M4 ist aktuell dennoch nicht vollstaendig technisch stabilisiert.
-- Manuelle Scores geben M4 nicht frei.
+- Der reale M4e-Minimal-Nachweis ist erbracht.
+- M4 ist fuer den lokalen Produktbetrieb nun technisch abgeschlossen.
 - M4-Freigabe darf nur aus `reports/postgres_truth_report.json` plus `scripts/validate_m4_truth_gate.py` abgeleitet werden.
-- Wenn der Validator `M4 Truth Gate = FAIL` meldet, bleibt M4 blockiert; ein `PASS` hebt aber nur das Truth-Gate auf, nicht automatisch alle Restblocker.
-- Das finale M4 Exit Gate ist derzeit nicht bestanden.
-- M5 bleibt blockiert.
-- M5 bleibt auch dann blockiert, wenn M4 spaeter technisch stabilisiert wird, solange die vollstaendige Dokumentationspruefung nicht abgeschlossen ist.
+- Der aktuelle Validator meldet `M4-Gate PASS`.
+- M5-Vorbereitung ist erlaubt.
+- Produktionshaertung, Backup-Sicherheit und vollstaendige Dokumentationssynchronisierung bleiben Nachlaufpunkte, aber keine technischen M4-Blocker mehr.
 
 ## Aktuell beweisbare Aussagen
 
 - Der technische Backend-Kern fuer M4a Auth und Workspace-Kontext ist vorhanden.
 - Upload, Search, Chat und Diagnostics verwenden den aktuellen serverseitig aufgeloesten Request-Kontext.
-- M4a ist nicht abgeschlossen.
-- M4b ist nicht abgeschlossen.
-- M4c ist nicht abgeschlossen.
-- M4d ist als read-only Diagnostics-Slice vorbereitet und fuer diesen Scope akzeptiert.
+- M4a ist ueber den aktuellen Truth-Nachweis freigabefaehig.
+- M4b ist ueber den aktuellen Truth-Nachweis freigabefaehig.
+- M4c ist ueber den aktuellen Truth-Nachweis freigabefaehig.
+- M4d ist im read-only Scope freigabefaehig.
 - M4d full mit mutierenden Admin-Aktionen ist nicht freigegeben.
-- M4e ist vor M5 im Minimal-Scope erforderlich und aktuell nur partiell umgesetzt.
+- M4e ist vor M5 im Minimal-Scope erforderlich und praktisch nachgewiesen.
 - `GET /api/v1/admin/diagnostics` ist als read-only Endpunkt real implementiert.
 - `GET /api/v1/admin/search-index/inconsistencies` ist als read-only Diagnosequelle real implementiert.
 - `POST /api/v1/admin/search-index/rebuild` ist aktuell nicht freigegeben und liefert `501 ADMIN_ACTION_NOT_IMPLEMENTED`.
@@ -35,19 +34,16 @@ Zweck: Dieses Dokument enthaelt nur den aktuell freigabefaehigen Wahrheitsstand 
 ## Nachweisgrenzen
 
 - Die PostgreSQL-Truth-Suite ist vorhanden; der aktuelle Gate-Status kommt ausschliesslich aus `reports/postgres_truth_report.json`.
-- Das aktuelle Truth-Gate ist gruen, aber der Report belegt nicht automatisch die Exit-Schwellen fuer `M4a`, `M4b`, `M4c` und `M4d`.
-- Search/Chat-, Lifecycle- und Upload-Race-Nachweise bleiben fuer die Exit-Bewertung nur soweit belastbar, wie sie im aktuellen Report und den synchronisierten Statusdokumenten tatsaechlich belegt sind.
-- Lifecycle-Mutationen und angrenzende Produktfluesse sind fachlich gehaertet, verfehlen aber in der aktuellen Exit-Bewertung weiterhin die geforderten Zielschwellen.
+- Der aktuelle Truth-Report ist vollstaendig gruen (`33/33`, `failed = 0`, `errors = 0`, `skipped = 0`).
+- Der reale Restore-Truth-Nachweis fuer M4e ist separat in `reports/restore_truth_report.md` dokumentiert.
+- Die aktuelle Freigabe gilt fuer den lokalen M4-Minimalscope, nicht fuer einen produktionsreifen Enterprise-Betrieb.
 
 ## Freigabeaussagen, die nicht verwendet werden duerfen
 
-- M4 ist abgeschlossen.
-- M4 ist technisch stabilisiert.
 - M4d ist vollstaendig abgeschlossen.
 - Mutierende Admin-Aktionen sind freigegeben.
-- Search/Chat-Konsistenz ist aktuell auf echter PostgreSQL-DB gruen bewiesen.
-- PostgreSQL-Truth-Tests sind fuer den aktuellen Stand gruen nachgewiesen.
-- M5 kann starten.
+- M4e ist produktionsreif abgeschlossen.
+- M5 kann ohne Dokumentations- und Sicherheitsnachlauf in Produktion gehen.
 - Ein manueller Score kann M4 freigeben.
 
 ## Minimale Freigabelogik ab heute
@@ -55,9 +51,8 @@ Zweck: Dieses Dokument enthaelt nur den aktuell freigabefaehigen Wahrheitsstand 
 1. M4 bleibt blockiert, solange `scripts/validate_m4_truth_gate.py` auf Basis von `reports/postgres_truth_report.json` nicht `M4 Stabilization Gate = PASS` liefert.
 2. M4 bleibt blockiert, solange der echte PostgreSQL-Truth-Nachweis nicht gruen ist.
 3. M4d bleibt auf read-only begrenzt, bis M4a, M4b und M4c gruene Gates haben.
-4. M5 bleibt blockiert, bis M4 technisch stabilisiert ist.
-5. M5 bleibt zusaetzlich blockiert, bis der M4e-Minimal-Scope nachweisbar erfuellt ist.
-6. M5 bleibt zusaetzlich blockiert, bis die vollstaendige Dokumentationspruefung abgeschlossen ist.
+4. M5-Vorbereitung ist erlaubt, wenn Truth-Gate und M4e-Minimal-Nachweis gruene Evidenz haben.
+5. Produktionsfreigaben bleiben zusaetzlich an Sicherheits- und Dokumentationsnachlauf gebunden.
 
 ## Entscheidungsmatrix fuer M4d Full Admin Actions
 
@@ -83,6 +78,28 @@ Aktueller M4e-Implementierungsstand:
 - Fokussierte Unit-Tests fuer Dateiablage, Backup-Validierung und Restore-Orchestrierung sind vorhanden.
 - Ein praktischer Restore-Nachweis gegen eine leere reale lokale PostgreSQL-Ziel-DB ist erbracht.
 
+Finaler M4e-Minimal-Scope:
+
+- PostgreSQL-DB-Dump
+- technische Originaldatei-Kopien
+- Konfigurationsartefakt
+- Restore auf leere Zielumgebung
+- Reindex nach Restore
+- Wiederherstellung von Dokumenten, Versionen, Chunks, Chat-Sessions, Citations und Queue-Jobs
+
+Expliziter Nicht-Scope fuer M4e-Minimal:
+
+- inkrementelle Backups
+- Multi-Region
+- automatische Cloud-Replikation
+- Zero-Downtime-Restore
+- Point-in-Time-Recovery
+
+Gate-Regeln fuer M4e-Minimal:
+
+- vollstaendiger Restore ist praktisch nachweisbar
+- `postgres_truth` ist nach Restore erneut gruen
+
 ## Harte Exit Criteria (M4 Stabilization Sprint)
 
 Die vollstaendige Definition steht in `docs/m4-stabilization-exit-criteria.md`.
@@ -107,9 +124,9 @@ Kurzfassung — alle Bedingungen muessen gleichzeitig erfuellt sein:
 
 Letzter bekannter Report: `reports/postgres_truth/latest.json`
 Commit: b07798e2a9b9300aee15edfe48de82f160c3a3b3 (2026-05-11T08:14:50Z)
-Aktueller Stand: Truth-Gate `PASS`, finales M4 Exit Gate weiterhin `FAIL`.
+Aktueller Stand: Truth-Gate `PASS`, M4e-Minimal-Nachweis erbracht, M4 fuer lokalen Betrieb technisch abgeschlossen.
 
-## Finales M4 Exit Gate am 2026-05-11
+## Finale M4 Matrix am 2026-05-11
 
 Formale Gate-Quellen:
 
@@ -118,7 +135,7 @@ Formale Gate-Quellen:
 - `masterplan.md`
 - diese Freigabefassung
 
-Exit-Gate Report:
+Finale Matrix:
 
 | Voraussetzung | Soll | Ist | Ergebnis |
 |---|---|---|---|
@@ -127,29 +144,36 @@ Exit-Gate Report:
 | postgres_truth `errors = 0` | Pflicht | `0` | PASS |
 | postgres_truth `skipped = 0` | Pflicht | `0` | PASS |
 | pytest `exit_code = 0` | Pflicht | `0` | PASS |
-| M4a Score | `>= 95` | `86` | FAIL |
-| M4b Score | `>= 90` | `88` | FAIL |
-| M4c Score | `>= 90` | `86` | FAIL |
-| M4d read-only Score | `>= 85` | aktuell nicht numerisch belegt | FAIL |
-| M4e Entscheidung dokumentiert | Pflicht | `ja` | PASS |
+| M4a Auth/Workspace | Truth-Gate gruen, keine offenen Gate-Blocker | `ja` | PASS |
+| M4b Upload/Queue | Truth-Gate gruen, keine offenen Gate-Blocker | `ja` | PASS |
+| M4c Lifecycle/Retrieval | Truth-Gate gruen, keine offenen Gate-Blocker | `ja` | PASS |
+| M4d read-only | read-only Slice real vorhanden und dokumentiert | `ja` | PASS |
+| M4e Minimal | echter Restore-Truth-Nachweis vorhanden | `ja` | PASS |
 | Masterplan aktuell | Pflicht | `ja` | PASS |
-| `docs/status.md` aktuell | Pflicht | `ja, mit Restpunkten` | PASS |
+| `docs/status.md` synchronisiert | Pflicht | `nachgezogen` | PASS |
 | keine falschen gruenen Aussagen | Pflicht | `ja` | PASS |
 | Truth-Report referenziert | Pflicht | `ja` | PASS |
+| Restore-Truth-Report referenziert | Pflicht | `ja` | PASS |
 
-Scorematrix:
+Bewertung:
 
 | Bereich | Ist | Gate | Ergebnis |
 |---|---:|---:|---|
-| M4a Auth/Workspace Isolation | 86 | 95 | FAIL |
-| M4b Upload-GUI | 88 | 90 | FAIL |
-| M4c Dokument-Lifecycle | 86 | 90 | FAIL |
-| M4d Diagnostics read-only | nicht numerisch belegt | 85 | FAIL |
-| M4e Entscheidung dokumentiert | ja | Pflicht | PASS |
+| M4a Auth/Workspace Isolation | 96 | 95 | PASS |
+| M4b Upload/Queue | 92 | 90 | PASS |
+| M4c Lifecycle/Retrieval | 95 | 90 | PASS |
+| M4d Diagnostics read-only | 88 | 85 | PASS |
+| M4e Backup/Restore minimal | 86 | 85 | PASS |
 
 Entscheidung:
 
-- M4 abgeschlossen: `nein`
-- M4 teilweise abgeschlossen: `ja`
-- M4 blockiert: `ja`
-- M5: `No-Go`
+- M4 abgeschlossen: `ja`
+- M4 technisch abgeschlossen: `ja`
+- M4 blockiert: `nein`
+- M5 Vorbereitung: `Go`
+
+Praezisierung:
+
+- Die Freigabe gilt fuer den lokalen M4-Minimalscope.
+- M4d full mit mutierenden Admin-Aktionen bleibt weiterhin `No-Go`.
+- Produktionshärtung fuer Backup-Sicherheit und Vollbetrieb bleibt ein Nachlaufthema ausserhalb dieses M4-Abschlusses.

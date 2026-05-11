@@ -6,6 +6,7 @@ Stand: 2026-05-05
 
 - Dieses Dokument beschreibt weiterhin das Zielbild, aber nicht mehr nur ein reines Konzept.
 - Im aktuellen Repository gibt es nun einen nachweisbaren CLI-first Codepfad fuer `backup create`, `backup validate`, `backup restore` und `search rebuild-index`.
+- Der Datenbankteil des Backups wird im Minimalpfad als PostgreSQL-SQL-Dump ueber `pg_dump` erzeugt.
 - Technische Originaldatei-Kopien werden im Importpfad persistiert und in den Versions-Metadaten referenziert.
 - Es gibt fokussierte Unit-Tests fuer Dateiablage, Backup-Validierung und Restore-Orchestrierung.
 - Ein praktischer Restore-Nachweis gegen eine leere reale lokale PostgreSQL-Ziel-DB ist erfolgt.
@@ -31,15 +32,27 @@ Daraus folgt:
 - **Go vor M5** nur mit M4e-Minimal-Scope.
 - **No-Go vor M5** fuer erweitertes Backup-Produktisieren ausserhalb dieses Minimal-Scope.
 
-## M4e Minimal-Scope vor M5
+## Finaler M4e Minimal-Scope vor M5
 
-Pflichtbestandteile:
+Ziel:
 
-- DB-Dump
-- technische Originaldatei-Kopien
-- Konfigurationsartefakt
-- Restore-Anleitung als Runbook
-- Search-Index ausdruecklich als rekonstruierbar; Reindex nach Restore ist Pflicht
+- M4e soll operative Wiederherstellung ermoeglichen.
+- M4e soll vor M5 keinen Enterprise-Backup-Stack bauen.
+
+In Scope:
+
+- PostgreSQL-DB-Dump als primaeres Datenbankartefakt des Minimal-Backups
+- technische Originaldatei-Kopien der importierten Quelldateien
+- Konfigurationsartefakt fuer die lokale Wiederherstellung
+- Restore auf eine leere Zielumgebung
+- Reindex nach Restore als Pflichtschritt
+- Wiederherstellung der folgenden Datenklassen:
+  - Dokumente
+  - Versionen
+  - Chunks
+  - Chat-Sessions
+  - Citations
+  - Queue-Jobs
 
 Minimaler Betriebszuschnitt:
 
@@ -50,22 +63,27 @@ Minimaler Betriebszuschnitt:
 
 ## Expliziter Nicht-Scope vor M5
 
-- automatische Cloud-Backups
 - inkrementelle Backups
-- verschluesselte Backupverwaltung
+- Multi-Region-Backup oder Multi-Region-Restore
+- automatische Cloud-Replikation
+- Zero-Downtime-Restore
+- Point-in-Time-Recovery
+- verschluesselte Backupverwaltung als eigenes Produktisierungsthema
 - Aufbewahrungs- und Rotationssysteme
 - mandantenuebergreifende Backup-Orchestrierung
 - vollautomatischer Restore ueber Web-API
 
-## Minimal-Gate vor M5
+## Gate-Regeln fuer M4e-Minimal
 
-Alle Bedingungen muessen erfuellt sein:
+Alle Bedingungen muessen gleichzeitig erfuellt sein:
 
-- Ein Backup ist manuell erzeugbar und enthaelt DB-Dump, Datei-Artefakte, Konfiguration und Manifest.
-- Ein Restore auf eine leere Datenbank ist per Runbook erfolgreich durchfuehrbar.
+- Ein Backup ist manuell erzeugbar und enthaelt PostgreSQL-DB-Dump, Originaldatei-Artefakte, Konfiguration und Manifest.
+- Ein Restore auf eine leere Zielumgebung ist per Runbook erfolgreich durchfuehrbar.
 - Nach Restore ist `alembic upgrade head` erfolgreich.
-- Der Search-Index ist nach Restore neu aufbaubar.
-- Der Restore-Nachweis ist nicht nur beschrieben, sondern einmal praktisch gegen eine leere Ziel-DB durchgefuehrt.
+- Der Search-Index ist nach Restore neu aufbaubar; Reindex ist Pflicht und kein optionaler Komfortschritt.
+- Die Wiederherstellung der Minimal-Datenklassen ist praktisch nachweisbar: Dokumente, Versionen, Chunks, Chat-Sessions, Citations und Queue-Jobs.
+- Der Restore-Nachweis ist nicht nur beschrieben, sondern vollstaendig praktisch gegen eine leere Ziel-DB durchgefuehrt.
+- `postgres_truth` ist nach Restore erneut gruen: `passed = collected`, `failed = 0`, `errors = 0`, `skipped = 0`, `exit_code = 0`.
 
 ## Ziel
 
@@ -118,8 +136,8 @@ Enthaelt mindestens:
 
 Backup-Einheit:
 
-- aktuell: schema-basierter Tabellenexport im `table-json`-Format pro Sicherungslauf
-- Zielbild spaeter: externer DB-Dump bleibt moeglich, ist aber fuer den aktuellen Minimalpfad noch nicht umgesetzt
+- finaler Minimal-Scope: PostgreSQL-DB-Dump als Datenbankartefakt
+- bis zur vollstaendigen Umstellung bleibt der aktuelle `table-json`-Pfad ein technischer Zwischenstand und noch nicht die finale Zieldefinition
 
 Praktischer Nachweis am 2026-05-11:
 
@@ -222,36 +240,13 @@ Aktueller Implementierungsstand:
 backup-2026-05-11T14-30-00Z/
   manifest.json
   checksums.json
-  data/
-    workspaces.json
-    users.json
-    workspace_memberships.json
-    auth_sessions.json
-    documents.json
-    document_versions.json
-    document_chunks.json
-    chat_sessions.json
-    chat_messages.json
-    chat_citations.json
-    background_jobs.json
+  db/
+    database.sql
+    pg_dump_version.txt
   files/
-    <workspace_id>/...
+    <workspace_id>/<document_id>/<content_hash>/<original_filename>
   config/
     app-config.json
-```
-
-Zielbild spaeter:
-
-```text
-backup-2026-05-05T14-30-00Z/
-  manifest.json
-  database.sql
-  files/
-    <workspace_id>/...
-  config/
-    app.env
-  checksums/
-    sha256sums.txt
 ```
 
 Manifest-Inhalt:
@@ -259,13 +254,18 @@ Manifest-Inhalt:
 - `backup_format_version`
 - `created_at`
 - `app_version`
-- `migration_revision`
-- `workspace_scope`
-- `database_files`
+- `alembic_revision`
+- `database_dump_format`
+- `database_dump_path`
+- `pg_dump_version`
+- `pg_dump_version_path`
+- `workspace_count`
+- `document_count`
+- `logical_components`
 - `file_count`
 - `config_files`
 - `search_index_included`
-- `checksums`
+- `original_file_root`
 
 Empfehlung:
 
