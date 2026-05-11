@@ -33,3 +33,16 @@ Sie ist die bevorzugte Kurzreferenz fuer:
 - read-only-Grenze von M4d
 - Blocker fuer M5
 - Aussagen, die aktuell nicht als freigegeben dokumentiert werden duerfen
+
+## M5 Vorbereitung
+
+Die folgenden Dokumente bilden den Vorbereitungsrahmen fuer M5. Sie beschreiben aktuell nur Statuslogik, Konzepte und spaetere Nachweisanker.
+
+Sie duerfen nicht als Beleg fuer einen gestarteten M5-Betrieb, eine laufende Implementierung oder ein grünes M5-Gate gelesen werden.
+
+- [docs/data-quality.md](H:/WissenMai2026/docs/data-quality.md): Vorbereitungsrahmen fuer M5 Data Quality
+- [docs/drift.md](H:/WissenMai2026/docs/drift.md): Vorbereitungsrahmen fuer M5 Drift Detection
+- [docs/cleanup.md](H:/WissenMai2026/docs/cleanup.md): Vorbereitungsrahmen fuer M5 Cleanup
+- [docs/health-score.md](H:/WissenMai2026/docs/health-score.md): Vorbereitungsrahmen fuer M5 Health Score
+- [docs/operations.md](H:/WissenMai2026/docs/operations.md): Betriebsrahmen inklusive M5-Dokumentationslogik
+- [docs/postgres-truth-tests.md](H:/WissenMai2026/docs/postgres-truth-tests.md): Wahrheitslogik und Gate-Regeln fuer PostgreSQL-Nachweise inklusive M5-Erweiterung

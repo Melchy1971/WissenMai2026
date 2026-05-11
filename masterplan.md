@@ -1020,6 +1020,31 @@ Ableitung:
 - Der lokale M4-Minimalscope ist damit technisch abgeschlossen.
 - Fuer Produktionsfreigaben bleiben Sicherheits- und Betriebsnachlaufpunkte separat zu behandeln.
 
+Formales Transition Gate M4 -> M5 am 2026-05-11:
+
+| Voraussetzung | Soll | Ist | Bewertung |
+|---|---|---|---|
+| M4a | `>= 95` | `96` | erfuellt |
+| M4b | `>= 90` | `92` | erfuellt |
+| M4c | `>= 90` | `95` | erfuellt |
+| M4d read-only | akzeptiert | read-only Slice freigabefaehig | erfuellt |
+| M4e minimal | `>= 85` | `86` | erfuellt |
+| `postgres_truth` vollstaendig gruen | Pflicht | `33/33`, `failed = 0`, `errors = 0`, `skipped = 0`, `exit_code = 0` | erfuellt |
+| Restore-Truth-Test | Pflicht | `PASS` | erfuellt |
+| Dokumentation aktuell | Pflicht | zentrale Gate-Dokumente synchronisiert | erfuellt |
+| keine offenen RC-Blocker | Pflicht | `m4_gate_blockers = []` | erfuellt |
+
+Transition-Entscheidung:
+
+- M5 Vorbereitung erlaubt: `ja`
+- M5 Implementierung erlaubt: `ja`
+- M5 bleibt blockiert: `nein`
+
+Regel:
+
+- M5-Implementierung ist nur erlaubt, wenn alle Transition-Voraussetzungen erfuellt sind.
+- Diese Bedingung ist mit dem aktuellen Nachweisstand erfuellt.
+
 Aktueller M4c-Befund:
 
 - Backend-Lifecycle-, Soft-Delete- und Citation-Slices sind fachlich implementiert; ob der PostgreSQL-Truth-Nachweis aktuell gruen ist, muss aus `reports/postgres_truth_report.json` gelesen und mit `scripts/validate_m4_truth_gate.py` geprueft werden.
@@ -1242,30 +1267,506 @@ Artefakt:
 
 ---
 
-## M5 - Analyse, Merge, Refine und Commit
+## M5 - Systemreife Vorbereitung
 
-**Status:** missing.
+**Status:** vorbereitet, Implementierung noch nicht gestartet.
 
-**Ziel:** Dokumente vergleichen, konsolidieren, bearbeiten, freigeben und als neues Dokument committen.
+Statuslogik:
 
-### Tasks
+- Dieser Abschnitt dokumentiert ausschliesslich M5-Vorbereitung.
+- M5 gilt durch diese Dokumentation nicht als gestartet.
+- Auch bei gruener Transition-Gate-Lage darf ein M5-Start erst dann behauptet werden, wenn ein expliziter Startentscheid und belastbare PostgreSQL-Nachweise fuer die jeweiligen M5-Slices vorliegen.
+- Dokumentierte Konzepte, Platzhalter und Spezifikationen sind keine Implementierungsbehauptungen.
 
-- Analysegruppen fachlich nutzbar machen.
-- Dokumentauswahl fuer Analyse.
-- Merge erzeugt konsolidierte Zusammenfassung.
-- Refine erlaubt Ton, Struktur, Detailgrad, Quellengewichtung, Inhalte und Tags.
-- UI fuer Quellen-/Abschnittsabwahl.
-- Freigabeschritt vor Commit.
-- Commit erzeugt neues Dokument mit Version 1.
-- Commit erzeugt Chunks, Tags und Quellenmetadaten.
-- Tests fuer Merge, Refine, Commit und Rollback.
+**Ziel:**
 
-### Akzeptanzkriterien
+- M5 als reine Systemreife- und Governanceschicht strukturieren.
+- Keine neuen Produktfeatures vorziehen.
+- Bestehende M4-Grundlage fuer Datenqualitaet, Drift-Kontrolle, Cleanup, Health Score, RAG-Qualitaet und Langzeitbetrieb systemisch vorbereiten.
 
-- Kein Analyseergebnis wird ohne Freigabe als Wissensdokument gespeichert.
-- Nutzer kann Quellen/Abschnitte vor Commit abwaehlen.
-- Commit erzeugt immer ein neues Dokument.
-- Quellenbezug bleibt nachvollziehbar.
+### M5 Scope
+
+- Data Quality
+  - Regeln fuer konsistente Dokument-, Versions-, Chunk- und Citation-Daten definieren.
+  - Pflichtmetriken fuer Duplikate, orphaned Daten, inkonsistente Lifecycle-Zustaende und unvollstaendige Metadaten festlegen.
+- Drift Detection
+  - Suchindex-, Versions-, Lifecycle- und Konfigurationsdrift als eigene M5-Pruefebene ausformulieren.
+  - Drift nicht nur als Restore-Nachpruefung, sondern als regulaeren Systemreife-Indikator behandeln.
+- Cleanup
+  - Cleanup nur als kontrollierter, dry-run-faehiger M5-Betriebspfad vorbereiten.
+  - Fokus auf orphaned Chunks, inkonsistente Versionen, stale Index-Eintraege und alte technische Artefakte.
+- Health Score
+  - Einen System-Health-Score aus Datenqualitaet, Fehlerquote, Performance, Retrieval-Stabilitaet und RAG-Qualitaet vorbereiten.
+  - Der Score ist M5-Steuerungsinstrument, nicht Ersatz fuer Truth-Gates.
+- RAG-Qualitaet
+  - Bewertungsrahmen fuer Retrieval-Qualitaet, Citation-Qualitaet, Kontextnutzung und Antworttreue definieren.
+  - M5 soll Qualitaetsmessung und Regressionserkennung vorbereiten, nicht neue Antwortlogik einfuehren.
+- Langzeitbetrieb
+  - Langzeitstabilitaet fuer Storage, Queue-Recovery, Restore-Wiederholbarkeit, Drift-Trends und wiederkehrende Betriebspruefungen vorbereiten.
+
+### Abhaengigkeiten aus M4
+
+- Backup/Restore
+  - M5 setzt auf dem real nachgewiesenen M4e-Minimalpfad auf.
+  - M5 erweitert diesen Pfad nicht sofort funktional, sondern nutzt ihn als Basis fuer Wiederholbarkeit, Integritaet und Langzeitpruefungen.
+- Observability
+  - M5 braucht die in M4 etablierte Observability als Datenquelle fuer Drift, Health Score und Betriebsbewertungen.
+  - Offene Observability-Luecken aus M4 bleiben bekannte M5-Eingangsschulden.
+- Truth Reports
+  - `reports/postgres_truth_report.json` bleibt formaler Wahrheitsanker fuer Kernstabilitaet.
+  - `reports/restore_truth_report.md` bleibt Referenz fuer Wiederherstellbarkeit und Nachweisgrenze.
+- Queue Recovery
+  - M5 baut auf M4b/M4c-Nachweisen fuer Retry-, Replay- und Recovery-Stabilitaet auf.
+  - Cleanup- und Langzeitbetrieb duerfen Queue-Konsistenz nicht unterlaufen.
+- Lifecycle
+  - M5 setzt stabile `active|archived|deleted|missing`-Semantik voraus.
+  - Data Quality, Drift und Cleanup muessen Lifecycle-Regeln respektieren und duerfen historische Citations nicht beschaedigen.
+
+### Nicht-Scope fuer M5-Vorbereitung
+
+- keine neue Endnutzerfunktion fuer Analyse, Merge, Refine oder Commit
+- keine neuen Admin-Write-Aktionen im freigegebenen UI-Scope
+- keine Produktivfreigabe fuer allgemeine Cleanup-, Repair-, Reindex- oder Restore-Web-Aktionen
+- keine neue RAG-Fachlogik oder neue Antwortprodukte
+- kein Enterprise-Betriebsmodell mit Multi-Region, externer Orchestrierung oder Vollautomatisierung
+
+### Startbedingungen fuer M5
+
+- M4-Transition-Gate ist formal bestanden.
+- M4a, M4b und M4c sind ueber den aktuellen Truth-Nachweis gruen.
+- M4d ist im read-only Scope akzeptiert.
+- M4e-Minimal ist praktisch nachgewiesen.
+- `postgres_truth` ist vollstaendig gruen.
+- Restore-Truth-Test ist bestanden.
+- Zentrale Gate-Dokumente sind synchronisiert.
+
+### Arbeitsregel fuer den Start von M5
+
+- M5 startet als Strukturierungs- und Bewertungsphase.
+- Der erste M5-Schritt ist Dokumentation, Messlogik und Priorisierung.
+- Implementierung einzelner M5-Massnahmen folgt erst nach expliziter Freigabe pro Slice.
+
+### Erwartete M5-Artefakte zum Start
+
+- M5-Scope-Dokument fuer Systemreife
+- Abhaengigkeiten- und Eingangsschuldenliste aus M4
+- definierte Nicht-Scope-Grenzen gegen Feature-Drift
+- Startbedingungen und spaetere Gate-Kriterien fuer Data Quality, Drift, Cleanup, Health Score, RAG-Qualitaet und Langzeitbetrieb
+
+### M5 Dokumentationsstruktur
+
+- `docs/data-quality.md`
+- `docs/drift.md`
+- `docs/cleanup.md`
+- `docs/health-score.md`
+- `docs/operations.md`
+- `masterplan.md`
+
+Dokumentationsregel:
+
+- Alle genannten Dateien beschreiben aktuell nur Vorbereitung, Statuslogik und spaetere Nachweisanker.
+- Keine dieser Dateien darf ohne neuen Nachweislauf eine Implementierung, einen aktiven Betrieb oder ein grünes M5-Gate behaupten.
+
+### M5 Risikomatrix
+
+| Risiko | Ursache | Wahrscheinlichkeit | Auswirkung | Frueherkennung | Mitigation | Metrik | Prioritaet |
+|---|---|---|---|---|---|---|---|
+| Datenwachstum | steigende Anzahl an Dokumenten, Versionen, Chunks, Citations und Originaldateien ohne aktive Qualitaets- oder Storage-Regeln | hoch | Suchpfade, Reindex, Restore und Betriebsfenster werden langsamer; Storage-Kosten und manuelle Recovery-Dauer steigen | steigende Dokument-, Chunk- und Dateizaehler; laengere Reindex- oder Restore-Zeiten | M5 Data-Quality- und Storage-Regeln definieren; Growth-Budgets und Archivierungs-/Dedup-Strategien vorbereiten | Dokumentanzahl, Chunkanzahl, Dateianzahl, Backup-Groesse, Restore-Dauer | hoch |
+| Lange Laufzeit | Reindex, Drift-Pruefungen, Restore, Truth-Laeufe und Queue-Recovery wachsen mit dem Datenbestand | mittel bis hoch | Betriebsfenster werden unplanbar; Recovery und Validierung dauern zu lange | deutlicher Anstieg von Laufzeiten in Truth-, Restore- oder Reindex-Nachweisen | Laufzeitbudgets fuer Reindex, Truth-Smoke, Restore und Cleanup festlegen; dry-run und segmentierte Ausfuehrung vorbereiten | Reindex-Dauer, Restore-Dauer, Truth-Laufzeit, Queue-Recovery-Dauer | hoch |
+| Drift zwischen DB und Index | Lifecycle-Aenderungen, Teilfehler bei Rebuilds, stale Indexeintraege oder inkonsistente Sichtbarkeit | mittel | Search und Retrieval liefern falsche oder fehlende Treffer; Health Score sinkt | Drift-Check, Inconsistency-Report, Search-Stichproben nach Restore oder Recovery | Drift Detection als regulaere M5-Pruefebene definieren; Rebuild- und Verifikationspfade standardisieren | Drift-Score, stale_index_entries, orphaned Eintraege, reindexed_chunk_count | hoch |
+| RAG-Qualitaetsverlust | schlechtere Retrieval-Qualitaet, driftende Citations, Kontextueberladung oder Datenqualitaetsfehler in Chunks | mittel | Antworttreue sinkt; falsche oder schwache Quellenbelege; Vertrauen in den RAG-Pfad nimmt ab | haeufigere Insufficient-Context-Faelle, schwache Trefferqualitaet, mehr manuelle Reklamationen | Bewertungsrahmen fuer Retrieval-, Citation- und Antwortqualitaet definieren; Regressionserkennung vorbereiten | Trefferqualitaet, Citation-Konsistenz, Insufficient-Context-Rate, Health-Score-Anteil RAG | hoch |
+| Cleanup-Risiken | aggressive oder fachlich falsch abgegrenzte Cleanup-Regeln entfernen noch benoetigte Daten oder historische Artefakte | mittel | Datenverlust, Citation-Brueche, Queue- oder Lifecycle-Inkonsistenzen | dry-run-Abweichungen, unerwartete Delta-Zaehler, nachgelagerte Restore- oder Drift-Fehler | Cleanup nur als dry-run-faehigen, dokumentierten M5-Pfad vorbereiten; Lifecycle- und Citation-Schutzregeln verpflichtend machen | Anzahl geplanter vs. freigegebener Cleanup-Aenderungen, Drift nach Cleanup, Citation-Fehler nach Cleanup | hoch |
+| Backup-Veralterung | Backups werden nicht regelmaessig erneuert oder nicht gegen aktuelle Konfiguration und Datenlage verifiziert | mittel | Restore fuehrt zu unakzeptablem Datenverlust; DR verliert praktische Aussagekraft | altes `created_at` im Manifest, fehlende aktuelle Verify-/Restore-Nachweise | Backup-Frische, Verify-Backup und periodische Restore-Stichproben als M5-Betriebsregel vorbereiten | Backup-Alter, letzter Verify-Status, letzter Restore-Truth-Nachweis | hoch |
+| Queue-Stau | haengende Jobs, Retry-Schleifen, Dead-Letter-Anstieg oder langsame Recovery bei wachsendem Bestand | mittel | Uploads, Rebuilds und Recovery-Pfade stauen sich; Betriebszustand wird intransparent | mehr `retryable`/`dead_letter`, laenger laufende Jobs, wachsende Queue-Zaehler | Queue-Recovery als M5-Langzeitbetriebsthema behandeln; Grenzwerte und Stau-Indikatoren festlegen | running_jobs, failed_jobs_last_24h, dead_letter_count, mittlere Job-Laufzeit | mittel bis hoch |
+| Nutzerfehler | falscher Cleanup-, Restore- oder Diagnoseeinsatz; falsches Backup; Bedienung ausserhalb des vorgesehenen Runbooks | mittel | unnoetige Stoerungen, Teilverluste oder Verwechslung zwischen Diagnose und mutierendem Betriebspfad | Abweichung vom Runbook, fehlende Verify-/Validation-Schritte, ungeplante Teilrestores | Runbooks, Checklisten, dry-run-Pflicht und klar getrennte Admin-Grenzen beibehalten; M5-Operationen nur mit expliziten Startbedingungen vorbereiten | Anzahl ungeplanter Recovery-Eingriffe, Verify-Fehler vor Restore, dokumentierte Bedienabweichungen | mittel |
+
+### Prioritaeten fuer M5
+
+- Prioritaet 1
+  - Drift zwischen DB und Index
+  - RAG-Qualitaetsverlust
+  - Backup-Veralterung
+  - Datenwachstum
+- Prioritaet 2
+  - Lange Laufzeit
+  - Cleanup-Risiken
+  - Queue-Stau
+- Prioritaet 3
+  - Nutzerfehler
+
+Prioritaetslogik:
+
+- Prioritaet 1 betrifft Risiken, die direkt Wahrheitsgehalt, Wiederherstellbarkeit oder Retrieval-Vertrauen beschaedigen koennen.
+- Prioritaet 2 betrifft Risiken, die den Langzeitbetrieb instabil oder unplanbar machen.
+- Prioritaet 3 betrifft vor allem Governance- und Operator-Disziplin und wird ueber Runbooks, Checklisten und Freigaberegeln begrenzt.
+
+### M5 Data Quality Scope
+
+Ziel:
+
+- M5 definiert einen festen Qualitaetsrahmen fuer Dokumente, Versionen, Chunks und Citations.
+- Die Regeln dienen der Frueherkennung von Konsistenzfehlern und der spaeteren Health-Score- und Drift-Bewertung.
+- Das Regelwerk fuehrt noch keine automatische Reparatur ein.
+
+#### Data Quality Regelwerk
+
+| Regel | Beschreibung | Einstufung |
+|---|---|---|
+| Dokument ohne Version = Fehler | Jedes fachlich vorhandene Dokument muss mindestens eine referenzierbare `document_version` besitzen. Dokumente ohne Version gelten als inkonsistent. | Fehler |
+| Version ohne Chunks = Fehler ausser `failed import` | Jede normale Version muss mindestens einen Chunk besitzen. Ausnahme: Dokumente im Importfehlerpfad duerfen temporär Versionen ohne verwertbare Chunks aufweisen, wenn der Zustand fachlich als fehlgeschlagener Import markiert ist. | Fehler |
+| Chunk ohne `source_anchor` = Fehler | Jeder Chunk muss einen fachlich nutzbaren `source_anchor` besitzen. Fehlende oder leere Anker sind ein Data-Quality-Fehler. | Fehler |
+| orphaned chunks = Fehler | Chunks ohne gueltige referenzierte Version oder ohne gueltiges referenziertes Dokument sind inkonsistent. | Fehler |
+| orphaned versions = Fehler | Versionen ohne gueltiges referenziertes Dokument sind inkonsistent. | Fehler |
+| duplicate `content_hash` = Fehler | Doppelte `content_hash`-Werte innerhalb desselben Workspace-Scope sind unzulaessig. Der Datenbestand muss die fachliche Eindeutigkeit wahren. | Fehler |
+| dangling citations = Warnung oder Fehler je Status | Citations mit fehlendem Chunk oder Dokument sind mindestens auffaellig. Fuer historische, bewusst erhaltene Citations mit `source_status = deleted|missing` ist dies primaer eine Warnung; fuer aktive Retrieval-Pfade oder unerwartet fehlende Referenzen ist es ein Fehler. | Warnung oder Fehler |
+
+#### Severity-Modell
+
+- `Fehler`
+  - verletzt ein Dateninvariante
+  - darf den Health Score direkt verschlechtern
+  - ist fuer Cleanup oder operative Freigaben blockierend, bis der Befund geklaert ist
+- `Warnung`
+  - ist fachlich auffaellig, aber in einem bekannten und dokumentierten Sonderfall noch tolerierbar
+  - muss sichtbar gemacht und trendbar gemacht werden
+  - darf nicht still ignoriert werden, insbesondere bei historischen Citations mit erwartetem `source_status`
+
+Severity-Regel fuer Citations:
+
+- `Warnung`, wenn die Citation historisch erhalten bleiben soll und `source_status` den fehlenden Ursprung fachlich erklaert (`deleted` oder `missing`).
+- `Fehler`, wenn aktive Retrieval-Pfade, aktuelle Antworten oder unerwartete Referenzbrueche betroffen sind.
+
+#### Pruefstrategie
+
+- Regelpruefung zunaechst als dokumentierter M5-Read-Pfad, nicht als mutierende Automatik.
+- Pruefungen sollen auf echten DB-Bestaenden laufen und nicht nur auf Mock- oder UI-Sichten.
+- Ergebnisse sollen in drei Ebenen ausgewertet werden:
+  - Punktueller Lauf fuer lokale Diagnose und Betriebsstichprobe
+  - wiederholbarer Qualitaetslauf fuer M5-Health- und Drift-Bewertung
+  - Restore-Nachpruefung nach groesseren Recovery- oder Cleanup-Eingriffen
+- Jede Regel braucht spaeter:
+  - zaehlbare Befunde
+  - Schweregrad
+  - betroffenen Scope
+  - trendbare Verlaufsdaten
+
+Empfohlene Pruefbloecke fuer M5:
+
+- Dokument/Version-Konsistenz
+- Version/Chunk-Konsistenz
+- Anchor-Qualitaet
+- Referenzielle Orphan-Pruefung
+- `content_hash`-Eindeutigkeit
+- Citation-Integritaet mit Sonderfallbewertung fuer historische `source_status`
+
+#### Nicht-Scope fuer das Data-Quality-Regelwerk
+
+- keine automatische Datenreparatur im ersten M5-Schritt
+- kein automatischer Cleanup basierend nur auf einem Regelverstoss
+- keine verdeckte Mutation von Citations, Lifecycle oder Versionen waehrend der Pruefung
+- keine neue Endnutzerfunktion fuer Qualitaetskorrekturen
+- keine Produktionsfreigabe fuer aggressive Cleanup- oder Repair-Aktionen ohne eigenen Folgescope
+
+### M5 Drift Detection Scope
+
+Ziel:
+
+- M5 behandelt Drift als eigene Systemreife-Dimension zwischen Soll-Zustand und effektivem Laufzeitzustand.
+- Drift Detection bleibt zunaechst read-only, trendfaehig und auswertbar.
+- Repair bleibt ein nachgelagerter, explizit freizugebender Betriebspfad und nicht Teil der ersten M5-Freigabe.
+
+#### Drift Detection Konzept
+
+| Drift-Art | Detektion | Schwelle | Severity | Repair-Strategie | Metrik |
+|---|---|---|---|---|---|
+| DB vs Search Index | Vergleich von suchbaren Chunks, Search-Index-Eintraegen und Drift-Buckets ueber bestehenden Drift-/Inconsistency-Report | `0` ist Soll; jeder persistente Drift-Befund ausserhalb eines aktiven Rebuild-/Restore-Fensters ist relevant | hoch | Ursache isolieren, Rebuild-/Restore-Kontext pruefen, danach gezielten Reindex als separaten Betriebspfad ausfuehren | `drift_score`, `stale_index_entries`, `chunks_without_index`, `index_without_chunk`, `duplicate_index_entries` |
+| Lifecycle vs Searchbarkeit | Abgleich von `documents.lifecycle_status` gegen `document_chunks.is_searchable` | `0` Abweichungen ist Soll; jede aktive Abweichung ist ein Fehler | hoch | Lifecycle-Sync-Pfad pruefen, inkonsistente Dokumente isolieren, Searchbarkeit kontrolliert neu synchronisieren | Anzahl Chunks mit `active && is_searchable = false`, Anzahl Chunks mit `non-active && is_searchable = true` |
+| Citation Snapshot vs Live Status | Vergleich von Citation-`source_status` gegen aktuellen Dokument-Lifecycle und Existenz des referenzierten Ursprungs | `0` fuer unerwartete Abweichungen; historische, erwartete `deleted|missing`-Faelle duerfen nur als bekannte Sonderfaelle auftreten | mittel bis hoch | zwischen historischem Sonderfall und echtem Referenzbruch unterscheiden; Snapshot nur ueber kontrollierten Lifecycle-/Repair-Pfad anpassen | Anzahl Citations mit Snapshot/Live-Mismatch, Anzahl unerwarteter `missing`, Anteil historisch erwarteter Sonderfaelle |
+| Queue State vs tatsaechlicher Worker-Zustand | Vergleich von Job-Status in `background_jobs` mit real beobachtbaren Laufzeitindikatoren, Retry-/Dead-Letter-Mustern und festhaengenden `running`-Jobs | kleine kurzfristige Differenzen tolerierbar; persistente `running`-Jobs ohne Worker-Fortschritt oder wachsender `retryable|dead_letter`-Bestand sind relevant | hoch | Worker-Zustand und Replay-Faehigkeit pruefen, haengende Jobs isolieren, Recovery oder Replay explizit und dokumentiert ausfuehren | `running_jobs`, `failed_jobs_last_24h`, `retryable_count`, `dead_letter_count`, mittlere Job-Laufzeit, Alter laengster `running`-Job |
+| Backup Manifest vs aktuelle Daten | Vergleich zwischen Manifest-Angaben und aktuellem technischen Zustand des Backup-Artefakts via `validate` und `verify-backup` | `status != ok` ist Fehler; Manifest-/Dateiabweichung ist ausserhalb eines laufenden Backups nicht tolerierbar | hoch | Backup nicht freigeben, neues Backup erzeugen oder Artefakt verwerfen; Restore nur nach erneutem Vollcheck | `verify_backup.status`, Anzahl `error_classes`, Manifest-Dateizaehler vs Ist-Dateizaehler, Backup-Alter |
+| Retrieval-Qualitaet ueber Zeit | Trendvergleich von Retrieval-Scores, Insufficient-Context-Raten und Citation-Stabilitaet ueber wiederholte M5-Qualitaetslaeufe | kein einzelner fester Absolutwert als einziges Gate; relevant ist negative Trendbewegung oder wiederholter Schwellenunterschritt gegen Baseline | mittel bis hoch | Regression gegen Baseline bestaetigen, Datenqualitaet und Indexzustand pruefen, Retrieval-Konfiguration separat nachziehen | `retrieval_score_max`, `retrieval_score_avg`, `insufficient_context_rate`, Citation-Konsistenzrate, Anteil low-confidence-Citations |
+
+#### Schwellenmodell
+
+- `Sofortfehler`
+  - DB vs Search Index
+  - Lifecycle vs Searchbarkeit
+  - Backup Manifest vs aktuelle Daten
+  - diese Drifts verletzen einen technischen Sollzustand und sind ausserhalb klar markierter Betriebsfenster nicht tolerierbar
+- `Beobachten mit Eskalation`
+  - Citation Snapshot vs Live Status
+  - Queue State vs tatsaechlicher Worker-Zustand
+  - Retrieval-Qualitaet ueber Zeit
+  - diese Drifts brauchen Verlaufsbeobachtung, Sonderfallbewertung oder Baseline-Vergleich, eskalieren aber bei Persistenz oder Trendbruch
+
+#### Severity-Modell fuer Drift
+
+- `hoch`
+  - betrifft Wahrheitsgehalt, Wiederherstellbarkeit oder laufende Betriebsfaehigkeit direkt
+  - blockiert spaetere Cleanup-, Recovery- oder Freigabeentscheidungen, bis die Ursache geklaert ist
+- `mittel bis hoch`
+  - betrifft Antwortqualitaet oder Queue-Stabilitaet mit moeglicher Eskalation zum Betriebsproblem
+  - verlangt Trendbeobachtung und nachvollziehbare Eskalationsregel
+- `mittel`
+  - ist sichtbar und relevant, aber haeufig nur im Zusammenspiel mit weiteren Signalen freigaberelevant
+
+#### Repair-Strategie
+
+- Drift Detection selbst bleibt read-only.
+- Repair wird strikt getrennt behandelt:
+  - Diagnose und Scope-Isolation
+  - Sonderfallpruefung gegen Lifecycle-, Restore- oder Historienregeln
+  - explizite Freigabe fuer Reindex, Replay, Restore oder Snapshot-Korrektur
+  - Nachpruefung ueber denselben Drift-Check
+- Kein automatischer Repair nur aufgrund eines einzelnen Drift-Befunds im ersten M5-Slice.
+
+#### Priorisierung
+
+- Prioritaet 1
+  - DB vs Search Index
+  - Lifecycle vs Searchbarkeit
+  - Backup Manifest vs aktuelle Daten
+  - Queue State vs tatsaechlicher Worker-Zustand
+- Prioritaet 2
+  - Citation Snapshot vs Live Status
+  - Retrieval-Qualitaet ueber Zeit
+
+Prioritaetslogik:
+
+- Prioritaet 1 deckt Drift ab, die direkt zu falscher Suche, betrieblichem Stau oder ungueltigen Restore-Annahmen fuehrt.
+- Prioritaet 2 deckt Drift ab, die staerker ueber Qualitaetsverlust, Historieninkonsistenz oder Trendverschlechterung sichtbar wird und deshalb baseline- und kontextabhaengig bewertet werden muss.
+
+### M5 Cleanup Scope
+
+Ziel:
+
+- M5 definiert Cleanup als kontrollierten, dokumentierten und reversibel vorbereiteten Betriebspfad.
+- Cleanup dient der Beseitigung technischer Altlasten und inkonsistenter Artefakte, nicht der stillen Datenmutation.
+- Der erste M5-Slice erlaubt nur Dry-Run, Berichtserstellung und spaetere explizite Freigabe je Cleanup-Klasse.
+
+#### Cleanup-Regelwerk
+
+| Cleanup-Kandidat | Regel | Voraussetzung | Ergebnis im ersten M5-Slice |
+|---|---|---|---|
+| orphaned chunks | Chunks ohne gueltige Version oder ohne gueltiges Dokument sind Cleanup-Kandidaten | referenzielle Inkonsistenz muss im Report nachgewiesen sein | nur Dry-Run und Bericht |
+| orphaned versions | Versionen ohne gueltiges Dokument sind Cleanup-Kandidaten | referenzielle Inkonsistenz muss im Report nachgewiesen sein | nur Dry-Run und Bericht |
+| stale index entries | Search-Index-Eintraege ohne gueltige DB-Basis oder mit falscher Sichtbarkeit sind Cleanup-Kandidaten | Drift-/Inconsistency-Report muss den Befund bestaetigen | nur Dry-Run und Bericht; spaeter eher Reindex als direkte Loeschung |
+| alte `dead_letter` Jobs | alte, terminale Jobs ohne legitimen Replay-Bedarf sind Cleanup-Kandidaten | Queue-Kontext, Alter und fehlende operative Relevanz muessen dokumentiert sein | nur Dry-Run und Bericht |
+| alte Reports | veraltete technische Reports ausserhalb des definierten Aufbewahrungsfensters sind Cleanup-Kandidaten | Report-Typ, Alter und fehlende Gate-Relevanz muessen dokumentiert sein | nur Dry-Run und Bericht |
+| temporaere Upload-Dateien | Temp-Dateien ohne aktive Job-Referenz und ohne weitere technische Verwendung sind Cleanup-Kandidaten | Pfad muss als Temp-Artefakt klassifiziert und als unreferenziert nachgewiesen sein | nur Dry-Run und Bericht |
+| abgelaufene Sessions | abgelaufene Auth-Sessions sind Cleanup-Kandidaten | Session muss fachlich beendet bzw. abgelaufen und nicht mehr fuer aktiven Zugriff nutzbar sein | nur Dry-Run und Bericht |
+
+Verbindliche Regeln:
+
+- Dry Run zuerst.
+- keine Loeschung ohne Report.
+- keine Chat-Citation zerstoeren.
+- keine Originaldatei loeschen, wenn sie noch referenziert ist.
+
+#### Safety Constraints
+
+- Cleanup bleibt read-only, bis pro Cleanup-Klasse ein eigener freigegebener Mutationspfad existiert.
+- Jeder Cleanup-Lauf braucht einen maschinenlesbaren und menschenlesbaren Report vor jeder Loeschentscheidung.
+- Historische Chat-Citations haben Vorrang vor Cleanup-Bequemlichkeit:
+  - keine Loeschung von Daten oder Snapshots, die historische Nachvollziehbarkeit zerstoert
+  - keine Mutation, die `source_status` oder historische Citation-Lesbarkeit still bricht
+- Originaldateien sind geschuetzt:
+  - keine Loeschung, solange eine DB-Referenz, eine Restore-Relevanz oder ein belegter technischer Bezug besteht
+  - Temp-Dateien und Originaldateien muessen strikt getrennt bewertet werden
+- Stale Index Entries sollen primaer ueber kontrollierten Reindex und nicht ueber ungezielte Einzelbereinigung behandelt werden.
+- Queue-Cleanup darf keine noch untersuchungsrelevanten `retryable`- oder `dead_letter`-Faelle still entfernen.
+- Cleanup darf keine Truth-Nachweise, Restore-Artefakte oder aktuelle Gate-Reports vernichten, solange sie noch Freigaberelevanz haben.
+- Nach jedem spaeter freigegebenen Cleanup muss dieselbe Klasse erneut per Report validiert werden.
+
+#### Dry-Run-Format
+
+Jeder Dry-Run-Report soll mindestens die folgenden Felder enthalten:
+
+- `cleanup_type`
+- `generated_at`
+- `scope`
+- `candidate_count`
+- `protected_count`
+- `blocked_count`
+- `status`
+- `items`
+- `summary`
+
+Feldbedeutung:
+
+- `cleanup_type`: z. B. `orphaned_chunks`, `stale_index_entries`, `expired_sessions`
+- `scope`: Workspace-, globaler oder Dateisystem-Scope des Laufs
+- `candidate_count`: alle gefundenen Kandidaten
+- `protected_count`: Kandidaten, die durch Safety Constraints nicht angetastet werden duerfen
+- `blocked_count`: Kandidaten mit unklarer Referenzlage oder fehlender Freigabebasis
+- `status`: `ok`, `review_required` oder `blocked`
+- `items`: Liste der konkreten Kandidaten mit Identifikator, Grund, Schutzstatus und empfohlener Aktion
+- `summary`: verdichtete Gesamtbewertung fuer Operator und spaetere Freigabeentscheidung
+
+Empfohlene Item-Felder im Dry-Run:
+
+- `id`
+- `category`
+- `reason`
+- `evidence`
+- `risk`
+- `protected`
+- `recommended_action`
+
+Beispielstatus:
+
+- `ok`: Kandidaten sind sauber identifiziert und fachlich eindeutig bewertet, aber noch nicht geloescht
+- `review_required`: Kandidaten brauchen menschliche Sichtpruefung oder Querkontrolle gegen Citation-, Queue- oder Dateireferenzen
+- `blocked`: Cleanup darf fuer diese Kandidaten nicht erfolgen, weil Schutzregeln oder fehlende Nachweise entgegenstehen
+
+### M5 Health Score Spezifikation
+
+Ziel:
+
+- Der M5 Health Score verdichtet die wichtigsten Systemreife-Signale in einen vergleichbaren Wert von `0` bis `100`.
+- Der Score ersetzt keine Truth-Gates, sondern dient als laufendes Steuerungs- und Priorisierungsinstrument.
+- Der Score ist nur belastbar, wenn die zugrunde liegenden Reports und Metriken aktuell sind.
+
+#### Formel
+
+Gesamtformel:
+
+```text
+health_score =
+  data_quality_score * 0.25 +
+  drift_score_component * 0.20 +
+  queue_health_score * 0.15 +
+  search_retrieval_health_score * 0.15 +
+  backup_freshness_score * 0.10 +
+  error_rate_score * 0.10 +
+  documentation_truth_score * 0.05
+```
+
+Regeln:
+
+- Jede Komponente liefert einen Teilscore von `0` bis `100`.
+- Der Gesamtwert wird auf `0..100` begrenzt und als ganzzahliger Score gerundet.
+- Fehlende oder veraltete Messgrundlagen duerfen den Score nicht kuenstlich hoch halten; in solchen Faellen ist die betroffene Komponente konservativ als `degraded` zu behandeln.
+
+#### Komponenten und Gewichtung
+
+| Komponente | Gewicht | Begruendung |
+|---|---:|---|
+| Data Quality | 25 % | Datenqualitaet ist die Grundlage fuer Search, Retrieval, Cleanup, Restore und alle spaeteren M5-Bewertungen. Wenn die Basisdaten inkonsistent sind, sind nachgelagerte Signale nur begrenzt vertrauenswuerdig. |
+| Drift | 20 % | Drift zwischen Soll- und Laufzeitzustand ist der naechstwichtigste Fruehindikator fuer fachliche und technische Erosion. Search-, Lifecycle- und Snapshot-Drift wirken direkt auf Wahrheitsgehalt. |
+| Queue Health | 15 % | Queue-Stabilitaet bestimmt, ob Import, Recovery und Betriebsprozesse ueberhaupt verlässlich weiterlaufen. Ein Stau wirkt schnell systemweit, ist aber etwas indirekter als Basisdaten- oder Driftfehler. |
+| Search/Retrieval Health | 15 % | Retrieval-Qualitaet ist fuer M3c/M4-RAG zentral. Sie haengt jedoch teilweise bereits von Data Quality und Drift ab und wird deshalb bewusst nicht hoeher als diese gewichtet. |
+| Backup Freshness | 10 % | Backup-Frische ist fuer Wiederherstellbarkeit entscheidend, aber kein permanentes Live-Signal jeder einzelnen Nutzerinteraktion. |
+| Error Rate | 10 % | Fehlerquote zeigt operative Instabilitaet schnell an, ist aber ohne Daten- und Driftkontext allein nicht ausreichend fuer Systemreife. |
+| Documentation Truth | 5 % | Dokumentationswahrheit ist wichtig fuer Governance und Freigaben, aber kein primaerer Laufzeitindikator. Deshalb bewusst geringstes Gewicht. |
+
+#### Komponentenlogik
+
+`data_quality_score`:
+
+- basiert auf den in M5 definierten Data-Quality-Regeln
+- Startwert `100`
+- Abzuege fuer nachgewiesene Fehlerklassen wie orphaned Daten, fehlende `source_anchor`, doppelte `content_hash` oder unerwartete dangling citations
+- harte Invariantenverletzungen sollen staerker gewichtet werden als Warnungen
+
+`drift_score_component`:
+
+- basiert auf den in M5 definierten Drift-Checks
+- nutzt insbesondere Search-Index-Drift, Lifecycle/Searchability-Abweichungen, Citation-Snapshot-Abweichungen, Queue-Drift und Backup-Manifest-Abweichungen
+- persistente Drift ausserhalb markierter Betriebsfenster fuehrt zu deutlichen Abzuegen
+
+`queue_health_score`:
+
+- basiert auf `running_jobs`, `failed_jobs_last_24h`, `retryable`, `dead_letter`, Job-Alter und sichtbarem Fortschritt
+- laenger haengende `running`-Jobs und wachsender Dead-Letter-Bestand verschlechtern den Teilscore deutlich
+
+`search_retrieval_health_score`:
+
+- basiert auf `retrieval_score_max`, `retrieval_score_avg`, `insufficient_context_rate`, Citation-Konsistenz und Search-Stichproben
+- Baseline- und Trendbewertung sind wichtiger als ein isolierter Einzelwert
+
+`backup_freshness_score`:
+
+- basiert auf letztem gueltigen `verify-backup`, Backup-Alter und letztem Restore-Nachweis
+- alte oder nicht verifizierte Backups ziehen den Teilscore ab, auch wenn der Live-Betrieb aktuell ruhig wirkt
+
+`error_rate_score`:
+
+- basiert auf dokumentierter Fehlerquote, insbesondere Import-/DB-/Diagnostics-/Retrieval-Fehlern
+- Fehlerhaeufungen ueber kurze Zeitfenster verschlechtern den Teilscore schneller als einzelne sporadische Fehler
+
+`documentation_truth_score`:
+
+- basiert auf Synchronitaet zwischen Gate-Dokumenten, Reports und tatsaechlich nachgewiesenem Systemzustand
+- veraltete, ueberschriebene oder unbelegte Freigabeaussagen ziehen den Teilscore ab
+
+#### Schwellenwerte
+
+- `>= 90` = `healthy`
+- `75-89` = `degraded`
+- `< 75` = `unhealthy`
+
+Interpretation:
+
+- `healthy`
+  - der Systemzustand ist fuer M5-Steuerung stabil
+  - kleinere Defizite koennen vorhanden sein, sind aber nicht dominierend
+- `degraded`
+  - relevante Abweichungen oder Alterungstendenzen sind sichtbar
+  - M5-Priorisierung und Gegenmassnahmen muessen aktiv nachgezogen werden
+- `unhealthy`
+  - der Zustand ist fuer Systemreife nicht ausreichend stabil
+  - Cleanup-, Repair- oder weitere Freigabeschritte duerfen nicht auf einem ungeprueften Score aufbauen
+
+#### Bewertungsleitlinien
+
+- Ein hoher Score darf keinen formalen Truth-Gate-Pass ersetzen.
+- Eine einzelne schwere Invariantenverletzung in Data Quality oder Drift kann trotz rechnerisch noch brauchbarem Gesamtwert eine separate Eskalation erfordern.
+- Documentation Truth bleibt bewusst niedrig gewichtet, darf aber fuer Freigabetexte nicht ignoriert werden.
+- Wenn eine Komponente mangels aktueller Evidenz nicht belastbar messbar ist, soll sie nicht mit `100` angesetzt werden, sondern konservativ auf einen degradierenden Standardwert fallen.
+
+### M5 Truth-Test-Erweiterungskonzept
+
+Ziel:
+
+- M5 darf keine rein dokumentarische Phase bleiben.
+- Jeder M5-Kernbereich braucht einen belastbaren Nachweis in der bestehenden `postgres_truth`-Logik.
+- SQLite bleibt fuer M5 nur Fast Feedback und ersetzt keinen PostgreSQL-Wahrheitsnachweis.
+
+#### Truth-Test-Erweiterungskonzept
+
+`postgres_truth` wird fuer M5 um folgende Pruefbloecke erweitert:
+
+- `data_quality`
+  - prueft die M5-Datenqualitaetsregeln gegen echte PostgreSQL-Daten
+  - umfasst Dokument/Version/Chunk-Invarianten, `source_anchor`, Orphans, `content_hash` und Citation-Sonderfaelle
+- `drift_detection`
+  - prueft die definierten Drift-Arten gegen echte Laufzeit- und DB-Zustaende
+  - umfasst mindestens DB-vs-Index, Lifecycle-vs-Searchbarkeit, Citation Snapshot vs Live Status, Queue-Drift und Backup-Manifest-Abgleich
+- `cleanup_dry_run`
+  - prueft Dry-Run-Berichte und Schutzregeln fuer Cleanup-Kandidaten
+  - beweist insbesondere: keine stillen Mutationen, keine zerstoerten Chat-Citations, keine Loeschung referenzierter Originaldateien
+- `health_score`
+  - prueft die Berechenbarkeit und Plausibilitaet des M5 Health Score gegen reale Teilmetriken
+  - umfasst Teilscore-Bildung, Konservativregel bei fehlender Evidenz und Statusklassifikation `healthy|degraded|unhealthy`
+- `backup_freshness`
+  - prueft, dass Backup-Frische nicht nur dokumentiert, sondern ueber echte Verify-/Restore-Artefakte nachweisbar ist
+
+Pruefprinzip:
+
+- Alle M5-Truth-Tests laufen gegen echte PostgreSQL-Transaktionen.
+- Jeder M5-Bereich braucht einen maschinenlesbaren Nachweis im Truth-Report.
+- Dokumentierte M5-Konzepte ohne gruene Truth-Tests bleiben Planungsstand und gelten nicht als betriebliche Reife.
+
+#### Gate-Regeln
+
+- M5-Tests zaehlen nur mit echter PostgreSQL-DB.
+- `TEST_DATABASE_URL` ist Pflicht fuer jeden freigaberelevanten M5-Truth-Lauf.
+- SQLite, In-Memory oder Mock-basierte Laeufe gelten fuer M5 nur als Fast Feedback.
+- Fast-Feedback-Ergebnisse duerfen lokale Entwicklung beschleunigen, aber nie ein M5-Gate auf `PASS` setzen.
+- Ein M5-Gate darf nur dann als bestanden gelten, wenn die erweiterten `postgres_truth`-Bereiche `data_quality`, `drift_detection`, `cleanup_dry_run`, `health_score` und `backup_freshness` in einem aktuellen PostgreSQL-Report gruen sind.
+- Skips bei gesetzter `TEST_DATABASE_URL`, Migrationsfehler, Setup-Fehler oder einzelne rote M5-Truth-Bloecke sind Gate-Blocker.
+- M5-Dokumentationsaussagen duerfen nur den Status behaupten, der durch den aktuellen PostgreSQL-Truth-Report belegbar ist.
 
 ---
 

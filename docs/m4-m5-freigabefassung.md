@@ -177,3 +177,31 @@ Praezisierung:
 - Die Freigabe gilt fuer den lokalen M4-Minimalscope.
 - M4d full mit mutierenden Admin-Aktionen bleibt weiterhin `No-Go`.
 - Produktionshärtung fuer Backup-Sicherheit und Vollbetrieb bleibt ein Nachlaufthema ausserhalb dieses M4-Abschlusses.
+
+## Formales Transition Gate M4 -> M5 am 2026-05-11
+
+Transition-Gate Report:
+
+| Voraussetzung | Soll | Ist | Bewertung |
+|---|---|---|---|
+| M4a | `>= 95` | `96` | erfuellt |
+| M4b | `>= 90` | `92` | erfuellt |
+| M4c | `>= 90` | `95` | erfuellt |
+| M4d read-only | akzeptiert | read-only Slice freigabefaehig | erfuellt |
+| M4e minimal | `>= 85` | `86` | erfuellt |
+| `postgres_truth` vollstaendig gruen | Pflicht | `33/33`, `failed = 0`, `errors = 0`, `skipped = 0`, `exit_code = 0` | erfuellt |
+| Restore-Truth-Test | Pflicht | `PASS` | erfuellt |
+| Dokumentation aktuell | Pflicht | zentrale Gate-Dokumente synchronisiert | erfuellt |
+| keine offenen RC-Blocker | Pflicht | `m4_gate_blockers = []` | erfuellt |
+
+Entscheidung:
+
+- M5 Vorbereitung erlaubt: `ja`
+- M5 Implementierung erlaubt: `ja`
+- M5 bleibt blockiert: `nein`
+
+Regelableitung:
+
+- M5-Implementierung ist nur erlaubt, wenn alle Transition-Voraussetzungen erfuellt sind.
+- Dieser Zustand ist mit dem aktuellen Truth-Report, dem Restore-Truth-Nachweis und den synchronisierten Gate-Dokumenten erreicht.
+- Produktionsfreigabe ist davon weiterhin getrennt zu bewerten.

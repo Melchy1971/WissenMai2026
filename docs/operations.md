@@ -2,6 +2,25 @@
 
 Stand: 2026-05-07
 
+## M5 Dokumentationsrahmen
+
+M5 ist aktuell nur als Vorbereitungs- und Dokumentationsrahmen beschrieben.
+
+Statuslogik:
+
+- M5 wird in der Betriebsdokumentation nicht als gestartet markiert, solange kein expliziter Startentscheid auf gruener Gate-Basis dokumentiert ist.
+- Vorbereitungsdokumente fuer M5 sind keine Implementierungs- oder Betriebsnachweise.
+- Aussagen zu gruener M5-Reife duerfen nur aus aktuellem PostgreSQL-Truth-Nachweis abgeleitet werden.
+
+Vorbereitete M5-Dokumente:
+
+- `docs/data-quality.md`
+- `docs/drift.md`
+- `docs/cleanup.md`
+- `docs/health-score.md`
+
+Diese Dokumente beschreiben nur vorbereitete Regeln, Statuslogik und spaetere Nachweisanker. Sie behaupten keine laufende Implementierung, keine freigegebenen Admin-Aktionen und keinen aktiven M5-Betrieb.
+
 ## PostgreSQL-Integrationstests
 
 Test-URL:
