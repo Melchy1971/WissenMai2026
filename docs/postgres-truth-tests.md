@@ -9,8 +9,9 @@ Die Suite liegt unter `backend/tests/postgres_truth/` und ist mit `postgres_trut
 Aktueller Code-Stand:
 
 - Die Suite liegt unter `backend/tests/postgres_truth/test_*.py`.
-- Collection- und Laufzahlen muessen aus `reports/postgres_truth_report.json` oder `reports/postgres_truth_report.md` kommen.
-- Ob die Suite gruen ist, darf nur aus einem aktuellen Testreport mit gesetzter `TEST_DATABASE_URL` behauptet werden.
+- Collection- und Laufzahlen fuer M4-Gates muessen aus `reports/postgres_truth_report.json` kommen.
+- Ob die Suite gruen ist, darf nur aus einem aktuellen JSON-Testreport mit gesetzter `TEST_DATABASE_URL` behauptet werden.
+- `reports/postgres_truth_report.md` ist nur eine menschenlesbare Begleitansicht und keine M4-Gate-Quelle.
 
 Abgedeckte Bereiche:
 
@@ -29,6 +30,7 @@ Abgedeckte Bereiche:
 Set-Location H:\WissenMai2026
 $env:TEST_DATABASE_URL = "postgresql://..."
 .\scripts\run-postgres-truth.ps1
+.\scripts\validate-m4-truth-gate.ps1
 ```
 
 Ohne `TEST_DATABASE_URL` darf die Suite skippen. Jeder andere Fehler ist ein echter Fehler.
@@ -68,6 +70,10 @@ Jeder Lauf schreibt zwei Artefakte:
 - `reports/postgres_truth_report.json`
 - `reports/postgres_truth_report.md`
 
+Die einzige automatisierbare und freigaberelevante M4-Gate-Quelle ist:
+
+- `reports/postgres_truth_report.json`
+
 Pflichtfelder:
 
 - `generated_at`
@@ -80,7 +86,21 @@ Pflichtfelder:
 - `duration_seconds`
 - `commit_hash` optional
 
-Die Markdown-Datei ist nur die menschenlesbare Sicht auf denselben Lauf. Massgeblich fuer Automatisierung bleibt die JSON-Datei.
+Die Markdown-Datei ist nur die menschenlesbare Sicht auf denselben Lauf. Massgeblich fuer Automatisierung und Freigabe bleibt die JSON-Datei.
+
+## M4 Truth Gate Validator
+
+Der Validator liegt unter `scripts/validate_m4_truth_gate.py` und wird lokal ueber `scripts/validate-m4-truth-gate.ps1` ausgefuehrt.
+
+`M4 Truth Gate = PASS` gilt nur, wenn alle Bedingungen aus `reports/postgres_truth_report.json` erfuellt sind:
+
+- `test_database_url_set = true`
+- `skipped = 0`
+- `failed = 0`
+- `passed > 0`
+- `pytest_exit_code = 0`
+
+Wenn eine Bedingung verletzt ist, gibt der Validator `M4 Truth Gate = FAIL` aus und beendet sich mit Exit-Code `1`.
 
 ## Aktuelle Erwartung
 

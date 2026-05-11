@@ -1,18 +1,28 @@
 {
-  "generated_at": "2026-05-08T09:40:55.356836Z",
+  "generated_at": "2026-05-08T13:02:01.393633Z",
   "command": "python.exe -m pytest -m postgres_truth tests/postgres_truth -q",
-  "test_database_url_set": false,
+  "test_database_url_set": true,
   "alembic_heads": [
     "20260508_0014"
   ],
-  "collected": 25,
-  "passed": 0,
-  "failed": 0,
-  "skipped": 25,
-  "errors": 0,
+  "collected": 32,
+  "marker_counts": {
+    "m4a_gate": 9,
+    "m4b_gate": 5,
+    "m4c_gate": 8
+  },
+  "passed": 26,
+  "failed": 3,
+  "skipped": 0,
+  "errors": 3,
   "xfailed": 0,
   "xpassed": 0,
-  "duration_seconds": 1.163,
-  "pytest_exit_code": 0,
-  "commit_hash": "7109332d3493b3f7b547f35607c4021511ba7e74"
+  "duration_seconds": 38.362,
+  "pytest_exit_code": 1,
+  "commit_hash": "96ca514c53112dcdd153a789493627d40e957685",
+  "m4_gate_impact": "M4-Gate BLOCKED",
+  "m4_gate_blockers": [
+    "3 Testfehler",
+    "3 Setup-/Collect-Fehler"
+  ]
 }

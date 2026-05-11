@@ -19,9 +19,9 @@ class DocumentNotFoundApiError(ApiError):
 
 
 class WorkspaceRequiredApiError(ApiError):
-    status_code = 422
-    code = "WORKSPACE_REQUIRED"
-    message = "workspace_id is required"
+    status_code = 403
+    code = "WORKSPACE_ACCESS_FORBIDDEN"
+    message = "Workspace access forbidden"
 
 
 class AuthRequiredApiError(ApiError):

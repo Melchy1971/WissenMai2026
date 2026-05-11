@@ -55,7 +55,7 @@ function validateSessionState(sessionState) {
     return {
       state: normalized,
       error: authBootstrapError({
-        code: 'AUTH_NO_MEMBERSHIP',
+        code: 'WORKSPACE_NOT_CONFIGURED',
         title: 'Keine Workspace-Mitgliedschaft',
         message: 'Der Benutzer ist keinem Workspace zugeordnet.',
       }),

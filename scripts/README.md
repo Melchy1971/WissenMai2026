@@ -15,6 +15,8 @@ Hilfsskripte fuer lokale Entwicklung und wiederkehrende Arbeitsablaeufe.
 - `dev-backend.ps1` und `dev-frontend.ps1` fuer PowerShell unter Windows.
 - `dev-fullstack.ps1` startet Backend und Frontend gemeinsam in zwei separaten PowerShell-Fenstern.
 - `run-postgres-truth.ps1` fuehrt `pytest -m postgres_truth tests/postgres_truth -q` ueber das Backend-Venv aus und schreibt den Truth-Test-Report nach `reports/`.
+- `validate-m4-truth-gate.ps1` liest ausschliesslich `reports/postgres_truth_report.json` und setzt das M4 Truth Gate auf `PASS` oder `FAIL`.
+- `run-m4-truth-gate.ps1` erzeugt den PostgreSQL-Truth-Report und fuehrt danach den M4-Truth-Gate-Validator aus.
 - `bootstrap_local_backend.py` fuehrt `alembic upgrade head` gegen die lokale Dev-DB aus und legt einen Default-Workspace plus Default-User an.
 
 `dev-backend.ps1` und `dev-backend.sh` nutzen lokal automatisch

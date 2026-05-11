@@ -164,19 +164,19 @@ Stand des Abgleichs mit Code und Dokumentation am 2026-05-06:
 
 M4 Statusmatrix am 2026-05-07:
 
-| Bereich | Score | Status |
-|---|---:|---|
-| M4 Hardening gesamt | `74/100` | blockiert |
-| M4a Auth & Workspace Isolation | wahrscheinlich `82/100` | nicht abgeschlossen |
-| M4b Upload/API Stabilitaet | wahrscheinlich `88/100` | nicht abgeschlossen |
-| M4c Lifecycle | wahrscheinlich `88/100` | nicht abgeschlossen |
+| Bereich | Gate-Quelle | Status |
+|---|---|---|
+| M4 Truth Gate | `reports/postgres_truth_report.json` + `scripts/validate_m4_truth_gate.py` | blockiert |
+| M4a Auth & Workspace Isolation | nur ueber JSON-Report als Teil von `postgres_truth` | nicht manuell freigegeben |
+| M4b Upload/API Stabilitaet | nur ueber JSON-Report als Teil von `postgres_truth` | nicht manuell freigegeben |
+| M4c Lifecycle | nur ueber JSON-Report als Teil von `postgres_truth` | nicht manuell freigegeben |
 | M4d Diagnostics | read-only vorbereitet | nicht vollstaendig abgeschlossen |
 | M4e Backup/Restore | Konzept | nicht implementiert |
 
 Gesamtentscheidung fuer M4:
 
-- M4 ist nach dem aktuellen Hardening-Gate **nicht technisch stabilisiert**.
-- M5 bleibt blockiert, bis `M4a >= 95`, `M4b >= 90` und `M4c >= 90` nachweisbar erreicht sind.
+- M4 ist nach dem aktuellen Truth-Gate **nicht technisch stabilisiert**.
+- M5 bleibt blockiert, bis `scripts/validate_m4_truth_gate.py` auf Basis von `reports/postgres_truth_report.json` `M4 Truth Gate = PASS` liefert.
 - M5 bleibt zusaetzlich bis zu einer vollstaendigen Dokumentationspruefung blockiert.
 - Die kompakte Freigabefassung fuer den aktuell zulaessigen Dokumentationsstand steht in `docs/m4-m5-freigabefassung.md`.
 

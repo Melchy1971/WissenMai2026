@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 
-import { login } from '../api/auth.js';
+import { getAuthSession, login } from '../api/auth.js';
+import { setApiRequestContext } from '../api/client.js';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { ErrorState } from '../components/status/ErrorState.jsx';
 import { mapError } from '../view-models/mappers.js';
@@ -12,7 +13,7 @@ function validateLoginSession(response) {
 
   if (!memberships.length) {
     return {
-      code: 'AUTH_NO_MEMBERSHIP',
+      code: 'WORKSPACE_NOT_CONFIGURED',
       title: 'Keine Workspace-Mitgliedschaft',
       message: 'Der Benutzer ist keinem Workspace zugeordnet.',
       details: {},
@@ -78,17 +79,20 @@ export function LoginPage() {
     setState({ status: 'loading', error: null });
     try {
       const response = await login({ login: normalizedLogin, password: normalizedPassword });
-      const sessionError = validateLoginSession(response);
+      setApiRequestContext({ authToken: response.token, workspaceId: '' });
+      const sessionState = await getAuthSession();
+      const hydratedSession = {
+        token: response.token,
+        user: sessionState.user,
+        memberships: sessionState.memberships || [],
+        active_workspace_id: sessionState.active_workspace_id,
+      };
+      const sessionError = validateLoginSession(hydratedSession);
       if (sessionError) {
         setState({ status: 'error', error: sessionError });
         return;
       }
-      setAuthState({
-        token: response.token,
-        user: response.user,
-        active_workspace_id: response.active_workspace_id,
-        memberships: response.memberships || [],
-      });
+      setAuthState(hydratedSession);
       navigate(location.state?.from?.pathname || '/documents', { replace: true });
     } catch (error) {
       setState({ status: 'error', error: mapError(error) });

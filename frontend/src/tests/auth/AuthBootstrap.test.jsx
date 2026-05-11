@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -108,7 +108,7 @@ describe('Auth bootstrap', () => {
     renderApp('/documents');
 
     expect(await screen.findByText('Keine Workspace-Mitgliedschaft')).toBeInTheDocument();
-    expect(screen.getByText('Fehlercode: AUTH_NO_MEMBERSHIP')).toBeInTheDocument();
+    expect(screen.getByText('Fehlercode: WORKSPACE_NOT_CONFIGURED')).toBeInTheDocument();
   });
 
   it('does not choose an implicit default workspace', async () => {
@@ -164,6 +164,145 @@ describe('Auth bootstrap', () => {
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: 'Bearer test-token',
+            'X-Workspace-Id': 'workspace-1',
+          }),
+        }),
+      );
+    });
+  });
+
+  it('logs in, hydrates /auth/me, loads documents, searches and starts upload with workspace context', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(jsonResponse({
+        token: 'real-api-token',
+        expires_at: '2036-05-08T12:00:00Z',
+        user: { id: 'login-user', login: 'mdickscheit', display_name: 'Login User' },
+        memberships: [{ workspace_id: 'login-workspace', role: 'owner' }],
+        active_workspace_id: 'login-workspace',
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        user: { id: 'user-1', login: 'mdickscheit', display_name: 'Login User' },
+        memberships: [{ workspace_id: 'workspace-1', role: 'owner' }],
+        active_workspace_id: 'workspace-1',
+      }))
+      .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(jsonResponse([
+        {
+          document_id: 'doc-1',
+          document_title: 'Search Result',
+          document_created_at: '2026-05-08T12:00:00Z',
+          document_version_id: 'version-1',
+          version_number: 1,
+          chunk_id: 'chunk-1',
+          position: 0,
+          text_preview: 'truth result preview',
+          source_anchor: { type: 'text', page: null, paragraph: 1, char_start: 0, char_end: 20 },
+          rank: 0.9,
+          filters: {},
+        },
+      ]))
+      .mockResolvedValueOnce(jsonResponse({
+        id: 'job-1',
+        job_type: 'document_import',
+        status: 'pending',
+        workspace_id: 'workspace-1',
+        requested_by_user_id: 'user-1',
+        filename: 'truth.txt',
+        created_at: '2026-05-08T12:00:00Z',
+        started_at: null,
+        finished_at: null,
+        progress_current: 0,
+        progress_total: 1,
+        progress_message: 'queued',
+        error_code: null,
+        error_message: null,
+        result: null,
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        id: 'job-1',
+        job_type: 'document_import',
+        status: 'completed',
+        workspace_id: 'workspace-1',
+        requested_by_user_id: 'user-1',
+        filename: 'truth.txt',
+        created_at: '2026-05-08T12:00:00Z',
+        started_at: '2026-05-08T12:00:01Z',
+        finished_at: '2026-05-08T12:00:02Z',
+        progress_current: 1,
+        progress_total: 1,
+        progress_message: 'completed',
+        error_code: null,
+        error_message: null,
+        result: {
+          document_id: 'doc-uploaded',
+          version_id: 'version-uploaded',
+          import_status: 'chunked',
+          chunk_count: 1,
+          parser_type: 'txt-parser',
+          warnings: [],
+        },
+      }))
+      .mockResolvedValueOnce(jsonResponse([]));
+
+    renderApp('/login');
+
+    fireEvent.change(screen.getByLabelText('Login'), { target: { value: 'mdickscheit' } });
+    fireEvent.change(screen.getByLabelText('Passwort'), { target: { value: 'secret' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Anmelden' }));
+
+    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
+    expect(screen.getByText('Workspace: workspace-1')).toBeInTheDocument();
+    expect(screen.queryByText(/nicht konfiguriert/i)).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Suchbegriff'), { target: { value: 'truth' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
+    expect(await screen.findByText('Search Result')).toBeInTheDocument();
+
+    const file = new File(['# truth'], 'truth.txt', { type: 'text/plain' });
+    fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
+    expect(await screen.findByText('truth.txt erfolgreich verarbeitet')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining('/api/v1/auth/login'),
+        expect.objectContaining({ method: 'POST' }),
+      );
+      expect(fetchSpy).toHaveBeenNthCalledWith(
+        2,
+        expect.stringContaining('/api/v1/auth/me'),
+        expect.objectContaining({
+          headers: expect.objectContaining({ Authorization: 'Bearer real-api-token' }),
+        }),
+      );
+      expect(fetchSpy).toHaveBeenNthCalledWith(
+        3,
+        expect.stringContaining('/documents?limit=20&offset=0&lifecycle_status=active'),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer real-api-token',
+            'X-Workspace-Id': 'workspace-1',
+          }),
+        }),
+      );
+      expect(fetchSpy).toHaveBeenNthCalledWith(
+        4,
+        expect.stringContaining('/api/v1/search/chunks?q=truth&limit=10&offset=0'),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer real-api-token',
+            'X-Workspace-Id': 'workspace-1',
+          }),
+        }),
+      );
+      expect(fetchSpy).toHaveBeenNthCalledWith(
+        5,
+        expect.stringContaining('/documents/import'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer real-api-token',
             'X-Workspace-Id': 'workspace-1',
           }),
         }),

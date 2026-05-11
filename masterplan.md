@@ -79,7 +79,8 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 - ✅ Dead-Letter-Replay-Endpoint `POST /api/v1/admin/jobs/{job_id}/replay` (admin-only) implementiert.
 - ✅ source_status Live-Lookup fuer Chat Citations implementiert (`active|archived|deleted|missing`).
 - ✅ postgres_truth-Testsuite ist vorhanden unter `backend/tests/postgres_truth/`.
-- Der massgebliche Laufstatus fuer M4-Freigabe darf nur aus `reports/postgres_truth_report.json` oder `reports/postgres_truth_report.md` abgeleitet werden.
+- Der massgebliche Laufstatus fuer M4-Freigabe darf nur aus `reports/postgres_truth_report.json` abgeleitet werden.
+- `scripts/validate_m4_truth_gate.py` ist der verbindliche Validator fuer diese JSON-Datei.
 - Ohne aktuellen Report sind nur Strukturaussagen ueber die vorhandene Suite zulaessig; statische Gruen-Zaehler sind unzulaessig.
 - API-Fehlerstandard erweitert:
   - ✅ `RESOURCE_LOCKED` (409)
@@ -905,16 +906,16 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 - Dokumente koennen ueber eine GUI hochgeladen und ueber ihren Lifecycle nachvollziehbar verfolgt werden.
 - Historische Citations bleiben bei archivierten oder geloeschten Dokumenten lesbar; neue Retrieval-Treffer bleiben auf `active` beschraenkt.
 
-Aktueller M4-Gate-Stand am 2026-05-08:
+Aktueller M4-Gate-Stand am 2026-05-11:
 
-| Bereich | Score | Status | Gate-Relevanz |
-|---|---:|---|---|
-| M4 Hardening gesamt | `84/100` | in Arbeit | blockiert M4 und M5 |
-| M4a | wahrscheinlich `82/100` | nicht abgeschlossen | blockiert M5 |
-| M4b | `92/100` | fachlich nahe Freigabe, belastbarer Truth-Status nur per Report | nahe Freigabe |
-| M4c | `91/100` | fachlich nahe Freigabe, belastbarer Truth-Status nur per Report | nahe Freigabe |
-| M4d | read-only vorbereitet + Replay-Endpoint | nicht vollstaendig abgeschlossen | Admin-Aktionen blockiert |
-| M4e | Konzept | nicht implementiert | `No-Go` |
+M4-Freigabe wird nicht mehr ueber manuelle Scores abgeleitet. Die einzige Gate-Quelle ist `reports/postgres_truth_report.json`, geprueft durch `scripts/validate_m4_truth_gate.py`.
+
+Der aktuelle Report weist `pytest_exit_code = 1`, `failed = 3`, `skipped = 0` und `passed = 26` aus. Damit gilt:
+
+- `M4 Truth Gate = FAIL`
+- M4 bleibt blockiert.
+- M5 bleibt blockiert.
+- Manuelle Score-Freigaben sind fuer M4 unzulaessig, solange der Validator FAIL liefert.
 
 RC-3-Hardening-Nachweis (2026-05-08):
 
@@ -934,21 +935,21 @@ RC-3-Hardening-Nachweis (2026-05-08):
 
 Gate-Regel fuer M5:
 
-- `M4a >= 95`
-- `M4b >= 90`
-- `M4c >= 90`
+- `scripts/validate_m4_truth_gate.py` muss `M4 Truth Gate = PASS` liefern.
+- Die Basis dafuer ist ausschliesslich `reports/postgres_truth_report.json`.
+- Manuelle M4a/M4b/M4c-Scores koennen den Validator nicht ersetzen.
 
 Aktuelles Ergebnis:
 
-- M4b und M4c liegen fachlich an oder ueber der 90-Schwelle; der belastbare PostgreSQL-Truth-Status muss aus `reports/postgres_truth_report.json` oder `reports/postgres_truth_report.md` kommen.
-- M4a ist weiterhin nicht abgeschlossen (Auth/Workspace-Isolation noch nicht konsistent durchgezogen).
+- Der aktuelle Validator-Status ist FAIL; daraus folgt keine M4-Freigabe.
+- Fachliche Teilbewertungen koennen nur Kontext liefern, aber keine Gate-Freigabe.
 - M4 ist damit noch **nicht vollstaendig technisch stabilisiert**.
-- M5 bleibt blockiert bis M4a >= 95.
+- M5 bleibt blockiert bis `M4 Truth Gate = PASS`.
 - Die kompakte Freigabefassung steht in `docs/m4-m5-freigabefassung.md`.
 
 Aktueller M4c-Befund:
 
-- Backend-Lifecycle-, Soft-Delete- und Citation-Slices sind fachlich implementiert; ob der PostgreSQL-Truth-Nachweis aktuell gruen ist, muss aus `reports/postgres_truth_report.json` oder `reports/postgres_truth_report.md` gelesen werden.
+- Backend-Lifecycle-, Soft-Delete- und Citation-Slices sind fachlich implementiert; ob der PostgreSQL-Truth-Nachweis aktuell gruen ist, muss aus `reports/postgres_truth_report.json` gelesen und mit `scripts/validate_m4_truth_gate.py` geprueft werden.
 - source_status Live-Lookup liefert `active|archived|deleted|missing` direkt aus der Datenbank — Chaos-Test verifiziert Zustandsuebergaenge.
 - Advisory-Lock-, Crash-, M4-Truth- und weitere PostgreSQL-Nachweise liegen als `postgres_truth`-Suite vor; der konkrete Status muss aus einem aktuellen Report kommen.
 - Search-, Reindex-, Crash- und Chaos-Nachweise gegen PostgreSQL sind nur mit gesetzter `TEST_DATABASE_URL` belastbar.

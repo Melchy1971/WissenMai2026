@@ -70,6 +70,18 @@ describe('api client error classification', () => {
     });
   });
 
+  it('maps missing-membership payloads to WORKSPACE_NOT_CONFIGURED', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse({
+      error: { code: 'WORKSPACE_NOT_CONFIGURED', message: 'Keine Workspace-Mitgliedschaft', details: {} },
+    }, 403));
+
+    await expect(requestJson('/api/v1/documents')).rejects.toMatchObject({
+      code: 'WORKSPACE_NOT_CONFIGURED',
+      message: 'Keine Workspace-Mitgliedschaft',
+      status: 403,
+    });
+  });
+
   it('maps 403 to FORBIDDEN', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse({
       error: { code: 'WORKSPACE_ACCESS_FORBIDDEN', message: 'Workspace verboten', details: {} },

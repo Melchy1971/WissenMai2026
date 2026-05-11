@@ -123,13 +123,6 @@ function classifyHttpFailure(response, errorPayload) {
     };
   }
 
-  if (response.status === 403) {
-    return {
-      code: 'FORBIDDEN',
-      message: errorPayload?.message || 'Zugriff verweigert.',
-    };
-  }
-
   if (errorPayload?.code === 'WORKSPACE_REQUIRED' || errorPayload?.code === 'WORKSPACE_NOT_CONFIGURED') {
     return {
       code: 'WORKSPACE_NOT_CONFIGURED',
@@ -141,6 +134,13 @@ function classifyHttpFailure(response, errorPayload) {
     return {
       code: 'FORBIDDEN',
       message: errorPayload?.message || 'Workspace-Zugriff verweigert.',
+    };
+  }
+
+  if (response.status === 403) {
+    return {
+      code: 'FORBIDDEN',
+      message: errorPayload?.message || 'Zugriff verweigert.',
     };
   }
 

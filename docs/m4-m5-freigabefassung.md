@@ -1,14 +1,15 @@
 # M4/M5 Freigabefassung
 
-Stand: 2026-05-07
+Stand: 2026-05-11
 
 Zweck: Dieses Dokument enthaelt nur den aktuell freigabefaehigen Wahrheitsstand fuer M4 und M5. Historische Zwischenstaende, ueberholte Scores und Zielbilder ohne aktuellen Nachweis sind bewusst ausgeschlossen.
 
 ## Aktueller Entscheidungsstand
 
 - M4 ist aktuell nicht technisch stabilisiert.
-- Der aktuelle Hardening-Score fuer M4 liegt bei `74/100`.
-- Freigaberegel: `>= 90` waere erforderlich; damit bleibt M4 blockiert.
+- Manuelle Scores geben M4 nicht frei.
+- M4-Freigabe darf nur aus `reports/postgres_truth_report.json` plus `scripts/validate_m4_truth_gate.py` abgeleitet werden.
+- Wenn der Validator `M4 Truth Gate = FAIL` meldet, bleibt M4 blockiert.
 - M5 bleibt blockiert.
 - M5 bleibt auch dann blockiert, wenn M4 spaeter technisch stabilisiert wird, solange die vollstaendige Dokumentationspruefung nicht abgeschlossen ist.
 
@@ -30,7 +31,7 @@ Zweck: Dieses Dokument enthaelt nur den aktuell freigabefaehigen Wahrheitsstand 
 ## Nachweisgrenzen
 
 - Der aktuelle lokale Hardening- und Dokumentationslauf ersetzt keinen echten PostgreSQL-Truth-Nachweis.
-- Die PostgreSQL-Truth-Suite ist vorhanden, aber im aktuellen Lauf nicht gruen verifiziert.
+- Die PostgreSQL-Truth-Suite ist vorhanden; der aktuelle Gate-Status kommt ausschliesslich aus `reports/postgres_truth_report.json`.
 - Der letzte echte PostgreSQL-Verifikationsversuch fuer Search/Reindex ist an `ConnectionTimeout` gegen die konfigurierte Ziel-Datenbank gescheitert.
 - Search/Chat-Konsistenz ist als Truth-Test vorbereitet, aber aktuell nicht als gruener PostgreSQL-Nachweis belegt.
 - Der parallele PostgreSQL-Race-Test fuer Duplicate-Imports ist vorhanden, aber aktuell nicht als gruener Pflichtnachweis erbracht.
@@ -45,10 +46,11 @@ Zweck: Dieses Dokument enthaelt nur den aktuell freigabefaehigen Wahrheitsstand 
 - Search/Chat-Konsistenz ist aktuell auf echter PostgreSQL-DB gruen bewiesen.
 - PostgreSQL-Truth-Tests sind fuer den aktuellen Stand gruen nachgewiesen.
 - M5 kann starten.
+- Ein manueller Score kann M4 freigeben.
 
 ## Minimale Freigabelogik ab heute
 
-1. M4 bleibt blockiert, solange der Hardening-Score unter `90` liegt.
+1. M4 bleibt blockiert, solange `scripts/validate_m4_truth_gate.py` auf Basis von `reports/postgres_truth_report.json` nicht `M4 Truth Gate = PASS` liefert.
 2. M4 bleibt blockiert, solange der echte PostgreSQL-Truth-Nachweis nicht gruen ist.
 3. M4d bleibt auf read-only begrenzt, bis M4a, M4b und M4c gruene Gates haben.
 4. M5 bleibt blockiert, bis M4 technisch stabilisiert ist.

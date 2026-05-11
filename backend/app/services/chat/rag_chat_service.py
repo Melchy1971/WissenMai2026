@@ -96,6 +96,7 @@ class RagChatService:
                 details={"session_id": session_id, "retrieval_limit": effective_retrieval_limit},
             )
 
+        self._require_session_in_workspace(session_id=session_id, workspace_id=workspace_id)
         self._save_user_question(session_id=session_id, question=normalized_question)
         retrieval_results = self._retrieve(
             workspace_id=workspace_id,
@@ -167,6 +168,17 @@ class RagChatService:
                 retrieval_score_avg=decision.retrieval_score_avg,
             ),
         )
+
+    def _require_session_in_workspace(self, *, session_id: str, workspace_id: str) -> None:
+        get_session = getattr(self._persistence, "get_session", None)
+        if get_session is None:
+            return
+        try:
+            chat_session = get_session(session_id=session_id)
+        except ChatSessionNotFoundError as exc:
+            raise ChatSessionNotFoundApiError(details={"session_id": session_id}) from exc
+        if chat_session.workspace_id != workspace_id:
+            raise ChatSessionNotFoundApiError(details={"session_id": session_id})
 
     def _save_user_question(self, *, session_id: str, question: str) -> None:
         try:
