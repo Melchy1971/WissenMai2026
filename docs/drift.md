@@ -12,6 +12,7 @@ Stand: 2026-05-11
 Statuslogik:
 
 - Dieses Dokument beschreibt nur den Vorbereitungsrahmen fuer Drift Detection in M5.
+- Die formale M5-Implementierungsfreigabe ist erreicht, aber dieser Slice ist damit noch nicht automatisch gestartet.
 - Ein dokumentiertes Drift-Konzept ist kein Beleg fuer einen aktiven Drift-Service oder einen freigegebenen Repair-Pfad.
 - Eine gruene Drift-Aussage ist erst zulaessig, wenn ein aktueller PostgreSQL-Truth-Report den M5-Block `drift_detection` belegt.
 

@@ -12,6 +12,7 @@ Stand: 2026-05-11
 Statuslogik:
 
 - Dieses Dokument definiert nur die Spezifikation des M5 Health Score.
+- Die formale M5-Implementierungsfreigabe ist erreicht, aber dieser Slice ist damit noch nicht automatisch gestartet.
 - Die Existenz einer Formel ist kein Nachweis einer laufenden Berechnung im System.
 - Eine Aussage wie `healthy`, `degraded` oder `unhealthy` darf erst als betrieblicher Zustand dokumentiert werden, wenn reale Messgrundlagen und PostgreSQL-Truth-Nachweise vorliegen.
 

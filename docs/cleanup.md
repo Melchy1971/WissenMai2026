@@ -12,6 +12,7 @@ Stand: 2026-05-11
 Statuslogik:
 
 - Dieses Dokument beschreibt nur den Vorbereitungsrahmen fuer M5 Cleanup.
+- Die formale M5-Implementierungsfreigabe ist erreicht, aber dieser Slice ist damit noch nicht automatisch gestartet.
 - Cleanup gilt hier ausschliesslich als dry-run-faehiger Planungs- und Bewertungsbereich.
 - Solange kein freigegebener Mutationspfad und kein gruener PostgreSQL-Nachweis vorliegen, darf keine produktive Cleanup-Implementierung behauptet werden.
 

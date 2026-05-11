@@ -264,7 +264,7 @@ Abschlussbewertung fuer M4a:
 - Konsistenz mit dem implementierten Code: **nicht ausreichend fuer Abschluss**
 - Teststatus: Backend-Auth- und Workspace-Schutz sind gut abgedeckt; ein gleichwertiger Frontend-Nachweis fuer einen durchgezogenen Session-Produktfluss fehlt
 - Blocker: M4a ist trotz vorhandenem Login-/Logout-/Route-Guard-Slice noch nicht vollstaendig ueber alle angrenzenden Betriebs- und Nachweispfade abgeschlossen
-- Entscheidung: `nicht abgeschlossen`
+- Entscheidung: `historischer Detailstand; aktuelle Freigabe siehe M4/M5-Freigabefassung`
 
 ### M4b Upload-GUI
 
@@ -338,7 +338,7 @@ Abschlussbewertung fuer M4b:
 - Konsistenz mit dem implementierten Code: **nicht ausreichend fuer Abschluss**
 - Teststatus: Kernpfad fuer Upload, GUI-Polling und Fehlerabbildung ist gut belegt; der harte PostgreSQL-Race-Nachweis fuer Parallelitaet fehlt weiter
 - Blocker: PostgreSQL-Race-/Infra-Nachweis, fehlende `warnings`-Darstellung und kein Deep-Link in die Dokumentdetailansicht nach Erfolg
-- Entscheidung: `nicht abgeschlossen`
+- Entscheidung: `historischer Detailstand; aktuelle Freigabe siehe M4/M5-Freigabefassung`
 
 ### M4c Dokument-Lifecycle
 
@@ -406,7 +406,7 @@ Abschlussbewertung fuer M4c:
 - Konsistenz mit dem implementierten Code: **teilweise, aber nicht vollstaendig hart abgesichert**
 - Teststatus: Backend-Lifecycle, Soft-Delete, historische Citations und GUI-Slice sind lokal gruen belegbar; der PostgreSQL-End-to-End-Pfad fuer Search/Reindex ist aktuell nicht erfolgreich verifiziert
 - Blocker: fehlender gruener PostgreSQL-Integrationslauf, kein eigener Lifecycle-Chat-End-to-End-Nachweis und kein vollstaendiger Browser-E2E ueber angrenzende Lifecycle-/Rebuild-Szenarien
-- Entscheidung: `nicht abgeschlossen`
+- Entscheidung: `historischer Detailstand; aktuelle Freigabe siehe M4/M5-Freigabefassung`
 
 ### M4d Diagnostics
 

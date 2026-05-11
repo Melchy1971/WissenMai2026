@@ -1,6 +1,30 @@
 # Changelog
 
-Stand: 2026-05-07
+Stand: 2026-05-11
+
+## 2026-05-11 - M4 abgeschlossen, M5 Vorbereitung und Implementierung freigegeben
+
+### Changed
+
+- Zentrale Gate-Dokumente, M5-Vorbereitungsdokumente und Verweisdokumente auf den aktuellen Wahrheitsstand synchronisiert.
+- Neue M5-Vorbereitungsrahmen fuer Data Quality, Drift, Cleanup und Health Score dokumentiert.
+- PostgreSQL-Truth-Logik um M5-Erweiterungskonzept und Gate-Regeln ergaenzt.
+- Veraltete Dokumente mit historischem Snapshot-Charakter explizit als nicht freigaberelevant markiert.
+
+### Findings
+
+- `reports/postgres_truth_report.json` ist vollstaendig gruen (`33/33`, `failed = 0`, `errors = 0`, `skipped = 0`).
+- `reports/restore_truth_report.md` dokumentiert einen echten Restore-Truth-Test mit Gesamtstatus `PASS`.
+- M4 ist fuer den lokalen Produktbetrieb technisch abgeschlossen.
+- M5 Vorbereitung ist erlaubt.
+- M5 Implementierung ist durch das formale Transition Gate erlaubt, aber nicht pauschal als gestartet zu dokumentieren.
+
+### Decision
+
+- M4: `PASS`
+- M5 Vorbereitung: `Go`
+- M5 Implementierung: `erlaubt`
+- M4d full mit mutierenden Admin-Aktionen: weiterhin `No-Go`
 
 ## 2026-05-07 - Finale Dokumentations-Wahrheitspruefung fuer M4
 

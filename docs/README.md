@@ -31,7 +31,7 @@ Sie ist die bevorzugte Kurzreferenz fuer:
 
 - aktuellen M4-Hardening-Status
 - read-only-Grenze von M4d
-- Blocker fuer M5
+- Gate- und Freigabestand fuer M5
 - Aussagen, die aktuell nicht als freigegeben dokumentiert werden duerfen
 
 ## M5 Vorbereitung

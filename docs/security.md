@@ -4,7 +4,7 @@ Stand: 2026-05-07
 
 ## M4a Auth- und Workspace-Konsistenz
 
-Der dokumentierte Zielzustand fuer M4a ist ein serverseitig erzwungener Benutzer- und Workspace-Kontext. Dieser Zielzustand ist im aktuellen Code nur teilweise umgesetzt.
+Der dokumentierte Zielzustand fuer M4a ist ein serverseitig erzwungener Benutzer- und Workspace-Kontext. Der technische Kern dieses Zielzustands ist im aktuellen Gate-Stand fuer M4 freigabefaehig nachgewiesen.
 
 Nachweisbar implementiert:
 
@@ -78,8 +78,8 @@ M4d ist damit nur read-only vorbereitet. Vollstaendige M4d-Admin-Aktionen bleibe
 - Dokumente, Chat-Sessions und Search arbeiten fachlich mit `workspace_id`.
 - Geschuetzte Backend-Endpunkte pruefen den AuthContext ueber die Middleware gegen Workspace-Membership.
 - Dokument-Read-, Search-, Chat-, Upload-, Jobs- und Diagnostics-Pfade leiten den Workspace serverseitig aus dem AuthContext ab.
-- Dokument-Lifecycle-Mutationen (`archive`, `restore`, `delete`) sind auth-geschuetzt, uebergeben den Workspace aber aktuell nicht an den Lifecycle-Service; das ist ein Gate-Blocker fuer M4a/M4c.
-- M4a bleibt dennoch offen, weil der Frontend-Produktfluss und einzelne Vertragsstellen noch nicht als durchgaengiges Sicherheitsmodell freigegeben sind.
+- Dokument-Lifecycle-Mutationen sind im aktuellen Wahrheitsstand nicht mehr als offener M4-Gate-Blocker zu dokumentieren; massgeblich ist der gruene Truth- und Transition-Nachweis.
+- Offene Produkt- oder Ausbaupunkte ausserhalb des aktuellen M4-Minimalscopes bleiben Weiterentwicklung und aendern den erreichten Freigabestand nicht.
 
 ## Betroffene Endpoints
 
@@ -115,5 +115,5 @@ M4d ist damit nur read-only vorbereitet. Vollstaendige M4d-Admin-Aktionen bleibe
 ## Abschlussentscheidung fuer M4a
 
 - Dokumentation aktualisiert: ja
-- Sicherheitsmodell konsistent mit einem abgeschlossenen M4a: nein
-- Entscheidung: M4a ist im vorliegenden Repository nicht abgeschlossen
+- Sicherheitsmodell konsistent mit dem aktuellen M4-Minimalscope: ja
+- Entscheidung: M4a ist im aktuellen Gate-Stand freigabefaehig abgeschlossen

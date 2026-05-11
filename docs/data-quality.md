@@ -12,6 +12,7 @@ Stand: 2026-05-11
 Statuslogik:
 
 - Dieses Dokument beschreibt nur die Vorbereitung fuer M5.
+- Die formale M5-Implementierungsfreigabe ist erreicht, aber dieser Slice ist damit noch nicht automatisch gestartet.
 - Solange das Transition Gate nach M5 nicht explizit als Startfreigabe genutzt wird, markiert dieses Dokument keinen Implementierungsbeginn.
 - Dokumentierte Regeln, Schweregrade und Pruefideen sind kein Nachweis einer produktiven Umsetzung.
 

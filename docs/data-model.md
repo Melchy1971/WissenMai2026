@@ -26,21 +26,23 @@ Nachweisbar vorhanden:
 
 - `workspaces`
 - `users`
+- `workspace_memberships`
+- `auth_sessions`
 - `documents.workspace_id`
 - `documents.owner_user_id`
 - `chat_sessions.workspace_id`
 - `chat_sessions.owner_user_id`
 
-Nicht nachweisbar vorhanden:
+Weiterhin nicht Ziel dieses Dokuments:
 
-- `workspace_memberships`
-- `auth_sessions`
-- erweiterte `users`-Felder fuer `login` oder `password_hash`
+- Aussage ueber den vollstaendigen Frontend-Produktfluss
+- Aussage ueber alle Betriebs- und Freigabegates ausserhalb des Datenmodells
 
 Folgerung:
 
-- Workspace-Bezug ist datenmodellseitig vorbereitet und in Dokument-, Chat- und Tag-Modellen sichtbar.
-- Eine echte M4a-Workspace-Isolation ueber Memberships und serverseitig aufgeloeste Benutzeridentitaet ist im vorliegenden Schema noch nicht abgeschlossen.
+- Workspace- und Session-Bezug sind datenmodellseitig vorhanden.
+- Das Datenmodell traegt den aktuellen technischen M4a-Kern fuer Memberships und serverseitig aufgeloeste Benutzeridentitaet.
+- Formale Freigabeaussagen fuer M4a kommen nicht allein aus diesem Schema, sondern aus den aktuellen Gate- und Truth-Dokumenten.
 
 ## Wichtigste Beziehungen
 

@@ -3,6 +3,13 @@
 Stand: 2026-05-11
 Grundlage: Code-Analyse, postgres_truth-Lauf (33/33), Completion Matrix.
 
+Hinweis zum Dokumentstatus:
+
+- Dieses Dokument bleibt als historische Gap- und Risikoanalyse vor dem finalen M4-Abschluss erhalten.
+- Es ist keine aktuelle Freigabequelle mehr.
+- Massgeblich fuer den aktuellen Stand sind `docs/m4-m5-freigabefassung.md`, `reports/postgres_truth_report.json`, `reports/restore_truth_report.md` und `masterplan.md`.
+- Aussagen in diesem Dokument zu blockiertem M4 oder blockiertem M5 gelten nur als historischer Analysepfad und nicht als aktuelle Entscheidung.
+
 ---
 
 ## 1. Differenzliste — Feature vorhanden, aber nicht truth-validiert

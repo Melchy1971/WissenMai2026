@@ -8,7 +8,7 @@ Dieses Dokument beschreibt die API-Abhaengigkeit der aktuellen GUI auf hoher Ebe
 
 ## M4a Konsistenzstand
 
-Der dokumentierte Zielzustand fuer M4a ist ein durchgaengig serverseitig aufgeloester Auth- und Workspace-Kontext fuer alle geschuetzten Pfade. Im vorliegenden Code ist ein technischer Backend-Kern vorhanden, M4a ist aber wegen fehlendem durchgaengigem Produkt-/Frontend-Flow und verbleibenden Gate-Nachweisen nicht abgeschlossen.
+Der dokumentierte Zielzustand fuer M4a ist ein durchgaengig serverseitig aufgeloester Auth- und Workspace-Kontext fuer alle geschuetzten Pfade. Der technische Backend-Kern ist im aktuellen Gate-Stand freigabefaehig nachgewiesen. Offene Themen wie kompletter Frontend-Produktfluss oder Logout-Vollausbau bleiben getrennte Weiterentwicklungspunkte und aendern nicht den aktuellen M4-Freigabestand.
 
 Fuer Admin-Diagnostics ist der Legacy-Header `x-admin-token` nicht Teil des aktiven Vertrags. Diagnostics autorisiert ausschliesslich ueber AuthContext, aktiven Workspace und Workspace-Membership/Rolle.
 
