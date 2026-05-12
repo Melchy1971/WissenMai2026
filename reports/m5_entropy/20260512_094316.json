@@ -1,0 +1,128 @@
+{
+  "generated_at": "2026-05-12T09:43:16.352001Z",
+  "audit_version": "m5-data-aging-entropy-v1",
+  "status": "watch",
+  "sources": {
+    "longrun": "H:\\WissenMai2026\\reports\\m5_longrun\\latest.json",
+    "retrieval": "H:\\WissenMai2026\\reports\\m5_retrieval\\latest.json",
+    "longrun_generated_at": "2026-05-12T09:36:21.388872Z",
+    "retrieval_generated_at": "2026-05-12T09:36:21.313843Z"
+  },
+  "entropy_matrix": [
+    {
+      "category": "stale Queue Jobs",
+      "growth_over_time": {
+        "start": 0.0,
+        "end": 11.0,
+        "delta": 11.0,
+        "per_cycle": 0.4074,
+        "max": 11.0
+      },
+      "risk": "low",
+      "evidence": "queue_backlog final=11.0 max=11.0 threshold=25.0",
+      "detection_strategy": "Age-bucket queue rows by status and claimed_at/updated_at; alert on running timeout, retryable backlog, dead_letter growth and missing audit transitions.",
+      "cleanup_repair_strategy": "Move timed-out running jobs to retryable, replay dead_letter with advisory lock, cap retry attempts, and preserve replay audit rows."
+    },
+    {
+      "category": "veraltete Backups",
+      "growth_over_time": {
+        "successful_restore_cycles": [
+          7,
+          14,
+          21,
+          28
+        ],
+        "max_backup_age_cycles": 7,
+        "cycle_count": 28
+      },
+      "risk": "low",
+      "evidence": "restore checks passed at cycles=[7, 14, 21, 28]; max_backup_age_cycles=7",
+      "detection_strategy": "Track latest successful backup timestamp, verify-backup status, restore dry-run age and checksum drift.",
+      "cleanup_repair_strategy": "Fail readiness when no fresh verified backup exists; rotate old backups only after a newer restore-verified backup is present."
+    },
+    {
+      "category": "orphan growth",
+      "growth_over_time": {
+        "start": 0.0,
+        "end": 0.0,
+        "delta": 0.0,
+        "per_cycle": 0.0,
+        "max": 0.0
+      },
+      "risk": "low",
+      "evidence": "orphan_growth final=0.0 max=0.0",
+      "detection_strategy": "Run referential integrity probes for chunks without versions, files without documents, citations without message snapshots and index rows without live chunks.",
+      "cleanup_repair_strategy": "Dry-run first, delete only provably unreachable rows/files, and require protected counts for historical citations and backup artifacts."
+    },
+    {
+      "category": "stale Indexeintraege",
+      "growth_over_time": {
+        "start": 0.0,
+        "end": 0.0,
+        "delta": 0.0,
+        "per_cycle": 0.0,
+        "max": 0.0
+      },
+      "risk": "low",
+      "evidence": "stale_index_growth final=0.0 max=0.0",
+      "detection_strategy": "Compare search index document/chunk ids against DB lifecycle state after upload, archive, delete, restore and reindex.",
+      "cleanup_repair_strategy": "Run workspace-scoped reindex, remove archived/deleted stale entries, then verify drift report is empty."
+    },
+    {
+      "category": "historische Citation Drift",
+      "growth_over_time": {
+        "citation_completeness": 1.0,
+        "lifecycle_exclusion_violations": 0
+      },
+      "risk": "low",
+      "evidence": "citation_completeness=1.0; lifecycle_exclusion_violations=0",
+      "detection_strategy": "Replay golden citation queries and compare stored citation snapshots against current document lifecycle/source_status.",
+      "cleanup_repair_strategy": "Never rewrite historical quote snapshots; repair missing source_status metadata and keep deleted/archived sources visible as historical citations only."
+    },
+    {
+      "category": "duplicate growth",
+      "growth_over_time": {
+        "golden_duplicate_detection": "pass",
+        "production_duplicate_cardinality": "not_measured"
+      },
+      "risk": "medium",
+      "evidence": "GQ-002 duplicate handling is covered; full DB duplicate cardinality requires a live content_hash aggregation audit.",
+      "detection_strategy": "Aggregate by workspace_id + content_hash and by normalized title/source metadata; alert when controlled duplicates exceed expected pairs.",
+      "cleanup_repair_strategy": "Keep content_hash uniqueness enforced; merge accidental duplicates only through an audited repair script preserving citations and versions."
+    },
+    {
+      "category": "Cleanup-Rueckstaende",
+      "growth_over_time": {
+        "start": 0.0,
+        "end": 0.0,
+        "delta": 0.0,
+        "per_cycle": 0.0,
+        "max": 0.0,
+        "blocked_max": 0
+      },
+      "risk": "low",
+      "evidence": "cleanup candidates final=0.0 max=0.0; blocked_max=0",
+      "detection_strategy": "Run cleanup dry-runs on a schedule and track candidate_count, protected_count and blocked_count deltas.",
+      "cleanup_repair_strategy": "Convert recurring dry-run candidates into explicit retention rules; require zero blocked_count before destructive cleanup."
+    }
+  ],
+  "aging_risks": [
+    {
+      "category": "duplicate growth",
+      "growth_over_time": {
+        "golden_duplicate_detection": "pass",
+        "production_duplicate_cardinality": "not_measured"
+      },
+      "risk": "medium",
+      "evidence": "GQ-002 duplicate handling is covered; full DB duplicate cardinality requires a live content_hash aggregation audit.",
+      "detection_strategy": "Aggregate by workspace_id + content_hash and by normalized title/source metadata; alert when controlled duplicates exceed expected pairs.",
+      "cleanup_repair_strategy": "Keep content_hash uniqueness enforced; merge accidental duplicates only through an audited repair script preserving citations and versions."
+    }
+  ],
+  "prevention_measures": [
+    "Schedule entropy audit after every longrun simulation and before M5 readiness promotion.",
+    "Gate M5 on stale_index_growth=0, orphan_growth=0, lifecycle_exclusion_violations=0 and successful restore verification.",
+    "Store audit deltas over time so slow growth is visible before thresholds are breached.",
+    "Add live DB duplicate cardinality audit before treating duplicate growth as fully closed."
+  ]
+}

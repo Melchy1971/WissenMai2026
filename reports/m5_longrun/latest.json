@@ -1,0 +1,1175 @@
+{
+  "generated_at": "2026-05-12T09:36:21.388872Z",
+  "simulation_version": "m5-longrun-v1",
+  "cycles": 28,
+  "restore_every": 7,
+  "status": "pass",
+  "thresholds": {
+    "stale_index_growth": 0,
+    "queue_backlog": 25,
+    "orphans": 0,
+    "retrieval_precision_at_5": 0.8,
+    "retrieval_recall_at_5": 0.85,
+    "error_rate": 0.05
+  },
+  "final_metrics": {
+    "stale_index_growth": 0,
+    "queue_backlog": 11,
+    "orphan_growth": 0,
+    "retrieval_precision_at_5": 0.892,
+    "retrieval_recall_at_5": 0.886,
+    "error_rate": 0.0149
+  },
+  "stop_events": [],
+  "warnings": [],
+  "cycles_detail": [
+    {
+      "cycle": 1,
+      "simulated_day": 1,
+      "state": {
+        "active_documents": 3,
+        "archived_documents": 0,
+        "deleted_documents": 0,
+        "chunks": 9,
+        "stale_index_entries": 0,
+        "queue_pending": 0,
+        "queue_running": 0,
+        "queue_retryable": 0,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.919,
+        "retrieval_recall_at_5": 0.9,
+        "error_count": 0
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 0,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.919,
+        "retrieval_recall_at_5": 0.9,
+        "error_rate": 0.0
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 2,
+      "simulated_day": 2,
+      "state": {
+        "active_documents": 5,
+        "archived_documents": 1,
+        "deleted_documents": 0,
+        "chunks": 18,
+        "stale_index_entries": 0,
+        "queue_pending": 0,
+        "queue_running": 0,
+        "queue_retryable": 0,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.918,
+        "retrieval_recall_at_5": 0.899,
+        "error_count": 0
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 0,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.918,
+        "retrieval_recall_at_5": 0.899,
+        "error_rate": 0.0
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 3,
+      "simulated_day": 3,
+      "state": {
+        "active_documents": 8,
+        "archived_documents": 1,
+        "deleted_documents": 0,
+        "chunks": 27,
+        "stale_index_entries": 0,
+        "queue_pending": 0,
+        "queue_running": 0,
+        "queue_retryable": 0,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.917,
+        "retrieval_recall_at_5": 0.899,
+        "error_count": 0
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 0,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.917,
+        "retrieval_recall_at_5": 0.899,
+        "error_rate": 0.0
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 4,
+      "simulated_day": 4,
+      "state": {
+        "active_documents": 11,
+        "archived_documents": 1,
+        "deleted_documents": 0,
+        "chunks": 36,
+        "stale_index_entries": 0,
+        "queue_pending": 0,
+        "queue_running": 0,
+        "queue_retryable": 0,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.916,
+        "retrieval_recall_at_5": 0.898,
+        "error_count": 0
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 0,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.916,
+        "retrieval_recall_at_5": 0.898,
+        "error_rate": 0.0
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 5,
+      "simulated_day": 5,
+      "state": {
+        "active_documents": 13,
+        "archived_documents": 1,
+        "deleted_documents": 1,
+        "chunks": 45,
+        "stale_index_entries": 0,
+        "queue_pending": 0,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.915,
+        "retrieval_recall_at_5": 0.898,
+        "error_count": 1
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 1,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.915,
+        "retrieval_recall_at_5": 0.898,
+        "error_rate": 0.0167
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 6,
+      "simulated_day": 6,
+      "state": {
+        "active_documents": 15,
+        "archived_documents": 2,
+        "deleted_documents": 1,
+        "chunks": 54,
+        "stale_index_entries": 0,
+        "queue_pending": 1,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.914,
+        "retrieval_recall_at_5": 0.897,
+        "error_count": 1
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 2,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.914,
+        "retrieval_recall_at_5": 0.897,
+        "error_rate": 0.0139
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 7,
+      "simulated_day": 7,
+      "state": {
+        "active_documents": 18,
+        "archived_documents": 2,
+        "deleted_documents": 1,
+        "chunks": 63,
+        "stale_index_entries": 0,
+        "queue_pending": 1,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.913,
+        "retrieval_recall_at_5": 0.897,
+        "error_count": 1
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 2,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.913,
+        "retrieval_recall_at_5": 0.897,
+        "error_rate": 0.0119
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": {
+        "cycle": 7,
+        "status": "pass",
+        "document_parity": 21,
+        "chunk_parity": 63,
+        "queue_consistent": true,
+        "reindex_after_restore": "pass"
+      },
+      "stop_events": []
+    },
+    {
+      "cycle": 8,
+      "simulated_day": 8,
+      "state": {
+        "active_documents": 21,
+        "archived_documents": 2,
+        "deleted_documents": 1,
+        "chunks": 72,
+        "stale_index_entries": 0,
+        "queue_pending": 1,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.912,
+        "retrieval_recall_at_5": 0.896,
+        "error_count": 1
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 2,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.912,
+        "retrieval_recall_at_5": 0.896,
+        "error_rate": 0.0104
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 9,
+      "simulated_day": 9,
+      "state": {
+        "active_documents": 24,
+        "archived_documents": 2,
+        "deleted_documents": 1,
+        "chunks": 81,
+        "stale_index_entries": 0,
+        "queue_pending": 2,
+        "queue_running": 0,
+        "queue_retryable": 0,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.911,
+        "retrieval_recall_at_5": 0.896,
+        "error_count": 1
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 2,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.911,
+        "retrieval_recall_at_5": 0.896,
+        "error_rate": 0.0093
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 10,
+      "simulated_day": 10,
+      "state": {
+        "active_documents": 25,
+        "archived_documents": 3,
+        "deleted_documents": 2,
+        "chunks": 90,
+        "stale_index_entries": 0,
+        "queue_pending": 2,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.91,
+        "retrieval_recall_at_5": 0.895,
+        "error_count": 2
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 3,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.91,
+        "retrieval_recall_at_5": 0.895,
+        "error_rate": 0.0167
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 11,
+      "simulated_day": 11,
+      "state": {
+        "active_documents": 28,
+        "archived_documents": 3,
+        "deleted_documents": 2,
+        "chunks": 99,
+        "stale_index_entries": 0,
+        "queue_pending": 2,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.909,
+        "retrieval_recall_at_5": 0.895,
+        "error_count": 2
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 3,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.909,
+        "retrieval_recall_at_5": 0.895,
+        "error_rate": 0.0152
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 12,
+      "simulated_day": 12,
+      "state": {
+        "active_documents": 31,
+        "archived_documents": 3,
+        "deleted_documents": 2,
+        "chunks": 108,
+        "stale_index_entries": 0,
+        "queue_pending": 3,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.908,
+        "retrieval_recall_at_5": 0.894,
+        "error_count": 2
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 4,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.908,
+        "retrieval_recall_at_5": 0.894,
+        "error_rate": 0.0139
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 13,
+      "simulated_day": 13,
+      "state": {
+        "active_documents": 34,
+        "archived_documents": 3,
+        "deleted_documents": 2,
+        "chunks": 117,
+        "stale_index_entries": 0,
+        "queue_pending": 3,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.907,
+        "retrieval_recall_at_5": 0.894,
+        "error_count": 2
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 4,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.907,
+        "retrieval_recall_at_5": 0.894,
+        "error_rate": 0.0128
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 14,
+      "simulated_day": 14,
+      "state": {
+        "active_documents": 36,
+        "archived_documents": 4,
+        "deleted_documents": 2,
+        "chunks": 126,
+        "stale_index_entries": 0,
+        "queue_pending": 4,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.906,
+        "retrieval_recall_at_5": 0.893,
+        "error_count": 2
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 5,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.906,
+        "retrieval_recall_at_5": 0.893,
+        "error_rate": 0.0119
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": {
+        "cycle": 14,
+        "status": "pass",
+        "document_parity": 42,
+        "chunk_parity": 126,
+        "queue_consistent": true,
+        "reindex_after_restore": "pass"
+      },
+      "stop_events": []
+    },
+    {
+      "cycle": 15,
+      "simulated_day": 15,
+      "state": {
+        "active_documents": 38,
+        "archived_documents": 4,
+        "deleted_documents": 3,
+        "chunks": 135,
+        "stale_index_entries": 0,
+        "queue_pending": 5,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.905,
+        "retrieval_recall_at_5": 0.893,
+        "error_count": 3
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 6,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.905,
+        "retrieval_recall_at_5": 0.893,
+        "error_rate": 0.0167
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 16,
+      "simulated_day": 16,
+      "state": {
+        "active_documents": 41,
+        "archived_documents": 4,
+        "deleted_documents": 3,
+        "chunks": 144,
+        "stale_index_entries": 0,
+        "queue_pending": 5,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.904,
+        "retrieval_recall_at_5": 0.892,
+        "error_count": 3
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 6,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.904,
+        "retrieval_recall_at_5": 0.892,
+        "error_rate": 0.0156
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 17,
+      "simulated_day": 17,
+      "state": {
+        "active_documents": 44,
+        "archived_documents": 4,
+        "deleted_documents": 3,
+        "chunks": 153,
+        "stale_index_entries": 0,
+        "queue_pending": 5,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.903,
+        "retrieval_recall_at_5": 0.892,
+        "error_count": 3
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 6,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.903,
+        "retrieval_recall_at_5": 0.892,
+        "error_rate": 0.0147
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 18,
+      "simulated_day": 18,
+      "state": {
+        "active_documents": 46,
+        "archived_documents": 5,
+        "deleted_documents": 3,
+        "chunks": 162,
+        "stale_index_entries": 0,
+        "queue_pending": 6,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.902,
+        "retrieval_recall_at_5": 0.891,
+        "error_count": 3
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 7,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.902,
+        "retrieval_recall_at_5": 0.891,
+        "error_rate": 0.0139
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 19,
+      "simulated_day": 19,
+      "state": {
+        "active_documents": 49,
+        "archived_documents": 5,
+        "deleted_documents": 3,
+        "chunks": 171,
+        "stale_index_entries": 0,
+        "queue_pending": 6,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.901,
+        "retrieval_recall_at_5": 0.891,
+        "error_count": 3
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 7,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.901,
+        "retrieval_recall_at_5": 0.891,
+        "error_rate": 0.0132
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 20,
+      "simulated_day": 20,
+      "state": {
+        "active_documents": 51,
+        "archived_documents": 5,
+        "deleted_documents": 4,
+        "chunks": 180,
+        "stale_index_entries": 0,
+        "queue_pending": 6,
+        "queue_running": 0,
+        "queue_retryable": 2,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.9,
+        "retrieval_recall_at_5": 0.89,
+        "error_count": 4
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 8,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.9,
+        "retrieval_recall_at_5": 0.89,
+        "error_rate": 0.0167
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 21,
+      "simulated_day": 21,
+      "state": {
+        "active_documents": 54,
+        "archived_documents": 5,
+        "deleted_documents": 4,
+        "chunks": 189,
+        "stale_index_entries": 0,
+        "queue_pending": 7,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.899,
+        "retrieval_recall_at_5": 0.89,
+        "error_count": 4
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 8,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.899,
+        "retrieval_recall_at_5": 0.89,
+        "error_rate": 0.0159
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": {
+        "cycle": 21,
+        "status": "pass",
+        "document_parity": 63,
+        "chunk_parity": 189,
+        "queue_consistent": true,
+        "reindex_after_restore": "pass"
+      },
+      "stop_events": []
+    },
+    {
+      "cycle": 22,
+      "simulated_day": 22,
+      "state": {
+        "active_documents": 56,
+        "archived_documents": 6,
+        "deleted_documents": 4,
+        "chunks": 198,
+        "stale_index_entries": 0,
+        "queue_pending": 7,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.898,
+        "retrieval_recall_at_5": 0.889,
+        "error_count": 4
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 8,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.898,
+        "retrieval_recall_at_5": 0.889,
+        "error_rate": 0.0152
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 23,
+      "simulated_day": 23,
+      "state": {
+        "active_documents": 59,
+        "archived_documents": 6,
+        "deleted_documents": 4,
+        "chunks": 207,
+        "stale_index_entries": 0,
+        "queue_pending": 7,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.897,
+        "retrieval_recall_at_5": 0.889,
+        "error_count": 4
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 8,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.897,
+        "retrieval_recall_at_5": 0.889,
+        "error_rate": 0.0145
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 24,
+      "simulated_day": 24,
+      "state": {
+        "active_documents": 62,
+        "archived_documents": 6,
+        "deleted_documents": 4,
+        "chunks": 216,
+        "stale_index_entries": 0,
+        "queue_pending": 8,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.896,
+        "retrieval_recall_at_5": 0.888,
+        "error_count": 4
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 9,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.896,
+        "retrieval_recall_at_5": 0.888,
+        "error_rate": 0.0139
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 25,
+      "simulated_day": 25,
+      "state": {
+        "active_documents": 64,
+        "archived_documents": 6,
+        "deleted_documents": 5,
+        "chunks": 225,
+        "stale_index_entries": 0,
+        "queue_pending": 8,
+        "queue_running": 0,
+        "queue_retryable": 2,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.895,
+        "retrieval_recall_at_5": 0.888,
+        "error_count": 5
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 10,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.895,
+        "retrieval_recall_at_5": 0.888,
+        "error_rate": 0.0167
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 26,
+      "simulated_day": 26,
+      "state": {
+        "active_documents": 66,
+        "archived_documents": 7,
+        "deleted_documents": 5,
+        "chunks": 234,
+        "stale_index_entries": 0,
+        "queue_pending": 8,
+        "queue_running": 0,
+        "queue_retryable": 2,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.894,
+        "retrieval_recall_at_5": 0.887,
+        "error_count": 5
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 10,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.894,
+        "retrieval_recall_at_5": 0.887,
+        "error_rate": 0.016
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 27,
+      "simulated_day": 27,
+      "state": {
+        "active_documents": 69,
+        "archived_documents": 7,
+        "deleted_documents": 5,
+        "chunks": 243,
+        "stale_index_entries": 0,
+        "queue_pending": 9,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.893,
+        "retrieval_recall_at_5": 0.887,
+        "error_count": 5
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 10,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.893,
+        "retrieval_recall_at_5": 0.887,
+        "error_rate": 0.0154
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": null,
+      "stop_events": []
+    },
+    {
+      "cycle": 28,
+      "simulated_day": 28,
+      "state": {
+        "active_documents": 72,
+        "archived_documents": 7,
+        "deleted_documents": 5,
+        "chunks": 252,
+        "stale_index_entries": 0,
+        "queue_pending": 10,
+        "queue_running": 0,
+        "queue_retryable": 1,
+        "queue_dead_letter": 0,
+        "orphans": 0,
+        "retrieval_precision_at_5": 0.892,
+        "retrieval_recall_at_5": 0.886,
+        "error_count": 5
+      },
+      "metrics": {
+        "stale_index_growth": 0,
+        "queue_backlog": 11,
+        "orphan_growth": 0,
+        "retrieval_precision_at_5": 0.892,
+        "retrieval_recall_at_5": 0.886,
+        "error_rate": 0.0149
+      },
+      "drift_detection": {
+        "stale_index_entries": 0,
+        "orphans": 0,
+        "status": "ok"
+      },
+      "cleanup_dry_run": {
+        "candidate_count": 0,
+        "protected_count": 0,
+        "blocked_count": 0,
+        "status": "ok"
+      },
+      "backup_restore": {
+        "cycle": 28,
+        "status": "pass",
+        "document_parity": 84,
+        "chunk_parity": 252,
+        "queue_consistent": true,
+        "reindex_after_restore": "pass"
+      },
+      "stop_events": []
+    }
+  ]
+}

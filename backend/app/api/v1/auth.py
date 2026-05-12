@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated, Iterator
 
-from fastapi import APIRouter, Depends, Header, status
+from fastapi import APIRouter, Depends, Header, Response, status
 
 from app.api.dependencies.auth import RequestAuthContext, get_request_auth_context
 from app.core.database import DatabaseConfigurationError
@@ -39,11 +39,11 @@ def login(request: AuthLoginRequest, service: Annotated[AuthService, Depends(get
     )
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT, response_class=Response, response_model=None)
 def logout(
     authorization: Annotated[str | None, Header(alias="Authorization")] = None,
     service: Annotated[AuthService, Depends(get_auth_service)] = None,
-) -> None:
+):
     bearer_value = (authorization or "").strip()
     if not bearer_value.startswith("Bearer "):
         raise AuthRequiredApiError()
@@ -51,6 +51,7 @@ def logout(
     if not bearer_token:
         raise AuthRequiredApiError()
     service.revoke_session(bearer_token=bearer_token)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.get("/me", response_model=AuthSessionResponse)

@@ -34,6 +34,7 @@ Statuslogik:
 
 - Drift Detection bleibt im ersten M5-Slice read-only.
 - Repair wird getrennt dokumentiert und nicht durch dieses Dokument freigegeben.
+- Die Repair-Strategie ist separat beschrieben in [docs/runbooks/m5-drift-repair-strategy.md](H:/WissenMai2026/docs/runbooks/m5-drift-repair-strategy.md).
 - SQLite dient spaeter nur als Fast Feedback, nicht als Gate-Quelle.
 
 ## Statuslogik fuer spaetere Fortschreibung

@@ -20,6 +20,8 @@ Wichtige Runbooks im aktuellen Stand:
 
 - [docs/runbooks/backup-restore.md](H:/WissenMai2026/docs/runbooks/backup-restore.md): operativer M4e-Minimalpfad fuer Backup und Restore
 - [docs/runbooks/disaster-recovery.md](H:/WissenMai2026/docs/runbooks/disaster-recovery.md): szenariobasiertes DR-Runbook mit Operator-Guide und Checklisten
+- [docs/runbooks/m5-operations-model.md](H:/WissenMai2026/docs/runbooks/m5-operations-model.md): M5-Betriebsmodell mit Checklisten und Eskalationsschwellen
+- [docs/runbooks/m5-drift-repair-strategy.md](H:/WissenMai2026/docs/runbooks/m5-drift-repair-strategy.md): M5-Strategie fuer dry-run-first Drift Repair mit Auditpflicht
 
 ## Aktueller Freigabestand
 
@@ -45,4 +47,10 @@ Sie duerfen nicht als Beleg fuer einen gestarteten M5-Betrieb, eine laufende Imp
 - [docs/cleanup.md](H:/WissenMai2026/docs/cleanup.md): Vorbereitungsrahmen fuer M5 Cleanup
 - [docs/health-score.md](H:/WissenMai2026/docs/health-score.md): Vorbereitungsrahmen fuer M5 Health Score
 - [docs/operations.md](H:/WissenMai2026/docs/operations.md): Betriebsrahmen inklusive M5-Dokumentationslogik
+- [docs/m5-observability.md](H:/WissenMai2026/docs/m5-observability.md): M5-Metriken, Logging-Erweiterungen und Dashboard-Konzept
 - [docs/postgres-truth-tests.md](H:/WissenMai2026/docs/postgres-truth-tests.md): Wahrheitslogik und Gate-Regeln fuer PostgreSQL-Nachweise inklusive M5-Erweiterung
+- [docs/m5-retrieval-quality-baseline.md](H:/WissenMai2026/docs/m5-retrieval-quality-baseline.md): Golden Queries und Retrieval-Qualitaetsmetriken fuer M5
+- [docs/m5-longrun-simulation.md](H:/WissenMai2026/docs/m5-longrun-simulation.md): beschleunigte M5-Langzeitbetriebs-Simulation mit Stop-Kriterien
+- [docs/m5-data-aging-entropy-audit.md](H:/WissenMai2026/docs/m5-data-aging-entropy-audit.md): Entropie- und Aging-Audit fuer langlaufende M5-Systeme
+- [docs/runbooks/m5-operations-model.md](H:/WissenMai2026/docs/runbooks/m5-operations-model.md): Operations Model, Betriebschecklisten und Eskalationsmodell fuer M5
+- [docs/runbooks/m5-drift-repair-strategy.md](H:/WissenMai2026/docs/runbooks/m5-drift-repair-strategy.md): Repair-Strategie, Safety Constraints und Audit-Anforderungen fuer Drift

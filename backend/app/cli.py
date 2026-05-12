@@ -5,6 +5,7 @@ import json
 from typing import Any
 
 from app.services.backup_restore import BackupRestoreService
+from app.services import m5_entropy_audit, m5_longrun_simulation, m5_retrieval_benchmark
 
 
 def _print_payload(payload: dict[str, Any]) -> None:
@@ -35,6 +36,20 @@ def build_parser() -> argparse.ArgumentParser:
     rebuild_parser = search_subparsers.add_parser("rebuild-index")
     rebuild_parser.add_argument("--workspace-id", required=False)
 
+    m5_parser = subparsers.add_parser("m5")
+    m5_subparsers = m5_parser.add_subparsers(dest="m5_command", required=True)
+
+    retrieval_parser = m5_subparsers.add_parser("retrieval-benchmark")
+    retrieval_parser.add_argument("--output-dir", required=False)
+
+    longrun_parser = m5_subparsers.add_parser("longrun-simulation")
+    longrun_parser.add_argument("--cycles", type=int, default=28)
+    longrun_parser.add_argument("--restore-every", type=int, default=7)
+    longrun_parser.add_argument("--output-dir", required=False)
+
+    entropy_parser = m5_subparsers.add_parser("entropy-audit")
+    entropy_parser.add_argument("--output-dir", required=False)
+
     return parser
 
 
@@ -58,6 +73,30 @@ def main() -> int:
         return 0
     if args.command == "search" and args.search_command == "rebuild-index":
         _print_payload(service.rebuild_search_index(workspace_id=args.workspace_id))
+        return 0
+    if args.command == "m5" and args.m5_command == "retrieval-benchmark":
+        from pathlib import Path
+
+        output_dir = Path(args.output_dir) if args.output_dir else None
+        _print_payload(m5_retrieval_benchmark.write_reports(output_dir=output_dir))
+        return 0
+    if args.command == "m5" and args.m5_command == "longrun-simulation":
+        from pathlib import Path
+
+        output_dir = Path(args.output_dir) if args.output_dir else None
+        _print_payload(
+            m5_longrun_simulation.write_reports(
+                cycles=args.cycles,
+                restore_every=args.restore_every,
+                output_dir=output_dir,
+            )
+        )
+        return 0
+    if args.command == "m5" and args.m5_command == "entropy-audit":
+        from pathlib import Path
+
+        output_dir = Path(args.output_dir) if args.output_dir else None
+        _print_payload(m5_entropy_audit.write_reports(output_dir=output_dir))
         return 0
 
     parser.print_help()
