@@ -1,6 +1,6 @@
 # Wissensbasis V1 - Masterplan
 
-**Stand:** 2026-05-08  
+**Stand:** 2026-05-12  
 **Ground Truth:** Code und Migrationen sind verbindlich. Dokumentation beschreibt den Stand, entscheidet ihn aber nicht.  
 **Ziel:** Eine robuste Wissensbasis, in der Dokumente importiert, normalisiert, versioniert, als Chunks lesbar gemacht, spaeter durchsucht und im Chat/Analysekontext verwendet werden koennen.
 
@@ -86,6 +86,15 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
   - ✅ `RESOURCE_LOCKED` (409)
   - ✅ `JOB_NOT_REPLAYABLE` (409)
   - ✅ `REPLAY_FAILED` (500)
+- ✅ M5 Governance-Services implementiert:
+  - ✅ `ReindexGovernanceService` mit Safety-Gates, Audit-Trail und Rollback-Strategie.
+  - ✅ `CitationLongevityAuditService` fuer Snapshot-Stabilitaet und Orphan-Rate-Monitoring.
+  - ✅ `QueueAgingService` fuer Backlog, Starvation-Detection und Dead-Letter-Auswertung.
+  - ✅ `CleanupGovernanceService` mit Dry-Run-First, 3 Safety-Gates und Before/After-Snapshot.
+- ✅ Admin-API-Endpunkte fuer M5: `GET /queue/aging`, `GET /citations/longevity`, `POST /reindex/governed`, `POST /cleanup/governed`.
+- ✅ Entropy-Test-Suite mit `EntropyMetrics` und Multi-Epoch-Chaos-Recovery-Simulation implementiert.
+- ✅ Governance-Envelope-Prinzip: correlation_id, dry_run_only, Safety-Gates, Delta-Snapshot, rollback_strategy.
+- Truth-Nachweis fuer M5-Governance-Tests steht noch aus (letzter Report: 2026-05-11, 33 Tests, M4-only).
 
 ### Partial
 

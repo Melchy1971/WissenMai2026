@@ -1,6 +1,6 @@
 # Projektstatus
 
-Stand: 2026-05-07
+Stand: 2026-05-12
 
 ## Paket-5-Abschlussstand
 
@@ -162,16 +162,18 @@ Stand des Abgleichs mit Code und Dokumentation am 2026-05-06:
 - M4 ist teilweise implementiert.
 - Die dafuer benoetigte M3c-Foundation ist abgeschlossen.
 
-M4 Statusmatrix am 2026-05-07:
+M4 Statusmatrix am 2026-05-12:
 
 | Bereich | Gate-Quelle | Status |
 |---|---|---|
-| M4 Truth Gate | `reports/postgres_truth_report.json` + `scripts/validate_m4_truth_gate.py` | PASS |
-| M4a Auth & Workspace Isolation | `reports/postgres_truth_report.json` | PASS |
-| M4b Upload/API Stabilitaet | `reports/postgres_truth_report.json` | PASS |
-| M4c Lifecycle | `reports/postgres_truth_report.json` | PASS |
+| M4 Truth Gate | `reports/postgres_truth_report.json` (2026-05-11, 33 passed, commit b07798e) | PASS |
+| M4a Auth & Workspace Isolation | `reports/postgres_truth_report.json` (marker_counts.m4a_gate: 10) | PASS |
+| M4b Upload/API Stabilitaet | `reports/postgres_truth_report.json` (marker_counts.m4b_gate: 5) | PASS |
+| M4c Lifecycle | `reports/postgres_truth_report.json` (marker_counts.m4c_gate: 8) | PASS |
 | M4d Diagnostics | read-only Slice + fokussierte Tests | PASS im read-only Scope |
 | M4e Backup/Restore | Restore-Truth-Report + Runbook + Tests | PASS im Minimal-Scope |
+
+Hinweis: Der Truth-Report vom 2026-05-11 deckt 33 Tests ab. Seit diesem Lauf wurden ca. 55 neue Tests in den Bereichen Queue Aging, Reindex Governance, Citation Longevity, Cleanup Governance und Entropy hinzugefuegt. Diese sind noch nicht im aktuellen Report enthalten. Ein neuer PostgreSQL-Truth-Lauf ist erforderlich, um den vollstaendigen Stand zu verifizieren.
 
 Gesamtentscheidung fuer M4:
 
@@ -489,6 +491,70 @@ Entscheidung:
 - Go/No-Go fuer M4d: `read-only vorbereitet`, vollstaendiges M4d `No-Go`
 - Go/No-Go fuer M4e: `No-Go`
 - Startfreigabe fuer weitere M4-Slices: `No-Go`, solange das M4-Gate fuer `M4a`, `M4b` und `M4c` nicht erreicht ist
+
+## M5 Governance Services
+
+Stand: 2026-05-12
+
+M5 fuehrt eine Schicht operativer Governance-Services ein, die ueber M4-Diagnostics hinausgehen und aktive Systemkontrolle ermoeglichen.
+
+### Implementierte Governance-Services
+
+| Service | Datei | Status | Letzter Truth-Nachweis |
+|---|---|---|---|
+| `ReindexGovernanceService` | `app/services/reindex_governance.py` | implementiert | nicht im aktuellen Report |
+| `CitationLongevityAuditService` | `app/services/citation_longevity_service.py` | implementiert | nicht im aktuellen Report |
+| `QueueAgingService` | `app/services/queue_aging_service.py` | implementiert | nicht im aktuellen Report |
+| `CleanupGovernanceService` | `app/services/cleanup_governance.py` | implementiert | nicht im aktuellen Report |
+
+### Admin-API-Endpunkte (M5)
+
+| Endpunkt | Methode | Beschreibung | Auth |
+|---|---|---|---|
+| `/api/v1/admin/queue/aging` | GET | Queue-Aging-Report fuer Backlog, Starvation, Dead-Letter | owner/admin |
+| `/api/v1/admin/citations/longevity` | GET | Citation-Longevity-Audit fuer Snapshot-Stabilitaet | owner/admin |
+| `/api/v1/admin/reindex/governed` | POST | Governed Reindex mit Safety-Gates und Audit-Trail | workspace_admin |
+| `/api/v1/admin/cleanup/governed` | POST | Governed Cleanup mit Dry-Run, Safety-Gates und Delta-Snapshot | workspace_admin |
+
+### Governance-Envelope-Prinzip
+
+Alle M5-Governance-Aktionen folgen demselben Envelope:
+
+- `correlation_id` pflichtmaessig propagiert
+- `dry_run_only = true` als sicherer Default fuer Cleanup
+- Safety-Gates vor jeder Mutation (aktive Jobs blockieren, Citation-Orphan-Scope als Warning, aktive-Dokument-Orphan-Chunks als Blocker)
+- Before/After-Snapshot fuer delta-basierte Auditierbarkeit
+- `rollback_strategy` und `recovery_hints` in jedem Report
+- Audit-Events fuer alle governten Aktionen
+
+### M5 Entropy-Monitoring
+
+Die Entropy-Test-Suite (`backend/tests/postgres_truth/test_entropy_truth.py`) simuliert Langzeitbetrieb und detektiert schleichende Systemalterung:
+
+- Orphan-Chunk-Wachstum
+- Stale-Index-Ansammlung (archivierte Dokumente ohne `is_searchable=false`)
+- Retrieval-Degradation (Coverage unter `RETRIEVAL_COVERAGE_MIN = 0.85`)
+- Queue-Backlog-Drift und Dead-Letter-Akkumulation
+- Citation-Orphan-Rate (Orphan-Rate-Grenzwert: 0.30)
+- Multi-Epoch-Chaos-Recovery-Simulation (V-Shape: Chaos -> Erholung)
+
+Entropy-Metriken sind als `EntropyMetrics`-Dataclass definiert (12 Dimensionen) und als `as_risk_dict()` auswertbar.
+
+### Truth-Nachweisstand fuer M5
+
+- Suite vorhanden: `backend/tests/postgres_truth/test_*_truth.py` fuer alle 5 neuen Bereiche
+- Letzter verifizierter Report: 2026-05-11, 33 Tests (M4-Bereiche)
+- M5-Tests (ca. 55 neue Tests) sind noch nicht im aktuellen Truth-Report enthalten
+- Naechster erforderlicher Schritt: PostgreSQL-Truth-Lauf mit gesetzter `TEST_DATABASE_URL` gegen alle neuen Tests
+
+### Operational Readiness Rating
+
+Bewertung vom 2026-05-12 (vor M5-Truth-Verifikation):
+
+- Rating: **kontrolliert betreibbar**
+- Governance-Services sind implementiert und lokal getestet
+- Truth-Nachweis fuer neue Tests steht noch aus
+- Kritischste offene Risiken: fehlender gruener M5-Truth-Lauf, keine CI-Integration fuer neue Marker
 
 ## Ground Truth = Code, nicht Dokumentation
 

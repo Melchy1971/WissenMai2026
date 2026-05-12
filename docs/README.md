@@ -47,6 +47,7 @@ Sie duerfen nicht als Beleg fuer einen gestarteten M5-Betrieb, eine laufende Imp
 - [docs/cleanup.md](H:/WissenMai2026/docs/cleanup.md): Vorbereitungsrahmen fuer M5 Cleanup
 - [docs/health-score.md](H:/WissenMai2026/docs/health-score.md): Vorbereitungsrahmen fuer M5 Health Score
 - [docs/operations.md](H:/WissenMai2026/docs/operations.md): Betriebsrahmen inklusive M5-Dokumentationslogik
+- [docs/operational-truth-governance.md](H:/WissenMai2026/docs/operational-truth-governance.md): Governance-Regeln fuer messbare Truth-Quellen und Gate-Policies
 - [docs/m5-observability.md](H:/WissenMai2026/docs/m5-observability.md): M5-Metriken, Logging-Erweiterungen und Dashboard-Konzept
 - [docs/postgres-truth-tests.md](H:/WissenMai2026/docs/postgres-truth-tests.md): Wahrheitslogik und Gate-Regeln fuer PostgreSQL-Nachweise inklusive M5-Erweiterung
 - [docs/m5-retrieval-quality-baseline.md](H:/WissenMai2026/docs/m5-retrieval-quality-baseline.md): Golden Queries und Retrieval-Qualitaetsmetriken fuer M5

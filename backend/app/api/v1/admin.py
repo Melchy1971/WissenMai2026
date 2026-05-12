@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Annotated, Any, Iterator
 
 from fastapi import APIRouter, Depends, status
@@ -13,6 +13,7 @@ from app.core.errors import (
     DiagnosticsFailedApiError,
     ForbiddenApiError,
     JobNotReplayableApiError,
+    ReindexConstraintViolationApiError,
     ReplayFailedApiError,
     ResourceLockedApiError,
 )
@@ -20,13 +21,24 @@ from app.db.session import get_session
 from app.schemas.admin import (
     BackupVerificationRequest,
     BackupVerificationResponse,
+    CitationLongevityReport,
+    CleanupGovernanceReport,
+    CleanupGovernanceRequest,
     DiagnosticsResponse,
+    QueueAgingReport,
+    ReindexGovernanceReport,
+    ReindexGovernanceRequest,
     SearchIndexDriftReportResponse,
     SearchIndexInconsistencyReportResponse,
 )
 from app.schemas.jobs import JobResponse
 from app.services.backup_restore import BackupRestoreError, BackupRestoreService
+from app.services.citation_longevity_service import CitationLongevityAuditService
 from app.services.diagnostics import DiagnosticsService
+from app.services.queue_aging_service import QueueAgingService
+from app.services.cleanup_governance import CleanupGovernanceService
+from app.services.m5_cleanup import CleanupConfig
+from app.services.reindex_governance import ReindexGovernanceService, ReindexGovernanceViolation
 from app.services.search_index_service import SearchIndexRebuildService
 from app.services.jobs.background_jobs import BackgroundJobNotFoundError, BackgroundJobService
 
@@ -61,6 +73,38 @@ def get_diagnostics_service() -> Iterator[DiagnosticsService]:
 def get_backup_restore_service() -> Iterator[BackupRestoreService]:
     try:
         yield BackupRestoreService()
+    except DatabaseConfigurationError as exc:
+        raise ApiError(message=str(exc)) from exc
+
+
+def get_citation_longevity_service() -> Iterator[CitationLongevityAuditService]:
+    try:
+        for session in get_session():
+            yield CitationLongevityAuditService.from_session(session)
+    except DatabaseConfigurationError as exc:
+        raise ApiError(message=str(exc)) from exc
+
+
+def get_reindex_governance_service() -> Iterator[ReindexGovernanceService]:
+    try:
+        for session in get_session():
+            yield ReindexGovernanceService.from_session(session)
+    except DatabaseConfigurationError as exc:
+        raise ApiError(message=str(exc)) from exc
+
+
+def get_queue_aging_service() -> Iterator[QueueAgingService]:
+    try:
+        for session in get_session():
+            yield QueueAgingService.from_session(session)
+    except DatabaseConfigurationError as exc:
+        raise ApiError(message=str(exc)) from exc
+
+
+def get_cleanup_governance_service() -> Iterator[CleanupGovernanceService]:
+    try:
+        for session in get_session():
+            yield CleanupGovernanceService.from_session(session)
     except DatabaseConfigurationError as exc:
         raise ApiError(message=str(exc)) from exc
 
@@ -136,6 +180,62 @@ def verify_backup(
         return BackupVerificationResponse.model_validate(result)
     except BackupRestoreError as exc:
         raise BackupValidationFailedApiError(details={"message": str(exc), "input_dir": payload.input_dir}) from exc
+
+
+@router.get("/queue/aging", response_model=QueueAgingReport)
+def get_queue_aging(
+    auth_context: Annotated[RequestAuthContext, Depends(require_diagnostics_admin)],
+    service: Annotated[QueueAgingService, Depends(get_queue_aging_service)],
+) -> QueueAgingReport:
+    report = service.get_aging_report(workspace_id=auth_context.workspace_id)
+    return QueueAgingReport.model_validate(report)
+
+
+@router.get("/citations/longevity", response_model=CitationLongevityReport)
+def get_citation_longevity(
+    auth_context: Annotated[RequestAuthContext, Depends(require_diagnostics_admin)],
+    service: Annotated[CitationLongevityAuditService, Depends(get_citation_longevity_service)],
+) -> CitationLongevityReport:
+    report = service.get_longevity_report(workspace_id=auth_context.workspace_id)
+    return CitationLongevityReport.model_validate(report)
+
+
+@router.post("/reindex/governed", response_model=ReindexGovernanceReport)
+def run_governed_reindex(
+    payload: ReindexGovernanceRequest,
+    auth_context: Annotated[RequestAuthContext, Depends(require_workspace_admin)],
+    service: Annotated[ReindexGovernanceService, Depends(get_reindex_governance_service)],
+) -> ReindexGovernanceReport:
+    try:
+        report = service.run_governed_reindex(
+            reindex_type=payload.reindex_type,
+            workspace_id=payload.workspace_id,
+            document_id=payload.document_id,
+            correlation_id=payload.correlation_id,
+            reason=payload.reason,
+        )
+        return ReindexGovernanceReport.model_validate(report)
+    except ReindexGovernanceViolation as exc:
+        raise ReindexConstraintViolationApiError(details={"message": str(exc)}) from exc
+
+
+@router.post("/cleanup/governed", response_model=CleanupGovernanceReport)
+def run_governed_cleanup(
+    payload: CleanupGovernanceRequest,
+    auth_context: Annotated[RequestAuthContext, Depends(require_workspace_admin)],
+    service: Annotated[CleanupGovernanceService, Depends(get_cleanup_governance_service)],
+) -> CleanupGovernanceReport:
+    config = CleanupConfig(
+        retention_days=payload.retention_days,
+        workspace_id=payload.workspace_id,
+        now=datetime.now(UTC),
+    )
+    result = service.run_governed_cleanup(
+        config=config,
+        dry_run_only=payload.dry_run_only,
+        correlation_id=payload.correlation_id,
+    )
+    return CleanupGovernanceReport.model_validate(result)
 
 
 @router.post("/jobs/{job_id}/replay", response_model=JobResponse)

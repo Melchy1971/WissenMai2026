@@ -220,3 +220,9 @@ class BackupValidationFailedApiError(ApiError):
     status_code = 422
     code = "BACKUP_VALIDATION_FAILED"
     message = "Backup validation failed"
+
+
+class ReindexConstraintViolationApiError(ApiError):
+    status_code = 422
+    code = "REINDEX_CONSTRAINT_VIOLATION"
+    message = "Reindex governance constraint violated"

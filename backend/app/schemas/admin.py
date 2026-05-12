@@ -1,7 +1,7 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
-from typing import Literal
 
 
 class SearchIndexRebuildResponse(BaseModel):
@@ -129,6 +129,178 @@ class DiagnosticsResponse(BaseModel):
     imports: DiagnosticsImportsResponse
     search: DiagnosticsSearchResponse
     auth: DiagnosticsAuthResponse
+
+
+class QueueAgingThresholds(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    stalled_pending_seconds: int
+    stuck_running_seconds: int
+    dead_letter_warning: int
+    dead_letter_critical: int
+    max_attempts: int
+
+
+class QueueAgingReport(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    checked_at: datetime
+    workspace_id: str
+
+    # pending jobs
+    pending_count: int
+    pending_age_p95_seconds: float | None
+    oldest_pending_age_seconds: float | None
+    stalled_pending_count: int
+
+    # retry loops
+    retryable_count: int
+    max_retry_attempt_count: int
+    high_retry_count: int
+
+    # dead letters
+    dead_letter_count: int
+    dead_letter_oldest_age_seconds: float | None
+
+    # stuck running
+    running_count: int
+    stuck_running_count: int
+    oldest_running_age_seconds: float | None
+
+    # starvation
+    starvation_detected: bool
+    starvation_notes: list[str]
+
+    # verdict
+    severity: Literal["ok", "warning", "critical"]
+    alerts: list[str]
+    thresholds: QueueAgingThresholds
+
+
+class CitationLongevityReport(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    checked_at: datetime
+    workspace_id: str
+    total_citations: int
+
+    orphaned_anchor_count: int
+    anchor_unverifiable_count: int
+    status_drift_count: int
+    preview_stale_count: int
+    deleted_not_marked_count: int
+    restored_not_marked_count: int
+
+    severity: Literal["ok", "warning", "critical"]
+    alerts: list[str]
+    risk_summary: list[str]
+    hardening_recommendations: list[str]
+
+
+class ReindexGovernanceRequest(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    reindex_type: Literal["full", "workspace", "document"]
+    workspace_id: str | None = None
+    document_id: str | None = None
+    reason: str
+    correlation_id: str | None = None
+
+
+class ReindexGovernanceReport(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    correlation_id: str
+    reindex_type: Literal["full", "workspace", "document"]
+    workspace_id: str | None
+    document_id: str | None
+    reason: str
+    started_at: datetime
+    completed_at: datetime
+    duration_ms: int
+
+    drift_score_before: int
+    drift_score_after: int
+    drift_delta: int
+    drift_severity_before: str
+    drift_severity_after: str
+    drift_status_before: str
+    drift_status_after: str
+
+    lifecycle_ok: bool
+    lifecycle_inconsistency_count: int
+
+    reindexed_chunk_count: int
+    reindexed_document_count: int
+    index_action: str
+    regression_check_required: bool
+    status: Literal["completed", "failed"]
+
+
+class CleanupSnapshot(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    active_document_count: int
+    active_chunk_count: int
+    citation_count: int
+    active_job_count: int
+    active_auth_session_count: int
+
+
+class CleanupSafetyGateReport(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    passed: bool
+    active_doc_refs_in_orphan_scope: int
+    citation_refs_in_orphan_scope: int
+    active_job_refs_in_scope: int
+    blocked_reason: str | None
+
+
+class CleanupDelta(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    active_document_delta: int
+    active_chunk_delta: int
+    citation_delta: int
+    active_job_delta: int
+    active_auth_session_delta: int
+    citation_loss_detected: bool
+
+
+class CleanupGovernanceRequest(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    dry_run_only: bool = True
+    retention_days: int = 7
+    workspace_id: str | None = None
+    correlation_id: str | None = None
+
+
+class CleanupGovernanceReport(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    correlation_id: str
+    mode: Literal["dry_run", "execute", "blocked"]
+    started_at: datetime
+    completed_at: datetime
+    duration_ms: int
+    retention_days: int
+    workspace_id: str | None
+    dry_run_only: bool
+
+    safety_gates: CleanupSafetyGateReport
+    snapshot_before: CleanupSnapshot
+    snapshot_after: CleanupSnapshot
+    delta: CleanupDelta
+
+    dry_run_candidate_count: int
+    execute_applied_count: int | None
+
+    severity: Literal["ok", "warning", "critical"]
+    alerts: list[str]
+    recovery_hints: list[str]
+    rollback_strategy: str
 
 
 class BackupVerificationRequest(BaseModel):

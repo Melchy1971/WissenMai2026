@@ -2,6 +2,8 @@
 
 Die PostgreSQL Truth-Test-Suite ist der harte Nachweis fuer kritische M4-Flows gegen echte PostgreSQL-Transaktionen. SQLite-, In-Memory- oder Mock-basierte Tests gelten fuer diese Bereiche nicht als ausreichender Sicherheitsnachweis.
 
+Die uebergeordnete Governance fuer Truth-Quellen und Gate-Policies steht in [docs/operational-truth-governance.md](H:/WissenMai2026/docs/operational-truth-governance.md).
+
 ## Scope
 
 Die Suite liegt unter `backend/tests/postgres_truth/` und ist mit `postgres_truth` markiert.
@@ -23,6 +25,11 @@ Abgedeckte Bereiche:
 - Search/Chat Retrieval Consistency
 - Reindex
 - Auth/Workspace Isolation
+- Queue Aging Detection (`queue_aging`)
+- Reindex Governance (`reindex_governance`)
+- Citation Longevity (`citation_longevity`)
+- Cleanup Governance (`cleanup_governance`)
+- Entropy / Langzeitbetrieb (`entropy`)
 
 ## M5 Truth-Test-Erweiterung
 
@@ -50,6 +57,49 @@ Ziel der Erweiterung:
 
 - M5-Systemreife wird ueber dieselbe Wahrheitslogik abgesichert wie M4-Kernbereiche.
 - Reine Dokumentaussagen ohne echten PostgreSQL-Nachweis zaehlen nicht als M5-Freigabegrund.
+
+## Implementierte M5 Truth-Test-Dateien
+
+Stand 2026-05-12:
+
+| Datei | Marker | Tests | Beschreibung |
+|---|---|---|---|
+| `test_m4_truth_flows.py` | `postgres_truth`, `m4b_gate`, `m4c_gate` | Kern-M4-Flows | Upload, Lifecycle, Reindex, Citations |
+| `test_m4a_auth_workspace_truth.py` | `postgres_truth`, `m4a_gate` | Auth/Workspace | Isolation, Membership, Session |
+| `test_m4_crash_recovery_truth.py` | `postgres_truth` | Crash-Recovery | Import/Reindex-Absturz-Szenarien |
+| `test_rc3_chaos_truth.py` | `postgres_truth` | RC-3 Chaos | Advisory-Lock, Race Conditions |
+| `test_queue_aging_truth.py` | `postgres_truth`, `queue_aging` | Queue Aging | Backlog, Starvation, Dead-Letter-Akkumulation |
+| `test_reindex_governance_truth.py` | `postgres_truth`, `reindex_governance` | Reindex Governance | Safety-Gates, Audit-Trail, Rollback |
+| `test_citation_longevity_truth.py` | `postgres_truth`, `citation_longevity` | Citation Longevity | Snapshot-Stabilitaet, Orphan-Rate |
+| `test_cleanup_governance_truth.py` | `postgres_truth`, `cleanup_governance` | Cleanup Governance | Dry-Run, Delta, Safety-Gates |
+| `test_entropy_truth.py` | `postgres_truth`, `entropy` | Entropy / Langzeitbetrieb | Orphan-Wachstum, Stale-Index, Retrieval-Degradation |
+
+Hilfsmodule:
+
+| Datei | Beschreibung |
+|---|---|
+| `conftest.py` | Gemeinsame Fixtures: `truth_session`, `truth_connection`, `truth_seed`, `truth_client` |
+| `support.py` | Gemeinsame Hilfsfunktionen |
+| `crash_matrix.py` | Crash-Szenario-Matrix fuer Recovery-Tests |
+| `crash_import_worker.py` | Import-Crash-Simulation |
+| `crash_reindex_worker.py` | Reindex-Crash-Simulation |
+| `entropy_helpers.py` | `EntropyMetrics`, `collect_metrics`, `seed_batch`, Drift-Injection-Funktionen |
+
+Alle neuen Marker sind in `backend/pyproject.toml` registriert:
+
+```toml
+"queue_aging: Queue Aging and Starvation Detection truth tests"
+"reindex_governance: Reindex Governance safety constraints and audit trail truth tests"
+"citation_longevity: Citation Longevity Audit — long-term snapshot stability truth tests"
+"cleanup_governance: Cleanup Governance safety constraints and audit trail truth tests"
+"entropy: Long-term entropy and system aging detection truth tests"
+```
+
+Truth-Nachweisstand:
+
+- Letzter verifizierter Lauf: 2026-05-11, 33 Tests (nur M4-Bereiche, commit b07798e)
+- Neue M5-Tests sind noch nicht im letzten Report enthalten
+- Naechster Schritt: `TEST_DATABASE_URL` setzen und vollstaendigen Lauf ausfuehren
 
 ## Ausfuehrung
 
