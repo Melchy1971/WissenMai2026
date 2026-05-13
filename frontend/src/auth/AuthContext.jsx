@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import { getAuthSession, logout } from '../api/auth.js';
-import { getApiRequestContext, setApiRequestContext } from '../api/client.js';
+import { getApiRequestContext, setApiRequestContext, setOnAuthRequired } from '../api/client.js';
 
 const AUTH_STATE_STORAGE_KEY = 'wissen.authState';
 
@@ -184,6 +184,15 @@ export function AuthProvider({ children, initialAuthState = null }) {
     }
     return Boolean(initialState.token) && (!initialState.user || !initialState.active_workspace_id || initialState.memberships.length === 0);
   });
+
+  useEffect(() => {
+    setOnAuthRequired(() => {
+      setBootstrapError(null);
+      applyApiContext({});
+      setAuthState(normalizeAuthState());
+    });
+    return () => setOnAuthRequired(null);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const normalizedState = normalizeAuthState(authState);

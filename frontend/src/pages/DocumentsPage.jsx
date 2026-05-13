@@ -11,6 +11,10 @@ import { ErrorState } from '../components/status/ErrorState.jsx';
 import { LoadingState } from '../components/status/LoadingState.jsx';
 import { mapDocumentListItem, mapError, mapJobStatus, mapSearchResult } from '../view-models/mappers.js';
 
+const ALLOWED_LIFECYCLE_FILTERS = ['active', 'archived'];
+const POLL_MAX_ATTEMPTS = 120; // 30s at 250ms intervals
+const POLL_MAX_NETWORK_ERRORS = 3;
+
 export function DocumentsPage() {
   const { active_workspace_id: workspaceId, isAuthReady } = useAuth();
   const [state, setState] = useState({ status: 'loading', items: [], error: null });
@@ -19,6 +23,9 @@ export function DocumentsPage() {
   const [queryInput, setQueryInput] = useState('');
   const [lifecycleFilter, setLifecycleFilter] = useState('active');
   const pollTimeoutRef = useRef(null);
+  const pollAttemptsRef = useRef(0);
+  const pollNetworkErrorRef = useRef(0);
+  const searchAbortRef = useRef(null);
   const uploadJobState = mapJobStatus(uploadState.job);
 
   async function loadDocuments({ cancelled = false } = {}) {

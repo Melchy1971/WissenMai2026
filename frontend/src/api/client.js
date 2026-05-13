@@ -4,6 +4,12 @@ const WORKSPACE_ID_STORAGE_KEY = 'wissen.workspaceId';
 const DEFAULT_TIMEOUT_MS = 15000;
 const memoryRequestContext = new Map();
 
+let _onAuthRequired = null;
+
+export function setOnAuthRequired(callback) {
+  _onAuthRequired = typeof callback === 'function' ? callback : null;
+}
+
 function getStorage() {
   if (typeof window === 'undefined' || !window.localStorage) {
     return null;
@@ -194,6 +200,9 @@ export async function requestJson(path, options = {}) {
   if (!response.ok) {
     const errorPayload = payload?.error;
     const classified = classifyHttpFailure(response, errorPayload);
+    if (response.status === 401 && _onAuthRequired) {
+      _onAuthRequired();
+    }
     throw new ApiClientError({
       code: classified.code,
       message: classified.message,
