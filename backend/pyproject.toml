@@ -32,5 +32,6 @@ markers = [
     "reindex_governance: Reindex Governance safety constraints and audit trail truth tests",
     "citation_longevity: Citation Longevity Audit — long-term snapshot stability truth tests",
     "cleanup_governance: Cleanup Governance safety constraints and audit trail truth tests",
+    "m5_cleanup: M5 Cleanup process truth tests",
     "entropy: Long-term entropy and system aging detection truth tests",
 ]

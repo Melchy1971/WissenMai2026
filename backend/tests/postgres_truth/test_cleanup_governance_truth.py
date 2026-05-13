@@ -18,6 +18,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.observability.logging import metrics_registry
 from app.services.cleanup_governance import CleanupGovernanceService
 from app.services.m5_cleanup import CleanupConfig
 from tests.postgres_truth.support import TruthIds
@@ -50,57 +51,80 @@ def _seed_document(
         __import__("sqlalchemy").text(
             """
             INSERT INTO documents (
-                id, workspace_id, title, file_name, file_type,
-                content_hash, lifecycle_status, import_status, created_at, updated_at
+                id, workspace_id, owner_user_id, current_version_id, title,
+                source_type, mime_type, content_hash, import_status,
+                lifecycle_status, archived_at, deleted_at, created_at, updated_at
             ) VALUES (
-                :doc_id::uuid, :ws::uuid, :title, :fname, 'text/plain',
-                :chash, :status, 'completed', now(), now()
+                CAST(:doc_id AS uuid), CAST(:ws AS uuid), CAST(:user_id AS uuid), null, :title,
+                'upload', 'text/plain', :chash, 'pending',
+                'active', null, null, now(), now()
             )
             """
         ),
         {
             "doc_id": doc_id,
             "ws": workspace_id,
+            "user_id": user_id,
             "title": f"Gov Doc {label}",
-            "fname": f"gov-doc-{label}.txt",
             "chash": content_hash,
-            "status": lifecycle_status,
         },
     )
     session.execute(
         __import__("sqlalchemy").text(
             """
             INSERT INTO document_versions (
-                id, document_id, version_number, file_size_bytes,
-                raw_text, created_at
+                id, document_id, version_number, normalized_markdown, markdown_hash,
+                parser_version, ocr_used, ki_provider, ki_model, metadata, created_at
             ) VALUES (
-                :vid::uuid, :doc_id::uuid, 1, :fsize, :content, now()
+                :vid, :doc_id, 1, :content, :markdown_hash,
+                'truth-parser', false, null, null, '{}', now()
             )
             """
         ),
-        {"vid": version_id, "doc_id": doc_id, "fsize": len(content), "content": content},
+        {
+            "vid": version_id,
+            "doc_id": doc_id,
+            "content": content,
+            "markdown_hash": truth_ids.content_hash(f"{label}-markdown"),
+        },
     )
     session.execute(
         __import__("sqlalchemy").text(
             """
-            UPDATE documents SET current_version_id = :vid::uuid WHERE id = :doc_id::uuid
+            UPDATE documents
+            SET current_version_id = :vid,
+                import_status = 'chunked',
+                lifecycle_status = CAST(:status AS varchar),
+                archived_at = CASE WHEN CAST(:status AS varchar) = 'archived' THEN now() ELSE null END,
+                deleted_at = CASE WHEN CAST(:status AS varchar) = 'deleted' THEN now() ELSE null END
+            WHERE id = :doc_id
             """
         ),
-        {"vid": version_id, "doc_id": doc_id},
+        {"vid": version_id, "doc_id": doc_id, "status": lifecycle_status},
     )
     session.execute(
         __import__("sqlalchemy").text(
             """
             INSERT INTO document_chunks (
                 id, document_id, document_version_id,
-                chunk_index, content, is_searchable, created_at
+                chunk_index, heading_path, anchor, content, content_hash,
+                token_estimate, metadata, is_searchable, created_at
             ) VALUES (
-                :cid::uuid, :doc_id::uuid, :vid::uuid,
-                0, :content, true, now()
+                :cid, :doc_id, :vid,
+                0, '[]', :anchor, :content, :content_hash,
+                10, cast(:metadata as json), true, now()
             )
             """
         ),
-        {"cid": chunk_id, "doc_id": doc_id, "vid": version_id, "content": content},
+        {
+            "cid": chunk_id,
+            "doc_id": doc_id,
+            "vid": version_id,
+            "anchor": f"cleanup-gov-{label}",
+            "content": content,
+            "content_hash": truth_ids.content_hash(f"{label}-chunk"),
+            "metadata": '{"source_anchor":{"type":"text","page":null,"paragraph":null,"char_start":0,"char_end":30}}',
+        },
     )
     session.commit()
     return doc_id, version_id, chunk_id
@@ -126,7 +150,7 @@ def _seed_running_job(
                 progress_current, progress_total, progress_message, error_code, error_message,
                 attempt_count, locked_at, locked_by, created_at, started_at, finished_at
             ) VALUES (
-                :jid, 'import_document', 'running', :ws::uuid, :uid::uuid, '{}', null,
+                :jid, 'document_import', 'running', CAST(:ws AS uuid), CAST(:uid AS uuid), '{}', null,
                 0, 1, 'running', null, null,
                 1, now(), 'worker-1', now(), now(), null
             )
@@ -157,7 +181,7 @@ def _seed_expired_auth_session(
             """
             INSERT INTO auth_sessions
                 (id, user_id, token_hash, expires_at, created_at, last_seen_at, revoked_at)
-            VALUES (:sid, :uid::uuid, :thash, :exp, :now, :now, null)
+            VALUES (:sid, CAST(:uid AS uuid), :thash, :exp, :now, :now, null)
             """
         ),
         {
@@ -198,6 +222,8 @@ class TestCleanupGovernanceDryRun:
         report = svc.run_governed_cleanup(config=config, dry_run_only=True)
 
         assert report["mode"] == "dry_run"
+        assert report["dry_run_executed"] is True
+        assert "mandatory_dry_run_first" in report["governance_rules"]
         assert report["dry_run_candidate_count"] == 0
         assert report["execute_applied_count"] is None
         assert report["safety_gates"]["passed"] is True
@@ -276,6 +302,8 @@ class TestCleanupGovernanceSafetyGates:
         assert report["mode"] == "blocked"
         assert report["safety_gates"]["passed"] is False
         assert report["safety_gates"]["active_job_refs_in_scope"] >= 1
+        assert report["safety_constraints"]["queue_consistency_preserved"] is False
+        assert report["recovery_required"] is True
         assert report["execute_applied_count"] is None
         assert report["severity"] == "critical"
 
@@ -319,6 +347,7 @@ class TestCleanupGovernanceSnapshots:
         if report["mode"] == "execute":
             assert report["execute_applied_count"] is not None
             assert report["delta"]["active_auth_session_delta"] <= 0
+            assert report["drift_delta"] == report["delta"]
         else:
             # blocked or dry_run — still validates structure
             assert report["execute_applied_count"] is None
@@ -334,9 +363,38 @@ class TestCleanupGovernanceSnapshots:
 
         assert report["delta"]["citation_loss_detected"] is False
         assert report["delta"]["citation_delta"] >= 0
+        assert report["safety_constraints"]["citations_preserved"] is True
 
 
 class TestCleanupGovernanceAuditTrail:
+    @pytest.mark.postgres_truth
+    def test_required_audit_events_are_emitted(
+        self, truth_session: Session, truth_ids: TruthIds, truth_seed: dict
+    ) -> None:
+        before = metrics_registry.snapshot()
+        svc = CleanupGovernanceService.from_session(truth_session)
+        config = _make_config(workspace_id=truth_seed["workspace_id"])
+        report = svc.run_governed_cleanup(
+            config=config,
+            dry_run_only=True,
+            correlation_id=f"cleanup-audit-{truth_ids.namespace}",
+        )
+        after = metrics_registry.snapshot()
+
+        assert report["audit_event_names"] == [
+            "cleanup_governance_started",
+            "cleanup_governance_completed",
+        ]
+        assert report["audit_event_count"] == 2
+        assert (
+            after["cleanup_governance_started.started"]
+            == before.get("cleanup_governance_started.started", 0) + 1
+        )
+        assert (
+            after["cleanup_governance_completed.completed"]
+            == before.get("cleanup_governance_completed.completed", 0) + 1
+        )
+
     @pytest.mark.postgres_truth
     def test_recovery_hints_always_present(
         self, truth_session: Session, truth_ids: TruthIds, truth_seed: dict
@@ -405,9 +463,11 @@ class TestCleanupGovernanceApiEndpoint:
 
         required_keys = {
             "correlation_id", "mode", "started_at", "completed_at", "duration_ms",
+            "governance_rules", "audit_event_names", "audit_event_count",
             "safety_gates", "snapshot_before", "snapshot_after", "delta",
-            "dry_run_candidate_count", "severity", "alerts",
-            "recovery_hints", "rollback_strategy",
+            "drift_delta", "safety_constraints", "dry_run_candidate_count",
+            "dry_run_executed", "severity", "alerts",
+            "recovery_hints", "recovery_required", "rollback_strategy",
         }
         missing = required_keys - set(data.keys())
         assert not missing, f"API response missing keys: {missing}"

@@ -1,8 +1,12 @@
 # M5 Drift Repair Strategy
 
-Stand: 2026-05-12
+Stand: 2026-05-13
 
 Dieses Dokument definiert die Repair-Strategie fuer M5-Drift. Es gibt keinen allgemeinen Auto-Repair frei. Drift Repair ist dry-run-first, auditierbar, nicht destruktiv und muss nach jedem Eingriff durch denselben Drift-Check verifiziert werden, der den Befund erzeugt hat.
+
+Repair-Ziel: Drift reduzieren, ohne Primaerdaten, historische Nachvollziehbarkeit, Workspace-Isolation, Citations oder Restore-Faehigkeit zu beschaedigen.
+
+---
 
 ## Repair-Strategie
 
@@ -15,11 +19,25 @@ Dieses Dokument definiert die Repair-Strategie fuer M5-Drift. Es gibt keinen all
 | Backup Drift | Nein | Ja, durch Backup neu erzeugen, Backup verwerfen oder Restore-Pfad wechseln; defekte Artefakte nicht reparieren | Pflicht ueber `validate` und `verify-backup`; Restore-Dry-Run fuer Freigabe | Sehr hoch: falsche Backup-Annahme gefaehrdet Recovery | Ja durch neues gueltiges Backup; defekte Backups werden nicht "geheilt", sondern ersetzt oder gesperrt |
 | Data Quality Drift | Nein | Ja, nur nach klassifiziertem Befund: fehlende Anchors, Duplicate-Konflikt, Orphan, kaputte Version/Chunk-Beziehung | Pflicht; liefert Kandidaten, Schutzgrund, Referenzen und erwarteten Effekt | Hoch: Data-Quality-Repair kann Primaerdaten, Chunks oder historische Verweise betreffen | Teilweise; nur reversible oder aus Quelle rekonstruierbare Korrekturen duerfen ohne Spezialfreigabe ausgefuehrt werden |
 
+## Repair-Phasen
+
+Jeder Repair folgt demselben Ablauf:
+
+1. Detect: Drift wird durch Report, Truth-Test oder Drift-Check nachgewiesen.
+2. Classify: Drift-Art, Scope, betroffene Entitaeten und Risiko werden bestimmt.
+3. Dry Run: Repair-Plan mit before_state, planned_change, protected_entities und blocked_entities wird erzeugt.
+4. Review: Technische Review-Rolle prueft Scope, Backup-Lage, Risiko und Audit-Faehigkeit.
+5. Execute: Mutation nur bei expliziter Freigabe; M5 erlaubt initial kein allgemeines Auto-Execute.
+6. Verify: Derselbe Drift-Check plus relevante Truth-/Smoke-Tests laufen erneut.
+7. Close: Audit-Eintrag wird mit Ergebnis, after_state und Verifikationsreport geschlossen.
+
 ## Safety Constraints
 
 - Repair darf keine Primaerdaten loeschen.
+- Repair darf keine Daten zerstoeren, die nicht aus einer eindeutig benannten Quelle verlustfrei rekonstruierbar sind.
 - Repair darf keine Originaldatei entfernen, solange irgendein Dokument, Backup, Citation oder Audit-Eintrag darauf verweist.
 - Repair darf historische Chat-Citation-Snapshots nicht still ueberschreiben.
+- Repair darf historische Citation-Referenzen nicht physisch loeschen.
 - Repair darf `workspace_id`-Grenzen nicht erweitern oder erraten.
 - Repair darf keine globalen Reindex-, Replay- oder Cleanup-Aktionen starten, wenn ein kleinerer Scope ausreicht.
 - Repair muss vor jeder Mutation einen Dry-Run-Report erzeugen.
@@ -27,6 +45,7 @@ Dieses Dokument definiert die Repair-Strategie fuer M5-Drift. Es gibt keinen all
 - Repair muss bei Backup-, Lifecycle-, Citation- und Data-Quality-Drift ein aktuelles verifiziertes Backup voraussetzen.
 - Repair muss idempotent sein oder eine eindeutige Wiederholungssperre besitzen.
 - Repair darf bei unklarer Ursache nur `blocked` melden, nicht raten.
+- Repair darf keine Truth-, Backup-, Restore- oder Audit-Artefakte entfernen, solange sie Gate- oder Incident-Relevanz haben.
 
 ## Audit-Anforderungen
 
@@ -48,6 +67,21 @@ Jeder Repair-Vorgang muss einen Audit-Eintrag erzeugen. Mindestfelder:
 | `after_state_hash` | Pflicht nach Mutation |
 | `verification_report` | Link auf erneuten Drift-/Truth-/Smoke-Check |
 | `error_class` | Falls blockiert oder fehlgeschlagen |
+
+Audit-Artefakte:
+
+- Maschinenlesbarer Repair-Report: `reports/m5_repair/<timestamp>_<repair_id>.json`
+- Aktueller Zeiger: `reports/m5_repair/latest.json`, wenn ein Repair-Lauf stattgefunden hat
+- Menschenlesbare Summary: `reports/m5_repair_summary.md`
+- Referenz auf den ausloesenden Drift-Report
+- Referenz auf den Verifikationsreport nach Repair
+
+Audit-Invarianten:
+
+- `dry_run` und `execute` muessen dieselbe `repair_id` oder eine verlinkte Parent-ID tragen.
+- `execute` ohne vorherigen aktuellen Dry-Run ist unzulaessig.
+- `affected_entities` im Execute duerfen nicht groesser sein als im freigegebenen Dry-Run.
+- Jeder `blocked`-Befund muss den blockierenden Safety Constraint benennen.
 
 ## Freigaberegeln
 

@@ -1,19 +1,13 @@
 """
 Citation Longevity Audit Service.
 
-Detects six categories of long-term citation degradation:
-
-  1. orphaned_anchor   — chunk_id IS NULL while source_status='active'
-                         (rechunking destroyed the chunk reference)
-  2. anchor_unverifiable — chunk_id IS NULL (any status), anchor can't be confirmed
-  3. status_drift      — stored source_status != live document.lifecycle_status
-                         (lifecycle sync was missed)
-  4. preview_stale     — chunk exists but quote_preview no longer matches chunk content
-                         (content changed after rechunking)
-  5. deleted_not_marked — document deleted but citation still shows active
-  6. restored_not_marked — document restored/active but citation still shows archived/deleted
-
-Workspace scoping: all queries join chat_citations → chat_messages → chat_sessions.workspace_id.
+Detects long-term citation degradation:
+- orphaned anchors after rechunking
+- unverifiable anchors after chunk removal
+- source_status drift from document lifecycle
+- stale quote previews after content movement
+- deleted documents still marked active
+- restored documents still marked unavailable
 """
 from __future__ import annotations
 
@@ -24,8 +18,25 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 
-# First N chars of quote_preview used for staleness fingerprint
 _STALE_PREFIX_LEN = 30
+LONGEVITY_AUDIT_SCOPE = [
+    "source_anchor_validity",
+    "quote_preview_stability",
+    "deleted_document_marking",
+    "restored_document_marking",
+    "rechunk_reference_survival",
+    "restore_reference_survival",
+]
+SIMULATED_LONG_TERM_CYCLES = [
+    "baseline_snapshot",
+    "archive_status_sync",
+    "delete_status_sync",
+    "archive_restore_status_sync",
+    "manual_status_drift_detection",
+    "rechunk_orphan_detection",
+    "quote_preview_staleness_detection",
+    "workspace_isolation",
+]
 
 
 class CitationLongevityAuditService:
@@ -49,7 +60,6 @@ class CitationLongevityAuditService:
             """,
             ws=workspace_id,
         )
-
         orphaned_anchor = self._count(
             """
             SELECT COUNT(cc.id)
@@ -62,7 +72,6 @@ class CitationLongevityAuditService:
             """,
             ws=workspace_id,
         )
-
         anchor_unverifiable = self._count(
             """
             SELECT COUNT(cc.id)
@@ -74,7 +83,6 @@ class CitationLongevityAuditService:
             """,
             ws=workspace_id,
         )
-
         status_drift = self._count(
             """
             SELECT COUNT(cc.id)
@@ -87,7 +95,6 @@ class CitationLongevityAuditService:
             """,
             ws=workspace_id,
         )
-
         preview_stale = self._count(
             """
             SELECT COUNT(cc.id)
@@ -98,14 +105,11 @@ class CitationLongevityAuditService:
             WHERE cs.workspace_id = :ws
               AND cc.chunk_id IS NOT NULL
               AND cc.quote_preview != 'Historical citation unavailable'
-              AND position(
-                left(cc.quote_preview, :prefix_len) IN c.content
-              ) = 0
+              AND position(left(cc.quote_preview, :prefix_len) IN c.content) = 0
             """,
             ws=workspace_id,
             prefix_len=_STALE_PREFIX_LEN,
         )
-
         deleted_not_marked = self._count(
             """
             SELECT COUNT(cc.id)
@@ -119,7 +123,6 @@ class CitationLongevityAuditService:
             """,
             ws=workspace_id,
         )
-
         restored_not_marked = self._count(
             """
             SELECT COUNT(cc.id)
@@ -141,12 +144,15 @@ class CitationLongevityAuditService:
             preview_stale=preview_stale,
             deleted_not_marked=deleted_not_marked,
             restored_not_marked=restored_not_marked,
-            total=total,
         )
 
         return {
             "checked_at": now,
             "workspace_id": workspace_id,
+            "audit_name": "citation_longevity_audit",
+            "audit_scope": LONGEVITY_AUDIT_SCOPE,
+            "time_horizon": "simulated_long_term_cycles",
+            "simulated_cycles": SIMULATED_LONG_TERM_CYCLES,
             "total_citations": total,
             "orphaned_anchor_count": orphaned_anchor,
             "anchor_unverifiable_count": anchor_unverifiable,
@@ -154,13 +160,26 @@ class CitationLongevityAuditService:
             "preview_stale_count": preview_stale,
             "deleted_not_marked_count": deleted_not_marked,
             "restored_not_marked_count": restored_not_marked,
+            "restore_reference_risk_count": orphaned_anchor + anchor_unverifiable + status_drift,
+            "rechunk_reference_risk_count": orphaned_anchor + preview_stale,
             "severity": severity,
             "alerts": alerts,
             "risk_summary": risk_summary,
-            "hardening_recommendations": _hardening_recommendations(
+            "persistence_risks": _persistence_risks(
                 orphaned_anchor=orphaned_anchor,
+                anchor_unverifiable=anchor_unverifiable,
                 status_drift=status_drift,
                 preview_stale=preview_stale,
+                deleted_not_marked=deleted_not_marked,
+                restored_not_marked=restored_not_marked,
+            ),
+            "hardening_recommendations": _hardening_recommendations(
+                orphaned_anchor=orphaned_anchor,
+                anchor_unverifiable=anchor_unverifiable,
+                status_drift=status_drift,
+                preview_stale=preview_stale,
+                deleted_not_marked=deleted_not_marked,
+                restored_not_marked=restored_not_marked,
             ),
         }
 
@@ -176,7 +195,6 @@ class CitationLongevityAuditService:
         preview_stale: int,
         deleted_not_marked: int,
         restored_not_marked: int,
-        total: int,
     ) -> tuple[list[str], list[str], str]:
         alerts: list[str] = []
         risk_summary: list[str] = []
@@ -184,42 +202,37 @@ class CitationLongevityAuditService:
         if deleted_not_marked > 0:
             alerts.append(
                 f"{deleted_not_marked} citation(s) point to deleted documents but are still "
-                f"marked active — historical answers may expose deleted content"
+                "marked active - historical answers may expose deleted content"
             )
             risk_summary.append("CRITICAL: citations reference deleted documents without correct status")
-
         if orphaned_anchor > 0:
             alerts.append(
                 f"{orphaned_anchor} active citation(s) have lost their chunk reference "
-                f"(chunk_id NULL) — rechunking destroyed the original anchor"
+                "(chunk_id NULL) - rechunking destroyed the original anchor"
             )
             risk_summary.append("active citations with NULL chunk_id cannot be navigated to source")
-
         if status_drift > 0:
             alerts.append(
                 f"{status_drift} citation(s) have stored source_status that diverges from "
-                f"live document lifecycle_status — lifecycle sync may have been missed"
+                "live document lifecycle_status - lifecycle sync may have been missed"
             )
             risk_summary.append("stored source_status does not reflect current document state")
-
         if preview_stale > 0:
             alerts.append(
                 f"{preview_stale} citation(s) have a quote_preview that no longer matches "
-                f"current chunk content — content changed after rechunking"
+                "current chunk content - content changed after rechunking"
             )
             risk_summary.append("quote_preview snapshots are stale after rechunking")
-
         if restored_not_marked > 0:
             alerts.append(
                 f"{restored_not_marked} citation(s) for restored/active documents still show "
-                f"archived/deleted/missing status — restore sync may have been missed"
+                "archived/deleted/missing status - restore sync may have been missed"
             )
             risk_summary.append("restored document citations not re-activated in stored status")
-
         if anchor_unverifiable > 0 and orphaned_anchor == 0:
             risk_summary.append(
                 f"{anchor_unverifiable} citation(s) have unverifiable anchors "
-                f"(chunk_id NULL, non-active status — expected after archive/delete)"
+                "(chunk_id NULL, non-active status - expected after archive/delete)"
             )
 
         if deleted_not_marked > 0 or (orphaned_anchor > 0 and status_drift > 0):
@@ -235,29 +248,77 @@ class CitationLongevityAuditService:
 def _hardening_recommendations(
     *,
     orphaned_anchor: int,
+    anchor_unverifiable: int,
     status_drift: int,
     preview_stale: int,
+    deleted_not_marked: int,
+    restored_not_marked: int,
 ) -> list[str]:
     recs: list[str] = []
     if orphaned_anchor > 0:
         recs.append(
-            "Store content_hash at citation time so orphaned anchors can be remapped "
-            "to rechunked content during a repair pass."
+            "Snapshot citation content_hash, chunk_index, document_version_id and source_anchor "
+            "at citation time so orphaned anchors can be remapped during an audited repair pass."
         )
         recs.append(
             "When rechunking sets chunk_id to NULL on an active citation, "
             "automatically transition source_status to 'missing' to prevent false active signals."
         )
+    if anchor_unverifiable > 0:
+        recs.append(
+            "Persist an immutable citation_anchor_snapshot so archived/deleted citations remain "
+            "verifiable even when live chunks are removed or replaced."
+        )
     if status_drift > 0:
         recs.append(
             "Add a periodic reconciliation job that cross-checks citation.source_status "
-            "against document.lifecycle_status and repairs drift silently."
+            "against document.lifecycle_status and writes an audited repair report before mutation."
         )
     if preview_stale > 0:
         recs.append(
-            "Re-generate quote_preview from current chunk content after every rechunking pass "
-            "where the chunk_id is preserved but content changes."
+            "Do not overwrite historical quote_preview. Add quote_hash and current_preview_match "
+            "so stale live content can be flagged without changing the historical answer."
+        )
+    if deleted_not_marked > 0:
+        recs.append(
+            "Make delete lifecycle updates atomically update citation.source_status to 'deleted' "
+            "and block new retrieval from deleted sources."
+        )
+    if restored_not_marked > 0:
+        recs.append(
+            "Make restore lifecycle updates atomically reactivate citation.source_status only when "
+            "the source anchor is still verifiable; otherwise keep status 'missing'."
         )
     if not recs:
-        recs.append("No hardening actions required — citation snapshots are stable.")
+        recs.append(
+            "Current snapshot fields are stable for the simulated long-term cycles; keep "
+            "source_anchor, quote_preview, document_title and source_status immutable in citations."
+        )
     return recs
+
+
+def _persistence_risks(
+    *,
+    orphaned_anchor: int,
+    anchor_unverifiable: int,
+    status_drift: int,
+    preview_stale: int,
+    deleted_not_marked: int,
+    restored_not_marked: int,
+) -> list[str]:
+    risks: list[str] = []
+    if orphaned_anchor > 0:
+        risks.append("rechunking can detach active citations from their original chunk anchor")
+    if anchor_unverifiable > 0:
+        risks.append("chunk-level source anchors cannot be verified for every historical citation")
+    if preview_stale > 0:
+        risks.append("current chunk content no longer contains the stored quote preview")
+    if deleted_not_marked > 0:
+        risks.append("deleted sources can appear active in historical answers")
+    if restored_not_marked > 0:
+        risks.append("restored sources can remain marked unavailable in historical answers")
+    if status_drift > 0:
+        risks.append("citation source_status can drift from document lifecycle status")
+    if not risks:
+        risks.append("no persistence risk detected in simulated long-term citation cycles")
+    return risks

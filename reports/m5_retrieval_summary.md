@@ -13,6 +13,7 @@ Status: `pass`
 | chat_mrr | 1.0 | 0.8 |
 | citation_completeness | 1.0 | 0.9 |
 | insufficient_context_accuracy | 1.0 | 0.95 |
+| missing_context_rate | 0.0 | 0.15 |
 | lifecycle_exclusion_violations | 0 | 0 |
 
 ## Golden Queries

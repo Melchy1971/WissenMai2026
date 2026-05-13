@@ -11,8 +11,13 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[3]
 REPORT_DIR = REPO_ROOT / "reports" / "m5_retrieval"
 SUMMARY_PATH = REPO_ROOT / "reports" / "m5_retrieval_summary.md"
+REGRESSION_REPORT_DIR = REPO_ROOT / "reports" / "m5_retrieval_regression"
+REGRESSION_SUMMARY_PATH = REPO_ROOT / "reports" / "m5_retrieval_regression_summary.md"
+BASELINE_PATH = REGRESSION_REPORT_DIR / "baseline.json"
 DATASET_VERSION = "m5-retrieval-golden-v1"
 K_VALUES = (3, 5, 10)
+REGRESSION_DELTA = 0.05
+REGRESSION_TRIGGERS = ("manual", "reindex", "restore", "cleanup", "chunking")
 
 
 @dataclass(frozen=True)
@@ -124,6 +129,8 @@ def evaluate_queries() -> dict[str, Any]:
     citation_scores: list[float] = []
     no_answer_total = 0
     no_answer_correct = 0
+    missing_context_total = 0
+    missing_context_count = 0
     lifecycle_violations: list[str] = []
 
     for query in GOLDEN_QUERIES:
@@ -132,10 +139,14 @@ def evaluate_queries() -> dict[str, Any]:
         search_results = _simulated_search_results(query)
         chat_results = _simulated_chat_retrieval_results(query)
         insufficient_context = not chat_results
+        missing_relevant = bool(relevant_ids and not (set(result.chunk_id for result in chat_results) & relevant_ids))
 
         if query.no_answer:
             no_answer_total += 1
             no_answer_correct += int(insufficient_context)
+        else:
+            missing_context_total += 1
+            missing_context_count += int(missing_relevant)
 
         returned_ids = {result.chunk_id for result in [*search_results, *chat_results]}
         forbidden = sorted(returned_ids & set(query.must_not_return_chunk_ids))
@@ -158,6 +169,7 @@ def evaluate_queries() -> dict[str, Any]:
                 "expected_relevant_chunk_ids": list(query.relevant_chunk_ids),
                 "must_not_return_chunk_ids": list(query.must_not_return_chunk_ids),
                 "insufficient_context": insufficient_context,
+                "missing_relevant_context": missing_relevant,
                 "precision_at_5": round(precision_at_k(search_results, relevant_ids, 5), 3),
                 "recall_at_5": round(recall_at_k(search_results, relevant_ids, 5), 3),
                 "mrr": round(reciprocal_rank(search_results, relevant_ids), 3),
@@ -173,6 +185,7 @@ def evaluate_queries() -> dict[str, Any]:
         "chat_mrr": round(mean(chat_mrr), 3),
         "citation_completeness": round(mean(citation_scores), 3),
         "insufficient_context_accuracy": round(no_answer_correct / no_answer_total, 3) if no_answer_total else 1.0,
+        "missing_context_rate": round(missing_context_count / missing_context_total, 3) if missing_context_total else 0.0,
         "lifecycle_exclusion_violations": len(lifecycle_violations),
     }
     regressions = _detect_regressions(summary)
@@ -198,6 +211,7 @@ def _thresholds() -> dict[str, float]:
         "chat_mrr": 0.80,
         "citation_completeness": 0.90,
         "insufficient_context_accuracy": 0.95,
+        "missing_context_rate_max": 0.15,
         "lifecycle_exclusion_violations": 0,
     }
 
@@ -205,6 +219,11 @@ def _thresholds() -> dict[str, float]:
 def _detect_regressions(summary: dict[str, float | int]) -> list[str]:
     regressions: list[str] = []
     for metric, threshold in _thresholds().items():
+        if metric == "missing_context_rate_max":
+            value = summary["missing_context_rate"]
+            if float(value) > threshold:
+                regressions.append(f"missing_context_rate={value} above maximum {threshold}")
+            continue
         value = summary[metric]
         if metric == "lifecycle_exclusion_violations":
             if int(value) != 0:
@@ -214,7 +233,76 @@ def _detect_regressions(summary: dict[str, float | int]) -> list[str]:
     return regressions
 
 
-def write_reports(output_dir: Path | None = None) -> dict[str, Any]:
+def _load_json(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _detect_baseline_regressions(current: dict[str, Any], baseline: dict[str, Any] | None) -> list[str]:
+    if baseline is None:
+        return []
+    current_summary = current["summary"]
+    baseline_summary = baseline.get("summary", {})
+    regressions: list[str] = []
+    for metric in (
+        "search_precision_at_5",
+        "search_recall_at_5",
+        "chat_precision_at_5",
+        "chat_recall_at_5",
+        "citation_completeness",
+    ):
+        current_value = float(current_summary.get(metric, 0.0))
+        baseline_value = float(baseline_summary.get(metric, 0.0))
+        drop = baseline_value - current_value
+        if drop > REGRESSION_DELTA:
+            regressions.append(f"{metric}: {baseline_value:.3f} -> {current_value:.3f}, drop {drop:.3f} > {REGRESSION_DELTA:.3f}")
+    current_missing = float(current_summary.get("missing_context_rate", 0.0))
+    baseline_missing = float(baseline_summary.get("missing_context_rate", 0.0))
+    rise = current_missing - baseline_missing
+    if rise > REGRESSION_DELTA:
+        regressions.append(f"missing_context_rate: {baseline_missing:.3f} -> {current_missing:.3f}, rise {rise:.3f} > {REGRESSION_DELTA:.3f}")
+    return regressions
+
+
+def build_regression_report(
+    *,
+    trigger: str = "manual",
+    baseline: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if trigger not in REGRESSION_TRIGGERS:
+        raise ValueError(f"Unsupported regression trigger: {trigger}")
+    current = evaluate_queries()
+    baseline_regressions = _detect_baseline_regressions(current, baseline)
+    threshold_regressions = list(current["regressions"])
+    status = "pass" if not baseline_regressions and not threshold_regressions else "failed"
+    return {
+        "generated_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        "regression_version": "m5-retrieval-regression-v1",
+        "trigger": trigger,
+        "dataset_version": DATASET_VERSION,
+        "k_values": list(K_VALUES),
+        "status": status,
+        "thresholds": current["thresholds"],
+        "regression_delta": REGRESSION_DELTA,
+        "has_baseline": baseline is not None,
+        "summary": current["summary"],
+        "threshold_regressions": threshold_regressions,
+        "baseline_regressions": baseline_regressions,
+        "queries": current["queries"],
+    }
+
+
+def write_reports(
+    output_dir: Path | None = None,
+    *,
+    trigger: str = "manual",
+    set_baseline: bool = False,
+) -> dict[str, Any]:
     report = evaluate_queries()
     target_dir = output_dir or REPORT_DIR
     summary_path = SUMMARY_PATH if output_dir is None else target_dir / "summary.md"
@@ -225,7 +313,32 @@ def write_reports(output_dir: Path | None = None) -> dict[str, Any]:
     timestamped.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     latest.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     summary_path.write_text(render_markdown(report), encoding="utf-8")
-    return {"report": report, "timestamped": str(timestamped), "latest": str(latest), "summary": str(summary_path)}
+
+    regression_dir = target_dir / "regression" if output_dir is not None else REGRESSION_REPORT_DIR
+    regression_summary_path = regression_dir / "summary.md" if output_dir is not None else REGRESSION_SUMMARY_PATH
+    regression_baseline_path = regression_dir / "baseline.json"
+    regression_dir.mkdir(parents=True, exist_ok=True)
+    baseline = _load_json(regression_baseline_path)
+    regression_report = build_regression_report(trigger=trigger, baseline=baseline)
+    regression_timestamped = regression_dir / f"{timestamp}.json"
+    regression_latest = regression_dir / "latest.json"
+    regression_timestamped.write_text(json.dumps(regression_report, indent=2) + "\n", encoding="utf-8")
+    regression_latest.write_text(json.dumps(regression_report, indent=2) + "\n", encoding="utf-8")
+    regression_summary_path.write_text(render_regression_markdown(regression_report), encoding="utf-8")
+    if set_baseline or baseline is None:
+        regression_baseline_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+
+    return {
+        "report": report,
+        "timestamped": str(timestamped),
+        "latest": str(latest),
+        "summary": str(summary_path),
+        "regression_report": regression_report,
+        "regression_timestamped": str(regression_timestamped),
+        "regression_latest": str(regression_latest),
+        "regression_summary": str(regression_summary_path),
+        "baseline": str(regression_baseline_path),
+    }
 
 
 def render_markdown(report: dict[str, Any]) -> str:
@@ -249,13 +362,60 @@ def render_markdown(report: dict[str, Any]) -> str:
         "chat_mrr",
         "citation_completeness",
         "insufficient_context_accuracy",
+        "missing_context_rate",
         "lifecycle_exclusion_violations",
     ):
-        lines.append(f"| {metric} | {summary[metric]} | {thresholds[metric]} |")
+        threshold_key = "missing_context_rate_max" if metric == "missing_context_rate" else metric
+        lines.append(f"| {metric} | {summary[metric]} | {thresholds[threshold_key]} |")
     lines += ["", "## Golden Queries", ""]
     for query in report["queries"]:
         lines.append(f"- `{query['query_id']}` {query['query']}")
     if report["regressions"]:
         lines += ["", "## Regressionen", ""]
         lines.extend(f"- {item}" for item in report["regressions"])
+    return "\n".join(lines) + "\n"
+
+
+def render_regression_markdown(report: dict[str, Any]) -> str:
+    summary = report["summary"]
+    thresholds = report["thresholds"]
+    lines = [
+        "# Retrieval Regression Detection Report",
+        "",
+        f"Status: `{report['status']}`",
+        f"Trigger: `{report['trigger']}`",
+        f"Dataset: `{report['dataset_version']}`",
+        f"Baseline vorhanden: `{str(report['has_baseline']).lower()}`",
+        f"Regression Delta: `{report['regression_delta']}`",
+        "",
+        "## Metriken",
+        "",
+        "| Metrik | Wert | Schwelle |",
+        "|---|---:|---:|",
+        f"| Precision@5 Search | {summary['search_precision_at_5']} | {thresholds['search_precision_at_5']} |",
+        f"| Recall@5 Search | {summary['search_recall_at_5']} | {thresholds['search_recall_at_5']} |",
+        f"| Precision@5 Chat | {summary['chat_precision_at_5']} | {thresholds['chat_precision_at_5']} |",
+        f"| Recall@5 Chat | {summary['chat_recall_at_5']} | {thresholds['chat_recall_at_5']} |",
+        f"| Citation Completeness | {summary['citation_completeness']} | {thresholds['citation_completeness']} |",
+        f"| Missing Context Rate | {summary['missing_context_rate']} | <= {thresholds['missing_context_rate_max']} |",
+        f"| Insufficient Context Accuracy | {summary['insufficient_context_accuracy']} | {thresholds['insufficient_context_accuracy']} |",
+        f"| Lifecycle Violations | {summary['lifecycle_exclusion_violations']} | {thresholds['lifecycle_exclusion_violations']} |",
+        "",
+        "## Regressionen",
+        "",
+    ]
+    issues = [*report["threshold_regressions"], *report["baseline_regressions"]]
+    if issues:
+        lines.extend(f"- {issue}" for issue in issues)
+    else:
+        lines.append("Keine Regression erkannt.")
+    lines += [
+        "",
+        "## Automatische Trigger",
+        "",
+        "- Reindex",
+        "- Restore",
+        "- Cleanup",
+        "- Chunking-Aenderung",
+    ]
     return "\n".join(lines) + "\n"

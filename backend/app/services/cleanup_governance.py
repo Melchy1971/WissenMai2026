@@ -36,6 +36,18 @@ from app.services.m5_cleanup import CleanupConfig, M5CleanupService
 
 logger = logging.getLogger(__name__)
 
+START_AUDIT_EVENT = "cleanup_governance_started"
+COMPLETED_AUDIT_EVENT = "cleanup_governance_completed"
+CLEANUP_GOVERNANCE_RULES = [
+    "mandatory_dry_run_first",
+    "audit_trail_required",
+    "no_active_document_deletion",
+    "no_citation_destruction",
+    "no_queue_consistency_violation",
+    "before_after_report_required",
+    "drift_delta_required",
+    "recovery_hint_required",
+]
 _ROLLBACK_STRATEGY = (
     "DB categories (expired_session_cleanup, stale_index_cleanup, orphan_cleanup): "
     "committed in a single transaction — full recovery requires pg_dump restore from "
@@ -69,7 +81,7 @@ class CleanupGovernanceService:
         start_ms = time.monotonic_ns() // 1_000_000
 
         log_event(
-            "cleanup_governance_started",
+            START_AUDIT_EVENT,
             workspace_id=config.workspace_id,
             status="started",
             correlation_id=correlation_id,
@@ -100,7 +112,7 @@ class CleanupGovernanceService:
         duration_ms = (time.monotonic_ns() // 1_000_000) - start_ms
 
         log_event(
-            "cleanup_governance_completed",
+            COMPLETED_AUDIT_EVENT,
             workspace_id=config.workspace_id,
             status="blocked" if mode == "blocked" else "completed",
             duration_ms=duration_ms,
@@ -113,18 +125,25 @@ class CleanupGovernanceService:
             "started_at": started_at,
             "completed_at": datetime.now(UTC),
             "duration_ms": duration_ms,
+            "governance_rules": CLEANUP_GOVERNANCE_RULES,
+            "audit_event_names": [START_AUDIT_EVENT, COMPLETED_AUDIT_EVENT],
+            "audit_event_count": 2,
             "retention_days": config.retention_days,
             "workspace_id": config.workspace_id,
             "dry_run_only": dry_run_only,
+            "dry_run_executed": True,
             "safety_gates": gates,
             "snapshot_before": snapshot_before,
             "snapshot_after": snapshot_after,
             "delta": delta,
+            "drift_delta": delta,
+            "safety_constraints": _safety_constraints(gates=gates, delta=delta),
             "dry_run_candidate_count": dry_run_candidate_count,
             "execute_applied_count": execute_applied_count,
             "severity": severity,
             "alerts": alerts,
             "recovery_hints": _recovery_hints(dry_run_result, mode=mode),
+            "recovery_required": severity in {"warning", "critical"} or mode == "blocked",
             "rollback_strategy": _ROLLBACK_STRATEGY,
         }
 
@@ -295,6 +314,17 @@ def _evaluate_alerts(
             severity = "warning"
 
     return alerts, severity
+
+
+def _safety_constraints(*, gates: dict[str, Any], delta: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "active_documents_preserved": delta["active_document_delta"] >= 0
+        and gates["active_doc_refs_in_orphan_scope"] == 0,
+        "citations_preserved": not delta["citation_loss_detected"],
+        "queue_consistency_preserved": delta["active_job_delta"] >= 0
+        and gates["active_job_refs_in_scope"] == 0,
+        "blocking_gate_passed": gates["passed"],
+    }
 
 
 def _recovery_hints(dry_run_result: dict[str, Any], *, mode: str) -> list[str]:

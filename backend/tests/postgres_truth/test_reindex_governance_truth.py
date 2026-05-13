@@ -27,6 +27,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.core.errors import ResourceLockedApiError
+from app.observability.logging import metrics_registry
 from app.services.reindex_governance import ReindexGovernanceService, ReindexGovernanceViolation
 from tests.postgres_truth.support import TruthIds
 
@@ -63,6 +64,12 @@ def test_governance_full_reindex_produces_report(
     assert isinstance(report["duration_ms"], int)
     assert report["duration_ms"] >= 0
     assert report["regression_check_required"] is True
+    assert report["retrieval_regression_trigger"] == "reindex"
+    assert report["post_reindex_checks"] == {
+        "drift_detection": "executed",
+        "retrieval_regression": "required",
+        "lifecycle_consistency": "executed",
+    }
     assert report["started_at"] is not None
     assert report["completed_at"] is not None
 
@@ -235,6 +242,8 @@ def test_governance_drift_snapshots_in_report(
     assert 0 <= report["drift_score_after"] <= 100
     assert isinstance(report["drift_delta"], int)
     assert report["drift_delta"] == report["drift_score_after"] - report["drift_score_before"]
+    assert report["drift_snapshot_before_taken"] is True
+    assert report["drift_snapshot_after_taken"] is True
     assert report["drift_severity_before"] in {"ok", "info", "low", "medium", "high", "critical"}
     assert report["drift_severity_after"] in {"ok", "info", "low", "medium", "high", "critical"}
     assert report["drift_status_before"] in {"ok", "drifted"}
@@ -262,6 +271,36 @@ def test_governance_lifecycle_check_in_report(
     # Clean workspace → lifecycle must be consistent
     assert report["lifecycle_ok"] is True
     assert report["lifecycle_inconsistency_count"] == 0
+
+
+def test_governance_emits_required_audit_events(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    before = metrics_registry.snapshot()
+    svc = ReindexGovernanceService.from_session(truth_session)
+    report = svc.run_governed_reindex(
+        reindex_type="workspace",
+        workspace_id=truth_seed["workspace_id"],
+        correlation_id="cid-audit-events",
+        reason="audit event coverage",
+    )
+    after = metrics_registry.snapshot()
+
+    assert report["audit_event_names"] == [
+        "reindex_governance_started",
+        "reindex_governance_completed",
+    ]
+    assert report["audit_event_count"] == 2
+    assert (
+        after["reindex_governance_started.started"]
+        == before.get("reindex_governance_started.started", 0) + 1
+    )
+    assert (
+        after["reindex_governance_completed.completed"]
+        == before.get("reindex_governance_completed.completed", 0) + 1
+    )
 
 
 # ── 10. Correlation ID auto-generated when not provided ───────────────────────
@@ -309,8 +348,15 @@ def test_governance_api_endpoint_returns_report(
     assert data["workspace_id"] == truth_seed["workspace_id"]
     assert data["status"] == "completed"
     assert data["regression_check_required"] is True
+    assert data["retrieval_regression_trigger"] == "reindex"
+    assert data["post_reindex_checks"]["drift_detection"] == "executed"
+    assert data["post_reindex_checks"]["retrieval_regression"] == "required"
+    assert data["post_reindex_checks"]["lifecycle_consistency"] == "executed"
+    assert data["audit_event_count"] == 2
     assert isinstance(data["drift_score_before"], int)
     assert isinstance(data["drift_score_after"], int)
+    assert data["drift_snapshot_before_taken"] is True
+    assert data["drift_snapshot_after_taken"] is True
     assert isinstance(data["lifecycle_ok"], bool)
 
 

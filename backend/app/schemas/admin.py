@@ -139,6 +139,22 @@ class QueueAgingThresholds(BaseModel):
     dead_letter_warning: int
     dead_letter_critical: int
     max_attempts: int
+    backlog_warning: int
+    backlog_critical: int
+    retry_rate_warning_per_hour: float
+    dead_letter_growth_window_hours: int
+
+
+class WorkspaceQueueDistribution(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    workspace_id: str
+    pending: int
+    running: int
+    retryable: int
+    dead_letter: int
+    backlog: int
+    backlog_share: float
 
 
 class QueueAgingReport(BaseModel):
@@ -146,6 +162,11 @@ class QueueAgingReport(BaseModel):
 
     checked_at: datetime
     workspace_id: str
+
+    # truth metrics
+    queue_backlog_count: int
+    queue_age_p95_seconds: float | None
+    backlog_growth_24h: int
 
     # pending jobs
     pending_count: int
@@ -157,10 +178,12 @@ class QueueAgingReport(BaseModel):
     retryable_count: int
     max_retry_attempt_count: int
     high_retry_count: int
+    retry_rate_per_hour: float
 
     # dead letters
     dead_letter_count: int
     dead_letter_oldest_age_seconds: float | None
+    dead_letter_growth_24h: int
 
     # stuck running
     running_count: int
@@ -170,6 +193,7 @@ class QueueAgingReport(BaseModel):
     # starvation
     starvation_detected: bool
     starvation_notes: list[str]
+    workspace_queue_distribution: list[WorkspaceQueueDistribution]
 
     # verdict
     severity: Literal["ok", "warning", "critical"]
@@ -182,6 +206,10 @@ class CitationLongevityReport(BaseModel):
 
     checked_at: datetime
     workspace_id: str
+    audit_name: str
+    audit_scope: list[str]
+    time_horizon: str
+    simulated_cycles: list[str]
     total_citations: int
 
     orphaned_anchor_count: int
@@ -190,10 +218,13 @@ class CitationLongevityReport(BaseModel):
     preview_stale_count: int
     deleted_not_marked_count: int
     restored_not_marked_count: int
+    restore_reference_risk_count: int
+    rechunk_reference_risk_count: int
 
     severity: Literal["ok", "warning", "critical"]
     alerts: list[str]
     risk_summary: list[str]
+    persistence_risks: list[str]
     hardening_recommendations: list[str]
 
 
@@ -218,6 +249,8 @@ class ReindexGovernanceReport(BaseModel):
     started_at: datetime
     completed_at: datetime
     duration_ms: int
+    audit_event_names: list[str]
+    audit_event_count: int
 
     drift_score_before: int
     drift_score_after: int
@@ -226,6 +259,8 @@ class ReindexGovernanceReport(BaseModel):
     drift_severity_after: str
     drift_status_before: str
     drift_status_after: str
+    drift_snapshot_before_taken: bool
+    drift_snapshot_after_taken: bool
 
     lifecycle_ok: bool
     lifecycle_inconsistency_count: int
@@ -234,6 +269,8 @@ class ReindexGovernanceReport(BaseModel):
     reindexed_document_count: int
     index_action: str
     regression_check_required: bool
+    retrieval_regression_trigger: Literal["reindex"]
+    post_reindex_checks: dict[str, Literal["executed", "required"]]
     status: Literal["completed", "failed"]
 
 
@@ -268,6 +305,15 @@ class CleanupDelta(BaseModel):
     citation_loss_detected: bool
 
 
+class CleanupSafetyConstraints(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    active_documents_preserved: bool
+    citations_preserved: bool
+    queue_consistency_preserved: bool
+    blocking_gate_passed: bool
+
+
 class CleanupGovernanceRequest(BaseModel):
     model_config = ConfigDict(strict=True)
 
@@ -285,14 +331,20 @@ class CleanupGovernanceReport(BaseModel):
     started_at: datetime
     completed_at: datetime
     duration_ms: int
+    governance_rules: list[str]
+    audit_event_names: list[str]
+    audit_event_count: int
     retention_days: int
     workspace_id: str | None
     dry_run_only: bool
+    dry_run_executed: bool
 
     safety_gates: CleanupSafetyGateReport
     snapshot_before: CleanupSnapshot
     snapshot_after: CleanupSnapshot
     delta: CleanupDelta
+    drift_delta: CleanupDelta
+    safety_constraints: CleanupSafetyConstraints
 
     dry_run_candidate_count: int
     execute_applied_count: int | None
@@ -300,6 +352,7 @@ class CleanupGovernanceReport(BaseModel):
     severity: Literal["ok", "warning", "critical"]
     alerts: list[str]
     recovery_hints: list[str]
+    recovery_required: bool
     rollback_strategy: str
 
 

@@ -4,6 +4,8 @@ Stand: 2026-05-07
 
 Dieses Dokument definiert den stabilen M3b Retrieval-Vertrag fuer den implementierten Endpoint `GET /api/v1/search/chunks`.
 
+Der uebergeordnete Stabilitaetsvertrag fuer RAG-/Retrieval-Aenderungen steht in `docs/retrieval-stability-contract.md`. Breaking Retrieval Changes muessen dort versioniert und gegen Golden Queries regressionsgeprueft werden.
+
 ## Implementierter Scope
 
 - Read-only Chunk-Suche.

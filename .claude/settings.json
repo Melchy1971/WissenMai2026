@@ -94,7 +94,20 @@
       "Bash(python -c \"from app.api.v1.admin import router; print\\('admin router OK'\\)\")",
       "Bash(python -c \"from app.services.reindex_governance import ReindexGovernanceService; from app.schemas.admin import ReindexGovernanceRequest; from app.core.errors import ReindexConstraintViolationApiError; print\\('OK'\\)\")",
       "Bash(echo \"exit: $?\")",
-      "Bash(python -c \"from app.services.citation_longevity_service import CitationLongevityAuditService; from app.services.cleanup_governance import CleanupGovernanceService; from app.schemas.admin import CleanupGovernanceRequest, CleanupGovernanceReport; from app.api.v1.admin import router; print\\('ALL OK'\\)\")"
+      "Bash(python -c \"from app.services.citation_longevity_service import CitationLongevityAuditService; from app.services.cleanup_governance import CleanupGovernanceService; from app.schemas.admin import CleanupGovernanceRequest, CleanupGovernanceReport; from app.api.v1.admin import router; print\\('ALL OK'\\)\")",
+      "Bash(uv tool *)",
+      "Bash(where.exe uv *)",
+      "Bash(python -m pip show uv)",
+      "PowerShell(powershell -c \"irm https://astral.sh/uv/install.ps1 | iex\")",
+      "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; uv tool install specify-cli --from git+https://github.com/github/spec-kit.git 2>&1)",
+      "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; specify check 2>&1)",
+      "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; $env:PYTHONUTF8 = \"1\"; $env:PYTHONIOENCODING = \"utf-8\"; specify check 2>&1)",
+      "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; $env:PYTHONUTF8 = \"1\"; $env:PYTHONIOENCODING = \"utf-8\"; specify init . --integration copilot 2>&1)",
+      "Bash(Get-Content \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\h--WissenMai2026\\\\58bd994c-b75a-4a3e-9161-4c9dbb5589b8\\\\tasks\\\\b177a2y1c.output\" -Wait)",
+      "Bash(Select-String -Pattern \".\")",
+      "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; $env:PYTHONUTF8 = \"1\"; $env:PYTHONIOENCODING = \"utf-8\"; echo \"y\" | specify init . --integration copilot 2>&1)",
+      "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; $env:PYTHONUTF8 = \"1\"; $env:PYTHONIOENCODING = \"utf-8\"; specify init --help 2>&1)",
+      "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; $env:PYTHONUTF8 = \"1\"; $env:PYTHONIOENCODING = \"utf-8\"; specify init . --integration copilot --force 2>&1)"
     ]
   },
   "hooks": {

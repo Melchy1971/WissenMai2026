@@ -63,9 +63,9 @@ def _seed_document(
                 source_type, mime_type, content_hash, import_status,
                 lifecycle_status, archived_at, deleted_at, created_at, updated_at
             ) VALUES (
-                :id::uuid, :ws::uuid, :user::uuid, null, :title,
-                'upload', 'text/plain', :hash, 'chunked',
-                :status, null, null, :now, :now
+                CAST(:id AS uuid), CAST(:ws AS uuid), CAST(:user AS uuid), null, :title,
+                'upload', 'text/plain', :hash, 'pending',
+                'active', null, null, :now, :now
             )
             """
         ),
@@ -77,7 +77,7 @@ def _seed_document(
             """
             INSERT INTO document_versions (
                 id, document_id, version_number, normalized_markdown, markdown_hash,
-                parser_version, ocr_used, ki_provider, ki_model, metadata_, created_at
+                parser_version, ocr_used, ki_provider, ki_model, metadata, created_at
             ) VALUES (
                 :id, :doc_id, 1, :content, :hash,
                 '1.0', false, null, null, '{}', :now
@@ -93,21 +93,32 @@ def _seed_document(
             INSERT INTO document_chunks (
                 id, document_id, document_version_id, chunk_index,
                 heading_path, anchor, content, content_hash, token_estimate,
-                metadata_, is_searchable, created_at
+                metadata, is_searchable, created_at
             ) VALUES (
                 :id, :doc_id, :version_id, 0,
                 '[]', 'dv:longevity:c0000', :content, :hash, 10,
-                '{}', :searchable, :now
+                jsonb_build_object('source_anchor', cast(:anchor as jsonb)), :searchable, :now
             )
             """
         ),
         {"id": chunk_id, "doc_id": doc_id, "version_id": version_id,
          "content": content, "hash": content_hash + "-chunk",
-         "searchable": lifecycle_status == "active", "now": now},
+         "searchable": lifecycle_status == "active", "now": now, "anchor": _ANCHOR},
     )
     session.execute(
-        text("UPDATE documents SET current_version_id = :vid WHERE id = :did"),
-        {"vid": version_id, "did": doc_id},
+        text(
+            """
+            UPDATE documents
+            SET current_version_id = :vid,
+                import_status = 'chunked',
+                lifecycle_status = CAST(:status AS varchar),
+                archived_at = CASE WHEN CAST(:status AS varchar) = 'archived' THEN :now ELSE null END,
+                deleted_at = CASE WHEN CAST(:status AS varchar) = 'deleted' THEN :now ELSE null END,
+                updated_at = :now
+            WHERE id = :did
+            """
+        ),
+        {"vid": version_id, "did": doc_id, "status": lifecycle_status, "now": now},
     )
     return doc_id, version_id, chunk_id
 
@@ -133,7 +144,7 @@ def _seed_citation(
         text(
             """
             INSERT INTO chat_sessions (id, workspace_id, owner_user_id, title, created_at, updated_at)
-            VALUES (:id, :ws::uuid, :user::uuid, :title, :now, :now)
+            VALUES (:id, CAST(:ws AS uuid), CAST(:user AS uuid), :title, :now, :now)
             """
         ),
         {"id": session_id, "ws": workspace_id, "user": user_id,
@@ -143,7 +154,7 @@ def _seed_citation(
         text(
             """
             INSERT INTO chat_messages (
-                id, session_id, message_index, role, content, basis_type, metadata_, created_at
+                id, session_id, message_index, role, content, basis_type, metadata, created_at
             ) VALUES (
                 :id, :session_id, 0, 'assistant', :content, 'knowledge_base', '{}', :now
             )
@@ -183,10 +194,19 @@ def test_longevity_clean_state_ok(
     report = svc.get_longevity_report(workspace_id=truth_seed["workspace_id"])
 
     assert report["severity"] == "ok"
+    assert report["audit_name"] == "citation_longevity_audit"
+    assert report["time_horizon"] == "simulated_long_term_cycles"
+    assert "source_anchor_validity" in report["audit_scope"]
+    assert "archive_restore_status_sync" in report["simulated_cycles"]
     assert report["total_citations"] == 0
     assert report["orphaned_anchor_count"] == 0
     assert report["status_drift_count"] == 0
     assert report["deleted_not_marked_count"] == 0
+    assert report["restore_reference_risk_count"] == 0
+    assert report["rechunk_reference_risk_count"] == 0
+    assert report["persistence_risks"] == [
+        "no persistence risk detected in simulated long-term citation cycles"
+    ]
 
 
 # ── 2. Lifecycle cycle: archive syncs citation status ────────────────────────
@@ -383,8 +403,12 @@ def test_longevity_detects_orphaned_anchor_after_rechunk(
 
     assert report["orphaned_anchor_count"] == 1
     assert report["anchor_unverifiable_count"] >= 1
+    assert report["rechunk_reference_risk_count"] == 1
+    assert report["restore_reference_risk_count"] >= 1
     assert report["severity"] in {"warning", "critical"}
     assert any("chunk_id" in a or "NULL" in a or "rechunking" in a.lower() for a in report["alerts"])
+    assert any("rechunking can detach" in risk for risk in report["persistence_risks"])
+    assert any("content_hash" in rec for rec in report["hardening_recommendations"])
 
 
 # ── 9. Detects preview staleness after rechunking ────────────────────────────
@@ -414,8 +438,11 @@ def test_longevity_detects_preview_staleness(
     report = svc.get_longevity_report(workspace_id=truth_seed["workspace_id"])
 
     assert report["preview_stale_count"] == 1
+    assert report["rechunk_reference_risk_count"] == 1
     assert report["severity"] in {"warning", "critical"}
     assert any("quote_preview" in a or "stale" in a.lower() or "rechunking" in a.lower() for a in report["alerts"])
+    assert any("quote preview" in risk for risk in report["persistence_risks"])
+    assert any("Do not overwrite historical quote_preview" in rec for rec in report["hardening_recommendations"])
 
 
 # ── 10. Workspace isolation ───────────────────────────────────────────────────
@@ -464,12 +491,19 @@ def test_longevity_api_endpoint_contract(
     assert data["workspace_id"] == truth_seed["workspace_id"]
     assert data["severity"] in {"ok", "warning", "critical"}
     assert isinstance(data["total_citations"], int)
+    assert data["audit_name"] == "citation_longevity_audit"
+    assert data["time_horizon"] == "simulated_long_term_cycles"
+    assert isinstance(data["audit_scope"], list)
+    assert isinstance(data["simulated_cycles"], list)
     assert isinstance(data["orphaned_anchor_count"], int)
     assert isinstance(data["status_drift_count"], int)
     assert isinstance(data["preview_stale_count"], int)
     assert isinstance(data["deleted_not_marked_count"], int)
     assert isinstance(data["restored_not_marked_count"], int)
+    assert isinstance(data["restore_reference_risk_count"], int)
+    assert isinstance(data["rechunk_reference_risk_count"], int)
     assert isinstance(data["alerts"], list)
     assert isinstance(data["risk_summary"], list)
+    assert isinstance(data["persistence_risks"], list)
     assert isinstance(data["hardening_recommendations"], list)
     assert len(data["hardening_recommendations"]) >= 1

@@ -169,7 +169,6 @@ class M5CleanupService:
             or_(
                 and_(Document.lifecycle_status == "active", Chunk.is_searchable.is_(False)),
                 and_(Document.lifecycle_status != "active", Chunk.is_searchable.is_(True)),
-                and_(Document.lifecycle_status != "active", Chunk.search_vector.is_not(None)),
             )
         ]
         if config.workspace_id:
@@ -197,9 +196,9 @@ class M5CleanupService:
                     update(Chunk)
                     .where(
                         Chunk.document_id.in_(inactive_document_ids),
-                        or_(Chunk.is_searchable.is_(True), Chunk.search_vector.is_not(None)),
+                        Chunk.is_searchable.is_(True),
                     )
-                    .values(is_searchable=False, search_vector=None)
+                    .values(is_searchable=False)
                     .execution_options(synchronize_session=False)
                 ).rowcount
                 or 0

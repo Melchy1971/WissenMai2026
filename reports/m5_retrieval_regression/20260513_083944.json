@@ -1,0 +1,239 @@
+{
+  "generated_at": "2026-05-13T08:39:44.011741Z",
+  "regression_version": "m5-retrieval-regression-v1",
+  "trigger": "manual",
+  "dataset_version": "m5-retrieval-golden-v1",
+  "k_values": [
+    3,
+    5,
+    10
+  ],
+  "status": "pass",
+  "thresholds": {
+    "search_precision_at_5": 0.8,
+    "search_recall_at_5": 0.85,
+    "search_mrr": 0.85,
+    "chat_precision_at_5": 0.75,
+    "chat_recall_at_5": 0.8,
+    "chat_mrr": 0.8,
+    "citation_completeness": 0.9,
+    "insufficient_context_accuracy": 0.95,
+    "missing_context_rate_max": 0.15,
+    "lifecycle_exclusion_violations": 0
+  },
+  "regression_delta": 0.05,
+  "has_baseline": false,
+  "summary": {
+    "search_precision_at_5": 1.0,
+    "search_recall_at_5": 1.0,
+    "search_mrr": 1.0,
+    "chat_precision_at_5": 1.0,
+    "chat_recall_at_5": 1.0,
+    "chat_mrr": 1.0,
+    "citation_completeness": 1.0,
+    "insufficient_context_accuracy": 1.0,
+    "missing_context_rate": 0.0,
+    "lifecycle_exclusion_violations": 0,
+    "status": "pass"
+  },
+  "threshold_regressions": [],
+  "baseline_regressions": [],
+  "queries": [
+    {
+      "query_id": "GQ-001",
+      "query": "Wie funktioniert der Upload-Job-Status?",
+      "search_result_chunk_ids": [
+        "chunk-upload-job-1",
+        "chunk-upload-job-2"
+      ],
+      "chat_retrieval_chunk_ids": [
+        "chunk-upload-job-1",
+        "chunk-upload-job-2"
+      ],
+      "expected_relevant_chunk_ids": [
+        "chunk-upload-job-1",
+        "chunk-upload-job-2"
+      ],
+      "must_not_return_chunk_ids": [],
+      "insufficient_context": false,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "query_id": "GQ-002",
+      "query": "Wann wird ein Import als Duplicate erkannt?",
+      "search_result_chunk_ids": [
+        "chunk-duplicate-1"
+      ],
+      "chat_retrieval_chunk_ids": [
+        "chunk-duplicate-1"
+      ],
+      "expected_relevant_chunk_ids": [
+        "chunk-duplicate-1"
+      ],
+      "must_not_return_chunk_ids": [],
+      "insufficient_context": false,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "query_id": "GQ-003",
+      "query": "Wie wird ein stale running Job recovered?",
+      "search_result_chunk_ids": [
+        "chunk-queue-recovery-1"
+      ],
+      "chat_retrieval_chunk_ids": [
+        "chunk-queue-recovery-1"
+      ],
+      "expected_relevant_chunk_ids": [
+        "chunk-queue-recovery-1"
+      ],
+      "must_not_return_chunk_ids": [],
+      "insufficient_context": false,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "query_id": "GQ-004",
+      "query": "Was passiert beim Dead-Letter Replay?",
+      "search_result_chunk_ids": [
+        "chunk-replay-1"
+      ],
+      "chat_retrieval_chunk_ids": [
+        "chunk-replay-1"
+      ],
+      "expected_relevant_chunk_ids": [
+        "chunk-replay-1"
+      ],
+      "must_not_return_chunk_ids": [],
+      "insufficient_context": false,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "query_id": "GQ-005",
+      "query": "Welche Dokumente erscheinen nach Archivierung in der Suche?",
+      "search_result_chunk_ids": [
+        "chunk-lifecycle-search-1"
+      ],
+      "chat_retrieval_chunk_ids": [
+        "chunk-lifecycle-search-1"
+      ],
+      "expected_relevant_chunk_ids": [
+        "chunk-lifecycle-search-1"
+      ],
+      "must_not_return_chunk_ids": [
+        "chunk-archived-lifecycle",
+        "chunk-deleted-lifecycle"
+      ],
+      "insufficient_context": false,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "query_id": "GQ-006",
+      "query": "Wie werden historische Citations bei geloeschten Dokumenten angezeigt?",
+      "search_result_chunk_ids": [
+        "chunk-citation-lifecycle-1"
+      ],
+      "chat_retrieval_chunk_ids": [
+        "chunk-citation-lifecycle-1"
+      ],
+      "expected_relevant_chunk_ids": [
+        "chunk-citation-lifecycle-1"
+      ],
+      "must_not_return_chunk_ids": [],
+      "insufficient_context": false,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "query_id": "GQ-007",
+      "query": "Wie wird Search Index Drift erkannt?",
+      "search_result_chunk_ids": [
+        "chunk-drift-1",
+        "chunk-drift-2"
+      ],
+      "chat_retrieval_chunk_ids": [
+        "chunk-drift-1",
+        "chunk-drift-2"
+      ],
+      "expected_relevant_chunk_ids": [
+        "chunk-drift-1",
+        "chunk-drift-2"
+      ],
+      "must_not_return_chunk_ids": [],
+      "insufficient_context": false,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "query_id": "GQ-008",
+      "query": "Welche Schritte gehoeren zum Restore?",
+      "search_result_chunk_ids": [
+        "chunk-restore-1",
+        "chunk-restore-2"
+      ],
+      "chat_retrieval_chunk_ids": [
+        "chunk-restore-1",
+        "chunk-restore-2"
+      ],
+      "expected_relevant_chunk_ids": [
+        "chunk-restore-1",
+        "chunk-restore-2"
+      ],
+      "must_not_return_chunk_ids": [],
+      "insufficient_context": false,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "query_id": "GQ-009",
+      "query": "Welche Workspace-Grenzen gelten fuer Jobs?",
+      "search_result_chunk_ids": [
+        "chunk-workspace-jobs-1"
+      ],
+      "chat_retrieval_chunk_ids": [
+        "chunk-workspace-jobs-1"
+      ],
+      "expected_relevant_chunk_ids": [
+        "chunk-workspace-jobs-1"
+      ],
+      "must_not_return_chunk_ids": [],
+      "insufficient_context": false,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    },
+    {
+      "query_id": "GQ-010",
+      "query": "Wie starte ich eine Cloud-Replikation?",
+      "search_result_chunk_ids": [],
+      "chat_retrieval_chunk_ids": [],
+      "expected_relevant_chunk_ids": [],
+      "must_not_return_chunk_ids": [],
+      "insufficient_context": true,
+      "missing_relevant_context": false,
+      "precision_at_5": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    }
+  ]
+}

@@ -29,6 +29,7 @@ Abgedeckte Bereiche:
 - Reindex Governance (`reindex_governance`)
 - Citation Longevity (`citation_longevity`)
 - Cleanup Governance (`cleanup_governance`)
+- M5 Cleanup Processes (`m5_cleanup`)
 - Entropy / Langzeitbetrieb (`entropy`)
 
 ## M5 Truth-Test-Erweiterung
@@ -72,6 +73,7 @@ Stand 2026-05-12:
 | `test_reindex_governance_truth.py` | `postgres_truth`, `reindex_governance` | Reindex Governance | Safety-Gates, Audit-Trail, Rollback |
 | `test_citation_longevity_truth.py` | `postgres_truth`, `citation_longevity` | Citation Longevity | Snapshot-Stabilitaet, Orphan-Rate |
 | `test_cleanup_governance_truth.py` | `postgres_truth`, `cleanup_governance` | Cleanup Governance | Dry-Run, Delta, Safety-Gates |
+| `test_m5_cleanup_truth.py` | `postgres_truth`, `m5_cleanup` | Cleanup Processes | Orphan, stale index, temp files, old reports, expired sessions |
 | `test_entropy_truth.py` | `postgres_truth`, `entropy` | Entropy / Langzeitbetrieb | Orphan-Wachstum, Stale-Index, Retrieval-Degradation |
 
 Hilfsmodule:
@@ -92,6 +94,7 @@ Alle neuen Marker sind in `backend/pyproject.toml` registriert:
 "reindex_governance: Reindex Governance safety constraints and audit trail truth tests"
 "citation_longevity: Citation Longevity Audit — long-term snapshot stability truth tests"
 "cleanup_governance: Cleanup Governance safety constraints and audit trail truth tests"
+"m5_cleanup: M5 Cleanup process truth tests"
 "entropy: Long-term entropy and system aging detection truth tests"
 ```
 

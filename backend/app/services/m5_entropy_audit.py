@@ -21,11 +21,13 @@ def run_audit(
     longrun = longrun_report or _read_json(LONGRUN_LATEST)
     retrieval = retrieval_report or _read_json(RETRIEVAL_LATEST)
     categories = [
-        _stale_queue_jobs(longrun),
+        _queue_backlog_drift(longrun),
         _outdated_backups(longrun),
         _orphan_growth(longrun),
         _stale_index_entries(longrun),
-        _historical_citation_drift(retrieval),
+        _retrieval_degradation(longrun, retrieval),
+        _retry_accumulation(longrun),
+        _historical_citation_drift(longrun, retrieval),
         _duplicate_growth(retrieval),
         _cleanup_residue(longrun),
     ]
@@ -89,15 +91,15 @@ def _risk_from_threshold(end: float | None, threshold: float, *, increasing_is_b
     return "low"
 
 
-def _stale_queue_jobs(longrun: dict[str, Any]) -> dict[str, Any]:
-    values = _cycle_metrics(longrun, "queue_backlog")
+def _queue_backlog_drift(longrun: dict[str, Any]) -> dict[str, Any]:
+    values = _cycle_metrics(longrun, "queue_backlog_drift")
     growth = _growth(values)
-    threshold = float(longrun.get("thresholds", {}).get("queue_backlog", 25))
+    threshold = float(longrun.get("thresholds", {}).get("queue_backlog_drift", 12))
     return {
-        "category": "stale Queue Jobs",
+        "category": "queue backlog drift",
         "growth_over_time": growth,
         "risk": _risk_from_threshold(growth["end"], threshold),
-        "evidence": f"queue_backlog final={growth['end']} max={growth['max']} threshold={threshold}",
+        "evidence": f"queue_backlog_drift final={growth['end']} max={growth['max']} threshold={threshold}",
         "detection_strategy": "Age-bucket queue rows by status and claimed_at/updated_at; alert on running timeout, retryable backlog, dead_letter growth and missing audit transitions.",
         "cleanup_repair_strategy": "Move timed-out running jobs to retryable, replay dead_letter with advisory lock, cap retry attempts, and preserve replay audit rows.",
     }
@@ -148,16 +150,46 @@ def _stale_index_entries(longrun: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _historical_citation_drift(retrieval: dict[str, Any]) -> dict[str, Any]:
+def _retrieval_degradation(longrun: dict[str, Any], retrieval: dict[str, Any]) -> dict[str, Any]:
+    longrun_growth = _growth(_cycle_metrics(longrun, "retrieval_degradation"))
+    summary = retrieval.get("summary", {})
+    recall = float(summary.get("search_recall_at_5", 0))
+    risk = "high" if (longrun_growth["max"] or 0) > 0.10 or recall < 0.85 else "medium" if (longrun_growth["max"] or 0) > 0.05 else "low"
+    return {
+        "category": "retrieval degradation",
+        "growth_over_time": {**longrun_growth, "search_recall_at_5": recall},
+        "risk": risk,
+        "evidence": f"retrieval_degradation final={longrun_growth['end']} max={longrun_growth['max']}; search_recall_at_5={recall}",
+        "detection_strategy": "Track degradation against the baseline retrieval precision before and after lifecycle, restore and reindex cycles; confirm with golden retrieval queries.",
+        "cleanup_repair_strategy": "Rebuild affected index slices, inspect chunk/reference churn and block release until retrieval regression clears.",
+    }
+
+
+def _retry_accumulation(longrun: dict[str, Any]) -> dict[str, Any]:
+    values = _cycle_metrics(longrun, "retry_accumulation")
+    growth = _growth(values)
+    threshold = float(longrun.get("thresholds", {}).get("retry_accumulation", 8))
+    return {
+        "category": "retry accumulation",
+        "growth_over_time": growth,
+        "risk": _risk_from_threshold(growth["end"], threshold),
+        "evidence": f"retry_accumulation final={growth['end']} max={growth['max']} threshold={threshold}",
+        "detection_strategy": "Measure cumulative retries across simulation cycles and correlate with dead_letter and retryable queue states.",
+        "cleanup_repair_strategy": "Clamp retries by error class, add idempotent replay guards and quarantine poison jobs before they inflate backlog.",
+    }
+
+
+def _historical_citation_drift(longrun: dict[str, Any], retrieval: dict[str, Any]) -> dict[str, Any]:
     summary = retrieval.get("summary", {})
     completeness = float(summary.get("citation_completeness", 0))
     lifecycle_violations = int(summary.get("lifecycle_exclusion_violations", 1))
-    risk = "high" if completeness < 0.9 or lifecycle_violations else "low"
+    citation_growth = _growth(_cycle_metrics(longrun, "citation_degradation"))
+    risk = "high" if completeness < 0.9 or lifecycle_violations or (citation_growth["max"] or 0) > 0.08 else "low"
     return {
-        "category": "historische Citation Drift",
-        "growth_over_time": {"citation_completeness": completeness, "lifecycle_exclusion_violations": lifecycle_violations},
+        "category": "citation degradation",
+        "growth_over_time": {**citation_growth, "citation_completeness": completeness, "lifecycle_exclusion_violations": lifecycle_violations},
         "risk": risk,
-        "evidence": f"citation_completeness={completeness}; lifecycle_exclusion_violations={lifecycle_violations}",
+        "evidence": f"citation_degradation final={citation_growth['end']} max={citation_growth['max']}; citation_completeness={completeness}; lifecycle_exclusion_violations={lifecycle_violations}",
         "detection_strategy": "Replay golden citation queries and compare stored citation snapshots against current document lifecycle/source_status.",
         "cleanup_repair_strategy": "Never rewrite historical quote snapshots; repair missing source_status metadata and keep deleted/archived sources visible as historical citations only.",
     }
@@ -205,8 +237,10 @@ def _prevention_measures(categories: list[dict[str, Any]]) -> list[str]:
     ]
     if any(category["category"] == "duplicate growth" and category["risk"] != "low" for category in categories):
         measures.append("Add live DB duplicate cardinality audit before treating duplicate growth as fully closed.")
-    if any(category["category"] == "stale Queue Jobs" and category["risk"] == "medium" for category in categories):
+    if any(category["category"] == "queue backlog drift" and category["risk"] == "medium" for category in categories):
         measures.append("Add queue age percentiles, not just backlog counts, to separate healthy backlog from stale jobs.")
+    if any(category["category"] == "retry accumulation" and category["risk"] != "low" for category in categories):
+        measures.append("Track retry accumulation alongside poison-job fingerprints so recurring retries are isolated before backlog drift compounds.")
     return measures
 
 

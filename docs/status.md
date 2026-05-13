@@ -1,6 +1,6 @@
 # Projektstatus
 
-Stand: 2026-05-12
+Stand: 2026-05-13
 
 ## Paket-5-Abschlussstand
 
@@ -492,9 +492,40 @@ Entscheidung:
 - Go/No-Go fuer M4e: `No-Go`
 - Startfreigabe fuer weitere M4-Slices: `No-Go`, solange das M4-Gate fuer `M4a`, `M4b` und `M4c` nicht erreicht ist
 
+## Governance Framework
+
+Stand: 2026-05-13
+
+Das vollstaendige Governance-Framework ist abgeschlossen. Es umfasst 8 Dokumente fuer Architektur-, Schema-, Feature-, SLA-, Failure-, Audit-, Invarianten- und Langzeitstrategie-Governance.
+
+| Dokument | Typ | Bewertung |
+|---|---|---|
+| `docs/architecture-change-governance.md` | Architektur | systemisch kontrolliert |
+| `docs/schema-evolution-safety-model.md` | Schema | systemisch kontrolliert |
+| `docs/feature-governance-model.md` | Feature | systemisch kontrolliert |
+| `docs/retrieval-stability-contract.md` | Retrieval | systemisch kontrolliert |
+| `docs/operational-truth-governance.md` | Truth | systemisch kontrolliert |
+| `docs/operational-sla-framework.md` | SLA | definiert |
+| `docs/controlled-failure-philosophy.md` | Failure | definiert |
+| `docs/audit-trail-schema.md` | Audit | ueberwiegend kontrolliert |
+| `docs/system-invariant-registry.md` | Invarianten | INV-001 bis INV-036 registriert |
+| `docs/long-term-governance-review.md` | Review | 4 Risiken, 6 Luecken bewertet |
+| `docs/long-term-architecture-strategy.md` | Strategie | 7 Ziele, 10 No-Gos, 7 RF-Trigger |
+
+Offene Luecken (aus `docs/long-term-governance-review.md`):
+
+- **L-01**: Kein laufender Drift-Service (HIGH)
+- **L-02**: Cleanup-Mutationspfad nicht freigegeben (HIGH)
+- **L-03**: `actor`-Feld fehlt in Audit-Trail-Implementierung (MEDIUM)
+- **L-04**: Golden-Query-Korpus nicht versioniert auffindbar (MEDIUM)
+- **L-05**: PostgreSQL-Truth-Tests noch skippable ohne CI-DB (HIGH)
+- **L-06**: Kein zentraler Audit-Store (MEDIUM)
+
+---
+
 ## M5 Governance Services
 
-Stand: 2026-05-12
+Stand: 2026-05-13
 
 M5 fuehrt eine Schicht operativer Governance-Services ein, die ueber M4-Diagnostics hinausgehen und aktive Systemkontrolle ermoeglichen.
 

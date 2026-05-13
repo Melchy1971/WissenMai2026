@@ -13,11 +13,30 @@ Set-Location backend
 python -m app.cli m5 retrieval-benchmark
 ```
 
+Trigger-spezifische Regression Detection:
+
+```powershell
+python -m app.cli m5 retrieval-benchmark --trigger reindex
+python -m app.cli m5 retrieval-benchmark --trigger restore
+python -m app.cli m5 retrieval-benchmark --trigger cleanup
+python -m app.cli m5 retrieval-benchmark --trigger chunking
+```
+
+Baseline bewusst aktualisieren:
+
+```powershell
+python -m app.cli m5 retrieval-benchmark --set-baseline
+```
+
 Reports:
 
 - `reports/m5_retrieval/YYYYMMDD_HHMMSS.json`
 - `reports/m5_retrieval/latest.json`
 - `reports/m5_retrieval_summary.md`
+- `reports/m5_retrieval_regression/YYYYMMDD_HHMMSS.json`
+- `reports/m5_retrieval_regression/latest.json`
+- `reports/m5_retrieval_regression/baseline.json`
+- `reports/m5_retrieval_regression_summary.md`
 
 ## Golden Dataset
 
@@ -48,8 +67,38 @@ Der Benchmark enthaelt Golden Queries fuer:
 | Chat MRR | >= 0.80 |
 | Citation Completeness | >= 0.90 |
 | Insufficient Context Accuracy | >= 0.95 |
+| Missing Context Rate | <= 0.15 |
 | Lifecycle Exclusion Violations | 0 |
+
+## Regression Detection
+
+Regression Detection vergleicht jeden aktuellen Lauf gegen:
+
+1. absolute Schwellenwerte
+2. die gespeicherte Baseline in `reports/m5_retrieval_regression/baseline.json`
+
+Regression Threshold:
+
+- maximal erlaubter Rueckgang gegen Baseline: `0.05`
+- gilt fuer Search Precision@5, Search Recall@5, Chat Precision@5, Chat Recall@5 und Citation Completeness
+- maximal erlaubter Anstieg fuer Missing Context Rate gegen Baseline: `0.05`
+
+Automatische Pflichtausloeser:
+
+| Trigger | CLI-Wert | Pflicht |
+|---|---|---|
+| Reindex | `--trigger reindex` | nach jedem Reindex |
+| Restore | `--trigger restore` | nach Restore und Reindex-after-Restore |
+| Cleanup | `--trigger cleanup` | nach Cleanup Dry-Run und vor jedem mutierenden Cleanup |
+| Chunking-Aenderung | `--trigger chunking` | nach Aenderungen an Chunking, Parser-Normalisierung oder Context Builder |
+
+Report-Status:
+
+- `pass`: keine Schwellenverletzung und keine Baseline-Regression
+- `failed`: mindestens eine absolute Schwelle verletzt oder Baseline-Delta ueberschritten
+
+Die Baseline darf nur mit `--set-baseline` aktualisiert werden. Eine Baseline-Aktualisierung braucht eine dokumentierte Begruendung im Change-/Retrieval-Stability-Assessment.
 
 ## Stop-Regel
 
-Der Benchmark ist `failed`, wenn eine Metrik die Schwelle unterschreitet oder wenn archivierte/geloeschte Chunks in Search oder neuem Chat Retrieval erscheinen.
+Der Benchmark ist `failed`, wenn eine Metrik die Schwelle unterschreitet, Missing Context Rate die Obergrenze ueberschreitet, die Baseline-Regression groesser als `0.05` ist oder wenn archivierte/geloeschte Chunks in Search oder neuem Chat Retrieval erscheinen.

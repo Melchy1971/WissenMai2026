@@ -1,6 +1,12 @@
 # Operational Truth Governance
 
-Stand: 2026-05-12
+Stand: 2026-05-13
+
+Verwandte Dokumente:
+
+- [Architecture Change Governance](architecture-change-governance.md) — Pflichtprüfungen und Change-Control-Prozess für governance-pflichtige Änderungen
+- [Schema-Evolution Safety Model](schema-evolution-safety-model.md) — Risiko-Klassen A–D, Migrations-Governance und Downgrade-Bewertung
+- [Feature Governance Model](feature-governance-model.md) — Risikoklassen und Pflichtnachweise für kontrollierte Feature-Einführung
 
 ## Ziel
 
@@ -18,6 +24,11 @@ Produktionsnahe Systemzustaende duerfen nicht aus Dokumentation, Absichtserklaer
 8. Fehlt ein aktueller Report, lautet der Status `unknown` oder `not_verified`, niemals `pass`.
 9. Ein Health Score ersetzt kein Truth Gate.
 10. Ein einzelner gruener Report darf keine nicht abgedeckten Slices freigeben.
+11. Ein Status darf nur so stark formuliert werden wie der Scope des Nachweisartefakts. Ein fokussierter Testlauf darf keinen Full-Gate-Pass begruenden.
+12. Historische Reports bleiben Audit-Artefakte, aber sie duerfen keinen aktuellen Zustand ueberstimmen.
+13. Wenn sich Dokumentation und Report widersprechen, gilt der maschinenlesbare Report plus Validatorausgabe.
+14. Jeder kritische Statuswechsel braucht ein neues oder aktualisiertes Artefakt; eine Textaenderung allein ist kein Statuswechsel.
+15. Gate-Status muss reproduzierbar sein: Befehl, Umgebung, Datenbanktyp, Commit und Scope muessen nachvollziehbar sein.
 
 ## Truth-Quellen
 
@@ -29,6 +40,30 @@ Produktionsnahe Systemzustaende duerfen nicht aus Dokumentation, Absichtserklaer
 | Cleanup Truth Reports | Dry-Run- und Safety-Wahrheit fuer Cleanup | geplanter Cleanup-Report plus `postgres_truth` Cleanup-Block | ja erforderlich | Cleanup-Safety, Schutz von Citations, aktiven Daten und Queue |
 | Health Score | laufende Steuerungs- und Risikometrik | geplanter `reports/m5_health/latest.json` | ja erforderlich | Betriebszustand, nicht Gate-Ersatz |
 | Observability Metriken | Laufzeit- und Trenddaten | strukturierte JSON-Logs, Metrik-Snapshots, `m5_metric_observed` | ja | Trends, Alerts, Dashboard, Eskalation |
+
+### Quellenhierarchie
+
+Bei Konflikten gilt folgende Reihenfolge:
+
+1. Aktueller maschinenlesbarer Gate-Report mit Validatorausgabe.
+2. Aktueller maschinenlesbarer Detailreport des betroffenen Slices.
+3. Strukturierte Observability- oder Health-Score-Snapshots.
+4. Markdown-Report als menschenlesbare Darstellung eines maschinenlesbaren Artefakts.
+5. Dokumentation als Beschreibung der Regeln, niemals als eigene Wahrheit.
+
+Dokumentation darf daher nur sagen:
+
+- welcher Report ausgewertet wurde
+- welchen Status dieser Report enthaelt
+- welcher Scope damit abgedeckt ist
+- welche Risiken oder offenen Nachweise bleiben
+
+Dokumentation darf nicht sagen:
+
+- dass ein Bereich `pass` ist, wenn kein aktueller Report existiert
+- dass ein historischer gruener Report einen spaeteren roten Report ueberstimmt
+- dass ein lokaler SQLite-/Mock-Lauf einen PostgreSQL-Gate-Status ersetzt
+- dass ein Health Score ein fehlendes Truth-Artefakt kompensiert
 
 ## Gate-Policies
 
@@ -44,6 +79,9 @@ Ein Gate darf nur `pass` sein, wenn:
 - `skipped = 0`, sofern es sich um ein Pflichtgate handelt
 - `exit_code = 0`, falls ein Testlauf beteiligt ist
 - der Scope des Artefakts den behaupteten Status abdeckt
+- der Datenbanktyp fuer finale Gate-Aussagen PostgreSQL ist
+- der Report nicht aelter ist als die Aenderung, die bewertet wird
+- keine neueren roten Reports fuer denselben Scope existieren
 
 Wenn eines dieser Kriterien fehlt:
 
@@ -84,7 +122,9 @@ M5 darf sliceweise nur `pass` sein, wenn der jeweilige Slice einen aktuellen Rep
 | Backup Freshness | Restore/Backup Verify Report | Backup aktuell, Verify erfolgreich, Restore-Nachweis im erlaubten Alter |
 | Observability | Metrik-Snapshot/Log-Auswertung | alle Pflichtmetriken vorhanden, keine sensitiven Inhalte, Workspace-Aggregation korrekt |
 
-M5-Implementierung kann kontrolliert freigegeben sein, waehrend einzelne M5-Slices noch `not_verified` oder `watch` sind. M5-Produktionsreife erfordert dagegen vollstaendig gruene Gate-Reports.
+M5-Implementierung kann nur dann kontrolliert freigegeben werden, wenn das Start Gate selbst auf aktuellen Reports beruht und kein uebergeordneter Truth-Validator blockiert. Einzelne M5-Slices duerfen danach weiterhin `not_verified` oder `watch` sein, solange ihr Scope nicht als `pass` oder produktionsreif behauptet wird.
+
+M5-Produktionsreife erfordert vollstaendig gruene Gate-Reports fuer alle Pflichtslices. Ein `watch`-Status kann Entwicklung erlauben, aber keine Produktionsfreigabe.
 
 ### Restore Gate Policy
 
@@ -104,6 +144,7 @@ Markdown-only Restore-Reports duerfen eine menschliche Freigabe stuetzen, muesse
 Cleanup darf nur `pass` sein, wenn:
 
 - Dry-Run-Report vorhanden
+- der Cleanup-Truth-Block im aktuellen PostgreSQL-Report gruen ist
 - `blocked_count = 0`
 - `protected_count` nachvollziehbar ist
 - keine aktive Queue-Referenz geloescht wird
@@ -139,10 +180,12 @@ Verbotene sensitive Felder:
 
 Erlaubte Formulierungen:
 
-- `Report X weist pass aus`
-- `Validator Y meldet pass`
+- `Report X vom Zeitpunkt Y weist fuer Scope Z den Status pass aus`
+- `Validator Y meldet pass fuer Artefakt Z`
 - `Status not_verified, weil Report fehlt`
 - `Vorbereitung definiert, aber nicht als Gate-Pass belegt`
+- `Fokussierter Testlauf ist pass; Full-Gate bleibt fail`
+- `Historischer Report war pass; aktueller Report ist fail und ueberstimmt ihn`
 
 Verbotene Formulierungen:
 
@@ -151,6 +194,8 @@ Verbotene Formulierungen:
 - `produktionsreif`, nur wegen Dokumentation
 - `SQLite gruen`, als finales Gate
 - `manuell validiert`, als Ersatz fuer Pflichtreport
+- `alle Tests gruen`, wenn nur ein Teil-Scope gelaufen ist
+- `M5 freigegeben`, wenn ein uebergeordneter Truth-Validator blockiert
 
 ## Statusvokabular
 

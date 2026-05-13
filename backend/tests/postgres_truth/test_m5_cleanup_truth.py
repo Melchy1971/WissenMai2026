@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+import json
 import os
 from pathlib import Path
 
@@ -14,7 +15,7 @@ from app.services.m5_cleanup import CleanupConfig, M5CleanupService
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = pytest.mark.postgres_truth
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.m5_cleanup]
 
 NOW = datetime(2026, 5, 12, 10, 0, tzinfo=UTC)
 
@@ -29,13 +30,22 @@ def test_m5_cleanup_truth_orphan_cleanup_dry_run_is_safe(
     service = M5CleanupService.from_session(truth_session)
     config = _config(tmp_path, workspace_id=truth_seed["workspace_id"])
 
+    before = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     dry_run = service.dry_run(config=config)
+    after_dry_run = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     execute = service.execute(config=config)
+    after_execute = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
 
     assert dry_run["mode"] == "dry_run"
     assert dry_run["categories"]["orphan_cleanup"]["candidate_count"] == 0
     assert dry_run["categories"]["orphan_cleanup"]["applied_count"] == 0
+    assert dry_run["safety"]["dry_run_first"] is True
+    assert dry_run["safety"]["destructive_primary_data_delete"] is False
+    assert dry_run["safety"]["citations_preserved"] is True
+    assert dry_run["safety"]["active_queue_jobs_protected"] is True
+    assert after_dry_run == before
     assert execute["categories"]["orphan_cleanup"]["applied_count"] == 0
+    _assert_cleanup_did_not_destroy_protected_state(before, after_execute)
     _assert_document_citation_and_queue_safety(truth_session, seeded)
 
 
@@ -62,13 +72,18 @@ def test_m5_cleanup_truth_stale_index_cleanup_respects_lifecycle_and_citations(
     service = M5CleanupService.from_session(truth_session)
     config = _config(tmp_path, workspace_id=truth_seed["workspace_id"])
 
+    before = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     dry_run = service.dry_run(config=config)
+    after_dry_run = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     execute = service.execute(config=config)
     truth_session.expire_all()
+    after_execute = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
 
     assert dry_run["categories"]["stale_index_cleanup"]["candidate_count"] == 2
     assert dry_run["categories"]["stale_index_cleanup"]["applied_count"] == 0
+    assert after_dry_run == before
     assert execute["categories"]["stale_index_cleanup"]["applied_count"] == 2
+    _assert_cleanup_did_not_destroy_protected_state(before, after_execute)
     assert truth_session.get(Chunk, active["chunk_id"]).is_searchable is True
     assert truth_session.get(Chunk, archived["chunk_id"]).is_searchable is False
     _assert_document_citation_and_queue_safety(truth_session, active)
@@ -101,13 +116,18 @@ def test_m5_cleanup_truth_temp_file_cleanup_protects_active_queue_jobs(
     service = M5CleanupService.from_session(truth_session)
     config = _config(tmp_path, temp_dir=temp_dir, workspace_id=truth_seed["workspace_id"])
 
+    before = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     dry_run = service.dry_run(config=config)
+    after_dry_run = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     execute = service.execute(config=config)
+    after_execute = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
 
     assert dry_run["categories"]["temp_file_cleanup"]["candidate_count"] == 1
     assert dry_run["categories"]["temp_file_cleanup"]["protected_count"] == 1
     assert dry_run["categories"]["temp_file_cleanup"]["applied_count"] == 0
+    assert after_dry_run == before
     assert execute["categories"]["temp_file_cleanup"]["applied_count"] == 1
+    _assert_cleanup_did_not_destroy_protected_state(before, after_execute)
     assert not orphan_temp.exists()
     assert protected_temp.exists()
     assert truth_session.get(BackgroundJob, job_id).status == "pending"
@@ -135,12 +155,18 @@ def test_m5_cleanup_truth_old_report_cleanup_keeps_latest_and_fresh_reports(
     service = M5CleanupService.from_session(truth_session)
     config = _config(tmp_path, reports_dir=reports_dir, workspace_id=truth_seed["workspace_id"])
 
+    before = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     dry_run = service.dry_run(config=config)
+    after_dry_run = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     execute = service.execute(config=config)
+    after_execute = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
 
     assert dry_run["categories"]["old_report_cleanup"]["candidate_count"] == 1
     assert dry_run["categories"]["old_report_cleanup"]["protected_count"] == 1
+    assert dry_run["categories"]["old_report_cleanup"]["applied_count"] == 0
+    assert after_dry_run == before
     assert execute["categories"]["old_report_cleanup"]["applied_count"] == 1
+    _assert_cleanup_did_not_destroy_protected_state(before, after_execute)
     assert not old_report.exists()
     assert fresh_report.exists()
     assert latest_report.exists()
@@ -172,12 +198,17 @@ def test_m5_cleanup_truth_expired_session_cleanup_keeps_active_sessions(
     service = M5CleanupService.from_session(truth_session)
     config = _config(tmp_path, workspace_id=truth_seed["workspace_id"])
 
+    before = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     dry_run = service.dry_run(config=config)
+    after_dry_run = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
     execute = service.execute(config=config)
+    after_execute = _cleanup_safety_snapshot(truth_session, truth_seed["workspace_id"])
 
     assert dry_run["categories"]["expired_session_cleanup"]["candidate_count"] == 1
     assert dry_run["categories"]["expired_session_cleanup"]["applied_count"] == 0
+    assert after_dry_run == before
     assert execute["categories"]["expired_session_cleanup"]["applied_count"] == 1
+    _assert_cleanup_did_not_destroy_protected_state(before, after_execute)
     assert truth_session.get(AuthSession, expired_session_id) is None
     assert truth_session.get(AuthSession, active_session_id) is not None
     _assert_document_citation_and_queue_safety(truth_session, seeded)
@@ -214,6 +245,7 @@ def _seed_document_with_citation(
     chat_session_id = truth_ids.chat_session_id(label)
     chat_message_id = truth_ids.chat_message_id(label)
     citation_id = truth_ids.citation_id(label)
+    source_anchor = {"type": "text", "page": None, "paragraph": 1, "char_start": 0, "char_end": 28}
     document = Document(
         id=document_id,
         workspace_id=truth_seed["workspace_id"],
@@ -223,7 +255,7 @@ def _seed_document_with_citation(
         source_type="markdown",
         mime_type="text/markdown",
         content_hash=truth_ids.content_hash(label),
-        import_status="chunked",
+        import_status="pending",
         lifecycle_status=lifecycle_status,
         archived_at=NOW if lifecycle_status == "archived" else None,
         deleted_at=NOW if lifecycle_status == "deleted" else None,
@@ -248,20 +280,52 @@ def _seed_document_with_citation(
     session.add(version)
     session.flush()
     document.current_version_id = version_id
-    chunk = Chunk(
-        id=chunk_id,
-        document_id=document_id,
-        document_version_id=version_id,
-        chunk_index=0,
-        heading_path=["Cleanup"],
-        anchor=f"cleanup-{label}",
-        content=f"Cleanup truth content {label}",
-        is_searchable=chunk_is_searchable,
-        search_vector=None,
-        content_hash=truth_ids.content_hash(f"{label}-chunk"),
-        token_estimate=5,
-        metadata_={"truth": label},
-        created_at=NOW,
+    document.import_status = "chunked"
+    session.execute(
+        text(
+            """
+            insert into document_chunks (
+                id,
+                document_id,
+                document_version_id,
+                chunk_index,
+                heading_path,
+                anchor,
+                content,
+                is_searchable,
+                content_hash,
+                token_estimate,
+                metadata,
+                created_at
+            )
+            values (
+                :chunk_id,
+                :document_id,
+                :version_id,
+                0,
+                cast(:heading_path as json),
+                :anchor,
+                :content,
+                :is_searchable,
+                :content_hash,
+                5,
+                cast(:metadata as json),
+                :created_at
+            )
+            """
+        ),
+        {
+            "chunk_id": chunk_id,
+            "document_id": document_id,
+            "version_id": version_id,
+            "heading_path": json.dumps(["Cleanup"]),
+            "anchor": f"cleanup-{label}",
+            "content": f"Cleanup truth content {label}",
+            "is_searchable": chunk_is_searchable,
+            "content_hash": truth_ids.content_hash(f"{label}-chunk"),
+            "metadata": json.dumps({"truth": label, "source_anchor": source_anchor}),
+            "created_at": NOW,
+        },
     )
     chat_session = ChatSession(
         id=chat_session_id,
@@ -288,10 +352,14 @@ def _seed_document_with_citation(
         document_id=document_id,
         document_title=document.title,
         quote_preview="Cleanup citation preview",
-        source_anchor={"type": "heading", "value": f"cleanup-{label}"},
+        source_anchor=source_anchor,
         source_status=lifecycle_status,
     )
-    session.add_all([chunk, chat_session, chat_message, citation])
+    session.add(chat_session)
+    session.flush()
+    session.add(chat_message)
+    session.flush()
+    session.add(citation)
     session.commit()
     return {
         "document_id": document_id,
@@ -351,6 +419,50 @@ def _assert_document_citation_and_queue_safety(session: Session, seeded: dict[st
     assert citation.chunk_id == seeded["chunk_id"]
     assert citation.quote_preview == "Cleanup citation preview"
     assert session.scalar(select(func.count(BackgroundJob.id)).where(BackgroundJob.status.in_(["pending", "running", "retryable"]))) is not None
+
+
+def _cleanup_safety_snapshot(session: Session, workspace_id: str) -> dict[str, int]:
+    active_documents = int(
+        session.scalar(
+            select(func.count(Document.id)).where(
+                Document.workspace_id == workspace_id,
+                Document.lifecycle_status == "active",
+            )
+        )
+        or 0
+    )
+    citations = int(
+        session.scalar(
+            select(func.count(ChatCitation.id))
+            .join(ChatMessage, ChatMessage.id == ChatCitation.message_id)
+            .join(ChatSession, ChatSession.id == ChatMessage.session_id)
+            .where(ChatSession.workspace_id == workspace_id)
+        )
+        or 0
+    )
+    active_queue_jobs = int(
+        session.scalar(
+            select(func.count(BackgroundJob.id)).where(
+                BackgroundJob.workspace_id == workspace_id,
+                BackgroundJob.status.in_(["pending", "running", "retryable"]),
+            )
+        )
+        or 0
+    )
+    return {
+        "active_documents": active_documents,
+        "citations": citations,
+        "active_queue_jobs": active_queue_jobs,
+    }
+
+
+def _assert_cleanup_did_not_destroy_protected_state(
+    before: dict[str, int],
+    after: dict[str, int],
+) -> None:
+    assert after["active_documents"] >= before["active_documents"]
+    assert after["citations"] >= before["citations"]
+    assert after["active_queue_jobs"] >= before["active_queue_jobs"]
 
 
 def _set_mtime(path: Path, timestamp: datetime) -> None:

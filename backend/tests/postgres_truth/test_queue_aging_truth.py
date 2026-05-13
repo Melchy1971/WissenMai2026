@@ -16,8 +16,11 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.services.queue_aging_service import (
+    BACKLOG_CRITICAL,
+    BACKLOG_WARNING,
     DEAD_LETTER_CRITICAL,
     DEAD_LETTER_WARNING,
+    RETRY_RATE_WARNING_PER_HOUR,
     STALLED_PENDING_SECONDS,
     STUCK_RUNNING_SECONDS,
     QueueAgingService,
@@ -369,6 +372,173 @@ def test_aging_report_does_not_count_other_workspace_jobs(
 
 # ── 8. API endpoint contract ──────────────────────────────────────────────────
 
+def test_aging_reports_queue_truth_metrics_and_workspace_distribution(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    now = datetime.now(UTC)
+    for i in range(BACKLOG_WARNING):
+        _insert_job(
+            truth_session,
+            truth_ids.job_id(f"backlog-pending-{i}"),
+            workspace_id=truth_seed["workspace_id"],
+            user_id=truth_seed["user_id"],
+            status="pending",
+            created_at=now - timedelta(seconds=i + 1),
+        )
+    _insert_job(
+        truth_session,
+        truth_ids.job_id("other-distribution-pending"),
+        workspace_id=truth_seed["other_workspace_id"],
+        user_id=truth_seed["other_user_id"],
+        status="pending",
+        created_at=now - timedelta(seconds=5),
+    )
+    truth_session.commit()
+
+    svc = QueueAgingService.from_session(truth_session)
+    report = svc.get_aging_report(workspace_id=truth_seed["workspace_id"])
+
+    assert report["queue_backlog_count"] == BACKLOG_WARNING
+    assert report["backlog_growth_24h"] == BACKLOG_WARNING
+    assert report["queue_age_p95_seconds"] is not None
+    assert report["severity"] == "warning"
+    assert any("backlog" in alert.lower() for alert in report["alerts"])
+
+    distribution = {
+        item["workspace_id"]: item for item in report["workspace_queue_distribution"]
+    }
+    assert distribution[truth_seed["workspace_id"]]["pending"] == BACKLOG_WARNING
+    assert distribution[truth_seed["workspace_id"]]["backlog"] == BACKLOG_WARNING
+    assert distribution[truth_seed["other_workspace_id"]]["pending"] == 1
+    assert distribution[truth_seed["workspace_id"]]["backlog_share"] > 0
+
+
+def test_aging_backlog_critical_threshold_is_critical(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    now = datetime.now(UTC)
+    for i in range(BACKLOG_CRITICAL):
+        _insert_job(
+            truth_session,
+            truth_ids.job_id(f"backlog-critical-{i}"),
+            workspace_id=truth_seed["workspace_id"],
+            user_id=truth_seed["user_id"],
+            status="pending",
+            created_at=now - timedelta(seconds=i + 1),
+        )
+    truth_session.commit()
+
+    svc = QueueAgingService.from_session(truth_session)
+    report = svc.get_aging_report(workspace_id=truth_seed["workspace_id"])
+
+    assert report["queue_backlog_count"] == BACKLOG_CRITICAL
+    assert report["severity"] == "critical"
+    assert any("CRITICAL: queue backlog" in alert for alert in report["alerts"])
+
+
+def test_aging_reports_retry_rate_without_infinite_silent_retries(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    now = datetime.now(UTC)
+    for i in range(int(RETRY_RATE_WARNING_PER_HOUR) + 1):
+        _insert_job(
+            truth_session,
+            truth_ids.job_id(f"retry-rate-{i}"),
+            workspace_id=truth_seed["workspace_id"],
+            user_id=truth_seed["user_id"],
+            status="retryable",
+            attempt_count=1,
+            finished_at=now - timedelta(minutes=10),
+            error_code="IMPORT_FAILED",
+        )
+    truth_session.commit()
+
+    svc = QueueAgingService.from_session(truth_session)
+    report = svc.get_aging_report(workspace_id=truth_seed["workspace_id"])
+
+    assert report["retry_rate_per_hour"] == RETRY_RATE_WARNING_PER_HOUR + 1
+    assert report["high_retry_count"] == 0
+    assert report["severity"] == "warning"
+    assert any("retry rate" in alert.lower() for alert in report["alerts"])
+
+
+def test_aging_reports_dead_letter_growth_metric(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    now = datetime.now(UTC)
+    _insert_job(
+        truth_session,
+        truth_ids.job_id("dead-letter-recent-growth"),
+        workspace_id=truth_seed["workspace_id"],
+        user_id=truth_seed["user_id"],
+        status="dead_letter",
+        attempt_count=3,
+        finished_at=now - timedelta(hours=2),
+        error_code="IMPORT_FAILED",
+    )
+    _insert_job(
+        truth_session,
+        truth_ids.job_id("dead-letter-old-growth"),
+        workspace_id=truth_seed["workspace_id"],
+        user_id=truth_seed["user_id"],
+        status="dead_letter",
+        attempt_count=3,
+        finished_at=now - timedelta(hours=25),
+        error_code="IMPORT_FAILED",
+    )
+    truth_session.commit()
+
+    svc = QueueAgingService.from_session(truth_session)
+    report = svc.get_aging_report(workspace_id=truth_seed["workspace_id"])
+
+    assert report["dead_letter_count"] == 2
+    assert report["dead_letter_growth_24h"] == 1
+    assert report["severity"] == "warning"
+    assert any("dead-letter growth" in alert.lower() for alert in report["alerts"])
+
+
+def test_aging_detects_workspace_starvation(
+    truth_ids: TruthIds,
+    truth_seed: dict[str, str],
+    truth_session: Session,
+) -> None:
+    stale_created_at = datetime.now(UTC) - timedelta(seconds=STALLED_PENDING_SECONDS + 60)
+    _insert_job(
+        truth_session,
+        truth_ids.job_id("starved-workspace-pending"),
+        workspace_id=truth_seed["workspace_id"],
+        user_id=truth_seed["user_id"],
+        status="pending",
+        created_at=stale_created_at,
+    )
+    fresh_running_at = datetime.now(UTC) - timedelta(seconds=30)
+    _insert_job(
+        truth_session,
+        truth_ids.job_id("other-workspace-running"),
+        workspace_id=truth_seed["other_workspace_id"],
+        user_id=truth_seed["other_user_id"],
+        status="running",
+        locked_at=fresh_running_at,
+        started_at=fresh_running_at,
+    )
+    truth_session.commit()
+
+    svc = QueueAgingService.from_session(truth_session)
+    report = svc.get_aging_report(workspace_id=truth_seed["workspace_id"])
+
+    assert report["starvation_detected"] is True
+    assert report["severity"] == "warning"
+    assert any("workspace starvation" in note.lower() for note in report["starvation_notes"])
+
+
 def test_aging_api_endpoint_returns_200_for_admin(
     truth_client,
     truth_seed: dict[str, str],
@@ -382,5 +552,11 @@ def test_aging_api_endpoint_returns_200_for_admin(
     assert data["severity"] in {"ok", "warning", "critical"}
     assert isinstance(data["alerts"], list)
     assert isinstance(data["pending_count"], int)
+    assert isinstance(data["queue_backlog_count"], int)
+    assert "queue_age_p95_seconds" in data
+    assert isinstance(data["retry_rate_per_hour"], float)
+    assert isinstance(data["dead_letter_growth_24h"], int)
+    assert isinstance(data["workspace_queue_distribution"], list)
     assert "thresholds" in data
     assert data["thresholds"]["stalled_pending_seconds"] == STALLED_PENDING_SECONDS
+    assert data["thresholds"]["backlog_warning"] == BACKLOG_WARNING

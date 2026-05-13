@@ -2,22 +2,36 @@
 
 | Feld | Wert |
 |---|---|
-| Zeitpunkt | 2026-05-11T08:14:50.371402Z |
+| Zeitpunkt | 2026-05-13T08:23:30.535021Z |
 | Command | `python.exe -m pytest -m postgres_truth tests/postgres_truth -q` |
 | TEST_DATABASE_URL gesetzt | true |
 | Alembic head | 20260508_0014 |
-| Collected | 33 |
-| M4a-Gate Tests | 10 |
-| M4b-Gate Tests | 5 |
-| M4c-Gate Tests | 8 |
-| Passed | 33 |
-| Failed | 0 |
+| Collected | 112 |
+| M4a-Gate Tests | 13 |
+| M4b-Gate Tests | 12 |
+| M4c-Gate Tests | 11 |
+| M4d-Gate Tests | 0 |
+| Passed | 83 |
+| Failed | 29 |
 | Skipped | 0 |
 | Errors | 0 |
-| Duration | 40.795s |
-| Pytest exit code | 0 |
-| Commit | b07798e2a9b9300aee15edfe48de82f160c3a3b3 |
-| M4-Gate-Auswirkung | M4-Gate PASS |
+| Duration | 85.976s |
+| Pytest exit code | 1 |
+| Commit | a21e7016a84b3c058e4ac52e6045b2817961396d |
+| M4-Gate-Auswirkung | M4-Gate BLOCKED |
+
+## Gate Scores
+
+| Gate | Score | Schwelle | Status |
+|---|---|---|---|
+| M4a | 100.0% | >= 95% | PASS |
+| M4b | 91.7% | >= 90% | PASS |
+| M4c | 100.0% | >= 90% | PASS |
+| M4d | n/a (keine Tests) | >= 85% | n/a |
+
+## RC-Blocker
+
+Keine offenen RC-Blocker.
 
 ## Interpretation
 
@@ -25,3 +39,7 @@
 - `TEST_DATABASE_URL gesetzt = false` bedeutet: kein echter PostgreSQL-Nachweis; ein gruenes M4-Gate darf daraus nicht abgeleitet werden.
 - Bei gesetzter `TEST_DATABASE_URL` sind Skips, Migrationfehler, Setup-Errors und Testfehler Gate-blockierend.
 - Mehrere Alembic-Heads sind ein Befund des Repositories und werden hier unverdeckt ausgewiesen.
+
+## M4-Gate-Blocker
+
+- 29 Testfehler

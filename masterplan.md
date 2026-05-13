@@ -1,6 +1,6 @@
 # Wissensbasis V1 - Masterplan
 
-**Stand:** 2026-05-12  
+**Stand:** 2026-05-13  
 **Ground Truth:** Code und Migrationen sind verbindlich. Dokumentation beschreibt den Stand, entscheidet ihn aber nicht.  
 **Ziel:** Eine robuste Wissensbasis, in der Dokumente importiert, normalisiert, versioniert, als Chunks lesbar gemacht, spaeter durchsucht und im Chat/Analysekontext verwendet werden koennen.
 
@@ -35,6 +35,7 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 | Analyse | nach Chat/Retrieval-Grundlage | vorbereitet im Datenmodell, Fachlogik fehlt |
 | Vektorsuche | optional, nicht V1-kritisch | fehlt |
 | Backup/Restore | Teil der M4-Produktisierung, weitergehende Automatisierung spaeter | fehlt |
+| Governance Framework | vollstaendiges Governance-Framework fuer Architektur, Schema, Feature, SLA, Failure, Audit, Invarianten und Langzeitstrategie | ✅ abgeschlossen (2026-05-13) |
 
 ---
 
@@ -95,6 +96,15 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 - ✅ Entropy-Test-Suite mit `EntropyMetrics` und Multi-Epoch-Chaos-Recovery-Simulation implementiert.
 - ✅ Governance-Envelope-Prinzip: correlation_id, dry_run_only, Safety-Gates, Delta-Snapshot, rollback_strategy.
 - Truth-Nachweis fuer M5-Governance-Tests steht noch aus (letzter Report: 2026-05-11, 33 Tests, M4-only).
+- ✅ Governance Framework abgeschlossen (2026-05-13):
+  - ✅ `docs/architecture-change-governance.md`: 7 Impact-Bereiche, 4 Pflichtartefakte, verbotene Muster.
+  - ✅ `docs/schema-evolution-safety-model.md`: Risikoklassen A-D, 11 Schema-Regeln (SE-01 bis SE-11), Downgrade-Matrix.
+  - ✅ `docs/operational-sla-framework.md`: 8 SLA-Bereiche mit Schwellen und Eskalationskaskade.
+  - ✅ `docs/controlled-failure-philosophy.md`: 5 Fehlerprinzipien, Fehlercodes, Recovery-Kategorien, Degraded-States.
+  - ✅ `docs/audit-trail-schema.md`: 8 Audit-Event-Typen mit JSON-Schemas, actor-Feld, Retention-Regeln.
+  - ✅ `docs/system-invariant-registry.md`: INV-001 bis INV-036 mit Criticality, Nachweis und Reparaturpfad.
+  - ✅ `docs/long-term-governance-review.md`: Bewertung 8 Governance-Bereiche; 6 offene Luecken (L-01 bis L-06); 4 Langzeitrisiken.
+  - ✅ `docs/long-term-architecture-strategy.md`: 7 strategische Ziele, 10 No-Go-Verletzungen, 7 Pflicht-Refactoring-Trigger, 5 Feature-Stop-Bedingungen.
 
 ### Partial
 

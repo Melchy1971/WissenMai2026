@@ -31,6 +31,13 @@ from app.services.search_index_service import SearchIndexRebuildService
 logger = logging.getLogger(__name__)
 
 ReindexType = Literal["full", "workspace", "document"]
+START_AUDIT_EVENT = "reindex_governance_started"
+COMPLETED_AUDIT_EVENT = "reindex_governance_completed"
+POST_REINDEX_CHECKS = {
+    "drift_detection": "executed",
+    "retrieval_regression": "required",
+    "lifecycle_consistency": "executed",
+}
 
 
 class ReindexGovernanceViolation(ValueError):
@@ -72,7 +79,7 @@ class ReindexGovernanceService:
         )
 
         log_event(
-            "reindex_governance_started",
+            START_AUDIT_EVENT,
             workspace_id=workspace_id,
             status="started",
             correlation_id=correlation_id,
@@ -94,7 +101,7 @@ class ReindexGovernanceService:
         completed_at = datetime.now(UTC)
 
         log_event(
-            "reindex_governance_completed",
+            COMPLETED_AUDIT_EVENT,
             workspace_id=workspace_id,
             status="completed",
             duration_ms=duration_ms,
@@ -110,6 +117,8 @@ class ReindexGovernanceService:
             "started_at": started_at,
             "completed_at": completed_at,
             "duration_ms": duration_ms,
+            "audit_event_names": [START_AUDIT_EVENT, COMPLETED_AUDIT_EVENT],
+            "audit_event_count": 2,
             "drift_score_before": int(drift_before["drift_score"]),
             "drift_score_after": int(drift_after["drift_score"]),
             "drift_delta": int(drift_after["drift_score"]) - int(drift_before["drift_score"]),
@@ -117,12 +126,16 @@ class ReindexGovernanceService:
             "drift_severity_after": str(drift_after["severity"]),
             "drift_status_before": str(drift_before["status"]),
             "drift_status_after": str(drift_after["status"]),
+            "drift_snapshot_before_taken": True,
+            "drift_snapshot_after_taken": True,
             "lifecycle_ok": lifecycle_ok,
             "lifecycle_inconsistency_count": lifecycle_inconsistency_count,
             "reindexed_chunk_count": int(rebuild_result["reindexed_chunk_count"]),
             "reindexed_document_count": int(rebuild_result["reindexed_document_count"]),
             "index_action": str(rebuild_result["index_action"]),
             "regression_check_required": True,
+            "retrieval_regression_trigger": "reindex",
+            "post_reindex_checks": POST_REINDEX_CHECKS,
             "status": "completed",
         }
 

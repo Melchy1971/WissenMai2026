@@ -1,6 +1,6 @@
 # M5 Operations Model
 
-Stand: 2026-05-12
+Stand: 2026-05-13
 
 Dieses Betriebsmodell definiert wiederkehrende M5-Checks fuer den lokalen produktionsnahen Betrieb. Es ist ein Betriebs- und Readiness-Modell, keine Freigabe fuer neue GUI-Admin-Aktionen oder automatische Reparaturen.
 
@@ -15,6 +15,29 @@ Nachweisanker:
 - `reports/postgres_truth/latest.json`
 - `reports/restore_truth_report.md`
 
+## Betriebsrollen
+
+| Rolle | Aufgabe | Grenzen |
+|---|---|---|
+| Operator | Fuehrt Routinechecks, Backup-Verifikation, Dry-Runs und Reportpruefungen aus | Keine destructive Cleanup-, Restore- oder Reindex-Mutation ohne technische Freigabe |
+| Technische Review-Rolle | Bewertet Drift, Truth-Test-Failures, Reindex-Anlass und Cleanup-Freigaben | Darf Gate-Status nur aus Reports/Validatoren ableiten |
+| Entwickler | Behebt Test-, Migration-, Queue-, Retrieval- oder Recovery-Fehler | Darf produktionsnahe Stabilitaet nicht aus lokalen Mocks ableiten |
+| Zweitreview bei Restore | Prueft Restore-Entscheid, Backup-Quelle und Recovery-Schritte | Pflicht bei Restore, Datenverlustverdacht oder L4 Incident |
+
+## Kommando- und Reportanker
+
+| Bereich | Primaerer Nachweis | Typischer Befehl oder Quelle |
+|---|---|---|
+| Woechentliche Checks | `reports/m5_longrun/latest.json` | `python -m app.cli m5 longrun-simulation --cycles 28 --restore-every 7` |
+| Retrieval/RAG Qualitaet | `reports/m5_retrieval/latest.json` | `python -m app.cli m5 retrieval-benchmark` |
+| Data Aging / Entropy | `reports/m5_entropy/latest.json` | `python -m app.cli m5 entropy-audit` |
+| Backup-Verifikation | Backup-/Restore-Report | `verify-backup`, Restore-Dry-Run oder Restore-Truth-Nachweis |
+| Reindex Governance | Governed-Reindex-Report, Drift-Snapshot, Retrieval-Regression-Report | `POST /api/v1/admin/reindex/governed`, danach `python -m app.cli m5 retrieval-benchmark --trigger reindex` |
+| Cleanup Governance | Cleanup-Governance-Report, Cleanup Truth Block, Citation-Longevity-Check | `POST /api/v1/admin/cleanup/governed` mit `dry_run_only=true` als Default |
+| Truth-Test-Zyklen | `reports/postgres_truth/latest.json`, `reports/postgres_truth_report.json` | `pytest -m postgres_truth tests/postgres_truth -vv` |
+
+Wenn ein Report fehlt oder aelter als das zu bewertende Ereignis ist, lautet der Status `unknown` oder `not_verified`, nicht `pass`.
+
 ## Operations Model
 
 | Bereich | Trigger | Verantwortlichkeit | Eskalationsschwelle | Recovery-Pfad |
@@ -27,6 +50,13 @@ Nachweisanker:
 | Reindex-Policy | Nur nach Drift, Restore, Index-Migration oder expliziter Betriebsfreigabe | Technische Review-Rolle; Operator fuehrt aus | Reindex laeuft ohne Backup-Verifikation; Drift bleibt nach Reindex; archivierte/geloeschte Dokumente bleiben searchbar | Backup validieren; workspace- oder document-scoped Reindex bevorzugen; Full Reindex nur im Wartungsfenster; Retrieval/Drift nachpruefen |
 | Cleanup-Zyklen | Woechentlicher Dry-Run; vor Storage-Reduktion; nach Orphan- oder Duplicate-Befund | Operator; technische Freigabe fuer destructive Cleanup | `blocked_count > 0`; unerwartetes Candidate-Wachstum; historische Citations betroffen; kein aktuelles Backup | Nur Dry-Run akzeptieren; Regeln korrigieren; Backup verifizieren; destructive Cleanup erst nach separater Freigabe |
 | Truth-Test-Zyklen | Vor M5-Gate, nach Migrationsaenderung, nach Auth/Workspace/Queue/Lifecycle/Retrieval-Fix | Entwickler oder technische Review-Rolle | `failed > 0`; `errors > 0`; `skipped > 0`; `exit_code != 0`; Setup-/Migration-Errors | Setup-Errors zuerst auf 0; Migration-State verifizieren; postgres_truth erneut ausfuehren; Gate erst nach komplett gruen |
+
+## Betriebsrhythmus
+
+- Taeglich: Health, Queue, Drift-Indikatoren, Backup-Alter und neue Fehlerklassen pruefen.
+- Woechentlich: Longrun, Retrieval Benchmark, Entropy Audit, Backup-Verifikation und Cleanup Dry-Run auswerten.
+- Ereignisgetrieben: Nach Migration, Restore, Reindex, Queue-Recovery, Lifecycle-Bulk-Aktion oder Retrieval-Aenderung die betroffenen Truth-/Drift-/Benchmark-Nachweise wiederholen.
+- Gate-getrieben: Vor jeder M5-Readiness- oder Releaseaussage muessen die relevanten Reports aktuell, maschinenlesbar und ohne Pflichtfehler sein.
 
 ## Betriebschecklisten
 
@@ -68,22 +98,30 @@ Nachweisanker:
 - [ ] `dead_letter` Jobs sind auditiert und haben klare Ursache.
 - [ ] Replay laeuft mit Lock und erzeugt Audit-Spur.
 - [ ] Backlog bleibt unter `25`; Warnbereich beginnt bei `15`.
+- [ ] `queue_age_p95`, `retry_rate_per_hour`, `dead_letter_growth_24h` und `workspace_queue_distribution` aus Queue-Aging-Report pruefen.
+- [ ] Keine Workspace-Starvation: stale `pending` in einem Workspace waehrend andere Workspaces weiter `running` sind.
 
 ### Reindex-Policy
 
 - [ ] Reindex nur mit dokumentiertem Anlass.
 - [ ] Vor Reindex: Backup-Verifikation aktuell.
 - [ ] Scope klein halten: document oder workspace vor full.
-- [ ] Nach Reindex: Drift-Check, Retrieval Benchmark und relevante Search-Smokes.
+- [ ] Reindex nur ueber Governed-Reindex mit `correlation_id`, Start-/Completion-Audit-Event und Drift-Snapshot vorher/nachher.
+- [ ] Keine parallelen Full-Reindexe und keine untracked Repair-Reindexe.
+- [ ] Nach Reindex: Drift-Check, Retrieval Regression Check mit Trigger `reindex`, Lifecycle-Konsistenzpruefung und relevante Search-Smokes.
 - [ ] Kein Reindex als stiller Ersatz fuer ungeklaerte Lifecycle- oder Workspace-Fehler.
+- [ ] Detailregeln aus `docs/runbooks/reindex-governance.md` einhalten.
 
 ### Cleanup-Zyklen
 
 - [ ] Standard ist Dry-Run.
 - [ ] `blocked_count` muss `0` sein.
 - [ ] Historische Citations und Backup-Artefakte sind protected.
+- [ ] Cleanup nur mit `correlation_id`, Audit Trail, vorher/nachher Report, `drift_delta` und Recovery-Hinweis.
+- [ ] Safety Constraints pruefen: keine aktiven Dokumente geloescht, keine Citations zerstoert, keine Queue-Konsistenz verletzt.
 - [ ] Destructive Cleanup nur nach Backup-Verifikation und separater Freigabe.
 - [ ] Nach Cleanup: Drift-Check, Citation-Check und Entropy Audit.
+- [ ] Detailregeln aus `docs/runbooks/cleanup-governance.md` einhalten.
 
 ### Truth-Test-Zyklen
 

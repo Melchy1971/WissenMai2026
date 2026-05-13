@@ -41,6 +41,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     retrieval_parser = m5_subparsers.add_parser("retrieval-benchmark")
     retrieval_parser.add_argument("--output-dir", required=False)
+    retrieval_parser.add_argument(
+        "--trigger",
+        choices=m5_retrieval_benchmark.REGRESSION_TRIGGERS,
+        default="manual",
+    )
+    retrieval_parser.add_argument("--set-baseline", action="store_true")
 
     longrun_parser = m5_subparsers.add_parser("longrun-simulation")
     longrun_parser.add_argument("--cycles", type=int, default=28)
@@ -78,7 +84,13 @@ def main() -> int:
         from pathlib import Path
 
         output_dir = Path(args.output_dir) if args.output_dir else None
-        _print_payload(m5_retrieval_benchmark.write_reports(output_dir=output_dir))
+        _print_payload(
+            m5_retrieval_benchmark.write_reports(
+                output_dir=output_dir,
+                trigger=args.trigger,
+                set_baseline=args.set_baseline,
+            )
+        )
         return 0
     if args.command == "m5" and args.m5_command == "longrun-simulation":
         from pathlib import Path

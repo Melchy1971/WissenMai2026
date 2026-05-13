@@ -1,6 +1,6 @@
 # M5 Observability
 
-Stand: 2026-05-12
+Stand: 2026-05-13
 
 M5 erweitert die bestehende JSON-Log-Observability um langfristige Betriebsmetriken. Ziel ist Trendanalyse ueber Queue, Drift, Retrieval, Backup/Restore, Cleanup und Orphans, ohne sensitive Inhalte zu loggen.
 
@@ -9,7 +9,10 @@ M5 erweitert die bestehende JSON-Log-Observability um langfristige Betriebsmetri
 | Metrik | Typ | Einheit | Scope | Fenster | Definition | Warnschwelle | Kritische Schwelle |
 |---|---|---|---|---|---|---|---|
 | `m5_queue_backlog_age_seconds` | Gauge | Sekunden | Workspace | current, p95, max | Alter des aeltesten Jobs je Queue-Status aus `created_at`, `claimed_at`, `updated_at` | aeltester running Job ueber Timeout oder p95 > 900s | aeltester running Job > 2x Timeout oder max > 3600s |
+| `m5_queue_age_p95_seconds` | Gauge | Sekunden | Workspace | current | P95-Alter aller aktiven Queue-Zustaende (`pending`, `running`, `retryable`, `dead_letter`) aus Queue-Aging-Report | > 300s bei pending/retryable Druck | > 600s oder gekoppelt mit stuck running |
+| `m5_workspace_queue_distribution` | Gauge | Anteil/Count | Workspace | current | Backlog-Verteilung je Workspace mit Buckets `pending`, `running`, `retryable`, `dead_letter` | ein Workspace dominiert Backlog oder hat stale pending waehrend andere laufen | Starvation mit blockierter Workspace-Fortschrittsgarantie |
 | `m5_retry_frequency` | Rate | retries/hour | Workspace | 1h, 24h, 7d | Retry-Versuche je Zeitfenster, Job-Typ und Endstatus | > 5 Retries/Stunde fuer einen Workspace | steigende Retry-Rate in 3 Fenstern oder Dead-Letter-Wachstum |
+| `m5_dead_letter_growth` | Counter | Jobs | Workspace | 24h | Neue Dead-Letter-Jobs im letzten 24h-Fenster aus Queue-Aging-Report | > 0 ohne Audit-Kontext | Wachstum plus fehlender Replay-/Recovery-Plan |
 | `m5_drift_score` | Gauge | Score | Workspace | current, 24h, 7d | gewichteter Score aus Search-, Lifecycle-, Citation-, Queue-, Backup- und Data-Quality-Drift | > 0 ausserhalb Wartungsfenster | persistenter Drift nach Repair oder Cross-Workspace-Drift |
 | `m5_retrieval_quality_trend` | Trend | score_delta | Global | latest, 7d, 30d | Trend von Precision@K, Recall@K, MRR, Citation Completeness und insufficient_context accuracy | negative 7d-Bewegung oder eine Warnschwelle unterschritten | Recall/Citation/Lifecycle-Gate unterschritten |
 | `m5_backup_freshness_seconds` | Gauge | Sekunden | Global | current | Alter des letzten erfolgreich verifizierten Backups | > 6 Tage | > 7 Tage oder letzter Verify fehlgeschlagen |
@@ -19,9 +22,27 @@ M5 erweitert die bestehende JSON-Log-Observability um langfristige Betriebsmetri
 
 Die maschinenlesbare Definition liegt in `backend/app/observability/m5_metrics.py`.
 
+### Quellen und Aggregation
+
+| Metrik | Primaere Quelle | Aggregation | Workspace-Regel |
+|---|---|---|---|
+| `m5_queue_backlog_age_seconds` | `background_jobs`, Queue-Aging-Report | je Workspace, Job-Status und Job-Typ; p95/max zusaetzlich | Pflicht: genau eine `workspace_id` |
+| `m5_queue_age_p95_seconds` | Queue-Aging-Report Feld `queue_age_p95_seconds` | je Workspace; keine Payloads | Pflicht: genau eine `workspace_id` |
+| `m5_workspace_queue_distribution` | Queue-Aging-Report Feld `workspace_queue_distribution` | je Workspace und Status-Bucket | globale Sicht erlaubt nur aggregierte Counts |
+| `m5_retry_frequency` | `background_jobs.attempts`, Retry-/Replay-Audit | je Workspace, Job-Typ, Ergebnis und Zeitfenster | Pflicht: genau eine `workspace_id` |
+| `m5_dead_letter_growth` | Queue-Aging-Report Feld `dead_letter_growth_24h` | je Workspace, 24h-Fenster | Pflicht: genau eine `workspace_id`; Ursache nur als Fehlerklasse |
+| `m5_drift_score` | Drift-/Entropy-Report, Data-Quality-Checks | je Workspace und Drift-Art; global nur als aggregierte Summary | Workspace-Events einzeln, globale Summary ohne `workspace_id` |
+| `m5_retrieval_quality_trend` | `reports/m5_retrieval/latest.json` und versionierte Reports | global gegen Golden Dataset; optional workspace-sliced nur ohne Querytext | Global default; workspace-sliced nur mit anonymisierten Counts |
+| `m5_backup_freshness_seconds` | Backup-Manifest, Verify-/Restore-Report | global letzter erfolgreich verifizierter Backup-Zeitpunkt | Global: `workspace_id = null` |
+| `m5_restore_success_rate` | Restore-Truth-/Verify-Reports | global 7d/30d Erfolgsquote | Global: `workspace_id = null` |
+| `m5_cleanup_impact` | Cleanup Dry-Run Report, Cleanup-Governance-Report | je Workspace, Cleanup-Typ und Schutzstatus | Pflicht: genau eine `workspace_id`, ausser globaler Report-Cleanup |
+| `m5_orphan_growth_rate` | Entropy-/Data-Quality-Report | je Workspace und Orphan-Typ ueber 24h/7d/30d | Pflicht: genau eine `workspace_id` |
+
+Metriken duerfen aus Reports, strukturierter Laufzeitbeobachtung oder expliziten CLI-Laeufen entstehen. Ein Dashboard darf `pass` nur anzeigen, wenn die zugrunde liegende Quelle aktuell und maschinenlesbar ist.
+
 ## Logging-Erweiterungen
 
-Neues strukturiertes Event:
+Neues strukturiertes Einzelmetrik-Event:
 
 ```json
 {
@@ -41,6 +62,45 @@ Neues strukturiertes Event:
 }
 ```
 
+Neues Snapshot-Event fuer laengere Trendanalyse:
+
+```json
+{
+  "event_name": "m5_observability_snapshot",
+  "snapshot_id": "20260513T080000Z",
+  "generated_at": "2026-05-13T08:00:00Z",
+  "source_reports": {
+    "longrun": "reports/m5_longrun/latest.json",
+    "retrieval": "reports/m5_retrieval/latest.json",
+    "entropy": "reports/m5_entropy/latest.json"
+  },
+  "status": "watch",
+  "windows": ["current", "24h", "7d", "30d"],
+  "metric_count": 8,
+  "blocking_findings": [],
+  "warnings": ["duplicate_cardinality_not_measured"]
+}
+```
+
+Pflichtfelder fuer jedes `m5_metric_observed`:
+
+- `event_name`
+- `metric_name`
+- `value`
+- `unit`
+- `kind`
+- `aggregation_scope`
+- `workspace_id`
+- `window`
+- `status`
+- `dimensions`
+- `correlation_id`
+- `generated_at`
+- `metric_version`
+- `source`
+
+`status` verwendet nur `ok`, `watch`, `degraded`, `blocked` oder `unknown`.
+
 ### Erlaubte Dimensionen
 
 - `job_type`
@@ -50,6 +110,11 @@ Neues strukturiertes Event:
 - `operation`
 - `result`
 - `window`
+- `orphan_type`
+- `cleanup_type`
+- `report_type`
+
+Dimensionen duerfen nur kontrollierte Enum-Werte enthalten. Freitext, Nutzertexte und Dateiangaben sind in Dimensionen verboten.
 
 ### Verbotene Felder
 
@@ -71,6 +136,8 @@ Workspace-Aggregation:
 - Globale Metriken muessen `workspace_id = null` setzen.
 - Keine Metrik darf mehrere Workspaces in einem Event mischen.
 - Cross-Workspace-Auswertungen erfolgen nur ueber aggregierte Dashboard-Queries, nicht ueber ein einzelnes Roh-Event.
+- Workspace-IDs duerfen im Dashboard als ID angezeigt werden, aber nicht mit Dokumenttiteln, Querytexten oder Dateipfaden kombiniert werden.
+- Globale Trends duerfen keine Rueckrechnung auf einzelne Nutzer, Dokumente oder Queries ermoeglichen.
 
 ## Trendanalyse
 
@@ -89,6 +156,15 @@ Trendregeln:
 - Retrieval-Qualitaet wird gegen die letzte gruen akzeptierte Golden-Baseline verglichen.
 - Cleanup bleibt dry-run-basiert; Impact-Trends duerfen keine Loeschfreigabe ersetzen.
 
+Langfristige Trendanalyse:
+
+- Jeder Snapshot wird versioniert und fuer 30d-Trends behalten.
+- 7d- und 30d-Trends vergleichen nicht nur Endwerte, sondern auch Richtung und Persistenz.
+- `watch` entsteht bei unvollstaendiger Messung, negativer Tendenz oder fehlendem aktuellen Report.
+- `degraded` entsteht bei wiederholter Schwellennaehe oder drei aufeinanderfolgenden negativen Fenstern.
+- `blocked` entsteht bei Datenintegritaetsrisiko, Restore-/Backup-Failure, Orphan-Wachstum, Cross-Workspace-Verletzung oder Gate-relevantem Truth-Fail.
+- Baselines duerfen nur mit dokumentiertem Benchmark- oder Gate-Entscheid aktualisiert werden.
+
 ## Dashboard-Konzept
 
 ### Uebersicht
@@ -96,18 +172,29 @@ Trendregeln:
 Kacheln:
 
 - Systemstatus: `ok`, `watch`, `degraded`, `blocked`
-- Queue Health: Backlog Age, Retry Frequency, Dead Letter Count
+- Queue Health: Backlog Age, `queue_age_p95`, Retry Frequency, Dead Letter Growth, Workspace Distribution
 - Drift: Drift Score, stale Index Entries, Lifecycle Violations
 - Retrieval Quality: Precision@5, Recall@5, MRR, Citation Completeness
 - Backup/Restore: Backup Freshness, Restore Success Rate
 - Cleanup/Data Quality: Cleanup Impact, Orphan Growth Rate
 
+Jede Kachel zeigt:
+
+- aktuellen Status
+- aktueller Wert
+- 24h-/7d-/30d-Trend
+- Quelle und Report-Zeitpunkt
+- letzte erfolgreiche Verifikation
+- naechste empfohlene Betriebsaktion
+
 ### Workspace-Ansicht
 
 Anzeigen:
 
-- Queue Age je Status
+- Queue Age je Status und `queue_age_p95`
 - Retry-Frequenz je Job-Typ
+- Workspace Queue Distribution mit Starvation-Badge
+- Dead-Letter Growth 24h
 - Drift Score je Drift-Art
 - Cleanup Dry-Run Counts
 - Orphan Growth Rate
@@ -135,6 +222,19 @@ Anzeigen:
 - Drilldown darf IDs und Counts zeigen, aber keine Inhalte.
 - Repair-Links zeigen auf Dry-Run-/Audit-Reports, nicht direkt auf destructive Actions.
 - Jede mutierende Folgeaktion braucht separates Runbook, Audit und Freigabe.
+- Drilldowns fuer Retrieval zeigen Query-IDs aus dem Golden Dataset, aber keinen Querytext aus Nutzeranfragen.
+- Drilldowns fuer Backup/Restore zeigen Manifest-ID, Status, Alter und Checksum-Status, aber keine Dateipfade.
+- Drilldowns fuer Cleanup zeigen Candidate-/Protected-/Blocked-Counts und Schutzgruende, aber keine Dokumentinhalte.
+
+### Statusableitung
+
+| Dashboard-Status | Bedingung |
+|---|---|
+| `ok` | alle Pflichtmetriken aktuell, keine Warn- oder Blockschwelle verletzt |
+| `watch` | Trend negativ, Messung unvollstaendig oder Warnschwelle erreicht |
+| `degraded` | wiederholte Warnung, Quality-Trend unter Baseline oder Queue/Retry persistiert |
+| `blocked` | Drift/Orphan > 0 mit Integritaetsrisiko, Backup/Restore-Failure, Truth-Gate-Fail oder sensitive Logging-Verletzung |
+| `unknown` | Report fehlt, Quelle veraltet oder Metrik nicht berechenbar |
 
 ## Alerting
 
@@ -154,7 +254,19 @@ Anzeigen:
 
 - Metrikdefinitionen: `backend/app/observability/m5_metrics.py`
 - Strukturierte Logs: `backend/app/observability/logging.py`
+- Metrik-Snapshots: `reports/m5_observability/latest.json`, spaeter versionierte Snapshots unter `reports/m5_observability/`
 - Longrun Quelle: `reports/m5_longrun/latest.json`
 - Retrieval Quelle: `reports/m5_retrieval/latest.json`
 - Entropy Quelle: `reports/m5_entropy/latest.json`
 - Drift Repair Regeln: `docs/runbooks/m5-drift-repair-strategy.md`
+
+## Gate-Bezug
+
+Observability darf nur als `pass` gelten, wenn:
+
+- alle acht Pflichtmetriken definiert und berechenbar sind
+- Trendfenster fuer 24h, 7d und 30d auswertbar sind oder `unknown` korrekt gesetzt wird
+- keine sensitiven Inhalte geloggt werden
+- Workspace-Metriken genau eine `workspace_id` tragen
+- globale Metriken keine `workspace_id` tragen
+- Dashboard-Status aus Reports oder strukturierten Events abgeleitet wird, nicht aus manueller Einschaetzung
