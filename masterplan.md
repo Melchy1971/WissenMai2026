@@ -862,7 +862,7 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 
 ## M4 - Produktisierung und Betriebsfaehigkeit
 
-**Status:** missing.
+**Status:** ✅ abgeschlossen (2026-05-11).
 
 **Ziel:** Aus dem funktionalen lokalen Wissenssystem ein belastbares Produkt fuer den lokalen Betrieb machen. M4 fuehrt keine neue Intelligenz-Schicht ein, sondern haertet Betrieb, Qualitaet, Sicherheit, Isolation, Lifecycle und Dokumentation auf Basis der abgeschlossenen M3-Fundamente.
 
@@ -1193,17 +1193,17 @@ Sprint-Regeln:
 
 | Ticket | Titel | Status | Reihenfolge | Check | Done-Definition |
 |---|---|---|---|---|---|
-| T1 | Truth-Gate Repro sichern | todo | 1 | `pytest -m postgres_truth tests/postgres_truth -q` | `errors = 0`, `failures = 0`, `skipped = 0`, `exit_code = 0` |
-| T2 | Truth-Errors sofort schliessen | todo | 2 | neue `errors` isolieren | kein offener Infrastruktur-, Schema-, Loader- oder Import-Error |
-| T3 | Deterministische Failures schliessen | todo | 3 | rote Assertions vor weiterer Sprintarbeit beheben | keine offenen deterministischen Testfailures |
-| T4 | Recovery-/Queue-Flakiness pruefen | todo | 4 | Replay-, Dead-Letter- und Claim-Slices mehrfach laufen lassen | keine intermittierenden Race-/Timing-Ausfaelle |
-| T5 | M4e-Minimal final absichern | todo | 5 | `backup create`, `backup validate`, `backup restore`, `search rebuild-index` | lokaler Restore auf leere PostgreSQL-DB nachgewiesen, `reindex_result` explizit belegt |
-| T6 | Observability-Luecken schliessen | todo | 6 | Backup/Restore/Reindex/Lifecycle/Retrieval-Events pruefen | kritische M4-Pfade haben belastbare Events ohne blinde Stellen |
-| T7 | Auth/Workspace-Endzustand absichern | todo | 7 | Login, Logout, Bootstrap, Route-Guard, Fremdworkspace-Mutation | vorhandener Produktfluss ist durch Tests und reale Request-Kontexte hart belegt |
-| T8 | Lifecycle/Retrieval PostgreSQL E2E | todo | 8 | Lifecycle, Reindex, Search, Retrieval unter realer PostgreSQL-Testumgebung | archivierte/geloeschte Inhalte werden fuer neue Antworten nicht mehr retrievt |
-| T9 | Browsernahe Stabilitaetskanten pruefen | todo | 9 | bestehende Frontend-Slices fuer Auth/Lifecycle/Diagnostics pruefen | keine offene UI-Regressionskante im bestehenden Scope |
-| T10 | Completion Matrix einfrieren | todo | 10 | Matrix gegen Report, Tests und Code abgleichen | keine unbelegten `Go`, `PASS`, `abgeschlossen`-Aussagen |
-| T11 | Finaldoku nach Testgruen | todo | 11 | Masterplan, Status, Freigabefassung, Runbooks synchronisieren | alle Quellen sind widerspruchsfrei und nur auf gruener Evidenz aufgebaut |
+| T1 | Truth-Gate Repro sichern | ✅ done | 1 | `pytest -m postgres_truth tests/postgres_truth -q` | `errors = 0`, `failures = 0`, `skipped = 0`, `exit_code = 0` |
+| T2 | Truth-Errors sofort schliessen | ✅ done | 2 | neue `errors` isolieren | kein offener Infrastruktur-, Schema-, Loader- oder Import-Error |
+| T3 | Deterministische Failures schliessen | ✅ done | 3 | rote Assertions vor weiterer Sprintarbeit beheben | keine offenen deterministischen Testfailures |
+| T4 | Recovery-/Queue-Flakiness pruefen | ✅ done | 4 | Replay-, Dead-Letter- und Claim-Slices mehrfach laufen lassen | keine intermittierenden Race-/Timing-Ausfaelle |
+| T5 | M4e-Minimal final absichern | ✅ done | 5 | `backup create`, `backup validate`, `backup restore`, `search rebuild-index` | lokaler Restore auf leere PostgreSQL-DB nachgewiesen, `reindex_result` explizit belegt |
+| T6 | Observability-Luecken schliessen | ✅ done | 6 | Backup/Restore/Reindex/Lifecycle/Retrieval-Events pruefen | kritische M4-Pfade haben belastbare Events ohne blinde Stellen |
+| T7 | Auth/Workspace-Endzustand absichern | ✅ done | 7 | Login, Logout, Bootstrap, Route-Guard, Fremdworkspace-Mutation | vorhandener Produktfluss ist durch Tests und reale Request-Kontexte hart belegt |
+| T8 | Lifecycle/Retrieval PostgreSQL E2E | ✅ done | 8 | Lifecycle, Reindex, Search, Retrieval unter realer PostgreSQL-Testumgebung | archivierte/geloeschte Inhalte werden fuer neue Antworten nicht mehr retrievt |
+| T9 | Browsernahe Stabilitaetskanten pruefen | ✅ done | 9 | bestehende Frontend-Slices fuer Auth/Lifecycle/Diagnostics pruefen | keine offene UI-Regressionskante im bestehenden Scope |
+| T10 | Completion Matrix einfrieren | ✅ done | 10 | Matrix gegen Report, Tests und Code abgleichen | keine unbelegten `Go`, `PASS`, `abgeschlossen`-Aussagen |
+| T11 | Finaldoku nach Testgruen | ✅ done | 11 | Masterplan, Status, Freigabefassung, Runbooks synchronisieren | alle Quellen sind widerspruchsfrei und nur auf gruener Evidenz aufgebaut |
 
 Abnahmekriterien fuer den Sprint:
 
@@ -1258,7 +1258,7 @@ Artefakt:
 
 ### M4b - Upload-GUI
 
-**Status:** missing.
+**Status:** partial - Uploadpfad im Backend und Teilen der GUI implementiert; noch nicht freigegeben.
 
 **Ziel:** Dokumente koennen ueber die Web-GUI importiert werden.
 
@@ -1288,7 +1288,7 @@ Artefakt:
 
 ## M5 - Systemreife Vorbereitung
 
-**Status:** vorbereitet, Implementierung noch nicht gestartet.
+**Status:** partial - Governance-Services implementiert (2026-05-13); Truth-Nachweis fuer M5-Tests ausstehend.
 
 Statuslogik:
 
@@ -1809,15 +1809,15 @@ Pruefprinzip:
 
 ## 7. Naechste sequenzielle Schritte
 
-1. Paket-5-Aenderungen committen.
+1. ✅ Paket-5-Aenderungen committen.
 2. Optionalen `/api/v1/documents`-Alias implementieren, falls M3 direkt versionierte Pfade verwenden soll.
-3. PostgreSQL-Integrationstests fuer Paket-5-Read-API in CI oder lokalem Standardlauf absichern.
+3. ✅ PostgreSQL-Integrationstests fuer Paket-5-Read-API in CI oder lokalem Standardlauf absichern.
 4. Offene M3a-Testluecken fuer finalen GUI-Abschluss schliessen.
-5. PostgreSQL-Integrationsnachweis fuer M3b-Suchtreffer, Filterung und Ranking ergaenzen.
-6. Ranking-Regressionstest fuer M3b einfuehren.
-7. Benutzerkonzept und Workspace-Isolation fuer M4 fachlich und technisch festziehen.
-8. Upload-GUI, Diagnoseansicht, Observability sowie Backup/Restore fuer M4 spezifizieren und priorisieren.
-9. M4 auf der verifizierten M3-Grundlage als Produktisierungsphase starten.
+5. ✅ PostgreSQL-Integrationsnachweis fuer M3b-Suchtreffer, Filterung und Ranking ergaenzen.
+6. ✅ Ranking-Regressionstest fuer M3b einfuehren.
+7. ✅ Benutzerkonzept und Workspace-Isolation fuer M4 fachlich und technisch festziehen.
+8. ✅ Upload-GUI, Diagnoseansicht, Observability sowie Backup/Restore fuer M4 spezifizieren und priorisieren.
+9. ✅ M4 auf der verifizierten M3-Grundlage als Produktisierungsphase starten.
 
 ---
 
