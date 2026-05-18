@@ -19,7 +19,7 @@ def override_search_service(results: list[SearchChunkResult]) -> SearchService:
     return FakeSearchService(results)
 
 
-def test_search_chunks_returns_results_with_stable_shape() -> None:
+def test_search_chunks_returns_results_with_stable_shape(client: TestClient) -> None:
     created_at = datetime(2026, 5, 1, 10, 0, tzinfo=UTC)
     result = SearchChunkResult(
         document_id="document-1",
@@ -43,10 +43,9 @@ def test_search_chunks_returns_results_with_stable_shape() -> None:
 
     app.dependency_overrides[get_search_service] = lambda: override_search_service([result])
     try:
-        client = TestClient(app)
-        response = client.get("/api/v1/search/chunks?workspace_id=workspace-1&q=current")
+        response = client.get("/api/v1/search/chunks?q=current")
     finally:
-        app.dependency_overrides.clear()
+        app.dependency_overrides.pop(get_search_service, None)
 
     assert response.status_code == 200
     assert response.json() == [
@@ -72,28 +71,32 @@ def test_search_chunks_returns_results_with_stable_shape() -> None:
     ]
 
 
-def test_search_chunks_requires_workspace_id() -> None:
+def test_search_chunks_requires_authentication() -> None:
     client = TestClient(app)
 
     response = client.get("/api/v1/search/chunks?q=current")
 
-    assert response.status_code == 422
-    assert response.json()["error"]["code"] == "WORKSPACE_REQUIRED"
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTH_REQUIRED"
 
 
-def test_search_chunks_requires_query() -> None:
-    client = TestClient(app)
-
-    response = client.get("/api/v1/search/chunks?workspace_id=workspace-1")
+def test_search_chunks_requires_query(client: TestClient) -> None:
+    app.dependency_overrides[get_search_service] = lambda: override_search_service([])
+    try:
+        response = client.get("/api/v1/search/chunks")
+    finally:
+        app.dependency_overrides.pop(get_search_service, None)
 
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "INVALID_QUERY"
 
 
-def test_search_chunks_rejects_invalid_pagination() -> None:
-    client = TestClient(app)
-
-    response = client.get("/api/v1/search/chunks?workspace_id=workspace-1&q=current&limit=101")
+def test_search_chunks_rejects_invalid_pagination(client: TestClient) -> None:
+    app.dependency_overrides[get_search_service] = lambda: override_search_service([])
+    try:
+        response = client.get("/api/v1/search/chunks?q=current&limit=101")
+    finally:
+        app.dependency_overrides.pop(get_search_service, None)
 
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "INVALID_PAGINATION"

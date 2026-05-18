@@ -1,3 +1,5 @@
+import { mapDuplicateImportState, mapErrorToCatalog } from './errorCatalog.js';
+
 export function mapImportStatus(status) {
   const lookup = {
     pending: { kind: 'pending', label: 'Ausstehend', tone: 'warning' },
@@ -67,56 +69,29 @@ export function mapJobStatus(job) {
 }
 
 export function mapError(error) {
-  return {
-    code: error?.code || 'UNKNOWN_ERROR',
-    title: mapErrorTitle(error?.code),
-    message: error?.message || 'Ein unbekannter Fehler ist aufgetreten.',
-    details: error?.details || {},
-    status: error?.status ?? null,
-  };
+  return mapErrorToCatalog(error);
 }
 
-function mapErrorTitle(code) {
-  const titles = {
-    API_UNREACHABLE: 'Backend nicht erreichbar',
-    CORS_ERROR: 'Anfrage durch Browser blockiert',
-    TIMEOUT: 'Anfrage abgelaufen',
-    WORKSPACE_NOT_CONFIGURED: 'Workspace nicht konfiguriert',
-    AUTH_BOOTSTRAP_FAILED: 'Auth-Initialisierung fehlgeschlagen',
-    AUTH_FORBIDDEN: 'Auth-Zugriff verweigert',
-    AUTH_NO_MEMBERSHIP: 'Keine Workspace-Mitgliedschaft',
-    AUTH_SESSION_EXPIRED: 'Session abgelaufen',
-    AUTH_SESSION_INVALID: 'Auth-Session unvollstaendig',
-    AUTH_WORKSPACE_MISSING: 'Aktiver Workspace fehlt',
-    AUTH_WORKSPACE_NOT_ALLOWED: 'Workspace nicht zulaessig',
-    SERVICE_UNAVAILABLE: 'Service nicht verfuegbar',
-    UNAUTHORIZED: 'Authentifizierung erforderlich',
-    FORBIDDEN: 'Kein Admin-Zugriff',
-    DIAGNOSTICS_FAILED: 'Diagnose fehlgeschlagen',
-    AUTH_REQUIRED: 'Authentifizierung erforderlich',
-    ADMIN_REQUIRED: 'Admin-Zugriff erforderlich',
-    DOCUMENT_NOT_FOUND: 'Dokument nicht gefunden',
-    CHAT_SESSION_NOT_FOUND: 'Chat-Sitzung nicht gefunden',
-    DOCUMENT_STATE_CONFLICT: 'Dokumentzustand inkonsistent',
-    INVALID_LIFECYCLE_TRANSITION: 'Ungueltiger Lifecycle-Wechsel',
-    DOCUMENT_ALREADY_ARCHIVED: 'Dokument bereits archiviert',
-    DOCUMENT_ALREADY_DELETED: 'Dokument bereits geloescht',
-    WORKSPACE_REQUIRED: 'Workspace fehlt',
-    WORKSPACE_ACCESS_FORBIDDEN: 'Workspace-Zugriff verweigert',
-    INVALID_QUERY: 'Ungueltige Suche',
-    INVALID_PAGINATION: 'Ungueltige Pagination',
-    QUERY_REQUIRED: 'Frage fehlt',
-    CHAT_MESSAGE_INVALID: 'Ungueltige Chat-Frage',
-    INSUFFICIENT_CONTEXT: 'Zu wenig Kontext',
-    LLM_UNAVAILABLE: 'LLM nicht verfuegbar',
-    RETRIEVAL_FAILED: 'Retrieval fehlgeschlagen',
-    OCR_REQUIRED: 'OCR erforderlich',
-    PARSER_FAILED: 'Parser fehlgeschlagen',
-    FILE_TOO_LARGE: 'Datei zu gross',
-    UNSUPPORTED_FILE_TYPE: 'Dateityp nicht unterstuetzt',
-  };
+export function mapImportOutcome(result, { fileName = '' } = {}) {
+  if (result?.import_status === 'duplicate') {
+    return mapDuplicateImportState({
+      fileName,
+      documentId: result?.duplicate_of_document_id || result?.document_id || null,
+    });
+  }
 
-  return titles[code] || 'Fehler';
+  return {
+    title: 'Import abgeschlossen',
+    message: fileName ? `${fileName} erfolgreich verarbeitet` : 'Dokument erfolgreich verarbeitet.',
+    code: 'IMPORT_COMPLETED',
+    classification: 'IMPORT_COMPLETED',
+    technicalCode: 'IMPORT_COMPLETED',
+    allowedAction: 'Dokument pruefen',
+    retry: false,
+    logging: { level: 'info', event: 'gui_import_completed' },
+    details: { documentId: result?.document_id || null },
+    status: null,
+  };
 }
 
 function formatDate(value) {

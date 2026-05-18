@@ -12,6 +12,7 @@ from app.services.auth import AuthService, AuthenticationError, WorkspaceAccessE
 
 EXEMPT_PATHS = {
     "/health",
+    "/health/db",
     "/openapi.json",
     "/docs",
     "/docs/oauth2-redirect",

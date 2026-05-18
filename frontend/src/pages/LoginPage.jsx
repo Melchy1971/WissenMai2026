@@ -65,13 +65,12 @@ export function LoginPage() {
     if (!normalizedLogin || !normalizedPassword) {
       setState({
         status: 'error',
-        error: {
+        error: mapError({
           code: 'AUTH_INVALID',
-          title: 'Login unvollstaendig',
           message: 'Bitte Login und Passwort eingeben.',
           details: {},
           status: null,
-        },
+        }),
       });
       return;
     }
@@ -89,7 +88,7 @@ export function LoginPage() {
       };
       const sessionError = validateLoginSession(hydratedSession);
       if (sessionError) {
-        setState({ status: 'error', error: sessionError });
+        setState({ status: 'error', error: mapError(sessionError) });
         return;
       }
       setAuthState(hydratedSession);

@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-05-15T09:48:21.426395+00:00",
+  "generated_at": "2026-05-15T09:48:21.426408+00:00",
+  "collected": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "unknown",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 218.35,
+  "duration_seconds": 218.35,
+  "failed_flows": [],
+  "errors": [
+    "playwright global timeout exceeded"
+  ],
+  "exit_code": 124,
+  "playwright_exit_code": 124,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": false,
+    "status_code": null,
+    "status": "unreachable",
+    "error": "HTTP Error 401: Unauthorized"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": []
+}

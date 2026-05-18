@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { createChatSession, getChatSession, getChatSessions, postChatMessage } from '../api/chat.js';
@@ -20,6 +20,15 @@ export function ChatPage() {
   const [detailState, setDetailState] = useState({ status: 'idle', item: null, error: null });
   const [titleInput, setTitleInput] = useState('');
   const [questionInput, setQuestionInput] = useState('');
+  const prevWorkspaceIdRef = useRef(workspaceId);
+
+  // Rule 6: navigate away from session-specific URL on workspace switch so the
+  // detail load effect gets activeSessionId = undefined and resets detailState.
+  useEffect(() => {
+    if (prevWorkspaceIdRef.current === workspaceId) return;
+    prevWorkspaceIdRef.current = workspaceId;
+    navigate('/chat', { replace: true });
+  }, [workspaceId, navigate]);
 
   useEffect(() => {
     let cancelled = false;

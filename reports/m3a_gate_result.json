@@ -1,0 +1,84 @@
+{
+  "timestamp": "2026-05-18T10:00:21.705779+00:00",
+  "gate": "M3a",
+  "gate_result": "FAIL",
+  "score": 57.1,
+  "rules_passed": 4,
+  "rules_total": 7,
+  "blockers": [
+    "frontend_truth passed (58) must equal collected (80)",
+    "frontend_truth failed must be 0, got 22",
+    "postgres_truth passed (120) must equal collected (138); postgres_truth failed must be 0, got 16; postgres_truth errors must be 0, got 2; postgres_truth exit code must be 0, got 1"
+  ],
+  "rule_results": [
+    {
+      "id": "frontend_truth_passed_equals_collected",
+      "passed": false,
+      "blocker": "frontend_truth passed (58) must equal collected (80)"
+    },
+    {
+      "id": "frontend_truth_failed_zero",
+      "passed": false,
+      "blocker": "frontend_truth failed must be 0, got 22"
+    },
+    {
+      "id": "frontend_truth_skipped_zero",
+      "passed": true,
+      "blocker": null
+    },
+    {
+      "id": "postgres_truth_green",
+      "passed": false,
+      "blocker": "postgres_truth passed (120) must equal collected (138); postgres_truth failed must be 0, got 16; postgres_truth errors must be 0, got 2; postgres_truth exit code must be 0, got 1"
+    },
+    {
+      "id": "contract_tests_green",
+      "passed": true,
+      "blocker": null
+    },
+    {
+      "id": "no_api_unreachable_in_normalflow",
+      "passed": true,
+      "blocker": null
+    },
+    {
+      "id": "no_workspace_not_configured_after_valid_login",
+      "passed": true,
+      "blocker": null
+    }
+  ],
+  "inputs": {
+    "frontend_truth_report": "H:\\WissenMai2026\\reports\\frontend_truth_report.json",
+    "contract_test_report": "H:\\WissenMai2026\\reports\\contract_test_report.json",
+    "postgres_truth_report": "H:\\WissenMai2026\\reports\\postgres_truth_report.json"
+  },
+  "input_summaries": {
+    "frontend_truth": {
+      "collected": 80,
+      "passed": 58,
+      "failed": 22,
+      "skipped": 0,
+      "errors": [],
+      "exit_code": 1,
+      "timestamp": "2026-05-18T09:57:14.609538+00:00"
+    },
+    "contract_tests": {
+      "collected": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "exit_code": 0,
+      "timestamp": "2026-05-18T09:58:09.169571+00:00"
+    },
+    "postgres_truth": {
+      "collected": 138,
+      "passed": 120,
+      "failed": 16,
+      "skipped": 0,
+      "errors": 2,
+      "exit_code": 1,
+      "timestamp": "2026-05-18T09:45:45.351580Z"
+    }
+  }
+}

@@ -1,7 +1,13 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { getAuthSession, logout } from '../api/auth.js';
 import { getApiRequestContext, setApiRequestContext, setOnAuthRequired } from '../api/client.js';
+import {
+  authBootstrapError,
+  isRetryableBootstrapError,
+  normalizeAuthState,
+  validateSessionState,
+} from './stateInvariants.js';
 
 const AUTH_STATE_STORAGE_KEY = 'wissen.authState';
 
@@ -18,78 +24,6 @@ function getStorage() {
   }
 
   return storage;
-}
-
-function normalizeAuthState(value = {}) {
-  return {
-    token: typeof value.token === 'string' ? value.token.trim() : '',
-    user: value.user && typeof value.user === 'object' ? value.user : null,
-    active_workspace_id: typeof value.active_workspace_id === 'string' ? value.active_workspace_id.trim() : '',
-    memberships: Array.isArray(value.memberships) ? value.memberships : [],
-  };
-}
-
-function authBootstrapError({ code, title, message, details = {}, status = null }) {
-  return { code, title, message, details, status };
-}
-
-function validateSessionState(sessionState) {
-  const normalized = normalizeAuthState(sessionState);
-
-  if (!normalized.token) {
-    return { state: normalized, error: null };
-  }
-
-  if (!normalized.user) {
-    return {
-      state: normalized,
-      error: authBootstrapError({
-        code: 'AUTH_SESSION_INVALID',
-        title: 'Auth-Session unvollstaendig',
-        message: 'Die Session enthaelt keinen Benutzerkontext.',
-      }),
-    };
-  }
-
-  if (normalized.memberships.length === 0) {
-    return {
-      state: normalized,
-      error: authBootstrapError({
-        code: 'WORKSPACE_NOT_CONFIGURED',
-        title: 'Keine Workspace-Mitgliedschaft',
-        message: 'Der Benutzer ist keinem Workspace zugeordnet.',
-      }),
-    };
-  }
-
-  if (!normalized.active_workspace_id) {
-    return {
-      state: normalized,
-      error: authBootstrapError({
-        code: 'AUTH_WORKSPACE_MISSING',
-        title: 'Aktiver Workspace fehlt',
-        message: 'Die Session enthaelt keinen aktiven Workspace.',
-      }),
-    };
-  }
-
-  const hasActiveMembership = normalized.memberships.some(
-    (membership) => membership?.workspace_id === normalized.active_workspace_id,
-  );
-  if (!hasActiveMembership) {
-    return {
-      state: normalized,
-      error: authBootstrapError({
-        code: 'AUTH_WORKSPACE_NOT_ALLOWED',
-        title: 'Workspace nicht zulaessig',
-        message: 'Der aktive Workspace ist nicht in den Memberships der Session enthalten.',
-        details: { active_workspace_id: normalized.active_workspace_id },
-        status: 403,
-      }),
-    };
-  }
-
-  return { state: normalized, error: null };
 }
 
 function mapBootstrapFailure(error) {
@@ -132,10 +66,6 @@ function mapBootstrapFailure(error) {
   });
 }
 
-function isRetryableBootstrapError(error) {
-  return error?.code === 'API_UNREACHABLE' || error?.code === 'CORS_ERROR' || error?.code === 'TIMEOUT';
-}
-
 function applyApiContext(authState) {
   const normalized = normalizeAuthState(authState);
   setApiRequestContext({
@@ -175,18 +105,28 @@ function readStoredAuthState() {
 
 export function AuthProvider({ children, initialAuthState = null }) {
   const hasInjectedAuthState = initialAuthState !== null;
-  const [authState, setAuthState] = useState(() => normalizeAuthState(initialAuthState || readStoredAuthState()));
-  const [bootstrapError, setBootstrapError] = useState(null);
+  const initialState = normalizeAuthState(initialAuthState || readStoredAuthState());
+  const initialValidation = validateSessionState(initialState);
+  const shouldBootstrapInitialState = !hasInjectedAuthState && Boolean(initialState.token) && (
+    !initialState.user ||
+    !initialState.active_workspace_id ||
+    initialState.memberships.length === 0
+  );
+  const [authState, setAuthState] = useState(initialValidation.state);
+  const [bootstrapError, setBootstrapError] = useState(
+    shouldBootstrapInitialState ? null : initialValidation.error,
+  );
   const [isBootstrapping, setIsBootstrapping] = useState(() => {
-    const initialState = normalizeAuthState(initialAuthState || readStoredAuthState());
     if (hasInjectedAuthState) {
       return false;
     }
-    return Boolean(initialState.token) && (!initialState.user || !initialState.active_workspace_id || initialState.memberships.length === 0);
+    return shouldBootstrapInitialState;
   });
+  const hasCompleteSessionRef = useRef(false);
 
   useEffect(() => {
     setOnAuthRequired(() => {
+      if (!hasCompleteSessionRef.current) return;
       setBootstrapError(null);
       applyApiContext({});
       setAuthState(normalizeAuthState());
@@ -196,6 +136,9 @@ export function AuthProvider({ children, initialAuthState = null }) {
 
   useEffect(() => {
     const normalizedState = normalizeAuthState(authState);
+    hasCompleteSessionRef.current = Boolean(
+      normalizedState.token && normalizedState.user && normalizedState.active_workspace_id,
+    );
     setApiRequestContext({
       authToken: normalizedState.token,
       workspaceId: normalizedState.active_workspace_id,
@@ -293,6 +236,16 @@ export function AuthProvider({ children, initialAuthState = null }) {
     },
     retryBootstrap() {
       setBootstrapError((current) => (isRetryableBootstrapError(current) ? null : current));
+    },
+    switchWorkspace(newWorkspaceId) {
+      setAuthState((current) => {
+        const normalized = normalizeAuthState(current);
+        const hasAccess = normalized.memberships.some((m) => m?.workspace_id === newWorkspaceId);
+        if (!hasAccess) return current;
+        const next = { ...normalized, active_workspace_id: newWorkspaceId };
+        applyApiContext(next);
+        return next;
+      });
     },
     async signOut() {
       try {

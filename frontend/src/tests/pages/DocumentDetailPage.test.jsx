@@ -2,10 +2,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { setApiRequestContext } from '../../api/client.js';
 import { AuthProvider } from '../../auth/AuthContext.jsx';
 import { DocumentDetailPage } from '../../pages/DocumentDetailPage.jsx';
 
 function renderPage() {
+  setApiRequestContext({ authToken: 'test-token', workspaceId: 'workspace-1' });
   return render(
     <AuthProvider initialAuthState={{
       token: 'test-token',
@@ -25,6 +27,7 @@ function renderPage() {
 
 describe('DocumentDetailPage', () => {
   afterEach(() => {
+    setApiRequestContext({ authToken: '', workspaceId: '' });
     vi.restoreAllMocks();
     cleanup();
   });
@@ -87,7 +90,7 @@ describe('DocumentDetailPage', () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText('Dokument nicht gefunden')).toBeInTheDocument();
+      expect(screen.getByText('Serverfehler')).toBeInTheDocument();
     });
     expect(screen.getByText(/Fehlercode: DOCUMENT_NOT_FOUND/i)).toBeInTheDocument();
   });

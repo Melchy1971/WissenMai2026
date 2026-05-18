@@ -31,6 +31,6 @@ test.describe('01 Login flow', () => {
     await page.getByLabel('Passwort').fill(password);
     await page.getByRole('button', { name: 'Anmelden' }).click();
 
-    await expect(page.getByRole('heading', { name: 'Dokumente' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
   });
 });

@@ -3,6 +3,7 @@ const AUTH_TOKEN_STORAGE_KEY = 'wissen.authToken';
 const WORKSPACE_ID_STORAGE_KEY = 'wissen.workspaceId';
 const DEFAULT_TIMEOUT_MS = 15000;
 const memoryRequestContext = new Map();
+const CENTRAL_HEADER_NAMES = new Set(['authorization', 'x-workspace-id']);
 
 let _onAuthRequired = null;
 
@@ -14,12 +15,14 @@ function getStorage() {
   if (typeof window === 'undefined' || !window.localStorage) {
     return null;
   }
-
   const storage = window.localStorage;
-  if (typeof storage.getItem !== 'function' || typeof storage.setItem !== 'function' || typeof storage.removeItem !== 'function') {
+  if (
+    typeof storage.getItem !== 'function' ||
+    typeof storage.setItem !== 'function' ||
+    typeof storage.removeItem !== 'function'
+  ) {
     return null;
   }
-
   return storage;
 }
 
@@ -28,14 +31,12 @@ function readStoredValue(key, fallback = '') {
   if (storage) {
     return storage.getItem(key) || fallback;
   }
-
   return memoryRequestContext.get(key) || fallback;
 }
 
 export function getApiRequestContext() {
   const authToken = readStoredValue(AUTH_TOKEN_STORAGE_KEY, import.meta.env.VITE_AUTH_TOKEN || '');
   const workspaceId = readStoredValue(WORKSPACE_ID_STORAGE_KEY);
-
   return {
     authToken: authToken.trim(),
     workspaceId: workspaceId.trim(),
@@ -46,42 +47,80 @@ export function setApiRequestContext({ authToken = '', workspaceId = '' }) {
   const storage = getStorage();
 
   if (authToken.trim()) {
-    if (storage) {
-      storage.setItem(AUTH_TOKEN_STORAGE_KEY, authToken.trim());
-    }
+    if (storage) storage.setItem(AUTH_TOKEN_STORAGE_KEY, authToken.trim());
     memoryRequestContext.set(AUTH_TOKEN_STORAGE_KEY, authToken.trim());
   } else {
-    if (storage) {
-      storage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-    }
+    if (storage) storage.removeItem(AUTH_TOKEN_STORAGE_KEY);
     memoryRequestContext.delete(AUTH_TOKEN_STORAGE_KEY);
   }
 
   if (workspaceId.trim()) {
-    if (storage) {
-      storage.setItem(WORKSPACE_ID_STORAGE_KEY, workspaceId.trim());
-    }
+    if (storage) storage.setItem(WORKSPACE_ID_STORAGE_KEY, workspaceId.trim());
     memoryRequestContext.set(WORKSPACE_ID_STORAGE_KEY, workspaceId.trim());
   } else {
-    if (storage) {
-      storage.removeItem(WORKSPACE_ID_STORAGE_KEY);
-    }
+    if (storage) storage.removeItem(WORKSPACE_ID_STORAGE_KEY);
     memoryRequestContext.delete(WORKSPACE_ID_STORAGE_KEY);
   }
 }
 
-function buildRequestHeaders(optionsHeaders = {}) {
+/**
+ * Builds final request headers.
+ * - Authorization and X-Workspace-Id are always sourced from central context.
+ *   Any caller-provided values for these two keys are silently discarded.
+ * - Content-Type is auto-inferred as application/json when body is a string
+ *   and the caller has not set Content-Type explicitly.
+ * - correlationId is injected as X-Correlation-Id when provided.
+ */
+function normalizeHeaders(headersInit = {}) {
+  if (headersInit instanceof Headers) {
+    return Object.fromEntries(headersInit.entries());
+  }
+  if (Array.isArray(headersInit)) {
+    return Object.fromEntries(headersInit);
+  }
+  return { ...headersInit };
+}
+
+function removeCentralHeaders(headers) {
+  for (const headerName of Object.keys(headers)) {
+    if (CENTRAL_HEADER_NAMES.has(headerName.toLowerCase())) {
+      delete headers[headerName];
+    }
+  }
+}
+
+function hasHeader(headers, name) {
+  const normalizedName = name.toLowerCase();
+  return Object.keys(headers).some((headerName) => headerName.toLowerCase() === normalizedName);
+}
+
+function buildRequestHeaders(optionsHeaders = {}, body, correlationId) {
   const requestContext = getApiRequestContext();
+
   const headers = {
     Accept: 'application/json',
-    ...optionsHeaders,
+    ...normalizeHeaders(optionsHeaders),
   };
 
-  if (requestContext.authToken && !headers.Authorization) {
+  // Remove caller-provided auth/workspace headers — they must come from context only.
+  removeCentralHeaders(headers);
+
+  // Auto-infer Content-Type for JSON string bodies.
+  if (typeof body === 'string' && !hasHeader(headers, 'Content-Type')) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  // Inject from central context.
+  if (requestContext.authToken) {
     headers.Authorization = `Bearer ${requestContext.authToken}`;
   }
-  if (requestContext.workspaceId && !headers['X-Workspace-Id']) {
+  if (requestContext.workspaceId) {
     headers['X-Workspace-Id'] = requestContext.workspaceId;
+  }
+
+  // Optional correlation id for distributed tracing.
+  if (correlationId != null && correlationId !== '') {
+    headers['X-Correlation-Id'] = String(correlationId);
   }
 
   return headers;
@@ -102,34 +141,21 @@ function classifyFetchFailure(error, { timedOut = false } = {}) {
   const normalizedMessage = message.toLowerCase();
 
   if (timedOut || error?.name === 'AbortError' || normalizedMessage.includes('timeout')) {
-    return {
-      code: 'TIMEOUT',
-      message: 'Die Anfrage hat zu lange gedauert.',
-    };
+    return { code: 'TIMEOUT', message: 'Die Anfrage hat zu lange gedauert.' };
   }
 
-  if (normalizedMessage.includes('cors') || normalizedMessage.includes('access-control')) {
-    return {
-      code: 'CORS_ERROR',
-      message: 'Der Browser hat die Anfrage wegen CORS blockiert.',
-    };
-  }
-
-  return {
-    code: 'API_UNREACHABLE',
-    message: 'Backend nicht erreichbar oder Netzwerkfehler.',
-  };
+  return { code: 'API_UNREACHABLE', message: 'Backend nicht erreichbar oder Netzwerkfehler.' };
 }
 
 function classifyHttpFailure(response, errorPayload) {
   if (response.status === 401) {
-    return {
-      code: 'AUTH_REQUIRED',
-      message: errorPayload?.message || 'Authentifizierung erforderlich.',
-    };
+    return { code: 'AUTH_REQUIRED', message: errorPayload?.message || 'Authentifizierung erforderlich.' };
   }
 
-  if (errorPayload?.code === 'WORKSPACE_REQUIRED' || errorPayload?.code === 'WORKSPACE_NOT_CONFIGURED') {
+  if (
+    errorPayload?.code === 'WORKSPACE_REQUIRED' ||
+    errorPayload?.code === 'WORKSPACE_NOT_CONFIGURED'
+  ) {
     return {
       code: 'WORKSPACE_NOT_CONFIGURED',
       message: errorPayload?.message || 'Kein aktiver Workspace konfiguriert.',
@@ -137,47 +163,80 @@ function classifyHttpFailure(response, errorPayload) {
   }
 
   if (errorPayload?.code === 'WORKSPACE_ACCESS_FORBIDDEN') {
-    return {
-      code: 'FORBIDDEN',
-      message: errorPayload?.message || 'Workspace-Zugriff verweigert.',
-    };
+    return { code: 'FORBIDDEN', message: errorPayload?.message || 'Workspace-Zugriff verweigert.' };
   }
 
   if (response.status === 403) {
-    return {
-      code: 'FORBIDDEN',
-      message: errorPayload?.message || 'Zugriff verweigert.',
-    };
+    return { code: 'FORBIDDEN', message: errorPayload?.message || 'Zugriff verweigert.' };
+  }
+
+  if (
+    response.status === 422 ||
+    (response.status === 400 &&
+      (errorPayload?.code === 'VALIDATION_ERROR' || errorPayload?.code === 'INVALID_INPUT'))
+  ) {
+    return { code: 'VALIDATION_ERROR', message: errorPayload?.message || 'Validierungsfehler.' };
+  }
+
+  if (response.status >= 500) {
+    return { code: 'SERVER_ERROR', message: errorPayload?.message || 'Interner Serverfehler.' };
   }
 
   return {
-    code: errorPayload?.code || (response.status === 503 ? 'SERVICE_UNAVAILABLE' : 'HTTP_ERROR'),
+    code: errorPayload?.code || 'HTTP_ERROR',
     message: errorPayload?.message || response.statusText || 'API request failed',
   };
 }
 
+/**
+ * Central HTTP function. All API modules must route through this.
+ *
+ * @param {string} path - API path (e.g. '/api/v1/documents')
+ * @param {object} options
+ * @param {number} [options.timeoutMs=15000] - Abort after this many ms.
+ * @param {string} [options.correlationId] - Forwarded as X-Correlation-Id.
+ * @param {AbortSignal} [options.signal] - External abort signal.
+ */
 export async function requestJson(path, options = {}) {
-  let response;
   const {
     headers: optionHeaders = {},
     timeoutMs = DEFAULT_TIMEOUT_MS,
     signal: optionSignal,
+    correlationId,
     ...requestOptions
   } = options;
-  const controller = typeof AbortController !== 'undefined' && !optionSignal ? new AbortController() : null;
-  let timedOut = false;
-  const timeoutId = controller && timeoutMs > 0
-    ? setTimeout(() => {
-        timedOut = true;
-        controller.abort();
-      }, timeoutMs)
-    : null;
 
+  const builtHeaders = buildRequestHeaders(optionHeaders, requestOptions.body, correlationId);
+
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  let removeOptionAbortListener = null;
+  let timedOut = false;
+
+  if (controller && optionSignal) {
+    const abortFromOptionSignal = () => controller.abort();
+    if (optionSignal.aborted) {
+      controller.abort();
+    } else {
+      optionSignal.addEventListener('abort', abortFromOptionSignal, { once: true });
+      removeOptionAbortListener = () =>
+        optionSignal.removeEventListener('abort', abortFromOptionSignal);
+    }
+  }
+
+  const timeoutId =
+    controller && timeoutMs > 0
+      ? setTimeout(() => {
+          timedOut = true;
+          controller.abort();
+        }, timeoutMs)
+      : null;
+
+  let response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       ...requestOptions,
-      headers: buildRequestHeaders(optionHeaders),
-      signal: optionSignal || controller?.signal,
+      headers: builtHeaders,
+      signal: controller?.signal || optionSignal,
     });
   } catch (error) {
     const classified = classifyFetchFailure(error, { timedOut });
@@ -188,9 +247,8 @@ export async function requestJson(path, options = {}) {
       status: null,
     });
   } finally {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
+    if (timeoutId) clearTimeout(timeoutId);
+    if (removeOptionAbortListener) removeOptionAbortListener();
   }
 
   const contentType = response.headers.get('content-type') || '';
@@ -206,7 +264,11 @@ export async function requestJson(path, options = {}) {
     throw new ApiClientError({
       code: classified.code,
       message: classified.message,
-      details: errorPayload?.details || {},
+      details: {
+        ...(errorPayload?.details || {}),
+        backendCode: errorPayload?.code || null,
+        classification: classified.code,
+      },
       status: response.status,
     });
   }

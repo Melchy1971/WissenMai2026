@@ -28,6 +28,8 @@ markers = [
     "m4a_gate: critical M4a gate evidence; must run as postgres_truth",
     "m4b_gate: critical M4b gate evidence; must run as postgres_truth",
     "m4c_gate: critical M4c gate evidence; must run as postgres_truth",
+    "auth_bootstrap: Auth bootstrap stability truth tests",
+    "workspace_bootstrap: Workspace bootstrap stability truth tests",
     "queue_aging: Queue Aging and Starvation Detection truth tests",
     "reindex_governance: Reindex Governance safety constraints and audit trail truth tests",
     "citation_longevity: Citation Longevity Audit — long-term snapshot stability truth tests",

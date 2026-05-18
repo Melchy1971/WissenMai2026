@@ -107,7 +107,13 @@
       "Bash(Select-String -Pattern \".\")",
       "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; $env:PYTHONUTF8 = \"1\"; $env:PYTHONIOENCODING = \"utf-8\"; echo \"y\" | specify init . --integration copilot 2>&1)",
       "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; $env:PYTHONUTF8 = \"1\"; $env:PYTHONIOENCODING = \"utf-8\"; specify init --help 2>&1)",
-      "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; $env:PYTHONUTF8 = \"1\"; $env:PYTHONIOENCODING = \"utf-8\"; specify init . --integration copilot --force 2>&1)"
+      "PowerShell($env:Path = \"C:\\\\Users\\\\User\\\\.local\\\\bin;$env:Path\"; $env:PYTHONUTF8 = \"1\"; $env:PYTHONIOENCODING = \"utf-8\"; specify init . --integration copilot --force 2>&1)",
+      "Bash(npx vitest *)",
+      "Bash(Get-Content \"h:\\\\WissenMai2026\\\\backend\\\\tests\\\\test_frontend_backend_contracts.py\")",
+      "Bash(Measure-Object -Line)",
+      "PowerShell(\\(Get-Content \"h:\\\\WissenMai2026\\\\backend\\\\tests\\\\test_frontend_backend_contracts.py\" | Measure-Object -Line\\).Lines; \\(Get-Content \"h:\\\\WissenMai2026\\\\docs\\\\api\\\\frontend-backend-contract-registry.md\" | Measure-Object -Line\\).Lines)",
+      "PowerShell($tf = Get-Content \"h:\\\\WissenMai2026\\\\backend\\\\tests\\\\test_frontend_backend_contracts.py\"; $tf.Count)",
+      "PowerShell(\\(Get-Content \"h:\\\\WissenMai2026\\\\backend\\\\tests\\\\test_frontend_backend_contracts.py\"\\).Count)"
     ]
   },
   "hooks": {

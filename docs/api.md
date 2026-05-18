@@ -1,14 +1,16 @@
 # API fuer M3a GUI, M3b Retrieval-UI, M3c Chat/RAG und M4-Produktisierung
 
-Stand: 2026-05-07
+Stand: 2026-05-18
 
 ## Zweck
 
-Dieses Dokument beschreibt die API-Abhaengigkeit der aktuellen GUI auf hoher Ebene und finalisiert den stabilen Vertrag fuer M3b Search sowie M3c Chat/RAG. Verbindlicher Detailvertrag fuer die Dokument-Read-Pfade bleibt `docs/api/v1-document-api-contract.md`. Der Retrieval-Vertrag fuer M3b ist zusaetzlich in `docs/retrieval.md` beschrieben.
+Dieses Dokument beschreibt die API-Abhaengigkeit der aktuellen GUI auf hoher Ebene und den Vertrag fuer M3b Search sowie M3c Chat/RAG. Verbindlicher Detailvertrag fuer die Dokument-Read-Pfade bleibt `docs/api/v1-document-api-contract.md`. Der Retrieval-Vertrag fuer M3b ist zusaetzlich in `docs/retrieval.md` beschrieben.
+
+M3a-Nachweisgrenze: Die GUI kann vorhandene API-Faehigkeiten konsumieren, aber M3a ist nicht stabilisiert. `reports/frontend_truth_report.json` vom 2026-05-18 ist rot (`80 collected`, `58 passed`, `22 failed`). `reports/m3a_gate_result.json` steht auf `FAIL`, Score `57.1`. Ohne gruenen Gate-Report duerfen API-/GUI-Vertragsaussagen nicht als M3a-Freigabe gelesen werden.
 
 ## M4a Konsistenzstand
 
-Der dokumentierte Zielzustand fuer M4a ist ein durchgaengig serverseitig aufgeloester Auth- und Workspace-Kontext fuer alle geschuetzten Pfade. Der technische Backend-Kern ist im aktuellen Gate-Stand freigabefaehig nachgewiesen. Offene Themen wie kompletter Frontend-Produktfluss oder Logout-Vollausbau bleiben getrennte Weiterentwicklungspunkte und aendern nicht den aktuellen M4-Freigabestand.
+Der dokumentierte Zielzustand fuer M4a ist ein durchgaengig serverseitig aufgeloester Auth- und Workspace-Kontext fuer alle geschuetzten Pfade. Der technische Backend-Kern ist vorhanden, aber aktuelle Freigabeaussagen duerfen nur aus den Gate-Reports abgeleitet werden. Der aktuelle M3a-Gate-Report ist rot; der aktuelle PostgreSQL Truth Report ist ebenfalls nicht gruen.
 
 Fuer Admin-Diagnostics ist der Legacy-Header `x-admin-token` nicht Teil des aktiven Vertrags. Diagnostics autorisiert ausschliesslich ueber AuthContext, aktiven Workspace und Workspace-Membership/Rolle.
 
@@ -36,6 +38,9 @@ M3a Dokument-GUI:
 - `GET /documents/{document_id}`
 - `GET /documents/{document_id}/versions`
 - `GET /documents/{document_id}/chunks`
+
+Diese vier Read-Pfade bilden den urspruenglichen M3a-Kern. Die folgenden Schreib-, Such-, Chat-, Lifecycle- und Diagnostics-Pfade sind spaetere GUI-Slices; sie belegen vorhandene Funktionalitaet, aber keinen gruenen M3a-Abschluss:
+
 - `POST /documents/import`
 - `PATCH /documents/{document_id}/archive`
 - `PATCH /documents/{document_id}/restore`

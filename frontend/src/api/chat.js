@@ -12,12 +12,7 @@ export function getChatSessions({ limit = 20, offset = 0 } = {}) {
 export function createChatSession({ title }) {
   return requestJson('/api/v1/chat/sessions', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      title,
-    }),
+    body: JSON.stringify({ title }),
   });
 }
 
@@ -28,12 +23,6 @@ export function getChatSession(id) {
 export function postChatMessage(id, { question, retrievalLimit = 8 }) {
   return requestJson(`/api/v1/chat/sessions/${id}/messages`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      question,
-      retrieval_limit: retrievalLimit,
-    }),
+    body: JSON.stringify({ question, retrieval_limit: retrievalLimit }),
   });
 }

@@ -2,7 +2,7 @@ import { expect, test } from './fixtures.js';
 
 test.describe('04 Dokumentliste', () => {
   test('shows documents page heading', async ({ authedPage }) => {
-    await expect(authedPage.getByRole('heading', { name: 'Dokumente' })).toBeVisible();
+    await expect(authedPage.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible();
   });
 
   test('shows empty state for workspace with no documents', async ({ authedPage }) => {

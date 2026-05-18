@@ -2,24 +2,34 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { setApiRequestContext } from '../../api/client.js';
 import { AuthProvider } from '../../auth/AuthContext.jsx';
 import { ChatPage } from '../../pages/ChatPage.jsx';
 
 function renderPage(initialEntry = '/chat/session-1') {
+  setApiRequestContext({ authToken: 'test-token', workspaceId: 'workspace-1' });
   return render(
-    <AuthProvider initialAuthState={{ token: 'test-token', user: null, active_workspace_id: 'workspace-1', memberships: [] }}>
+    <AuthProvider
+      initialAuthState={{
+        token: 'test-token',
+        user: { id: 'user-1', login: 'test-user' },
+        active_workspace_id: 'workspace-1',
+        memberships: [{ workspace_id: 'workspace-1', role: 'owner' }],
+      }}
+    >
       <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/chat/:id" element={<ChatPage />} />
         </Routes>
       </MemoryRouter>
-    </AuthProvider>
+    </AuthProvider>,
   );
 }
 
 describe('ChatPage', () => {
   afterEach(() => {
+    setApiRequestContext({ authToken: '', workspaceId: '' });
     vi.restoreAllMocks();
     cleanup();
   });
@@ -254,16 +264,18 @@ describe('ChatPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Frage senden' }));
 
-    expect(await screen.findByText('Zu wenig Kontext')).toBeInTheDocument();
-    expect(screen.getByText('no_retrieval_hits')).toBeInTheDocument();
+    expect(await screen.findByText('Validierungsfehler')).toBeInTheDocument();
+    expect(screen.getByText('Fuer diese Frage ist nicht genug Workspace-Kontext vorhanden.')).toBeInTheDocument();
+    expect(screen.queryByText('no_retrieval_hits')).not.toBeInTheDocument();
     expect(screen.getByText(/Fehlercode: INSUFFICIENT_CONTEXT/i)).toBeInTheDocument();
+    expect(screen.getByText('Technischer Code: VALIDATION_ERROR')).toBeInTheDocument();
   });
 
   it.each([
-    ['CHAT_SESSION_NOT_FOUND', 'Chat-Sitzung nicht gefunden', 404],
-    ['RETRIEVAL_FAILED', 'Retrieval fehlgeschlagen', 502],
-    ['LLM_UNAVAILABLE', 'LLM nicht verfuegbar', 503],
-  ])('renders %s with visible code', async (code, title, status) => {
+    ['CHAT_SESSION_NOT_FOUND', 'Serverfehler', 404, 'Die Chat-Sitzung wurde nicht gefunden.'],
+    ['RETRIEVAL_FAILED', 'Serverfehler', 502, 'Die Retrieval-Anfrage ist fehlgeschlagen.'],
+    ['LLM_UNAVAILABLE', 'Serverfehler', 503, 'Der LLM-Dienst ist aktuell nicht verfuegbar.'],
+  ])('renders %s with visible code', async (code, title, status, message) => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: false,
       status,
@@ -277,7 +289,9 @@ describe('ChatPage', () => {
     await waitFor(() => {
       expect(screen.getByText(title)).toBeInTheDocument();
     });
-    expect(screen.getByText(`${code} message`)).toBeInTheDocument();
+    expect(screen.getByText(message)).toBeInTheDocument();
+    expect(screen.queryByText(`${code} message`)).not.toBeInTheDocument();
     expect(screen.getByText(new RegExp(`Fehlercode: ${code}`, 'i'))).toBeInTheDocument();
+    expect(screen.getByText('Technischer Code: SERVER_ERROR')).toBeInTheDocument();
   });
 });

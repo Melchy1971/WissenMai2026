@@ -9,7 +9,7 @@ import { SearchResultList } from '../components/documents/SearchResultList.jsx';
 import { EmptyState } from '../components/status/EmptyState.jsx';
 import { ErrorState } from '../components/status/ErrorState.jsx';
 import { LoadingState } from '../components/status/LoadingState.jsx';
-import { mapDocumentListItem, mapError, mapJobStatus, mapSearchResult } from '../view-models/mappers.js';
+import { mapDocumentListItem, mapError, mapImportOutcome, mapJobStatus, mapSearchResult } from '../view-models/mappers.js';
 
 const ALLOWED_LIFECYCLE_FILTERS = ['active', 'archived'];
 const POLL_MAX_ATTEMPTS = 120; // 30s at 250ms intervals
@@ -27,6 +27,10 @@ export function DocumentsPage() {
   const pollNetworkErrorRef = useRef(0);
   const searchAbortRef = useRef(null);
   const uploadJobState = mapJobStatus(uploadState.job);
+  const uploadOutcome =
+    uploadState.status === 'success'
+      ? mapImportOutcome(uploadState.result, { fileName: uploadState.fileName })
+      : null;
 
   async function loadDocuments({ cancelled = false } = {}) {
     setState({ status: 'loading', items: [], error: null });
@@ -62,12 +66,40 @@ export function DocumentsPage() {
       if (pollTimeoutRef.current) {
         clearTimeout(pollTimeoutRef.current);
       }
+      if (searchAbortRef.current) {
+        searchAbortRef.current.abort();
+      }
     };
   }, []);
 
+  // Rule 6: reset transient upload/search state whenever the active workspace changes
+  useEffect(() => {
+    if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+      searchAbortRef.current = null;
+    }
+    setUploadState({ status: 'idle', fileName: '', job: null, result: null, error: null });
+    setSearchState({ status: 'idle', items: [], error: null, query: '' });
+    setQueryInput('');
+  }, [workspaceId]);
+
   async function pollImportJob(jobId, fileName) {
+    if (pollAttemptsRef.current >= POLL_MAX_ATTEMPTS) {
+      setUploadState({
+        status: 'error',
+        fileName,
+        job: null,
+        result: null,
+        error: mapError({ code: 'JOB_TIMEOUT', message: 'Der Import-Job hat zu lange gedauert.', details: {} }),
+      });
+      return;
+    }
+    pollAttemptsRef.current += 1;
+
     try {
       const job = await getJob(jobId);
+      pollNetworkErrorRef.current = 0;
       if (job.status === 'completed') {
         setUploadState({ status: 'success', fileName, job, result: job.result, error: null });
         await loadDocuments();
@@ -89,7 +121,14 @@ export function DocumentsPage() {
         void pollImportJob(jobId, fileName);
       }, 250);
     } catch (error) {
-      setUploadState({ status: 'error', fileName, job: null, result: null, error: mapError(error) });
+      pollNetworkErrorRef.current += 1;
+      if (pollNetworkErrorRef.current <= POLL_MAX_NETWORK_ERRORS) {
+        pollTimeoutRef.current = setTimeout(() => {
+          void pollImportJob(jobId, fileName);
+        }, 1000 * pollNetworkErrorRef.current);
+      } else {
+        setUploadState({ status: 'error', fileName, job: null, result: null, error: mapError(error) });
+      }
     }
   }
 
@@ -103,15 +142,13 @@ export function DocumentsPage() {
         fileName: '',
         job: null,
         result: null,
-        error: {
-          code: 'FILE_REQUIRED',
-          title: 'Datei fehlt',
-          message: 'Bitte waehle eine Datei fuer den Import aus.',
-        },
+        error: mapError({ code: 'FILE_REQUIRED', message: 'Bitte waehle eine Datei fuer den Import aus.', details: {} }),
       });
       return;
     }
 
+    pollAttemptsRef.current = 0;
+    pollNetworkErrorRef.current = 0;
     setUploadState({ status: 'loading', fileName: file.name, job: null, result: null, error: null });
     try {
       const job = await importDocument(file);
@@ -132,16 +169,27 @@ export function DocumentsPage() {
       return;
     }
 
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+    }
+    searchAbortRef.current = new AbortController();
+    const { signal } = searchAbortRef.current;
+
     setSearchState({ status: 'loading', items: [], error: null, query });
     try {
-      const response = await searchChunks({ query, limit: 10, offset: 0 });
+      const response = await searchChunks({ query, limit: 10, offset: 0 }, { signal });
       setSearchState({ status: 'success', items: response.map(mapSearchResult), error: null, query });
     } catch (error) {
+      if (signal.aborted) return;
       setSearchState({ status: 'error', items: [], error: mapError(error), query });
     }
   }
 
   function handleSearchReset() {
+    if (searchAbortRef.current) {
+      searchAbortRef.current.abort();
+      searchAbortRef.current = null;
+    }
     setQueryInput('');
     setSearchState({ status: 'idle', items: [], error: null, query: '' });
   }
@@ -165,7 +213,7 @@ export function DocumentsPage() {
         <form className="search-bar" onSubmit={(event) => event.preventDefault()}>
           <label className="search-bar__field">
             <span className="search-bar__label">Statusfilter</span>
-            <select value={lifecycleFilter} onChange={(event) => setLifecycleFilter(event.target.value)}>
+            <select value={lifecycleFilter} onChange={(event) => { if (ALLOWED_LIFECYCLE_FILTERS.includes(event.target.value)) setLifecycleFilter(event.target.value); }}>
               <option value="active">Nur aktive Dokumente</option>
               <option value="archived">Nur archivierte Dokumente</option>
             </select>
@@ -220,11 +268,15 @@ export function DocumentsPage() {
           <div className="meta-grid">
             <div>
               <dt>Import</dt>
-              <dd>
-                {uploadState.result?.import_status === 'duplicate'
-                  ? `${uploadState.fileName} bereits vorhanden`
-                  : `${uploadState.fileName} erfolgreich verarbeitet`}
-              </dd>
+              <dd>{uploadOutcome.title}</dd>
+            </div>
+            <div>
+              <dt>Hinweis</dt>
+              <dd>{uploadOutcome.message}</dd>
+            </div>
+            <div>
+              <dt>Code</dt>
+              <dd>{uploadOutcome.code}</dd>
             </div>
             <div>
               <dt>Dokument</dt>

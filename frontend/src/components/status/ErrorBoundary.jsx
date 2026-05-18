@@ -1,5 +1,6 @@
 import { Component } from 'react';
 
+import { mapError } from '../../view-models/mappers.js';
 import { ErrorState } from './ErrorState.jsx';
 
 export class ErrorBoundary extends Component {
@@ -10,13 +11,12 @@ export class ErrorBoundary extends Component {
 
   static getDerivedStateFromError(error) {
     return {
-      error: {
+      error: mapError({
         code: 'UI_RENDER_FAILED',
-        title: 'Oberflaeche konnte nicht geladen werden',
         message: error instanceof Error ? error.message : 'Ein unerwarteter UI-Fehler ist aufgetreten.',
         details: {},
         status: null,
-      },
+      }),
     };
   }
 

@@ -8,13 +8,20 @@ import { DocumentsPage } from '../../pages/DocumentsPage.jsx';
 
 function renderPage(initialEntry = '/documents') {
   return render(
-    <AuthProvider initialAuthState={{ token: 'test-token', user: null, active_workspace_id: 'workspace-1', memberships: [] }}>
+    <AuthProvider
+      initialAuthState={{
+        token: 'test-token',
+        user: { id: 'user-1', login: 'test-user' },
+        active_workspace_id: 'workspace-1',
+        memberships: [{ workspace_id: 'workspace-1', role: 'owner' }],
+      }}
+    >
       <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
           <Route path="/documents" element={<DocumentsPage />} />
         </Routes>
       </MemoryRouter>
-    </AuthProvider>
+    </AuthProvider>,
   );
 }
 
@@ -93,7 +100,7 @@ describe('DocumentsPage', () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText('Service nicht verfuegbar')).toBeInTheDocument();
+      expect(screen.getByText('Serverfehler')).toBeInTheDocument();
     });
     expect(screen.getByText(/Fehlercode: SERVICE_UNAVAILABLE/i)).toBeInTheDocument();
   });
@@ -222,7 +229,7 @@ describe('DocumentsPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
 
-    expect(await screen.findByText('Ungueltige Suche')).toBeInTheDocument();
+    expect(await screen.findByText('Validierungsfehler')).toBeInTheDocument();
     expect(screen.getByText(/Fehlercode: INVALID_QUERY/i)).toBeInTheDocument();
   });
 
@@ -453,7 +460,9 @@ describe('DocumentsPage', () => {
     fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
     fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
 
-    expect(await screen.findByText(/notes.txt bereits vorhanden/i)).toBeInTheDocument();
+    expect(await screen.findByText('Duplicate erkannt')).toBeInTheDocument();
+    expect(screen.getByText(/notes.txt ist bereits vorhanden/i)).toBeInTheDocument();
+    expect(screen.getByText('DUPLICATE_DOCUMENT')).toBeInTheDocument();
     expect(screen.getByText('duplicate')).toBeInTheDocument();
     expect(screen.getByText('txt-parser')).toBeInTheDocument();
     expect(screen.getAllByText('doc-2')).toHaveLength(2);
@@ -581,7 +590,7 @@ describe('DocumentsPage', () => {
     fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
     fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
 
-    expect(await screen.findByText('Parser fehlgeschlagen')).toBeInTheDocument();
+    expect(await screen.findByText('Import fehlgeschlagen')).toBeInTheDocument();
     expect(screen.getByText(/Fehlercode: PARSER_FAILED/i)).toBeInTheDocument();
   });
 
@@ -609,7 +618,7 @@ describe('DocumentsPage', () => {
     fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
     fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
 
-    expect(await screen.findByText('Datei zu gross')).toBeInTheDocument();
+    expect(await screen.findByText('Validierungsfehler')).toBeInTheDocument();
     expect(screen.getByText(/Fehlercode: FILE_TOO_LARGE/i)).toBeInTheDocument();
   });
 

@@ -1,12 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.GUI_TRUTH_BASE_URL || 'http://127.0.0.1:7474';
+
 export default defineConfig({
   testDir: './tests/gui_truth',
   fullyParallel: false,
   workers: 1,
   retries: 0,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL,
     headless: true,
     viewport: { width: 1280, height: 800 },
   },
@@ -16,10 +18,12 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'npm run dev -- --port 5173',
-    url: 'http://localhost:5173',
-    reuseExistingServer: true,
-    timeout: 30_000,
-  },
+  webServer: process.env.GUI_TRUTH_EXTERNAL_FRONTEND === '1'
+    ? undefined
+    : {
+        command: 'npm run dev -- --host 127.0.0.1 --port 7474',
+        url: baseURL,
+        reuseExistingServer: false,
+        timeout: 30_000,
+      },
 });

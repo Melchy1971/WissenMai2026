@@ -139,8 +139,8 @@ describe('Auth bootstrap', () => {
 
     renderApp('/documents');
 
-    expect(await screen.findByText('Session abgelaufen')).toBeInTheDocument();
-    expect(screen.getByText('Fehlercode: AUTH_SESSION_EXPIRED')).toBeInTheDocument();
+    expect(await screen.findByText('Login erforderlich')).toBeInTheDocument();
+    expect(screen.getByText('Technischer Code: AUTH_REQUIRED')).toBeInTheDocument();
   });
 
   it('rejects sessions without memberships', async () => {
@@ -153,8 +153,9 @@ describe('Auth bootstrap', () => {
 
     renderApp('/documents');
 
-    expect(await screen.findByText('Keine Workspace-Mitgliedschaft')).toBeInTheDocument();
+    expect(await screen.findByText('Workspace fehlt')).toBeInTheDocument();
     expect(screen.getByText('Fehlercode: WORKSPACE_NOT_CONFIGURED')).toBeInTheDocument();
+    expect(screen.getByText('Technischer Code: WORKSPACE_NOT_CONFIGURED')).toBeInTheDocument();
   });
 
   it('does not choose an implicit default workspace', async () => {
@@ -167,8 +168,9 @@ describe('Auth bootstrap', () => {
 
     renderApp('/documents');
 
-    expect(await screen.findByText('Aktiver Workspace fehlt')).toBeInTheDocument();
+    expect(await screen.findByText('Workspace fehlt')).toBeInTheDocument();
     expect(screen.getByText('Fehlercode: AUTH_WORKSPACE_MISSING')).toBeInTheDocument();
+    expect(screen.getByText('Technischer Code: WORKSPACE_NOT_CONFIGURED')).toBeInTheDocument();
   });
 
   it('rejects active workspace outside memberships', async () => {
@@ -181,8 +183,9 @@ describe('Auth bootstrap', () => {
 
     renderApp('/documents');
 
-    expect(await screen.findByText('Workspace nicht zulaessig')).toBeInTheDocument();
+    expect(await screen.findByText('Workspace fehlt')).toBeInTheDocument();
     expect(screen.getByText('Fehlercode: AUTH_WORKSPACE_NOT_ALLOWED')).toBeInTheDocument();
+    expect(screen.getByText('Technischer Code: WORKSPACE_NOT_CONFIGURED')).toBeInTheDocument();
   });
 
   it('loads /auth/me before protected data and sets active workspace context', async () => {

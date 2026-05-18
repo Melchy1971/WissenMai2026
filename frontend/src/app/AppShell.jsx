@@ -22,7 +22,7 @@ function TelekomLogo() {
 
 export function AppShell() {
   const navigate = useNavigate();
-  const { token, user, active_workspace_id: workspaceId, signOut } = useAuth();
+  const { token, user, active_workspace_id: workspaceId, memberships, signOut, switchWorkspace } = useAuth();
 
   async function handleLogout() {
     await signOut();
@@ -49,7 +49,21 @@ export function AppShell() {
         <div className="shell__session">
           <div className="shell__session-meta">
             <strong>{token ? (user?.display_name || user?.login || 'Angemeldet') : 'Gast'}</strong>
-            <span>{workspaceId || 'Workspace fehlt'}</span>
+            {memberships.length > 1 ? (
+              <select
+                aria-label="Workspace wechseln"
+                value={workspaceId || ''}
+                onChange={(e) => switchWorkspace(e.target.value)}
+              >
+                {memberships.map((m) => (
+                  <option key={m.workspace_id} value={m.workspace_id}>
+                    {m.workspace_id}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span>{workspaceId || 'Workspace fehlt'}</span>
+            )}
           </div>
           {token ? (
             <button type="button" className="button-secondary" onClick={handleLogout}>

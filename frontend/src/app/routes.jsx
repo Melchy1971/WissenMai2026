@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
 import { useAuth } from '../auth/AuthContext.jsx';
+import { hasValidatedWorkspace } from '../auth/stateInvariants.js';
 import { AppShell } from './AppShell.jsx';
 import { ErrorState } from '../components/status/ErrorState.jsx';
 import { LoadingState } from '../components/status/LoadingState.jsx';
@@ -9,10 +10,12 @@ import { ChatPage } from '../pages/ChatPage.jsx';
 import { DocumentDetailPage } from '../pages/DocumentDetailPage.jsx';
 import { DocumentsPage } from '../pages/DocumentsPage.jsx';
 import { LoginPage } from '../pages/LoginPage.jsx';
+import { mapError } from '../view-models/mappers.js';
 
 function ProtectedRoute() {
   const location = useLocation();
-  const { token, isAuthReady, bootstrapError, retryBootstrap } = useAuth();
+  const auth = useAuth();
+  const { token, isAuthReady, bootstrapError, retryBootstrap } = auth;
 
   if (!isAuthReady) {
     return <LoadingState label="Authentifizierung wird initialisiert..." />;
@@ -23,11 +26,25 @@ function ProtectedRoute() {
   }
 
   if (bootstrapError) {
+    const mappedError = mapError(bootstrapError);
     return (
       <ErrorState
-        error={bootstrapError}
-        actionLabel={bootstrapError.code === 'API_UNREACHABLE' || bootstrapError.code === 'CORS_ERROR' || bootstrapError.code === 'TIMEOUT' ? 'Erneut versuchen' : ''}
-        onAction={bootstrapError.code === 'API_UNREACHABLE' || bootstrapError.code === 'CORS_ERROR' || bootstrapError.code === 'TIMEOUT' ? retryBootstrap : null}
+        error={mappedError}
+        actionLabel={bootstrapError.code === 'API_UNREACHABLE' || bootstrapError.code === 'TIMEOUT' ? 'Erneut versuchen' : ''}
+        onAction={bootstrapError.code === 'API_UNREACHABLE' || bootstrapError.code === 'TIMEOUT' ? retryBootstrap : null}
+      />
+    );
+  }
+
+  if (!hasValidatedWorkspace(auth, bootstrapError)) {
+    return (
+      <ErrorState
+        error={mapError({
+          code: 'WORKSPACE_NOT_CONFIGURED',
+          message: 'Geschuetzte Inhalte erfordern einen validierten Workspace.',
+          details: {},
+          status: 403,
+        })}
       />
     );
   }

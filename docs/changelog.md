@@ -1,8 +1,55 @@
 # Changelog
 
-Stand: 2026-05-11
+Stand: 2026-05-18
+
+## 2026-05-18 - M3a/M4 Gesamt-Reconciliation
+
+### Changed
+
+- M4-Gesamtbewertung auf den aktuellen M3a- und PostgreSQL-Truth-Stand korrigiert.
+- `masterplan.md`, `docs/status.md`, `docs/m4-completion-matrix.md` und `docs/m4-m5-freigabefassung.md` markieren den 2026-05-11-PASS nicht mehr als aktuelle Freigabe.
+- Neue Gesamtmatrix: `docs/m4-gesamt-reconciliation.md`.
+
+### Findings
+
+- M3a Gate: `FAIL`, Score `57.1`.
+- Frontend Truth: `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
+- PostgreSQL Truth: `138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`.
+- M4a/M4b/M4c liegen als Marker-Teilbefunde ueber Schwelle, aber der rote Gesamt-Truth-Report blockiert die Freigabe.
+- M4e ist dokumentiert, kompensiert aber keine roten M3a- oder Truth-Gates.
+
+### Decision
+
+- M4 bleibt blockiert.
+- M4 technisch stabil, aber GUI blockiert: `nein`, weil zusaetzlich PostgreSQL Truth rot ist.
+- M4 Gesamtabschluss: `No-Go`.
+- M5-Transition aus M4: `No-Go`.
+
+## 2026-05-18 - M3a Dokumentation auf roten Gate-Stand korrigiert
+
+### Changed
+
+- `masterplan.md`, `docs/status.md`, `docs/frontend.md` und `docs/api.md` unterscheiden jetzt explizit zwischen vorhandener GUI und stabilisierter GUI.
+- M3a wird nicht mehr als abgeschlossen, freigegeben oder stabilisiert beschrieben.
+- `reports/frontend_truth_report.json` und `reports/m3a_gate_result.json` sind als verbindliche Nachweise referenziert.
+- Offene GUI-Blocker sind sichtbar dokumentiert.
+
+### Findings
+
+- Frontend Truth Report vom 2026-05-18: `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
+- M3a Gate Result: `FAIL`, Score `57.1`.
+- `reports/contract_test_report.json` ist gruen (`8 collected`, `8 passed`, `0 failed`, `0 skipped`).
+- `reports/postgres_truth_report.json` ist nicht gruen (`138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`).
+
+### Decision
+
+- M3a: `nicht abgeschlossen`.
+- GUI: `vorhanden`, aber `nicht stabilisiert`.
+- Gruene Aussagen zu M3a sind erst nach gruenem `scripts/validate_m3a_gate.py` zulaessig.
 
 ## 2026-05-11 - M4 abgeschlossen, M5 Vorbereitung und Implementierung freigegeben
+
+Historischer Eintrag: Diese Freigabe ist durch die M3a/M4 Gesamt-Reconciliation vom 2026-05-18 ueberholt. Aktueller Stand: M4 `No-Go`, M5-Transition `No-Go`.
 
 ### Changed
 
@@ -21,7 +68,7 @@ Stand: 2026-05-11
 
 ### Decision
 
-- M4: `PASS`
+- Historischer damaliger Stand: M4 `PASS`; aktueller Stand seit 2026-05-18: M4 `No-Go`.
 - M5 Vorbereitung: `Go`
 - M5 Implementierung: `erlaubt`
 - M4d full mit mutierenden Admin-Aktionen: weiterhin `No-Go`
@@ -300,8 +347,9 @@ Stand: 2026-05-11
 
 ### Validated
 
-- Frontend-Testlauf: `5 passed`.
-- Frontend-Build: `vite build` erfolgreich.
+- Historischer Zwischenstand: Frontend-Testlauf `5 passed`.
+- Historischer Zwischenstand: Frontend-Build `vite build` erfolgreich.
+- Diese historischen Nachweise begruenden keine aktuelle M3a-Freigabe; verbindlich ist der aktuelle Gate-Stand vom 2026-05-18.
 
 ### Outstanding
 

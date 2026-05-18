@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-05-18T09:58:09.169571+00:00",
+  "generated_at": "2026-05-18T09:58:09.169580+00:00",
+  "command": "python.exe -m pytest tests/test_frontend_backend_contracts.py -q",
+  "collected": 8,
+  "passed": 8,
+  "failed": 0,
+  "skipped": 0,
+  "errors": 0,
+  "duration_seconds": 2.44,
+  "pytest_exit_code": 0,
+  "commit_hash": "7bb5cec0b67511ed09325b9abda3a16960c381e0",
+  "passed_tests": [
+    "tests/test_frontend_backend_contracts.py::test_auth_me_and_workspace_membership_contract",
+    "tests/test_frontend_backend_contracts.py::test_document_list_and_detail_contract",
+    "tests/test_frontend_backend_contracts.py::test_upload_job_contract",
+    "tests/test_frontend_backend_contracts.py::test_search_response_contract",
+    "tests/test_frontend_backend_contracts.py::test_chat_session_and_message_contract",
+    "tests/test_frontend_backend_contracts.py::test_diagnostics_response_contract",
+    "tests/test_frontend_backend_contracts.py::test_error_response_contract",
+    "tests/test_frontend_backend_contracts.py::test_job_result_schemas"
+  ],
+  "failed_tests": [],
+  "skipped_tests": []
+}

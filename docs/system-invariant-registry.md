@@ -396,7 +396,74 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_entropy_truth.py -k "
 
 ---
 
-## 9. Gate-Mapping
+## 9. GUI-State-Invarianten
+
+### INV-037: Keine Workspace-Daten ohne validierten Workspace
+
+**Beschreibung**: Dokumentlisten, Search-Ergebnisse, Chat-Sessions, Chat-Details und Upload-Controls duerfen nur gerendert oder ausgeloest werden, wenn die Auth-Session einen validierten `active_workspace_id` besitzt und dieser Workspace in den Memberships enthalten ist.
+
+**Kritikalitaet**: CRITICAL
+
+**Nachweisquelle**:
+- Unit: `frontend/src/tests/auth/StateInvariants.test.js`
+- Component: `frontend/src/tests/app/GuiStateInvariants.test.jsx`
+- E2E: `frontend/tests/gui_truth/test_11_state_invariants.spec.js`
+
+**Truth-Test**:
+```
+cd frontend
+npm test -- --run src/tests/auth/StateInvariants.test.js src/tests/app/GuiStateInvariants.test.jsx
+npx playwright test --config=playwright.config.js tests/gui_truth/test_11_state_invariants.spec.js
+```
+
+**Repair-Strategie**: Guard in `ProtectedRoute` und `hasValidatedWorkspace()` wiederherstellen; keine Page darf ProtectedRoute umgehen.
+
+---
+
+### INV-038: Auth-Fehler loeschen sensitive GUI-States
+
+**Beschreibung**: `AUTH_REQUIRED`/401 darf keine zuvor geladenen Dokumente, Suchbegriffe, Treffer, Chat-Inhalte oder Upload-Zustaende sichtbar lassen. Der Auth-Kontext und API-Kontext werden geleert; geschuetzte Seiten unmounten.
+
+**Kritikalitaet**: CRITICAL
+
+**Nachweisquelle**:
+- Component: `GuiStateInvariants.test.jsx::clears sensitive document state after AUTH_REQUIRED`
+- E2E Auth-Logout/Invalid-Token-Flows in `test_02_auth_bootstrap.spec.js`
+
+**Repair-Strategie**: `setOnAuthRequired()` muss Auth-State und API-Request-Kontext zentral leeren; geschuetzte Pages duerfen sensitive State nicht ausserhalb ihres Komponenten-Lifecycles persistieren.
+
+---
+
+### INV-039: Workspace-Wechsel loescht alte workspace-bezogene GUI-States
+
+**Beschreibung**: Beim Wechsel des aktiven Workspace werden Dokumentliste neu geladen, Search-State und Upload-State geleert und Chat-Detail-URLs auf `/chat` zurueckgesetzt. Alte Treffer oder Upload-Jobs duerfen nicht als Zustand des neuen Workspace erscheinen.
+
+**Kritikalitaet**: HIGH
+
+**Nachweisquelle**:
+- Component: `GuiStateInvariants.test.jsx::resets old workspace search and upload state on workspace switch`
+- E2E: `test_10_workspace_bootstrap.spec.js`, `test_11_state_invariants.spec.js`
+
+**Repair-Strategie**: Workspace-ID in alle page-scoped Effects aufnehmen; transiente States in einem `useEffect([workspaceId])` zuruecksetzen.
+
+---
+
+### INV-040: Kontrollierte API-Fehler erzeugen keine falschen GUI-Zustaende
+
+**Beschreibung**: `API_UNREACHABLE` wird als Fehlerzustand gerendert und darf keinen Empty-State vortaeuschen. `FORBIDDEN` ist nicht retryable und darf keinen Retry-Loop oder Retry-Button erzeugen.
+
+**Kritikalitaet**: HIGH
+
+**Nachweisquelle**:
+- Component: `GuiStateInvariants.test.jsx`
+- E2E: `test_11_state_invariants.spec.js`
+- API Client: `ClientErrors.test.js`
+
+**Repair-Strategie**: Fehlerklassifikation im zentralen API-Client stabil halten; Retry-Aktionen nur fuer `API_UNREACHABLE` und `TIMEOUT` freischalten.
+
+---
+
+## 10. Gate-Mapping
 
 | Invariante | Gate | Pflichttest | Stop-Signal |
 |---|---|---|---|
@@ -416,10 +483,14 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_entropy_truth.py -k "
 | INV-034 | Restore-Gate | `verify_backup()` | `ok = false` |
 | INV-035 | Entropy-Gate | `test_entropy_truth.py` | Rate > Schwelle |
 | INV-036 | Entropy-Gate | `test_entropy_truth.py` | Coverage < 0.85 |
+| INV-037 | GUI-State-Gate | `StateInvariants.test.js`, `GuiStateInvariants.test.jsx`, `test_11_state_invariants.spec.js` | Workspace-Daten ohne validierten Workspace |
+| INV-038 | GUI-State-Gate | `GuiStateInvariants.test.jsx` | Sensitive State nach Auth-Fehler sichtbar |
+| INV-039 | GUI-State-Gate | `test_10_workspace_bootstrap.spec.js`, `GuiStateInvariants.test.jsx` | Alter Workspace-State nach Wechsel sichtbar |
+| INV-040 | GUI-Recovery-Gate | `ClientErrors.test.js`, `GuiStateInvariants.test.jsx` | Fake-Empty-State oder Retry-Loop |
 
 ---
 
-## 10. Kurzcheckliste
+## 11. Kurzcheckliste
 
 ```
 [ ] INV-001 bis INV-020 (data-model-invariants.md) nach jeder Migration geprüft
@@ -431,6 +502,7 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_entropy_truth.py -k "
 [ ] INV-032 (Restore-Orphans): orphan_count = 0 nach Restore
 [ ] INV-033 (Alembic-Head): genau 1 Head nach Restore
 [ ] INV-035/036 (Entropy): stale_rate/orphan_rate ≤ Max; coverage ≥ 0.85
+[ ] INV-037 bis INV-040 (GUI-State): kein Ghost-Workspace, kein Fake-Empty-State, kein FORBIDDEN-Retry
 [ ] Alle CRITICAL-Invarianten vor jedem Milestone-Gate geprüft
 [ ] Neue Invarianten bei neuen Features in diese Registry eingetragen
 ```
