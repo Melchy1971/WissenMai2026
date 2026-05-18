@@ -14,7 +14,7 @@ Stand: 2026-05-18
 
 | Gate | Ergebnis | Befund |
 |---|---|---|
-| M3a Gate | `FAIL`, Score `57.1` | `80 collected`, `58 passed`, `22 failed`, `0 skipped` im Frontend Truth Report |
+| M3a Gate | `BLOCKED`, Score `70` | Auth-Bootstrap-Slice `22/22` gruen, aber letzter Full-Suite-Frontend-Truth-Lauf bleibt mit `80 collected`, `58 passed`, `22 failed`, `0 skipped` rot |
 | PostgreSQL Truth | `FAIL` | `138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1` |
 | M4a Markergruppe | technisch ueber Schwelle | `100.0%`, aber nur Teilbefund innerhalb eines roten Gesamt-Truth-Reports |
 | M4b Markergruppe | technisch ueber Schwelle | `91.7%`, aber nur Teilbefund innerhalb eines roten Gesamt-Truth-Reports |
@@ -36,12 +36,12 @@ Stand: 2026-05-18
 
 | Voraussetzung fuer M4 Gesamtabschluss | Soll | Aktueller Ist-Stand | Ergebnis |
 |---|---|---|---|
-| M3a Score | `>= 90` | `57.1` | FAIL |
+| M3a Score | `>= 90` | `70` | FAIL |
 | M4a | erfuellt | Markergruppe `100.0%`, aber Gesamt-Truth rot | BLOCKED |
 | M4b | erfuellt | Markergruppe `91.7%`, aber Gesamt-Truth rot | BLOCKED |
 | M4c | erfuellt | Markergruppe `100.0%`, aber Gesamt-Truth rot | BLOCKED |
 | M4e Entscheidung | dokumentiert | Minimal-Scope/Restore-Truth dokumentiert | PASS als Dokumentationspunkt |
-| Frontend Truth | gruen | `58/80`, `22 failed` | FAIL |
+| Frontend Truth | gruen | Auth-Slice `22/22` gruen, kein aktueller gruener Full-Suite-Lauf | FAIL |
 | PostgreSQL Truth | gruen | `120/138`, `16 failed`, `2 errors`, Exit-Code `1` | FAIL |
 | Keine offenen Gesamtblocker | Pflicht | M3a rot, Frontend Truth rot, PostgreSQL Truth rot | FAIL |
 

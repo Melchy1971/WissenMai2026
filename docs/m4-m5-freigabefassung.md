@@ -6,8 +6,8 @@ Zweck: Dieses Dokument enthaelt den aktuell freigabefaehigen Wahrheitsstand fuer
 
 ## Aktueller Entscheidungsstand
 
-- M3a ist nicht stabilisiert: `reports/m3a_gate_result.json` steht auf `FAIL`, Score `57.1`.
-- Frontend Truth ist rot: `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
+- M3a ist nicht stabilisiert: `reports/m3a_gate_result.json` steht auf `BLOCKED`, Score `70`.
+- Frontend Truth ist im Auth-Bootstrap-Slice gruen (`22/22`), aber global nicht neu gruen nachgewiesen; der letzte Full-Suite-Lauf bleibt rot (`80 collected`, `58 passed`, `22 failed`, `0 skipped`).
 - PostgreSQL Truth ist rot: `138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`.
 - M4a/M4b/M4c haben positive Marker-Teilbefunde, aber keine Gesamtfreigabe, solange der Gesamt-Truth-Report rot ist.
 - M4e Minimal ist dokumentiert und bleibt als Betriebsentscheidung erhalten, kompensiert aber keine roten Gates.
@@ -36,8 +36,8 @@ Zweck: Dieses Dokument enthaelt den aktuell freigabefaehigen Wahrheitsstand fuer
 
 | Voraussetzung | Soll | Ist | Ergebnis |
 |---|---|---|---|
-| M3a Score | `>= 90` | `57.1` | FAIL |
-| Frontend Truth gruen | Pflicht | `58/80`, `22 failed` | FAIL |
+| M3a Score | `>= 90` | `70` | FAIL |
+| Frontend Truth gruen | Pflicht | Auth-Slice `22/22` gruen, letzter Full-Suite-Lauf `58/80`, `22 failed` | FAIL |
 | PostgreSQL Truth gruen | Pflicht | `120/138`, `16 failed`, `2 errors`, Exit-Code `1` | FAIL |
 | M4a | erfuellt | Marker `100.0%`, Gesamt-Truth rot | BLOCKED |
 | M4b | erfuellt | Marker `91.7%`, Gesamt-Truth rot | BLOCKED |

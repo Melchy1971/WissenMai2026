@@ -4,9 +4,9 @@ Stand: 2026-05-18
 
 ## Status
 
-Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erweitert, fuer M3c um eine dokumentgestuetzte Chat-Oberflaeche ergaenzt und in M4 um Upload-, Lifecycle- sowie read-only Admin-Diagnostics-Slices erweitert. Das belegt: GUI vorhanden. Es belegt nicht: GUI stabilisiert. Der aktuelle M3a-Gate-Report `reports/m3a_gate_result.json` steht auf `FAIL` mit Score `57.1`.
+Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erweitert, fuer M3c um eine dokumentgestuetzte Chat-Oberflaeche ergaenzt und in M4 um Upload-, Lifecycle- sowie read-only Admin-Diagnostics-Slices erweitert. Das belegt: GUI vorhanden. Es belegt nicht: GUI stabilisiert. Der aktuelle M3a-Gate-Report `reports/m3a_gate_result.json` steht auf `BLOCKED` mit Score `70`.
 
-Verbindliche Nachweisgrenze: Gruene Aussagen zum Frontend duerfen nur aus aktuellen Reports abgeleitet werden. `reports/frontend_truth_report.json` vom 2026-05-18 weist `80 collected`, `58 passed`, `22 failed`, `0 skipped` aus. Damit ist M3a nicht abgeschlossen.
+Verbindliche Nachweisgrenze: Gruene Aussagen zum Frontend duerfen nur aus aktuellen Reports abgeleitet werden. Der zuletzt vollstaendige Frontend-Truth-Lauf liegt in `reports/gui_truth/20260518_095714.json` und bleibt rot mit `80 collected`, `58 passed`, `22 failed`, `0 skipped`. Der aktuelle kanonische Nachlauf `reports/frontend_truth_report.json` ist ein fokussierter Auth-Bootstrap-Slice und gruen mit `22 collected`, `22 passed`, `0 failed`, `0 skipped`. Damit ist der Auth-Produktpfad lokal belegt, M3a aber weiterhin nicht abgeschlossen.
 
 Verbindlicher Runtime-Vertrag: Die explizite Frontend-State-Machine steht in `docs/frontend-runtime-state-machine.md`. Fachrouten duerfen nur aus `workspace_ready` heraus frische Daten und Mutationen anbieten; `api_unreachable`, `forbidden`, `restore_mode` und `reconnecting` duerfen nie als Empty-State gerendert werden.
 
@@ -185,8 +185,9 @@ Bekannte Einschraenkungen im Lifecycle-Slice:
 - Screen-Tests fuer Chat-Sessionliste, Chat-Nachrichten, Quellenanzeige und Insufficient-Context-Zustand: vorhanden.
 - Screen-Tests fuer neue Session, Frage senden, Assistant-Antwort mit Quellen und Chat-Fehlercodes: vorhanden.
 - Historische Screen- und Unit-Tests sind vorhanden, ersetzen aber keinen gruenen Frontend Truth Report.
-- Frontend Truth Report: `reports/frontend_truth_report.json`, Stand 2026-05-18, `80 collected`, `58 passed`, `22 failed`, `0 skipped`, Browser `chromium`, API `http://127.0.0.1:8000`, echte PostgreSQL-DB nachgewiesen.
-- M3a Gate: `reports/m3a_gate_result.json`, `FAIL`, Score `57.1`.
+- Full-Suite-Frontend-Truth-Baseline: `reports/gui_truth/20260518_095714.json`, Stand 2026-05-18, `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
+- Aktueller Auth-Bootstrap-Truth-Slice: `reports/frontend_truth_report.json`, Stand 2026-05-18, `22 collected`, `22 passed`, `0 failed`, `0 skipped`, Browser `chromium`, API `http://127.0.0.1:8000`, echte PostgreSQL-DB nachgewiesen.
+- M3a Gate: `reports/m3a_gate_result.json`, `BLOCKED`, Score `70`.
 
 Keine Freigabeaussage:
 

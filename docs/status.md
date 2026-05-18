@@ -39,8 +39,9 @@ Stand des Abgleichs mit Code, Frontend Truth Report und M3a Gate am 2026-05-18:
 - Importstatus und Fehlercodes sind sichtbar.
 - Spaetere GUI-Slices fuer Suche, Chat, Upload, Lifecycle und read-only Diagnostics sind vorhanden. Sie zeigen, dass GUI-Funktionalitaet existiert, ersetzen aber keinen stabilisierten M3a-Abschluss.
 - Eine einfache Suche ist mittlerweile als M3b-Erweiterung vorhanden, gehoert aber nicht zum urspruenglichen M3a-Kernscope.
-- Aktueller Frontend-Truth-Report: `reports/frontend_truth_report.json` vom 2026-05-18 mit `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
-- Aktueller M3a-Gate-Report: `reports/m3a_gate_result.json` mit `FAIL`, Score `57.1`.
+- Letzter Full-Suite-Frontend-Truth-Lauf: `reports/gui_truth/20260518_095714.json` vom 2026-05-18 mit `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
+- Aktueller fokussierter Auth-Bootstrap-Truth: `reports/frontend_truth_report.json` vom 2026-05-18 mit `22 collected`, `22 passed`, `0 failed`, `0 skipped`.
+- Aktueller M3a-Gate-Report: `reports/m3a_gate_result.json` mit `BLOCKED`, Score `70`.
 - Contract-Test-Nachweis ist gruen: `reports/contract_test_report.json` weist `8 collected`, `8 passed`, `0 failed`, `0 skipped` aus.
 - PostgreSQL-Truth ist nicht gruen: `reports/postgres_truth_report.json` weist `138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1` aus.
 
@@ -52,9 +53,9 @@ Bewertung:
 
 Offene GUI-Blocker:
 
-- 22 fehlgeschlagene Frontend-E2E-Flows im Frontend Truth Report.
+- Letzter Full-Suite-Frontend-Truth-Lauf ist weiterhin rot; der Auth-Bootstrap-Slice ist inzwischen separat gruen belegt.
 - roter PostgreSQL Truth Report.
-- M3a Gate `FAIL`; damit keine gruenen Statusaussagen zu M3a erlaubt.
+- M3a Gate `BLOCKED`; damit keine gruenen Statusaussagen zu M3a erlaubt.
 
 Entscheidung:
 
@@ -171,15 +172,15 @@ Stand des aktuellen Gesamt-Abgleichs am 2026-05-18:
 
 - M4 ist teilweise implementiert.
 - Die dafuer benoetigte M3c-Foundation ist abgeschlossen.
-- M3a ist nicht stabilisiert (`reports/m3a_gate_result.json`: `FAIL`, Score `57.1`).
+- M3a ist nicht stabilisiert (`reports/m3a_gate_result.json`: `BLOCKED`, Score `70`).
 - Der aktuelle PostgreSQL Truth Report ist nicht gruen (`138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`).
 
 M4 Statusmatrix am 2026-05-18:
 
 | Bereich | Gate-Quelle | Status |
 |---|---|---|
-| M3a Gate | `reports/m3a_gate_result.json` | FAIL, Score `57.1` |
-| Frontend Truth | `reports/frontend_truth_report.json` | FAIL (`58/80`, `22 failed`) |
+| M3a Gate | `reports/m3a_gate_result.json` | BLOCKED, Score `70` |
+| Frontend Truth | `reports/frontend_truth_report.json` plus `reports/gui_truth/20260518_095714.json` | Auth-Bootstrap-Slice PASS (`22/22`), Full-Suite weiterhin offen (`58/80`, `22 failed`) |
 | M4 Truth Gate | `reports/postgres_truth_report.json` | FAIL (`120/138`, `16 failed`, `2 errors`) |
 | M4a Auth & Workspace Isolation | `reports/postgres_truth_report.json` (`gate_scores.m4a_gate`) | Teilbefund `100.0%`, aber Gesamtstatus blockiert |
 | M4b Upload/API Stabilitaet | `reports/postgres_truth_report.json` (`gate_scores.m4b_gate`) | Teilbefund `91.7%`, aber Gesamtstatus blockiert |

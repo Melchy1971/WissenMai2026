@@ -6,11 +6,11 @@ Stand: 2026-05-18
 
 Dieses Dokument beschreibt die API-Abhaengigkeit der aktuellen GUI auf hoher Ebene und den Vertrag fuer M3b Search sowie M3c Chat/RAG. Verbindlicher Detailvertrag fuer die Dokument-Read-Pfade bleibt `docs/api/v1-document-api-contract.md`. Der Retrieval-Vertrag fuer M3b ist zusaetzlich in `docs/retrieval.md` beschrieben.
 
-M3a-Nachweisgrenze: Die GUI kann vorhandene API-Faehigkeiten konsumieren, aber M3a ist nicht stabilisiert. `reports/frontend_truth_report.json` vom 2026-05-18 ist rot (`80 collected`, `58 passed`, `22 failed`). `reports/m3a_gate_result.json` steht auf `FAIL`, Score `57.1`. Ohne gruenen Gate-Report duerfen API-/GUI-Vertragsaussagen nicht als M3a-Freigabe gelesen werden.
+M3a-Nachweisgrenze: Die GUI kann vorhandene API-Faehigkeiten konsumieren, aber M3a ist nicht stabilisiert. Der letzte Full-Suite-Frontend-Truth-Lauf in `reports/gui_truth/20260518_095714.json` ist rot (`80 collected`, `58 passed`, `22 failed`). Der aktuelle gefilterte Auth-Bootstrap-Nachlauf in `reports/frontend_truth_report.json` ist zwar gruen (`22/22`), belegt aber nur diesen Slice. `reports/m3a_gate_result.json` steht weiterhin auf `BLOCKED`, Score `70`. Ohne gruenen Gate-Report duerfen API-/GUI-Vertragsaussagen nicht als M3a-Freigabe gelesen werden.
 
 ## M4a Konsistenzstand
 
-Der dokumentierte Zielzustand fuer M4a ist ein durchgaengig serverseitig aufgeloester Auth- und Workspace-Kontext fuer alle geschuetzten Pfade. Der technische Backend-Kern ist vorhanden, aber aktuelle Freigabeaussagen duerfen nur aus den Gate-Reports abgeleitet werden. Der aktuelle M3a-Gate-Report ist rot; der aktuelle PostgreSQL Truth Report ist ebenfalls nicht gruen.
+Der dokumentierte Zielzustand fuer M4a ist ein durchgaengig serverseitig aufgeloester Auth- und Workspace-Kontext fuer alle geschuetzten Pfade. Der technische Backend-Kern ist vorhanden; der browsernahe Auth-Bootstrap-Slice ist ebenfalls gruen belegt. Aktuelle Freigabeaussagen duerfen trotzdem nur aus den Gate-Reports abgeleitet werden. Der aktuelle M3a-Gate-Report bleibt blockiert; der aktuelle PostgreSQL Truth Report ist ebenfalls nicht gruen.
 
 Fuer Admin-Diagnostics ist der Legacy-Header `x-admin-token` nicht Teil des aktiven Vertrags. Diagnostics autorisiert ausschliesslich ueber AuthContext, aktiven Workspace und Workspace-Membership/Rolle.
 
@@ -28,7 +28,7 @@ Nicht nachweisbar implementiert:
 
 - `POST /auth/logout`
 - Cookie-Session-Produktflow oder JWT-basierte Benutzeridentitaet als finaler Produktstandard
-- vollstaendiger Frontend-Login-/Logout-/Route-Guard-Flow
+- vollstaendiger Frontend-Login-Produktflow inklusive gesondertem End-to-End-Nachweis
 
 ## Aktuell implementierte Endpunkte
 

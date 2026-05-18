@@ -2,6 +2,26 @@
 
 Stand: 2026-05-18
 
+## 2026-05-18 - Auth-Bootstrap-Truth-Slice gruen nachgezogen
+
+### Changed
+
+- `frontend/tests/gui_truth/test_02_auth_bootstrap.spec.js` korrigiert die Token-Injektion in den Auth-Bootstrap-Szenarien und prueft den Retry-Fall ueber den tatsaechlichen zweiten `/auth/me`-Versuch.
+- Die Logout-Szenarien der Auth-Truth-Spec sind gegen Playwright-Stabilitaetsartefakte gehaertet, ohne Produktlogik zu aendern.
+- `masterplan.md`, `docs/status.md`, `docs/frontend.md` und `docs/api.md` unterscheiden jetzt explizit zwischen gruener Auth-Slice-Evidenz und weiterhin offenem Full-Suite-Frontend-Gate.
+
+### Findings
+
+- Kanonischer Auth-Bootstrap-Nachlauf: `python scripts/run_gui_truth.py --filter tests/gui_truth/test_02_auth_bootstrap.spec.js`.
+- Ergebnis: `22 collected`, `22 passed`, `0 failed`, `0 skipped`.
+- Der zuletzt vollstaendige Frontend-Truth-Lauf bleibt archiviert rot mit `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
+- `reports/m3a_gate_result.json` bleibt deshalb `BLOCKED`, Score `70`.
+
+### Decision
+
+- Auth-Bootstrap, Retry, Forbidden und Logout sind als browsernaher Frontend-Slice gruen belegt.
+- Globales Frontend-Gate und M3a bleiben offen, bis die komplette GUI-Truth-Suite erneut gruen gelaufen ist.
+
 ## 2026-05-18 - Frontend Concurrency Safety gehaertet
 
 ### Added
@@ -58,8 +78,9 @@ Stand: 2026-05-18
 
 ### Findings
 
-- M3a Gate: `FAIL`, Score `57.1`.
-- Frontend Truth: `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
+- M3a Gate: `BLOCKED`, Score `70`.
+- Full-Suite-Frontend-Truth: `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
+- Auth-Bootstrap-Truth-Slice: `22 collected`, `22 passed`, `0 failed`, `0 skipped`.
 - PostgreSQL Truth: `138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`.
 - M4a/M4b/M4c liegen als Marker-Teilbefunde ueber Schwelle, aber der rote Gesamt-Truth-Report blockiert die Freigabe.
 - M4e ist dokumentiert, kompensiert aber keine roten M3a- oder Truth-Gates.
@@ -82,8 +103,9 @@ Stand: 2026-05-18
 
 ### Findings
 
-- Frontend Truth Report vom 2026-05-18: `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
-- M3a Gate Result: `FAIL`, Score `57.1`.
+- Letzter Full-Suite-Frontend-Truth-Report vom 2026-05-18: `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
+- Aktueller fokussierter Auth-Bootstrap-Truth-Report vom 2026-05-18: `22 collected`, `22 passed`, `0 failed`, `0 skipped`.
+- M3a Gate Result: `BLOCKED`, Score `70`.
 - `reports/contract_test_report.json` ist gruen (`8 collected`, `8 passed`, `0 failed`, `0 skipped`).
 - `reports/postgres_truth_report.json` ist nicht gruen (`138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`).
 

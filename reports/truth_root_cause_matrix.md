@@ -10,25 +10,26 @@ Diese Matrix reduziert die aktuellen roten Truth-Reports auf wenige gemeinsame U
 
 Ausgangslage:
 
-- `80 collected`
-- `58 passed`
-- `22 failed`
-- Quelle: `reports/frontend_truth_report.json`
+- letzter Full-Suite-Lauf: `80 collected`, `58 passed`, `22 failed`
+- aktueller Auth-Bootstrap-Nachlauf: `22 collected`, `22 passed`, `0 failed`
+- Quellen: `reports/gui_truth/20260518_095714.json`, `reports/frontend_truth_report.json`
 
 ### Cluster 1: Auth-Bootstrap Error-Surface Mismatch
 
+Status: `behoben am 2026-05-18`
+
 Prioritaet: `P1`
 
-Betroffene Flows:
+Historisch betroffene Flows:
 
 - Backend unreachable zeigt keinen erwarteten Error-State
 - Retry nach backend unreachable landet nicht wie erwartet im geschuetzten Pfad
 - 403 von `/auth/me` zeigt keinen erwarteten Error-State
 - 403 zeigt dadurch auch den Retry-/No-Retry-Pfad nicht wie erwartet
 
-Lokale Hypothese:
+Aufgeloeste Hypothese:
 
-Die echten Browser-Snapshots landen auf der Login-Seite, waehrend die Specs den ProtectedRoute-Error-State erwarten. Das deutet primaer auf eine Zustandsdiskrepanz zwischen `AuthContext`, `ProtectedRoute` und den E2E-Fixtures hin, nicht auf ein fehlendes `ErrorState`-Rendering an sich.
+Die echten Browser-Snapshots landeten auf der Login-Seite, waehrend die Specs den ProtectedRoute-Error-State erwarteten. Primaere Ursache war kein fehlendes `ErrorState`-Rendering, sondern fehlerhafte Token-Injektion in der Playwright-Spec sowie ein zu starker Retry-/Logout-Testzuschnitt.
 
 Besitzender Code:
 
@@ -36,9 +37,9 @@ Besitzender Code:
 - `frontend/src/app/routes.jsx`
 - `frontend/tests/gui_truth/test_02_auth_bootstrap.spec.js`
 
-Billigster Gegencheck:
+Ergebnis:
 
-- Nur Szenario 05/07 erneut laufen lassen und Request-/Storage-Zustand um `/auth/me` herum protokollieren.
+- Der kanonische Nachlauf `python scripts/run_gui_truth.py --filter tests/gui_truth/test_02_auth_bootstrap.spec.js` ist jetzt gruen (`22/22`). Dieser Cluster ist damit nicht mehr der primaere Frontend-Blocker.
 
 ### Cluster 2: Shell-/Route-Remount-Instabilitaet
 
@@ -46,7 +47,6 @@ Prioritaet: `P2`
 
 Betroffene Flows:
 
-- Logout-Klicks mit `element is not stable` / `detached`
 - Upload-, Search-, Chat-, Lifecycle- und Admin-Nav-Klicks mit denselben Symptomen
 - einzelne Workspace-Bootstrap-Flows mit fehlendem persistentem Shell-Target
 

@@ -19,7 +19,7 @@ Massgebliche Quellen:
 
 - M4 ist nicht abgeschlossen.
 - M4 ist nicht als technisch stabil freigegeben, weil der aktuelle PostgreSQL Truth Report rot ist.
-- M3a ist nicht stabilisiert (`FAIL`, Score `57.1`) und blockiert alle GUI-abhaengigen M4-Produktpfade.
+- M3a ist nicht stabilisiert (`BLOCKED`, Score `70`); der Auth-Bootstrap-Slice ist gruen belegt, aber der globale GUI-Gate-Nachweis fehlt weiter und blockiert alle GUI-abhaengigen M4-Produktpfade.
 - M4a/M4b/M4c haben positive Marker-Teilbefunde, aber keine Gesamtfreigabe, solange der Gesamt-Truth-Report rot ist.
 - M4e Minimal ist dokumentiert, kompensiert aber keine roten M3a- oder Truth-Gates.
 - M5-Transition aus M4 ist `No-Go`.
@@ -28,8 +28,8 @@ Massgebliche Quellen:
 
 | Bereich | Aktueller Stand | Gate-/Freigabestatus | Nachweisquelle |
 |---|---|---|---|
-| M3a GUI Foundation | GUI vorhanden, nicht stabilisiert | FAIL, Score `57.1` | `reports/m3a_gate_result.json` |
-| Frontend Truth | echte API und echte PostgreSQL-DB genutzt, aber rot | FAIL (`58/80`, `22 failed`) | `reports/frontend_truth_report.json` |
+| M3a GUI Foundation | GUI vorhanden, nicht stabilisiert | BLOCKED, Score `70` | `reports/m3a_gate_result.json` |
+| Frontend Truth | Auth-Bootstrap-Slice gruen, Full-Suite nicht neu gruen nachgewiesen | FAIL/OPEN (`22/22` auth slice, letzter Full-Suite-Lauf `58/80`, `22 failed`) | `reports/frontend_truth_report.json`, `reports/gui_truth/20260518_095714.json` |
 | PostgreSQL Truth | echte PostgreSQL-DB genutzt, aber rot | FAIL (`120/138`, `16 failed`, `2 errors`) | `reports/postgres_truth_report.json` |
 | M4a Auth/Workspace | Markergruppe ueber Schwelle | BLOCKED durch M3a und Gesamt-Truth | `reports/postgres_truth_report.json` |
 | M4b Upload/Queue | Markergruppe ueber Schwelle | BLOCKED durch M3a und Gesamt-Truth | `reports/postgres_truth_report.json` |

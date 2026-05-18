@@ -1,5 +1,13 @@
 # Frontend Auth Bootstrap Matrix
 
+Stand: 2026-05-18
+
+Validierter Truth-Stand:
+
+- Kanonischer Nachlauf `python scripts/run_gui_truth.py --filter tests/gui_truth/test_02_auth_bootstrap.spec.js` ist gruen (`22/22`).
+- Damit sind die Szenarien No Token, Bootstrap Resolve, Complete Session, Invalid Token, Backend Unreachable, No Membership, Forbidden und Logout browsernah belegt.
+- Dieser Nachweis gilt fuer den Auth-Bootstrap-Slice und ersetzt keinen grünen Full-Suite-Frontend-Truth-Lauf.
+
 ## E2E-Ablauf
 
 | Schritt | Erwartung |
