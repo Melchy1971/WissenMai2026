@@ -8,6 +8,32 @@ Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erw
 
 Verbindliche Nachweisgrenze: Gruene Aussagen zum Frontend duerfen nur aus aktuellen Reports abgeleitet werden. `reports/frontend_truth_report.json` vom 2026-05-18 weist `80 collected`, `58 passed`, `22 failed`, `0 skipped` aus. Damit ist M3a nicht abgeschlossen.
 
+Verbindlicher Runtime-Vertrag: Die explizite Frontend-State-Machine steht in `docs/frontend-runtime-state-machine.md`. Fachrouten duerfen nur aus `workspace_ready` heraus frische Daten und Mutationen anbieten; `api_unreachable`, `forbidden`, `restore_mode` und `reconnecting` duerfen nie als Empty-State gerendert werden.
+
+Verbindliche Cache-Governance: `docs/frontend-cache-governance.md` schreibt workspace-scoped Cache-Keys, `source_timestamp`/`source_version`, Invalidierungsereignisse und sichtbare Stale-Indikatoren fuer Dokumentlisten, Search Results, Chat Sessions, Diagnostics und Workspace Memberships vor.
+
+Verbindliches Concurrency-Modell: `docs/frontend-concurrency-safety.md` beschreibt Request-Tickets, Cancellation, Workspace-/Auth-Snapshots, `correlationId`-Propagation und Race-Simulationen fuer Search, Upload, Workspace-Wechsel, Logout und Chat Retrieval.
+
+Verbindliche Telemetry-Governance: `docs/frontend-telemetry-governance.md` definiert das Frontend-Telemetry-Modell, Datenschutzgrenzen, Workspace-Aggregation, optionale `correlation_id` und die Pflichtmetriken fuer API-Fehler, Bootstrap, Search, Upload, Chat-Retrieval, stale response drops und Reconnect-Events.
+
+Verbindliche Offline-/Degraded-Strategie: `docs/frontend-offline-degraded-strategy.md` definiert fuer API down, Search down, Queue degraded, Reindex, Restore und temporaer unverfuegbaren Chat die erlaubten Aktionen, Blocker, Retry-Regeln, UI-Indikatoren und Cache-Nutzung.
+
+Verbindliche strategische GUI-Prinzipien: `docs/frontend-strategic-principles.md` definiert deterministische Zustandsfuehrung, transparente Fehler, nachvollziehbare Recovery, drift-aware Darstellung, workspace-isolierte States, verbotene GUI-Patterns, Pflichtabstraktionen und Stop-Kriterien fuer weitere GUI-Featureentwicklung.
+
+Verbindliche GUI-Review-Checkliste: `docs/frontend-pr-review-checklist.md` konkretisiert die strategischen Prinzipien als operatives Review-Minimum fuer GUI-PRs und benennt harte Review-Stopper fuer Fake-Green-, Drift-, Recovery-, Workspace- und Concurrency-Verstoesse.
+
+Verbindliches Truth-Surface-Modell: `docs/frontend-truth-surface-model.md` definiert fuer Upload, Queue, Search, Retrieval, Drift, Restore, Reindex, Lifecycle, Backup und Diagnostics die echte Datenquelle, erlaubte und verbotene Vereinfachungen, degraded Darstellung, unknown handling und allgemeine UI-Wahrheitsregeln.
+
+Verbindliches Event-Konsistenzmodell: `docs/frontend-event-consistency-model.md` definiert Event Ordering, stale-event Erkennung, idempotente UI-Updates, workspace-scoped Event Isolation, `correlation_id`-Propagation, Replay-Regeln und Reconnect-Recovery fuer asynchrone GUI-Ereignisse.
+
+Verbindliche Freshness-Governance: `docs/frontend-data-freshness-governance.md` definiert fuer Dokumentlisten, Search, Chat Retrieval, Diagnostics, Queue-Status und Drift-Anzeigen Freshness-Indikatoren, stale thresholds, Auto-/Manual-Refresh-Pflichten, Cache-TTLs, sichtbare Stale-Markierung und das Verbot von stale Retrieval.
+
+Verbindliches Recovery-UX-Modell: `docs/frontend-recovery-ux-model.md` definiert fuer Backend/DB-Restart, Restore, Queue-Degradierung, Search-Ausfall, Retrieval-Degradierung, Auth-Expiry und Workspace-Verlust sichtbare Hinweise, erlaubte und blockierte Aktionen, Retry-/Reconnect-Regeln, Recovery-Trigger und UI-Zustandsdiagramme.
+
+Verbindliche Performance-Governance: `docs/frontend-performance-governance.md` definiert deterministische Rendering-Flows, stabile Request-Ketten, kontrollierte Parallelitaet, vorhersehbare Ladezustaende, Request-Sturm-Schutz, governance-konforme Performance-Metriken und verbotene Performance-Anti-Patterns.
+
+Verbindliche Accessibility- und Operational-Clarity-Standards: `docs/frontend-accessibility-operational-clarity-standards.md` definiert klare Error- und degraded States, sichtbare destructive actions, eindeutige Restore-/Reindex-/Queue-/Drift-Warnungen, Keyboard-Navigation, Screenreader-Kompatibilitaet und UI-Warnstandards ohne reine Farbsemantik.
+
 ## Umgesetzter Scope
 
 - Route `/documents` fuer die Dokumentliste.
@@ -148,6 +174,9 @@ Bekannte Einschraenkungen im Lifecycle-Slice:
 - `frontend/src/pages/`: Dokumentliste, Dokumentdetail und Chat-Seite.
 - `frontend/src/view-models/`: Mapping und UI-nahe Ableitungen.
 - `frontend/src/tests/pages/`: bisherige Screen-Tests.
+- `docs/frontend-runtime-state-machine.md`: verbindliche Runtime States, Transition Matrix, verbotene Transitions und Cache-/Upload-Regeln.
+- `docs/frontend-cache-governance.md`: verbindliche Cache-Governance, Invalidierungsregeln und Stale-State-Regeln.
+- `docs/frontend-concurrency-safety.md`: verbindliches Request-Management und Race-Sicherheitsmodell.
 
 ## Aktueller Nachweis
 

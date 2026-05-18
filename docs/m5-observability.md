@@ -4,6 +4,8 @@ Stand: 2026-05-13
 
 M5 erweitert die bestehende JSON-Log-Observability um langfristige Betriebsmetriken. Ziel ist Trendanalyse ueber Queue, Drift, Retrieval, Backup/Restore, Cleanup und Orphans, ohne sensitive Inhalte zu loggen.
 
+Frontend-seitige Telemetry-Governance ist getrennt in `docs/frontend-telemetry-governance.md` definiert. Dieses Dokument bleibt die Betriebs- und Langfrist-Metrikquelle; Frontend-Metriken muessen daran anschlussfaehig sein, ohne Query-, Dokument- oder Chatinhalte zu loggen.
+
 ## Metrikdefinitionen
 
 | Metrik | Typ | Einheit | Scope | Fenster | Definition | Warnschwelle | Kritische Schwelle |

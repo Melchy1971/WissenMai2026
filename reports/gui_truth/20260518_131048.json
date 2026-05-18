@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-05-18T13:10:48.436227+00:00",
+  "generated_at": "2026-05-18T13:10:48.436240+00:00",
+  "collected": 22,
+  "passed": 17,
+  "failed": 5,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 115.48,
+  "duration_seconds": 115.48,
+  "failed_flows": [
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  69 |     );\n  70 |     await page.goto('/documents');\n> 71 |     await expect(page.getByRole('heading', { name: 'Dokumente', exa"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  75 |\n  76 |   test('bootstrap resolves to documents page', async ({ partialAuthPage }) => {\n> 77 |     await expect(partialAuthP"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  81 |   test('workspace id appears in page header after bootstrap', async ({ partialAuthPage }) => {\n  82 |     const workspaceId"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  86 |\n  87 |   test('no error state after successful bootstrap', async ({ partialAuthPage }) => {\n> 88 |     await expect(partial"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  228 |     blocked = false;\n  229 |     await page.getByRole('button', { name: 'Erneut versuchen' }).click();\n> 230 |     await e"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": false,
+    "status_code": null,
+    "status": "unreachable",
+    "error": "<urlopen error [WinError 10061] Es konnte keine Verbindung hergestellt werden, da der Zielcomputer die Verbindung verweigerte>"
+  },
+  "failed_tests": [
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  69 |     );\n  70 |     await page.goto('/documents');\n> 71 |     await expect(page.getByRole('heading', { name: 'Dokumente', exa"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  75 |\n  76 |   test('bootstrap resolves to documents page', async ({ partialAuthPage }) => {\n> 77 |     await expect(partialAuthP"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  81 |   test('workspace id appears in page header after bootstrap', async ({ partialAuthPage }) => {\n  82 |     const workspaceId"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  86 |\n  87 |   test('no error state after successful bootstrap', async ({ partialAuthPage }) => {\n> 88 |     await expect(partial"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  228 |     blocked = false;\n  229 |     await page.getByRole('button', { name: 'Erneut versuchen' }).click();\n> 230 |     await e"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > root path also redirects to /login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > zero /auth/me calls when no token present",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared"
+  ]
+}

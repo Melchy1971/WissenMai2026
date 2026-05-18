@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-05-18T14:45:46.6959150+02:00",
+  "generated_at": "2026-05-18T14:45:46.6959150+02:00",
+  "suite": "GUI Chaos Suite",
+  "result": "PASS",
+  "command": ".\\node_modules\\.bin\\vitest.cmd run src\\tests\\app\\GuiChaosSuite.test.jsx",
+  "collected": 8,
+  "passed": 8,
+  "failed": 0,
+  "duration_seconds": 2.82,
+  "checks": [
+    {
+      "id": "api_slow",
+      "simulation": "API wird langsam",
+      "passed": true,
+      "assertions": [
+        "kein fake empty state waehrend loading",
+        "kontrollierter Wechsel von loading zu empty state"
+      ]
+    },
+    {
+      "id": "api_down",
+      "simulation": "API faellt aus",
+      "passed": true,
+      "assertions": [
+        "expliziter Error-State statt Erfolg/Leerzustand",
+        "Recovery-Hinweis bleibt sichtbar"
+      ]
+    },
+    {
+      "id": "db_restart",
+      "simulation": "DB Restart",
+      "passed": true,
+      "assertions": [
+        "kein inkonsistenter Success-State nach Serverfehler",
+        "keine Ghost-Daten nach Reload-Fehler"
+      ]
+    },
+    {
+      "id": "workspace_switch_inflight",
+      "simulation": "Workspace-Wechsel waehrend Requests",
+      "passed": true,
+      "assertions": [
+        "stale Response wird verworfen",
+        "alte Workspace-Daten erscheinen nicht erneut"
+      ]
+    },
+    {
+      "id": "token_expiration",
+      "simulation": "Token Expiration",
+      "passed": true,
+      "assertions": [
+        "Sessionverlust fuehrt zu Login-Ansicht",
+        "sensitive Dokument- und Query-Daten werden geleert"
+      ]
+    },
+    {
+      "id": "restore_during_usage",
+      "simulation": "Restore waehrend Nutzung",
+      "passed": true,
+      "assertions": [
+        "degraded state sichtbar",
+        "kein fake-green fuer Restore-Zustand"
+      ]
+    },
+    {
+      "id": "reindex_during_search",
+      "simulation": "Reindex waehrend Search",
+      "passed": true,
+      "assertions": [
+        "Reindex- und Drift-Signale sichtbar",
+        "kein falscher Healthy-Search-Eindruck"
+      ]
+    },
+    {
+      "id": "queue_backlog",
+      "simulation": "Queue backlog",
+      "passed": true,
+      "assertions": [
+        "kritischer degraded state sichtbar",
+        "kein Erfolgssignal trotz Queue-Druck"
+      ]
+    }
+  ],
+  "stability_assessment": {
+    "inconsistent_state": "not_observed_in_suite",
+    "ghost_data": "blocked_by_request_coordination_and_workspace_resets",
+    "false_success_messages": "not_observed_in_suite",
+    "recovery_traceability": "visible_in_error_and_degraded_states",
+    "degraded_visibility": "present"
+  },
+  "recovery_assessment": {
+    "result": "PASS",
+    "summary": "Recovery bleibt fuer API-Ausfall, DB-Restart, Token-Ablauf und degradierte Betriebsmodi sichtbar und nachvollziehbar. Die Suite belegt keine stille Wiederherstellung und keine Ghost-Daten ueber Workspace- oder Session-Grenzen hinweg."
+  }
+}

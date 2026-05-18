@@ -109,6 +109,33 @@ Policy:
 
 Dokumentation darf M4 nur dann als gruen beschreiben, wenn sie diesen Report und Validatorstatus referenziert.
 
+### M3a Gate Policy
+
+Quelle:
+
+- `reports/frontend_truth_report.json`
+- `reports/contract_test_report.json`
+- `reports/m3a_gate_result.json`
+- Drift-Evidenz aus `GET /api/v1/admin/diagnostics` oder einem spaeteren maschinenlesbaren Frontend-Drift-Report
+
+Policy:
+
+- `frontend_truth_report.json` ist Pflichtartefakt; fehlt der Report, ist M3a mindestens `unknown`, nie `pass`
+- `test_database_url_set = true`, sofern der Frontend-Truth-Lauf gegen echte Fachpfade und Auth-/Workspace-Bootstrap Aussagen trifft
+- `passed = collected`
+- `failed = 0`
+- `errors = 0`, falls das Artefakt dieses Feld fuehrt
+- `skipped = 0`
+- `exit_code = 0`
+- GUI-Regressionen in Auth-Bootstrap, Workspace-Bootstrap, Documents, Search, Chat, Upload, Lifecycle oder Diagnostics sind gate-relevant
+- `contract_test_report.json` muss gruen sein; ein gruener Frontend-Truth-Report ersetzt keine Contract-Governance
+- Drift darf nicht still bleiben: kritische oder warnende Frontend-Drift-Signale muessen im GUI sichtbar sein oder M3a bleibt `fail` oder `watch`
+- Recovery-relevante Flows wie API down, Reconnect, Restore-Mode, Retry-Buttons und sichtbare Error States muessen durch Truth-Artefakte oder fokussierte Pflichtreports belegt sein
+- Security-relevante Frontend-Flows wie Auth Required, Forbidden, Workspace-Isolation, Route-Guard-Verhalten und Logout-/Session-Invalidierung duerfen nicht nur dokumentiert, sondern muessen fuer produktionsnahe Aussagen durch Truth-Reports belegt sein
+- `m3a_gate_result.json` muss alle blockierenden Findings maschinenlesbar ausweisen
+
+Dokumentation darf M3a nur dann als `stabilisiert`, `freigabefaehig` oder `operational bereit` beschreiben, wenn diese Artefakte vorhanden und aktuell sind.
+
 ### M5 Gate Policy
 
 M5 darf sliceweise nur `pass` sein, wenn der jeweilige Slice einen aktuellen Report besitzt.
@@ -196,6 +223,9 @@ Verbotene Formulierungen:
 - `manuell validiert`, als Ersatz fuer Pflichtreport
 - `alle Tests gruen`, wenn nur ein Teil-Scope gelaufen ist
 - `M5 freigegeben`, wenn ein uebergeordneter Truth-Validator blockiert
+- `GUI stabil`, wenn `frontend_truth_report.json` fehlt oder rot ist
+- `Regression behoben`, ohne aktualisierten Frontend-Truth- oder Gate-Report
+- `Drift unter Kontrolle`, wenn nur Dokumentation existiert, aber kein sichtbares Frontend-Signal oder maschinenlesbares Artefakt vorliegt
 
 ## Statusvokabular
 
@@ -255,3 +285,48 @@ Jedes maschinenlesbare Gate-Artefakt muss enthalten:
 - `partial` erlaubt nur Teilscope-Aussagen.
 - `watch` erlaubt kontrollierte Implementierung, aber keine Produktionsfreigabe.
 - `blocked` stoppt Mutation und verlangt Recovery-/Incident-Pfad.
+
+## Frontend Truth Policies
+
+Diese Regeln gelten verpflichtend fuer M3a und alle spaeteren GUI-Slices mit produktionsnahen Aussagen.
+
+### Pflichtartefakte
+
+- `reports/frontend_truth_report.json` ist das primaere Truth-Artefakt fuer GUI-Verhalten
+- `reports/contract_test_report.json` ist Pflichtartefakt fuer Frontend/Backend-Contract-Stabilitaet
+- `reports/m3a_gate_result.json` oder ein nachfolgender GUI-Gate-Report ist Pflichtartefakt fuer die integrierte Gate-Entscheidung
+
+### Policy-Regeln
+
+1. Ein gruener Vitest- oder Komponententestlauf ersetzt keinen Frontend-Truth-Report.
+2. GUI-Regressionen sind gate-relevant, sobald sie sichtbare Nutzerfluesse, Error States, Route Guards, Drift-Hinweise oder Recovery-Pfade betreffen.
+3. Frontend-Drift muss sichtbar sein. Keine Fake-Green-UI, kein stilles Weglassen kritischer oder warnender Degradierungen.
+4. Frontend-Truth-Artefakte muessen echte Auth-, Workspace- und API-Kontexte nachweisen, wenn daraus Governance-Aussagen abgeleitet werden.
+5. Ein fokussierter Slice-Test darf nur `partial` fuer diesen Slice belegen, niemals einen Full-GUI-Pass.
+6. Wenn Contract-Report und Frontend-Truth-Report widersprechen, blockiert der Widerspruch die Freigabe bis zur Klaerung.
+7. Recovery-Signale wie Retry, Reconnect, Restore-Mode, API-down oder degraded States muessen im Frontend sichtbar und testbar bleiben.
+8. Security-relevante GUI-Flows muessen dieselbe Nachweisdisziplin wie Fachflows einhalten; dokumentierte Guards ohne Truth-Nachweis zaehlen nicht als produktionsreif.
+
+### Mindestfelder fuer Frontend-Truth-Artefakte
+
+Zusätzlich zu den allgemeinen Mindestfeldern muessen GUI-spezifische Truth-Artefakte enthalten:
+
+- `browser`
+- `api_base_url`
+- `real_api`
+- `mock_only`
+- `failed_flows`
+- `passed_tests`
+- `failed_tests`
+- `scope` mit benannten GUI-Slices wie `auth_bootstrap`, `documents`, `search`, `chat`, `upload`, `lifecycle`, `diagnostics`
+
+### GUI-Regressionsklassifikation
+
+Eine GUI-Regression ist mindestens gate-relevant, wenn sie einen dieser Pfade betrifft:
+
+- Auth- oder Workspace-Bootstrap
+- Login, Logout oder Route Guard
+- API-down-, Forbidden- oder Retry-Verhalten
+- Search, Chat, Upload oder Lifecycle-Kernfluss
+- Diagnostics- oder Drift-Warnoberflaeche
+- Restore-, Reconnect- oder degraded-State-Indikatoren

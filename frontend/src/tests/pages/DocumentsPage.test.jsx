@@ -178,6 +178,93 @@ describe('DocumentsPage', () => {
     );
   });
 
+  it('ignores stale parallel search responses', async () => {
+    primeRequestContext();
+    let resolveSlowSearch;
+    let resolveFastSearch;
+    const slowSearch = new Promise((resolve) => {
+      resolveSlowSearch = resolve;
+    });
+    const fastSearch = new Promise((resolve) => {
+      resolveFastSearch = resolve;
+    });
+
+    vi.spyOn(globalThis, 'fetch').mockImplementation((url) => {
+      const requestUrl = String(url);
+      if (requestUrl.includes('/documents?')) {
+        return Promise.resolve({
+          ok: true,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: async () => ([]),
+        });
+      }
+      if (requestUrl.includes('q=slow')) {
+        return slowSearch;
+      }
+      if (requestUrl.includes('q=fast')) {
+        return fastSearch;
+      }
+      return Promise.reject(new Error(`unexpected request: ${requestUrl}`));
+    });
+
+    renderPage();
+
+    await screen.findByText('Keine Dokumente vorhanden');
+
+    fireEvent.change(screen.getByLabelText('Suchbegriff'), { target: { value: 'slow' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
+
+    fireEvent.change(screen.getByLabelText('Suchbegriff'), { target: { value: 'fast' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
+
+    resolveFastSearch({
+      ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ([
+        {
+          document_id: 'doc-fast',
+          document_title: 'Fast Result',
+          document_created_at: '2026-05-08T12:00:00Z',
+          document_version_id: 'version-fast',
+          version_number: 1,
+          chunk_id: 'chunk-fast',
+          position: 1,
+          text_preview: 'fast response wins',
+          source_anchor: { type: 'text', page: null, paragraph: 1, char_start: 0, char_end: 10 },
+          rank: 0.9,
+          filters: {},
+        },
+      ]),
+    });
+
+    expect(await screen.findByText('Fast Result')).toBeInTheDocument();
+
+    resolveSlowSearch({
+      ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => ([
+        {
+          document_id: 'doc-slow',
+          document_title: 'Slow Stale Result',
+          document_created_at: '2026-05-08T12:00:00Z',
+          document_version_id: 'version-slow',
+          version_number: 1,
+          chunk_id: 'chunk-slow',
+          position: 1,
+          text_preview: 'slow response must be ignored',
+          source_anchor: { type: 'text', page: null, paragraph: 1, char_start: 0, char_end: 10 },
+          rank: 0.8,
+          filters: {},
+        },
+      ]),
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Fast Result')).toBeInTheDocument();
+      expect(screen.queryByText('Slow Stale Result')).not.toBeInTheDocument();
+    });
+  });
+
   it('renders empty search state when no results are found', async () => {
     primeRequestContext();
     vi.spyOn(globalThis, 'fetch')

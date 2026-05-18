@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 import json
 import os
 import subprocess
@@ -21,7 +22,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.database import get_database_url, get_sqlalchemy_database_url
 from app.db.session import get_engine
-from app.observability.logging import log_event
+from app.observability.logging import get_observability_context, log_event
 from app.services.original_file_store import OriginalFileStore
 from app.services.search_index_service import SearchIndexRebuildService
 
@@ -42,6 +43,8 @@ RESTORE_SMOKE_TESTS = [
     "tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_historical_citations_reflect_live_source_status",
     "tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_retryable_job_is_claimed_after_backoff_expires",
 ]
+REPO_ROOT = Path(__file__).resolve().parents[3]
+RESTORE_RUNTIME_STATUS = REPO_ROOT / "reports" / "restore_runtime_status.json"
 
 
 class BackupRestoreError(RuntimeError):
@@ -193,31 +196,33 @@ class BackupRestoreService:
 
     def restore_backup(self, *, input_dir: str | Path) -> dict[str, Any]:
         backup_dir = Path(input_dir)
-        log_event("backup_restore_started", status="started")
-        validation = self.verify_backup(input_dir=backup_dir)
-        if validation["status"] != "ok":
-            raise BackupRestoreError("Backup validation failed before restore")
+        correlation_id = get_observability_context().correlation_id
+        with self._restore_runtime_marker(correlation_id=correlation_id):
+            log_event("backup_restore_started", status="started")
+            validation = self.verify_backup(input_dir=backup_dir)
+            if validation["status"] != "ok":
+                raise BackupRestoreError("Backup validation failed before restore")
 
-        self._ensure_database_is_empty()
-        self._run_alembic_upgrade_head()
-        self._restore_database_dump(db_dir=backup_dir / "db")
-        restored_files = self._restore_original_files(files_dir=backup_dir / "files")
-        config_check = self._validate_restored_config(config_dir=backup_dir / "config")
-        reindex_result = self._rebuild_search_index()
-        drift_check = self._run_drift_check()
-        truth_smoke = self._run_postgres_truth_smoke_subset()
-        result = {
-            "status": "completed",
-            "validation": validation,
-            "restored_files": restored_files,
-            "config_check": config_check,
-            "reindex_result": reindex_result,
-            "drift_check": drift_check,
-            "truth_smoke": truth_smoke,
-            "restored_at": datetime.now(UTC).isoformat(),
-        }
-        log_event("backup_restored", status="completed")
-        return result
+            self._ensure_database_is_empty()
+            self._run_alembic_upgrade_head()
+            self._restore_database_dump(db_dir=backup_dir / "db")
+            restored_files = self._restore_original_files(files_dir=backup_dir / "files")
+            config_check = self._validate_restored_config(config_dir=backup_dir / "config")
+            reindex_result = self._rebuild_search_index()
+            drift_check = self._run_drift_check()
+            truth_smoke = self._run_postgres_truth_smoke_subset()
+            result = {
+                "status": "completed",
+                "validation": validation,
+                "restored_files": restored_files,
+                "config_check": config_check,
+                "reindex_result": reindex_result,
+                "drift_check": drift_check,
+                "truth_smoke": truth_smoke,
+                "restored_at": datetime.now(UTC).isoformat(),
+            }
+            log_event("backup_restored", status="completed")
+            return result
 
     def rebuild_search_index(self, *, workspace_id: str | None = None) -> dict[str, Any]:
         result = self._rebuild_search_index(workspace_id=workspace_id)
@@ -666,3 +671,24 @@ class BackupRestoreService:
 
     def _write_json(self, path: Path, payload: Any) -> None:
         path.write_text(json.dumps(payload, indent=2, sort_keys=True, default=str), encoding="utf-8")
+
+    @contextmanager
+    def _restore_runtime_marker(self, *, correlation_id: str | None):
+        RESTORE_RUNTIME_STATUS.parent.mkdir(parents=True, exist_ok=True)
+        RESTORE_RUNTIME_STATUS.write_text(
+            json.dumps(
+                {
+                    "active": True,
+                    "started_at": datetime.now(UTC).isoformat(),
+                    "correlation_id": correlation_id,
+                },
+                ensure_ascii=True,
+                indent=2,
+            ) + "\n",
+            encoding="utf-8",
+        )
+        try:
+            yield
+        finally:
+            if RESTORE_RUNTIME_STATUS.exists():
+                RESTORE_RUNTIME_STATUS.unlink()

@@ -1,0 +1,153 @@
+{
+  "timestamp": "2026-05-18T14:45:46.6959150+02:00",
+  "report": "Truth Root Cause Matrix",
+  "frontend": {
+    "global_status": "blocked",
+    "report": "reports/frontend_truth_report.json",
+    "collected": 80,
+    "passed": 58,
+    "failed": 22,
+    "clusters": [
+      {
+        "name": "Auth bootstrap error-surface mismatch",
+        "priority": 1,
+        "affected_failures": 4,
+        "affected_flows": [
+          "02 Auth bootstrap — 05 backend unreachable > shows API_UNREACHABLE error with retry button",
+          "02 Auth bootstrap — 05 backend unreachable > retry button re-triggers bootstrap",
+          "02 Auth bootstrap — 07 forbidden > shows error state on 403 from /auth/me",
+          "02 Auth bootstrap — 07 forbidden > 403 error does not show retry button"
+        ],
+        "hypothesis": "Playwright expects protected-route error rendering, but the real browser snapshot lands on LoginPage. The dominant local hypothesis is a bootstrap/session transition mismatch between AuthContext, ProtectedRoute and the real API/auth fixtures, not a missing ErrorState component itself.",
+        "owning_code": [
+          "frontend/src/auth/AuthContext.jsx",
+          "frontend/src/app/routes.jsx",
+          "frontend/tests/gui_truth/test_02_auth_bootstrap.spec.js"
+        ],
+        "cheap_discriminating_check": "Re-run only scenario 05/07 with request logging for /auth/me and current localStorage after the transition to determine whether token/auth state is cleared before ProtectedRoute renders bootstrapError."
+      },
+      {
+        "name": "Shell or route remount instability",
+        "priority": 2,
+        "affected_failures": 12,
+        "affected_flows": [
+          "02 Auth bootstrap — 08 logout > after logout, navigating to /documents redirects to login",
+          "02 Auth bootstrap — 08 logout > after logout, localStorage is cleared",
+          "05 Upload flow > shows error when submitting without a file",
+          "05 Upload flow > uploads a text file and completes the import job",
+          "06 Search flow > submitting empty search term shows idle state without error",
+          "06 Search flow > search returns results or empty state without error",
+          "06 Search flow > search with workspace context sends request to real backend",
+          "07 Chat flow > navigation from documents to chat preserves workspace context",
+          "08 Lifecycle GUI > switching back to active filter restores document list",
+          "09 Diagnostics GUI > diagnostics page accessible via admin nav link",
+          "10 Workspace bootstrap — 01 workspace from membership > workspace id from bootstrap matches injected membership workspace",
+          "10 Workspace bootstrap — 02 single workspace > single workspace shown as text, no dropdown switcher"
+        ],
+        "hypothesis": "Many failures share the Playwright symptom 'element is not stable' or 'element was detached'. This points to a remounting shell, route or auth-context transition that replaces the DOM while Playwright interacts, rather than isolated upload/search/chat defects.",
+        "owning_code": [
+          "frontend/src/app/AppShell.jsx",
+          "frontend/src/auth/AuthContext.jsx",
+          "frontend/src/pages/DocumentsPage.jsx",
+          "frontend/tests/gui_truth/fixtures.js"
+        ],
+        "cheap_discriminating_check": "Re-run one logout flow and one search flow with trace/video and inspect whether AppShell or the route subtree remounts between click target resolution and action commit."
+      },
+      {
+        "name": "Page contract drift in headings and labels",
+        "priority": 3,
+        "affected_failures": 6,
+        "affected_flows": [
+          "05 Upload flow > shows upload form elements",
+          "07 Chat flow > shows chat page heading and workspace context",
+          "07 Chat flow > shows chat composer form",
+          "09 Diagnostics GUI > shows system status card",
+          "09 Diagnostics GUI > shows database status card",
+          "09 Diagnostics GUI > shows migration status card"
+        ],
+        "hypothesis": "A subset of failures look like direct UI-text drift between the real pages and the truth specs: missing expected headings/cards or renamed surface labels. These are likely test-contract mismatches layered on top of the broader remount issue.",
+        "owning_code": [
+          "frontend/src/pages/ChatPage.jsx",
+          "frontend/src/pages/AdminDiagnosticsPage.jsx",
+          "frontend/tests/gui_truth/test_05_upload.spec.js"
+        ],
+        "cheap_discriminating_check": "Compare rendered headings/labels from a clean authed browser snapshot against each failing expectation before changing feature code."
+      }
+    ],
+    "root_cause_summary": "The frontend failures do not form 22 independent defects. The primary pattern is a bootstrap/shell transition problem that either clears or replaces the protected-route surface unexpectedly, with a smaller secondary cluster of UI-label drift in chat/diagnostics/upload truth specs."
+  },
+  "backend": {
+    "global_status": "blocked",
+    "report": "reports/postgres_truth_report.json",
+    "collected": 138,
+    "passed": 120,
+    "failed": 16,
+    "errors": 2,
+    "clusters": [
+      {
+        "name": "Entropy helper or metric-model breakage",
+        "priority": 1,
+        "affected_failures": 7,
+        "affected_tests": [
+          "TestCitationDegradation::test_chunk_deletion_increases_citation_orphan_rate",
+          "TestCitationDegradation::test_citation_orphan_rate_tracks_deletion_scale",
+          "TestMultiEpochEntropySimulation::test_drift_trend_function_returns_valid_structure",
+          "TestMultiEpochEntropySimulation::test_entropy_simulation_detects_chaos_and_verifies_recovery",
+          "TestMultiEpochEntropySimulation::test_repeated_archive_restore_cycles_stay_entropy_neutral",
+          "TestOrphanGrowthDetection::test_orphan_chunks_are_detected_by_metric",
+          "TestOrphanGrowthDetection::test_orphan_purge_restores_clean_state"
+        ],
+        "hypothesis": "The concentration inside test_entropy_truth.py suggests a common issue in entropy helpers, metric collection or assumptions about current schema/test fixtures, rather than seven independent feature regressions.",
+        "owning_code": [
+          "backend/tests/postgres_truth/test_entropy_truth.py",
+          "backend/tests/postgres_truth/entropy_helpers.py"
+        ],
+        "cheap_discriminating_check": "Run only test_entropy_truth.py with -x and inspect the first failure stack to decide whether the dominant break is metric collection, helper seeding, or repair helper semantics."
+      },
+      {
+        "name": "Queue drift and dead-letter recovery instability",
+        "priority": 2,
+        "affected_failures": 4,
+        "affected_tests": [
+          "TestQueueBacklogDrift::test_dead_letter_accumulation_is_detected",
+          "TestQueueBacklogDrift::test_draining_jobs_reduces_backlog",
+          "TestQueueBacklogDrift::test_retryable_jobs_accumulate_and_are_detected",
+          "test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows"
+        ],
+        "hypothesis": "These failures cluster around queue status aging, retryable jobs, dead-letter accounting and stale import retry recovery. That points to one stability slice in background job lifecycle or queue metric accounting.",
+        "owning_code": [
+          "app/services/jobs/background_jobs.py",
+          "backend/tests/postgres_truth/test_entropy_truth.py",
+          "backend/tests/postgres_truth/test_m4_truth_flows.py"
+        ],
+        "cheap_discriminating_check": "Run the single stale import retry test plus the queue backlog entropy tests to compare whether the bug is in job state transitions or only in metrics/repair accounting."
+      },
+      {
+        "name": "Retrieval and stale-index repair divergence",
+        "priority": 3,
+        "affected_failures": 5,
+        "affected_tests": [
+          "TestRetrievalDegradation::test_retrieval_repair_restores_coverage",
+          "TestRetrievalDegradation::test_searchability_drift_reduces_coverage",
+          "TestStaleIndexDetection::test_restore_cycle_does_not_create_stale_entries",
+          "TestStaleIndexDetection::test_stale_index_cleared_by_repair_pass",
+          "TestStaleIndexDetection::test_stale_index_grows_when_archive_skips_repair"
+        ],
+        "hypothesis": "These failures form a single slice around lifecycle status, is_searchable, retrieval coverage and repair semantics. The benchmark can still be green while the lower-level entropy repair path is wrong or partially disconnected.",
+        "owning_code": [
+          "app/services/search_index_service.py",
+          "app/services/search_service.py",
+          "backend/tests/postgres_truth/test_entropy_truth.py"
+        ],
+        "cheap_discriminating_check": "Run only stale-index and retrieval entropy tests and compare DB-level is_searchable transitions before and after repair helpers."
+      }
+    ],
+    "root_cause_summary": "The backend red state is dominated by the entropy/stability slice, not by the core M4a/M4b/M4c truth slice. The strongest current hypothesis is a break in entropy helper assumptions or lower-level repair/metric accounting around drift, queue debt and stale-index/retrieval recovery."
+  },
+  "recommended_fix_order": [
+    "Frontend: isolate the auth-bootstrap error-surface mismatch for scenario 05/07 before touching upload/search/chat pages.",
+    "Frontend: inspect AppShell/auth remount behavior causing detached-element failures in logout/search/nav flows.",
+    "Backend: run test_entropy_truth.py with -x to capture the first failing primitive in entropy_helpers or repair semantics.",
+    "Backend: then resolve queue drift and stale-index/retrieval recovery as two separate stability slices."
+  ]
+}

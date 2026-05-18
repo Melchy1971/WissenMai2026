@@ -23,6 +23,24 @@ function statusTone(status) {
   return lookup[status] || 'neutral';
 }
 
+function severityTone(severity) {
+  const lookup = {
+    info: 'info',
+    warning: 'warning',
+    critical: 'danger',
+  };
+  return lookup[severity] || 'neutral';
+}
+
+function indicatorStateLabel(state) {
+  const lookup = {
+    active: 'aktiv',
+    inactive: 'inaktiv',
+    unknown: 'unbekannt',
+  };
+  return lookup[state] || state;
+}
+
 function boolLabel(value) {
   return value ? 'aktiv' : 'inaktiv';
 }
@@ -49,6 +67,60 @@ function DiagnosticsCard({ title, eyebrow, status = 'ok', metrics }) {
           </div>
         ))}
       </dl>
+    </article>
+  );
+}
+
+function awarenessBanner(indicators) {
+  if (!Array.isArray(indicators)) {
+    return null;
+  }
+
+  return (
+    indicators.find((indicator) => indicator.severity === 'critical' && indicator.state === 'active')
+    || indicators.find((indicator) => indicator.severity === 'warning' && indicator.state !== 'inactive')
+    || indicators.find((indicator) => indicator.severity === 'info' && indicator.state === 'active')
+    || null
+  );
+}
+
+function OperationalMetricCard({ metric }) {
+  return (
+    <article className={`diagnostics-card diagnostics-indicator diagnostics-indicator--${metric.severity}`}>
+      <div className="panel__header">
+        <div>
+          <p className="panel__eyebrow">Operative Metrik</p>
+          <h3>{metric.label}</h3>
+        </div>
+        <span className={`status-badge status-badge--${severityTone(metric.severity)}`}>{metric.severity}</span>
+      </div>
+      <p className="diagnostics-indicator__state">
+        Zustand: <strong>{indicatorStateLabel(metric.state)}</strong>
+      </p>
+      <p className="diagnostics-metric__value">
+        Messwert: <strong>{metric.value}</strong>
+      </p>
+      <p className="diagnostics-card__text">{metric.summary}</p>
+      <p className="diagnostics-indicator__source">Quelle: {metric.source}</p>
+    </article>
+  );
+}
+
+function DriftIndicatorCard({ indicator }) {
+  return (
+    <article className={`diagnostics-card diagnostics-indicator diagnostics-indicator--${indicator.severity}`}>
+      <div className="panel__header">
+        <div>
+          <p className="panel__eyebrow">Statusindikator</p>
+          <h3>{indicator.label}</h3>
+        </div>
+        <span className={`status-badge status-badge--${severityTone(indicator.severity)}`}>{indicator.severity}</span>
+      </div>
+      <p className="diagnostics-indicator__state">
+        Zustand: <strong>{indicatorStateLabel(indicator.state)}</strong>
+      </p>
+      <p className="diagnostics-card__text">{indicator.summary}</p>
+      <p className="diagnostics-indicator__source">Quelle: {indicator.source}</p>
     </article>
   );
 }
@@ -133,6 +205,9 @@ export function AdminDiagnosticsPage() {
   const activeMembership = useMemo(() => membershipForWorkspace(memberships, workspaceId), [memberships, workspaceId]);
   const isWorkspaceAdmin = activeMembership?.role === 'owner' || activeMembership?.role === 'admin';
   const cards = state.diagnostics ? diagnosticsCards(state.diagnostics) : [];
+  const driftAwareness = state.diagnostics?.drift_awareness || null;
+  const operationalMetrics = state.diagnostics?.operational_metrics || [];
+  const topWarning = awarenessBanner(operationalMetrics);
 
   useEffect(() => {
     let cancelled = false;
@@ -185,7 +260,12 @@ export function AdminDiagnosticsPage() {
           <p className="panel__eyebrow">M4d Diagnostics</p>
           <h2>Systemdiagnose</h2>
         </div>
-        <p className="page-header__meta">Read-only · Workspace: {workspaceId || 'nicht konfiguriert'}</p>
+        <div>
+          <p className="page-header__meta">Read-only · Workspace: {workspaceId || 'nicht konfiguriert'}</p>
+          {state.diagnostics?.correlation_id ? (
+            <p className="page-header__meta">Correlation-ID: {state.diagnostics.correlation_id}</p>
+          ) : null}
+        </div>
       </div>
 
       {state.status === 'loading' ? (
@@ -195,11 +275,80 @@ export function AdminDiagnosticsPage() {
       {state.status === 'error' || state.status === 'blocked' ? <ErrorState error={state.error} /> : null}
 
       {state.status === 'success' ? (
-        <section className="panel diagnostics-card-grid" aria-label="Diagnostics summary">
-          {cards.map((card) => (
-            <DiagnosticsCard key={card.title} {...card} />
-          ))}
-        </section>
+        <>
+          {topWarning ? (
+            <section className={`panel diagnostics-alert-banner diagnostics-alert-banner--${topWarning.severity}`} aria-label="Operative Warnung">
+              <div className="panel__header">
+                <div>
+                  <p className="panel__eyebrow">Operational Metrics</p>
+                  <h3>{topWarning.label}</h3>
+                </div>
+                <span className={`status-badge status-badge--${severityTone(topWarning.severity)}`}>{topWarning.severity}</span>
+              </div>
+              <p className="diagnostics-metric__value">
+                Messwert: <strong>{topWarning.value}</strong>
+              </p>
+              <p className="diagnostics-card__text">{topWarning.summary}</p>
+            </section>
+          ) : null}
+
+          {operationalMetrics.length ? (
+            <section className="diagnostics-indicator-grid" aria-label="Operational metrics">
+              {operationalMetrics.map((metric) => (
+                <OperationalMetricCard key={metric.key} metric={metric} />
+              ))}
+            </section>
+          ) : null}
+
+          {driftAwareness ? (
+            <section className="diagnostics-card-grid" aria-label="Drift awareness model">
+              <article className="diagnostics-card diagnostics-card--accent">
+                <div className="panel__header">
+                  <div>
+                    <p className="panel__eyebrow">Drift-Awareness-Konzept</p>
+                    <h3>Sichtbare Degradierung</h3>
+                  </div>
+                </div>
+                <ul className="diagnostics-rule-list">
+                  {driftAwareness.concept.map((rule) => (
+                    <li key={rule}>{rule}</li>
+                  ))}
+                </ul>
+              </article>
+
+              <article className="diagnostics-card">
+                <div className="panel__header">
+                  <div>
+                    <p className="panel__eyebrow">UI-Warnmodell</p>
+                    <h3>Keine stille Degradation</h3>
+                  </div>
+                </div>
+                <dl className="meta-grid">
+                  {Object.entries(driftAwareness.warning_model).map(([key, value]) => (
+                    <div key={key}>
+                      <dt>{key}</dt>
+                      <dd>{value ? 'ja' : 'nein'}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            </section>
+          ) : null}
+
+          {driftAwareness ? (
+            <section className="diagnostics-indicator-grid" aria-label="Status indicators">
+              {driftAwareness.indicators.map((indicator) => (
+                <DriftIndicatorCard key={indicator.key} indicator={indicator} />
+              ))}
+            </section>
+          ) : null}
+
+          <section className="panel diagnostics-card-grid" aria-label="Diagnostics summary">
+            {cards.map((card) => (
+              <DiagnosticsCard key={card.title} {...card} />
+            ))}
+          </section>
+        </>
       ) : null}
     </section>
   );

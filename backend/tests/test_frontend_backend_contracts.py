@@ -266,7 +266,7 @@ def assert_chat_message_contract(payload: dict[str, Any]) -> None:
 
 
 def assert_diagnostics_contract(payload: dict[str, Any]) -> None:
-    assert_exact_keys(payload, {"system", "database", "counts", "imports", "search", "auth"})
+    assert_exact_keys(payload, {"system", "database", "counts", "imports", "search", "auth", "correlation_id", "operational_metrics", "drift_awareness"})
     assert_exact_keys(payload["system"], {"status", "version", "environment"})
     assert payload["system"]["status"] in {"ok", "degraded", "error"}
     assert payload["system"]["environment"] in {"local", "test", "production"}
@@ -275,6 +275,25 @@ def assert_diagnostics_contract(payload: dict[str, Any]) -> None:
     assert_exact_keys(payload["imports"], {"running_jobs", "failed_jobs_last_24h", "last_error_code"})
     assert_exact_keys(payload["search"], {"index_available", "indexed_chunks", "stale_index_entries"})
     assert_exact_keys(payload["auth"], {"auth_enabled", "workspace_isolation_enabled"})
+    if payload["correlation_id"] is not None:
+        assert isinstance(payload["correlation_id"], str)
+    assert isinstance(payload["operational_metrics"], list)
+    for metric in payload["operational_metrics"]:
+        assert_exact_keys(metric, {"key", "label", "state", "severity", "value", "summary", "source"})
+        assert metric["state"] in {"active", "inactive"}
+        assert metric["severity"] in {"info", "warning", "critical"}
+        assert isinstance(metric["value"], str)
+    assert_exact_keys(payload["drift_awareness"], {"concept", "warning_model", "indicators"})
+    assert isinstance(payload["drift_awareness"]["concept"], list)
+    assert_exact_keys(
+        payload["drift_awareness"]["warning_model"],
+        {"no_silent_degradation", "no_fake_green", "no_hidden_warnings", "unknown_is_not_ok", "highest_severity_wins"},
+    )
+    assert isinstance(payload["drift_awareness"]["indicators"], list)
+    for indicator in payload["drift_awareness"]["indicators"]:
+        assert_exact_keys(indicator, {"key", "label", "state", "severity", "summary", "source"})
+        assert indicator["state"] in {"active", "inactive"}
+        assert indicator["severity"] in {"info", "warning", "critical"}
 
 
 class FakeSearchService:

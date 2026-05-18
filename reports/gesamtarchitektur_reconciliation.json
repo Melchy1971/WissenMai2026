@@ -1,0 +1,122 @@
+{
+  "timestamp": "2026-05-18T14:45:46.6959150+02:00",
+  "report": "Gesamtarchitektur-Reconciliation",
+  "decision": "technisch stabilisiert",
+  "maturity_level": 2,
+  "critical_remaining_factor": "Kein bereichsuebergreifend gruener Truth-Nachweis: Frontend Truth und PostgreSQL Truth sind gleichzeitig rot, wodurch operative Stabilisierung nicht belastbar freigegeben werden kann.",
+  "system_assessment": {
+    "consistent": true,
+    "controllable": true,
+    "auditable": true,
+    "governance_conform": true,
+    "operational_stabilized": false
+  },
+  "areas": [
+    {
+      "name": "Backend Truth",
+      "status": "partial",
+      "evidence": [
+        "reports/postgres_truth_report.json",
+        "docs/m4-m5-freigabefassung.md"
+      ],
+      "summary": "Der Backend-Kern ist stark, aber nicht gruen freigegeben. PostgreSQL Truth ist rot mit 120/138 bestanden, 16 Failures und 2 Errors; M4a/M4b/M4c zeigen positive Marker-Teilscores, werden vom roten Gesamt-Truth jedoch ueberstimmt."
+    },
+    {
+      "name": "Frontend Truth",
+      "status": "partial",
+      "evidence": [
+        "reports/frontend_truth_report.json",
+        "reports/m3a_gate_result.json",
+        "reports/gui_truth/gui_chaos_suite_report.json"
+      ],
+      "summary": "Das Frontend ist fokussiert gehaertet, aber nicht global gruen. M3a bleibt blockiert; der Frontend Truth Report ist rot mit 58/80 bestanden und 22 Failures, waehrend Chaos- und fokussierte Invarianten-Slices gruen sind."
+    },
+    {
+      "name": "Governance",
+      "status": "strong",
+      "evidence": [
+        "docs/operational-truth-governance.md",
+        "docs/m3a-test-strategy.md",
+        "docs/m4-stabilization-exit-criteria.md",
+        "docs/api/frontend-backend-contract-registry.md"
+      ],
+      "summary": "Governance ist verbindlich und konsistent aufgebaut: maschinenlesbare Gate-Artefakte, Scope-Regeln, Contract-Registry und harte Exit-Kriterien sind vorhanden und werden zur Statusableitung verwendet."
+    },
+    {
+      "name": "Drift Detection",
+      "status": "partial",
+      "evidence": [
+        "docs/drift.md",
+        "backend/app/services/diagnostics.py",
+        "frontend/src/pages/AdminDiagnosticsPage.jsx",
+        "reports/postgres_truth_report.json"
+      ],
+      "summary": "Drift-Signale sind sichtbar und governance-seitig vorbereitet, aber der M5-Drift-Slice ist nicht als gruen freigegeben. Gleichzeitig schlagen entropy-/drift-nahe PostgreSQL-Tests fehl, daher keine stabile Drift-Freigabe."
+    },
+    {
+      "name": "Recovery",
+      "status": "controlled_partial",
+      "evidence": [
+        "docs/frontend-recovery-ux-model.md",
+        "reports/gui_truth/gui_chaos_suite_report.json",
+        "reports/postgres_truth_report.json"
+      ],
+      "summary": "Recovery ist konzeptionell und in mehreren fokussierten Pfaden kontrolliert: GUI-Chaos-Suite ist gruen, Crash-Recovery-Truth-Tests zeigen starke Teilbelege. Der Gesamtzustand bleibt aber wegen roter Truth-Gates nur teilweise stabilisiert."
+    },
+    {
+      "name": "Backup/Restore",
+      "status": "strong_partial",
+      "evidence": [
+        "reports/restore_truth_report.md",
+        "docs/operational-truth-governance.md",
+        "docs/operational-sla-framework.md"
+      ],
+      "summary": "Backup/Restore ist im geprueften Scope konsistent und wiederholbar nachgewiesen: Restore-Truth zeigt PASS inklusive Reindex und Paritaet. Fuer ein vollautomatisches Gate fehlt noch die JSON-Zielquelle fuer Restore als eigenstaendige Gate-Wahrheit."
+    },
+    {
+      "name": "Queue Stability",
+      "status": "mixed",
+      "evidence": [
+        "reports/postgres_truth_report.json",
+        "docs/m5-observability.md",
+        "docs/operational-sla-framework.md"
+      ],
+      "summary": "Queue-Aging- und RC-Tests liefern starke positive Hinweise, aber queue-/retry-/dead-letter-nahe Entropy-Tests schlagen im aktuellen PostgreSQL Truth fehl. Queue ist damit kontrollierbar, aber nicht global stabil freigegeben."
+    },
+    {
+      "name": "Retrieval Stability",
+      "status": "mixed",
+      "evidence": [
+        "reports/m5_retrieval/latest.json",
+        "docs/m5-retrieval-quality-baseline.md",
+        "reports/postgres_truth_report.json"
+      ],
+      "summary": "Der Retrieval-Benchmark gegen das Golden Dataset ist gruen mit perfekten Metriken. Gleichzeitig fallen retrieval-/stale-index-bezogene PostgreSQL-Entropy-Tests aus, wodurch Retrieval qualitativ stark, aber systemisch noch nicht abschliessend stabilisiert ist."
+    },
+    {
+      "name": "Operational Readiness",
+      "status": "blocked",
+      "evidence": [
+        "docs/m4-m5-freigabefassung.md",
+        "reports/m3a_gate_result.json",
+        "reports/postgres_truth_report.json",
+        "reports/frontend_truth_report.json"
+      ],
+      "summary": "Operational Readiness ist nicht erreicht. M4 bleibt No-Go, M5-Transition bleibt No-Go, weil Frontend Truth, M3a und PostgreSQL Truth gleichzeitig keine gruene Freigabe erlauben."
+    }
+  ],
+  "conclusion": {
+    "overall_summary": "Die Zielarchitektur ist nicht mehr primaer fragmentiert: zentrale Servicegrenzen, Governance, Contracts, Diagnostics und betriebliche Truth-Regeln sind konsistent. Das System ist kontrollierbar und auditierbar, aber noch nicht operational stabilisiert, weil die globalen Truth-Gates bereichsuebergreifend nicht konvergieren.",
+    "why_not_fragmented": [
+      "Governance-Quellen und Gate-Policies sind eindeutig definiert.",
+      "Backend-, Frontend- und Betriebsartefakte referenzieren dieselben Truth- und Contract-Quellen.",
+      "Drift-, Recovery- und Diagnostics-Signale sind explizit und nicht mehr implizit verborgen."
+    ],
+    "why_not_operational_controlled_or_production_near": [
+      "Der globale Frontend Truth Report bleibt rot.",
+      "Der globale PostgreSQL Truth Report bleibt rot.",
+      "Mehrere Drift-, Queue- und Retrieval-Stabilitaetstests schlagen im aktuellen Truth-Lauf fehl.",
+      "Operational Readiness ist in der Freigabefassung explizit als No-Go dokumentiert."
+    ]
+  }
+}

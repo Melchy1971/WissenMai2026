@@ -315,6 +315,7 @@ Required fields:
 - `imports: DiagnosticsImports`
 - `search: DiagnosticsSearch`
 - `auth: DiagnosticsAuth`
+- `drift_awareness: DiagnosticsDriftAwareness`
 
 DiagnosticsSystem required fields:
 - `status: "ok" | "degraded" | "error"`
@@ -348,10 +349,32 @@ DiagnosticsAuth required fields:
 - `auth_enabled: boolean`
 - `workspace_isolation_enabled: boolean`
 
+DiagnosticsDriftAwareness required fields:
+- `concept: string[]`
+- `warning_model: DiagnosticsWarningModel`
+- `indicators: DiagnosticsIndicator[]`
+
+DiagnosticsWarningModel required fields:
+- `no_silent_degradation: boolean`
+- `no_fake_green: boolean`
+- `no_hidden_warnings: boolean`
+- `unknown_is_not_ok: boolean`
+- `highest_severity_wins: boolean`
+
+DiagnosticsIndicator required fields:
+- `key: string`
+- `label: string`
+- `state: "active" | "inactive" | "unknown"`
+- `severity: "info" | "warning" | "critical"`
+- `summary: string`
+- `source: string`
+
 Optional fields: nullable database fields
 Enum values:
 - `system.status`: `ok`, `degraded`, `error`
 - `system.environment`: `local`, `test`, `production`
+- `drift_awareness.indicators[].state`: `active`, `inactive`, `unknown`
+- `drift_awareness.indicators[].severity`: `info`, `warning`, `critical`
 
 Error codes: `UNAUTHORIZED`, `FORBIDDEN`, `DIAGNOSTICS_FAILED`, `INTERNAL_ERROR`
 Deprecated fields: keine

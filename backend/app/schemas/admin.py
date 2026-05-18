@@ -120,6 +120,47 @@ class DiagnosticsAuthResponse(BaseModel):
     workspace_isolation_enabled: bool
 
 
+class DiagnosticsWarningModelResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    no_silent_degradation: bool
+    no_fake_green: bool
+    no_hidden_warnings: bool
+    unknown_is_not_ok: bool
+    highest_severity_wins: bool
+
+
+class DiagnosticsIndicatorResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    key: str
+    label: str
+    state: Literal["active", "inactive", "unknown"]
+    severity: Literal["info", "warning", "critical"]
+    summary: str
+    source: str
+
+
+class DiagnosticsOperationalMetricResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    key: str
+    label: str
+    state: Literal["active", "inactive"]
+    severity: Literal["info", "warning", "critical"]
+    value: str
+    summary: str
+    source: str
+
+
+class DiagnosticsDriftAwarenessResponse(BaseModel):
+    model_config = ConfigDict(strict=True)
+
+    concept: list[str]
+    warning_model: DiagnosticsWarningModelResponse
+    indicators: list[DiagnosticsIndicatorResponse]
+
+
 class DiagnosticsResponse(BaseModel):
     model_config = ConfigDict(strict=True)
 
@@ -129,6 +170,10 @@ class DiagnosticsResponse(BaseModel):
     imports: DiagnosticsImportsResponse
     search: DiagnosticsSearchResponse
     auth: DiagnosticsAuthResponse
+    correlation_id: str | None = None
+    operational_metrics: list[DiagnosticsOperationalMetricResponse]
+    drift_awareness: DiagnosticsDriftAwarenessResponse
+
 
 
 class QueueAgingThresholds(BaseModel):

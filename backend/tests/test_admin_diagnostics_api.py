@@ -110,7 +110,7 @@ def test_admin_diagnostics_returns_read_only_summary(client: TestClient, db_sess
 
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"system", "database", "counts", "imports", "search", "auth"}
+    assert set(body) == {"system", "database", "counts", "imports", "search", "auth", "correlation_id", "operational_metrics", "drift_awareness"}
     assert body["system"]["status"] in {"ok", "degraded", "error"}
     assert body["database"]["reachable"] is True
     assert body["counts"]["documents"] == 2
@@ -124,6 +124,32 @@ def test_admin_diagnostics_returns_read_only_summary(client: TestClient, db_sess
     assert body["search"]["index_available"] is True
     assert body["search"]["indexed_chunks"] == 2
     assert body["auth"] == {"auth_enabled": True, "workspace_isolation_enabled": True}
+    assert isinstance(body["correlation_id"], str)
+    assert len(body["operational_metrics"]) == 6
+    assert {metric["label"] for metric in body["operational_metrics"]} == {
+        "Queue degraded",
+        "Drift erkannt",
+        "Backup veraltet",
+        "Reindex aktiv",
+        "Restore aktiv",
+        "Retrieval Regression erkannt",
+    }
+    assert body["drift_awareness"]["warning_model"] == {
+        "no_silent_degradation": True,
+        "no_fake_green": True,
+        "no_hidden_warnings": True,
+        "unknown_is_not_ok": True,
+        "highest_severity_wins": True,
+    }
+    assert len(body["drift_awareness"]["indicators"]) == 6
+    assert {indicator["label"] for indicator in body["drift_awareness"]["indicators"]} == {
+        "Search Drift erkannt",
+        "Queue degraded",
+        "Restore aktiv",
+        "Reindex aktiv",
+        "Retrieval Regression erkannt",
+        "Backup veraltet",
+    }
     assert "Current Document" not in response.text
     assert "Older Document" not in response.text
     assert "This content must not appear" not in response.text

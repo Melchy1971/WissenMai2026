@@ -2,6 +2,52 @@
 
 Stand: 2026-05-18
 
+## 2026-05-18 - Frontend Concurrency Safety gehaertet
+
+### Added
+
+- `frontend/src/api/requestCoordinator.js` fuehrt Request-Tickets mit Generation, Auth-/Workspace-Snapshot, AbortSignal und `correlationId` ein.
+- `docs/frontend-concurrency-safety.md` dokumentiert Sicherheitsmodell, Request-Management, Optimistic-UI-Regeln und Tests.
+- `frontend/tests/gui_truth/test_12_concurrency.spec.js` ergaenzt echte API-Race-Simulationen mit kuenstlichem Delay und `route.continue()`.
+
+### Changed
+
+- Dokument-, Search-, Job- und Chat-API-Wrapper propagieren `signal` und optional `correlationId`.
+- `DocumentsPage` ignoriert stale Dokumentlisten-, Search- und Upload-/Polling-Responses.
+- `ChatPage` ignoriert stale Session-, Detail- und Chat-Retrieval-Responses.
+
+### Tests
+
+- `frontend/src/tests/api/RequestCoordinator.test.js`
+- `frontend/src/tests/pages/DocumentsPage.test.jsx`
+- `frontend/tests/gui_truth/test_12_concurrency.spec.js`
+
+## 2026-05-18 - Frontend Cache Governance definiert
+
+### Added
+
+- `docs/frontend-cache-governance.md` definiert workspace-scoped Cache-Regeln fuer Dokumentlisten, Search Results, Chat Sessions, Diagnostics und Workspace Memberships.
+- Invalidierung bei Workspace-Wechsel, Logout, Restore, Reindex und Lifecycle-Aenderungen ist dokumentiert.
+- Stale-State-Regeln und sichtbare Stale-Indikatoren sind verbindlich beschrieben.
+
+### Decision
+
+- Keine globalen Dokumentcaches.
+- Kein Cache ohne `source_timestamp` oder `source_version`.
+- Stale-Daten duerfen nur read-only und mit sichtbarem Indikator erscheinen.
+
+## 2026-05-18 - Frontend Runtime State Machine definiert
+
+### Added
+
+- `docs/frontend-runtime-state-machine.md` definiert die expliziten Runtime States `booting`, `unauthenticated`, `authenticating`, `authenticated`, `workspace_loading`, `workspace_ready`, `degraded`, `reconnecting`, `forbidden`, `api_unreachable` und `restore_mode`.
+- Transition Matrix, verbotene Transitions, verbotene Zustandskombinationen, Side Effects, Cache-Invalidierung, Search-/Chat-Reset und Upload-Blocker sind dokumentiert.
+
+### Decision
+
+- Fachrouten duerfen nur aus `workspace_ready` frische Daten und Mutationen anbieten.
+- Technische Fehler- und Recovery-Zustaende duerfen nicht als Empty-State erscheinen.
+
 ## 2026-05-18 - M3a/M4 Gesamt-Reconciliation
 
 ### Changed

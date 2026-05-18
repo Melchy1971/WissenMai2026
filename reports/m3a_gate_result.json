@@ -1,84 +1,130 @@
 {
-  "timestamp": "2026-05-18T10:00:21.705779+00:00",
-  "gate": "M3a",
-  "gate_result": "FAIL",
-  "score": 57.1,
-  "rules_passed": 4,
-  "rules_total": 7,
-  "blockers": [
-    "frontend_truth passed (58) must equal collected (80)",
-    "frontend_truth failed must be 0, got 22",
-    "postgres_truth passed (120) must equal collected (138); postgres_truth failed must be 0, got 16; postgres_truth errors must be 0, got 2; postgres_truth exit code must be 0, got 1"
-  ],
-  "rule_results": [
+  "timestamp": "2026-05-18T14:45:46.6959150+02:00",
+  "generated_at": "2026-05-18T14:45:46.6959150+02:00",
+  "gate": "M3a Operational Truth",
+  "gate_result": "BLOCKED",
+  "decision": "M3a blockiert",
+  "score": 70,
+  "threshold": 90,
+  "stabilized": false,
+  "prerequisites_passed": 7,
+  "prerequisites_total": 9,
+  "prerequisites": [
     {
-      "id": "frontend_truth_passed_equals_collected",
+      "id": "frontend_truth_tests_green",
+      "label": "Frontend Truth Tests gruen",
+      "weight": 20,
       "passed": false,
-      "blocker": "frontend_truth passed (58) must equal collected (80)"
+      "score_awarded": 0,
+      "evidence": "reports/frontend_truth_report.json",
+      "summary": "Frontend truth report bleibt rot: 58/80 passed, 22 failed, exit_code=1. Fokussierte grüne Läufe überstimmen diesen Pflichtreport nicht."
     },
     {
-      "id": "frontend_truth_failed_zero",
+      "id": "gui_chaos_tests_green",
+      "label": "GUI Chaos-Tests gruen",
+      "weight": 10,
+      "passed": true,
+      "score_awarded": 10,
+      "evidence": "reports/gui_truth/gui_chaos_suite_report.json",
+      "summary": "Neue Chaos-Suite ist gruen: 8/8 Szenarien bestanden."
+    },
+    {
+      "id": "runtime_state_machine_validated",
+      "label": "Runtime State Machine validiert",
+      "weight": 10,
+      "passed": true,
+      "score_awarded": 10,
+      "evidence": "docs/frontend-runtime-state-machine.md + src/tests/app/GuiStateInvariants.test.jsx",
+      "summary": "Runtime-State-Regeln sind dokumentiert und fokussiert validiert; GuiStateInvariants gruen (7/7)."
+    },
+    {
+      "id": "cache_governance_validated",
+      "label": "Cache Governance validiert",
+      "weight": 10,
+      "passed": true,
+      "score_awarded": 10,
+      "evidence": "docs/frontend-cache-governance.md + src/tests/api/RequestCoordinator.test.js",
+      "summary": "Workspace-scoped Cache-/Request-Regeln sind dokumentiert; RequestCoordinator und stale-response Guards gruen (5/5)."
+    },
+    {
+      "id": "contract_registry_stable",
+      "label": "Contract Registry stabil",
+      "weight": 10,
+      "passed": true,
+      "score_awarded": 10,
+      "evidence": "docs/api/frontend-backend-contract-registry.md + reports/contract_test_report.json",
+      "summary": "Contract Registry gepflegt, Contract-Tests gruen: 8/8, exit_code=0."
+    },
+    {
+      "id": "error_state_matrix_complete",
+      "label": "Error-State Matrix vollstaendig",
+      "weight": 10,
+      "passed": true,
+      "score_awarded": 10,
+      "evidence": "docs/frontend-error-state-catalog.md + focused Vitest evidence",
+      "summary": "Error Catalog, ClientErrors und ErrorState sind gruen; fokussierte Evidenz 42/42 fuer Error-Mapping und Darstellung."
+    },
+    {
+      "id": "drift_awareness_integrated",
+      "label": "Drift Awareness integriert",
+      "weight": 10,
+      "passed": true,
+      "score_awarded": 10,
+      "evidence": "backend/app/services/diagnostics.py + frontend/src/pages/AdminDiagnosticsPage.jsx",
+      "summary": "Drift, Queue, Backup, Reindex, Restore und Retrieval Regression sind sichtbar integriert und vertraglich abgesichert."
+    },
+    {
+      "id": "recovery_ux_present",
+      "label": "Recovery UX vorhanden",
+      "weight": 10,
+      "passed": true,
+      "score_awarded": 10,
+      "evidence": "docs/frontend-recovery-ux-model.md + GuiChaosSuite/AuthBootstrap evidence",
+      "summary": "Recovery-Regeln sind dokumentiert und fokussiert fuer API-Ausfall, DB-Restart, Token-Ablauf und degraded Modi belegt."
+    },
+    {
+      "id": "frontend_security_hardening_green",
+      "label": "Frontend Security Hardening gruen",
+      "weight": 10,
       "passed": false,
-      "blocker": "frontend_truth failed must be 0, got 22"
-    },
-    {
-      "id": "frontend_truth_skipped_zero",
-      "passed": true,
-      "blocker": null
-    },
-    {
-      "id": "postgres_truth_green",
-      "passed": false,
-      "blocker": "postgres_truth passed (120) must equal collected (138); postgres_truth failed must be 0, got 16; postgres_truth errors must be 0, got 2; postgres_truth exit code must be 0, got 1"
-    },
-    {
-      "id": "contract_tests_green",
-      "passed": true,
-      "blocker": null
-    },
-    {
-      "id": "no_api_unreachable_in_normalflow",
-      "passed": true,
-      "blocker": null
-    },
-    {
-      "id": "no_workspace_not_configured_after_valid_login",
-      "passed": true,
-      "blocker": null
+      "score_awarded": 0,
+      "evidence": "docs/security.md + docs/frontend.md",
+      "summary": "Security-Hardening bleibt nicht gruen: dokumentiert fehlen vollstaendiger Login-/Logout-/Route-Guard-Produktflow, Sessionwiederherstellung und CSRF-Nachweis."
     }
   ],
-  "inputs": {
-    "frontend_truth_report": "H:\\WissenMai2026\\reports\\frontend_truth_report.json",
-    "contract_test_report": "H:\\WissenMai2026\\reports\\contract_test_report.json",
-    "postgres_truth_report": "H:\\WissenMai2026\\reports\\postgres_truth_report.json"
-  },
-  "input_summaries": {
-    "frontend_truth": {
+  "restblockers": [
+    "Frontend Truth Tests sind nicht gruen: reports/frontend_truth_report.json weist 22 Failures bei 80 gesammelten Flows aus.",
+    "Frontend Security Hardening ist nicht gruen: docs/security.md und docs/frontend.md dokumentieren fehlende Logout-, Sessionwiederherstellungs-, Route-Guard- und CSRF-Nachweise.",
+    "Globaler M3a-Freigabestatus bleibt damit trotz gruener fokussierter Slices unter dem Gate-Schwellenwert."
+  ],
+  "evidence": {
+    "frontend_truth_report": {
+      "path": "H:\\WissenMai2026\\reports\\frontend_truth_report.json",
       "collected": 80,
       "passed": 58,
       "failed": 22,
-      "skipped": 0,
-      "errors": [],
       "exit_code": 1,
       "timestamp": "2026-05-18T09:57:14.609538+00:00"
     },
-    "contract_tests": {
+    "gui_chaos_suite": {
+      "path": "H:\\WissenMai2026\\reports\\gui_truth\\gui_chaos_suite_report.json",
       "collected": 8,
       "passed": 8,
       "failed": 0,
-      "skipped": 0,
-      "errors": 0,
+      "command": ".\\node_modules\\.bin\\vitest.cmd run src\\tests\\app\\GuiChaosSuite.test.jsx"
+    },
+    "focused_frontend_validations": {
+      "command": ".\\node_modules\\.bin\\vitest.cmd run src/tests/app/GuiStateInvariants.test.jsx src/tests/api/RequestCoordinator.test.js src/tests/view-models/ErrorCatalog.test.js src/tests/components/ErrorState.test.jsx src/tests/api/ClientErrors.test.js src/tests/auth/AuthBootstrap.test.jsx",
+      "passed": 64,
+      "failed": 0
+    },
+    "contract_tests": {
+      "path": "H:\\WissenMai2026\\reports\\contract_test_report.json",
+      "collected": 8,
+      "passed": 8,
+      "failed": 0,
       "exit_code": 0,
       "timestamp": "2026-05-18T09:58:09.169571+00:00"
-    },
-    "postgres_truth": {
-      "collected": 138,
-      "passed": 120,
-      "failed": 16,
-      "skipped": 0,
-      "errors": 2,
-      "exit_code": 1,
-      "timestamp": "2026-05-18T09:45:45.351580Z"
     }
   }
 }

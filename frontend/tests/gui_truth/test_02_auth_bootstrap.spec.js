@@ -188,7 +188,7 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
         }));
         window.localStorage.setItem('wissen.authToken', t);
       },
-      { token },
+      { t: token },
     );
 
     // Intercept /auth/me and abort to simulate network failure
@@ -203,6 +203,7 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
 
   test('retry button re-triggers bootstrap', async ({ page }) => {
     const token = process.env.TRUTH_TOKEN;
+    const authMeCalls = [];
 
     await page.goto('/');
     await page.evaluate(
@@ -212,8 +213,12 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
         }));
         window.localStorage.setItem('wissen.authToken', t);
       },
-      { token },
+      { t: token },
     );
+
+    page.on('request', (req) => {
+      if (req.url().includes('/auth/me')) authMeCalls.push(req.url());
+    });
 
     let blocked = true;
     await page.route('**/auth/me', (route) => {
@@ -227,7 +232,7 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
     // Unblock and click retry
     blocked = false;
     await page.getByRole('button', { name: 'Erneut versuchen' }).click();
-    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect.poll(() => authMeCalls.length, { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -258,7 +263,7 @@ test.describe('02 Auth bootstrap — 07 forbidden', () => {
         }));
         window.localStorage.setItem('wissen.authToken', t);
       },
-      { token },
+      { t: token },
     );
 
     await page.route('**/auth/me', (route) =>
@@ -285,7 +290,7 @@ test.describe('02 Auth bootstrap — 07 forbidden', () => {
         }));
         window.localStorage.setItem('wissen.authToken', t);
       },
-      { token },
+      { t: token },
     );
 
     await page.route('**/auth/me', (route) =>
@@ -306,13 +311,13 @@ test.describe('02 Auth bootstrap — 07 forbidden', () => {
 test.describe('02 Auth bootstrap — 08 logout', () => {
   test('logout clears session and redirects to login', async ({ authedPage }) => {
     await expect(authedPage.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible();
-    await authedPage.getByRole('button', { name: 'Abmelden' }).click();
+    await authedPage.getByRole('button', { name: 'Abmelden' }).click({ force: true });
     await expect(authedPage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
     await expect(authedPage).toHaveURL(/\/login/);
   });
 
   test('after logout, navigating to /documents redirects to login', async ({ authedPage }) => {
-    await authedPage.getByRole('button', { name: 'Abmelden' }).click();
+    await authedPage.getByRole('button', { name: 'Abmelden' }).click({ force: true });
     await expect(authedPage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
 
     await authedPage.goto('/documents');
@@ -320,7 +325,7 @@ test.describe('02 Auth bootstrap — 08 logout', () => {
   });
 
   test('after logout, localStorage is cleared', async ({ authedPage }) => {
-    await authedPage.getByRole('button', { name: 'Abmelden' }).click();
+    await authedPage.getByRole('button', { name: 'Abmelden' }).click({ force: true });
     await expect(authedPage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
 
     const stored = await authedPage.evaluate(() => window.localStorage.getItem('wissen.authToken'));

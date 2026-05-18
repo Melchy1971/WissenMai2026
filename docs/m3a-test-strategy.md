@@ -1,8 +1,8 @@
-# M3a GUI Foundation - Teststrategie
+# M3a GUI Foundation - Teststrategie und Governance-Integration
 
-Stand: 2026-05-04
+Stand: 2026-05-18
 
-Ziel dieser Teststrategie ist, die read-only GUI von M3a gegen den stabilen Paket-5-API-Contract abzusichern.
+Ziel dieser Teststrategie ist, die GUI von M3a nicht nur gegen den API-Contract abzusichern, sondern sie verbindlich in Truth-, Drift-, Recovery-, Contract- und Security-Governance einzubetten.
 
 Leitprinzipien:
 
@@ -10,6 +10,75 @@ Leitprinzipien:
 - Tests pruefen Anzeige, Mapping und Fehlertransparenz, nicht Backend-Reparatur.
 - Fehlercodes muessen sichtbar bleiben.
 - Mocking darf den API-Contract simulieren, aber nicht veraendern.
+- `reports/frontend_truth_report.json` ist Pflichtartefakt fuer produktionsnahe GUI-Aussagen.
+- GUI-Regressionen sind gate-relevant, wenn sie Nutzerfluesse, Error States, Recovery-Pfade oder Drift-Sichtbarkeit betreffen.
+- Frontend-Drift darf nicht still bleiben; degradierte oder unklare Zustandslagen muessen sichtbar sein.
+- Ein fokussierter Testlauf belegt nur einen Teilscope, niemals den Gesamtzustand von M3a.
+
+## Governance-Integration
+
+M3a respektiert verbindlich folgende Governance-Dokumente:
+
+- Truth-Governance: `docs/operational-truth-governance.md`
+- Drift-Governance: `docs/drift.md`
+- Recovery-Governance: `docs/controlled-failure-philosophy.md`, `docs/frontend-offline-degraded-strategy.md`, `docs/frontend-runtime-state-machine.md`
+- Contract-Governance: `docs/api/frontend-backend-contract-registry.md`
+- Security-Governance: `docs/security.md`
+
+### Integrationsregeln
+
+1. M3a darf keinen grünen oder stabilisierten Zustand aus Dokumentation, lokaler Beobachtung oder isolierten Komponententests ableiten.
+2. Frontend Truth Reports sind Pflichtartefakte; ohne aktuellen `reports/frontend_truth_report.json` bleibt der Status `unknown`, `partial` oder `fail`.
+3. Contract-Stabilitaet ist Pflicht. Ein grüner Frontend-Lauf kompensiert keinen roten Contract-Report.
+4. Recovery-Flows wie API down, Retry, Reconnect, Restore-Mode und sichtbare Error States sind Teil der Pflichtabdeckung von M3a.
+5. Security-Flows wie Auth Required, Forbidden, Workspace-Isolation, Route Guards, Logout und Session-Kontext sind gate-relevant, sobald M3a produktionsnahe GUI-Aussagen treffen will.
+6. Frontend-Drift muss sichtbar sein. Search Drift, Queue degraded, Restore, Reindex, Retrieval Regression, Backup-Staleness und Cleanup Dry Run duerfen nicht verdeckt bleiben, wenn der Slice sie betrifft oder konsumiert.
+
+## Neue Gate-Regeln fuer M3a
+
+M3a darf nur dann als `pass`, `stabilisiert` oder `operational bereit` beschrieben werden, wenn alle folgenden Bedingungen gleichzeitig erfuellt sind:
+
+- `reports/frontend_truth_report.json` ist aktuell, maschinenlesbar und weist `passed = collected`, `failed = 0`, `skipped = 0` und `exit_code = 0` aus
+- `reports/contract_test_report.json` ist gruen
+- ein integrierter Gate-Report wie `reports/m3a_gate_result.json` weist keine Blocker aus
+- GUI-Regressionen in den Pflichtslices Auth, Workspace, Documents, Search, Chat, Upload, Lifecycle und Diagnostics sind null oder als nicht-scope dokumentiert
+- sichtbare Drift-Hinweise werden nicht unterdrueckt oder auf gruen gemappt
+- Recovery-Pfade sind sichtbar, testbar und widersprechen nicht der Runtime-State-Machine
+- Security-relevante Frontend-Flows haben einen aktuellen Truth-Nachweis fuer den beanspruchten Scope
+
+Wenn eine dieser Bedingungen fehlt:
+
+- `fail`, wenn ein Pflichtartefakt rot ist oder eine Pflichtbedingung verletzt ist
+- `unknown`, wenn ein Pflichtartefakt fehlt
+- `partial`, wenn nur ein fokussierter Slice belegt ist
+
+## Frontend Truth Policies
+
+### Pflichtregeln
+
+1. `reports/frontend_truth_report.json` ist Pflichtartefakt fuer GUI-Readiness und Regression-Bewertung.
+2. GUI-Regressionen sind gate-relevant und duerfen nicht als kosmetisch herabgestuft werden, wenn sie sichtbare Kernpfade betreffen.
+3. Ein lokaler Vitest-, Storybook- oder Mock-Lauf darf einen roten Frontend-Truth-Report nicht ueberstimmen.
+4. Frontend-Truth-Berichte muessen Auth-, Workspace- und API-Kontext offenlegen, wenn daraus Freigabeaussagen abgeleitet werden.
+5. Frontend-Drift ist sichtbar zu machen: degraded Banner, Warning-Modelle, Statusindikatoren und Stale-Hinweise sind Teil der GUI-Wahrheit.
+
+### Gate-relevante GUI-Regressionen
+
+Diese Regressionen blockieren M3a mindestens auf `fail` oder `watch`, solange kein explizit begrenzter Scope dokumentiert ist:
+
+- Auth-Bootstrap bricht oder zeigt keinen sichtbaren Error State
+- Workspace-Bootstrap liefert keinen konsistenten aktiven Workspace
+- API down, Forbidden oder Retry-Flow verletzt die Error-State-Regeln
+- Search-, Chat-, Upload- oder Lifecycle-Kernfluss ist unbenutzbar oder verdeckt Fehler
+- Diagnostics- oder Drift-Warnoberflaeche fehlt, obwohl Backend-Signale vorliegen
+- Restore-, Reconnect- oder degraded-Zustaende wirken wie Normalbetrieb oder leere Datenlage
+
+### Frontend Drift Policy
+
+- Frontend Drift ist jede sichtbare Abweichung zwischen betrieblichem Zustand und gerenderter UI-Wahrheit.
+- M3a darf keinen degradierte, stale oder unklaren Zustand als gesund darstellen.
+- Unbekannte oder unbelegte Zustandslagen werden konservativ als `warning`, `unknown` oder `not_verified` behandelt, nie als `ok`.
+- Diagnostics und fachnahe Screens muessen Drift-Signale sichtbar halten, auch wenn noch kein separater Frontend-Drift-Report existiert.
 
 ## Testmatrix
 

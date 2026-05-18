@@ -55,6 +55,128 @@ function diagnosticsPayload(overrides = {}) {
       token: 'secret-token',
       ...overrides.auth,
     },
+    correlation_id: 'diag-correlation-123',
+    operational_metrics: overrides.operational_metrics || [
+      {
+        key: 'queue_degraded',
+        label: 'Queue degraded',
+        state: 'inactive',
+        severity: 'info',
+        value: 'Backlog 0 · Dead-Letter 0 · Retry 0.0/h',
+        summary: 'Queue-Aging-Report meldet keine Degradierung fuer den aktiven Workspace.',
+        source: 'queue_aging_report',
+      },
+      {
+        key: 'search_drift',
+        label: 'Drift erkannt',
+        state: 'inactive',
+        severity: 'info',
+        value: '0',
+        summary: 'Kein Search-Drift im aktuellen Diagnostics-Snapshot erkannt.',
+        source: 'diagnostics.search.stale_index_entries',
+      },
+      {
+        key: 'backup_stale',
+        label: 'Backup veraltet',
+        state: 'inactive',
+        severity: 'info',
+        value: '1 Tage',
+        summary: 'Restore-/Backup-Nachweis ist 1 Tag alt und damit noch innerhalb der Frische-Schwelle.',
+        source: 'reports/restore_truth_report.md',
+      },
+      {
+        key: 'reindex_running',
+        label: 'Reindex aktiv',
+        state: 'inactive',
+        severity: 'info',
+        value: '0',
+        summary: 'Kein aktiver Reindex-Job im Backend gefunden.',
+        source: 'background_jobs.search_index_rebuild',
+      },
+      {
+        key: 'restore_mode',
+        label: 'Restore aktiv',
+        state: 'inactive',
+        severity: 'info',
+        value: '0',
+        summary: 'Kein aktiver Restore-Lauf im Backend markiert.',
+        source: 'reports/restore_runtime_status.json',
+      },
+      {
+        key: 'retrieval_regression',
+        label: 'Retrieval Regression erkannt',
+        state: 'inactive',
+        severity: 'info',
+        value: 'pass',
+        summary: 'Aktueller Retrieval-Benchmark liegt innerhalb der definierten Baseline.',
+        source: 'reports/m5_retrieval/latest.json',
+      },
+    ],
+    drift_awareness: {
+      concept: [
+        'Degradierte Betriebszustaende muessen sichtbar bleiben, auch wenn Fachdaten noch lesbar sind.',
+        'Fehlende oder veraltete Evidenz wird als Warnsignal gerendert und nie als gesund angenommen.',
+        'Der hoechste aktive Schweregrad steuert die Wahrnehmung; Warnungen duerfen nicht im Kartenraster verschwinden.',
+      ],
+      warning_model: {
+        no_silent_degradation: true,
+        no_fake_green: true,
+        no_hidden_warnings: true,
+        unknown_is_not_ok: true,
+        highest_severity_wins: true,
+      },
+      indicators: [
+        {
+          key: 'search_drift',
+          label: 'Search Drift erkannt',
+          state: 'inactive',
+          severity: 'info',
+          summary: 'Kein Search-Drift im aktuellen Diagnostics-Snapshot erkannt.',
+          source: 'diagnostics.search.stale_index_entries',
+        },
+        {
+          key: 'queue_degraded',
+          label: 'Queue degraded',
+          state: 'inactive',
+          severity: 'info',
+          summary: 'Queue-Aging-Report meldet keine Degradierung fuer den aktiven Workspace.',
+          source: 'queue_aging_report',
+        },
+        {
+          key: 'restore_mode',
+          label: 'Restore aktiv',
+          state: 'inactive',
+          severity: 'info',
+          summary: 'Kein aktiver Restore-Lauf im Backend markiert.',
+          source: 'reports/restore_runtime_status.json',
+        },
+        {
+          key: 'reindex_running',
+          label: 'Reindex aktiv',
+          state: 'inactive',
+          severity: 'info',
+          summary: 'Kein aktiver Reindex-Job im Backend gefunden.',
+          source: 'background_jobs.search_index_rebuild',
+        },
+        {
+          key: 'retrieval_regression',
+          label: 'Retrieval Regression erkannt',
+          state: 'inactive',
+          severity: 'info',
+          summary: 'Aktueller Retrieval-Benchmark liegt innerhalb der definierten Baseline.',
+          source: 'reports/m5_retrieval/latest.json',
+        },
+        {
+          key: 'backup_stale',
+          label: 'Backup veraltet',
+          state: 'inactive',
+          severity: 'info',
+          summary: 'Restore-/Backup-Nachweis ist 1 Tag alt und damit noch innerhalb der Frische-Schwelle.',
+          source: 'reports/restore_truth_report.md',
+        },
+      ],
+      ...overrides.drift_awareness,
+    },
   };
 }
 
@@ -114,6 +236,29 @@ describe('AdminDiagnosticsPage', () => {
           database: { current_revision: '20260505_0015', is_current: false },
           imports: { failed_jobs_last_24h: 2, last_error_code: 'PARSER_FAILED' },
           search: { stale_index_entries: 4 },
+          drift_awareness: {
+            indicators: [
+              {
+                key: 'search_drift',
+                label: 'Search Drift erkannt',
+                state: 'active',
+                severity: 'critical',
+                summary: '4 stale Index-Eintraege weichen vom Lifecycle-/Searchability-Zustand ab.',
+                source: 'diagnostics.search.stale_index_entries',
+              },
+            ],
+          },
+          operational_metrics: [
+            {
+              key: 'search_drift',
+              label: 'Drift erkannt',
+              state: 'active',
+              severity: 'critical',
+              value: '4',
+              summary: '4 stale Index-Eintraege weichen vom Lifecycle-/Searchability-Zustand ab.',
+              source: 'diagnostics.search.stale_index_entries',
+            },
+          ],
         }),
     });
 
@@ -121,10 +266,35 @@ describe('AdminDiagnosticsPage', () => {
 
     expect(await screen.findByText('Systemstatus')).toBeInTheDocument();
     expect(screen.getAllByText('degraded').length).toBeGreaterThan(0);
+    expect(screen.getByText('Operational Metrics')).toBeInTheDocument();
+    expect(screen.getAllByText('Messwert:').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Search Drift erkannt').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('critical').length).toBeGreaterThan(0);
     expect(screen.getByText('Migration Status')).toBeInTheDocument();
     expect(screen.getByText('PARSER_FAILED')).toBeInTheDocument();
     expect(screen.getByText('Stale Eintraege')).toBeInTheDocument();
-    expect(screen.getByText('4')).toBeInTheDocument();
+    expect(screen.getAllByText('4').length).toBeGreaterThan(0);
+  });
+
+  it('renders drift awareness concept, warning model and status indicators', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      headers: new Headers({ 'content-type': 'application/json' }),
+      json: async () => diagnosticsPayload(),
+    });
+
+    renderPage();
+
+    expect(await screen.findByText('Sichtbare Degradierung')).toBeInTheDocument();
+    expect(screen.getByText('Correlation-ID: diag-correlation-123')).toBeInTheDocument();
+    expect(screen.getByText('Drift erkannt')).toBeInTheDocument();
+    expect(screen.getByText('Keine stille Degradation')).toBeInTheDocument();
+    expect(screen.getByText('Search Drift erkannt')).toBeInTheDocument();
+    expect(screen.getAllByText('Queue degraded').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Restore aktiv').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Reindex aktiv').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Retrieval Regression erkannt').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Backup veraltet').length).toBeGreaterThan(0);
   });
 
   it('renders diagnostics without sensitive content or admin actions', async () => {
@@ -144,9 +314,6 @@ describe('AdminDiagnosticsPage', () => {
     expect(globalThis.fetch.mock.calls[0][0]).toContain('/api/v1/admin/diagnostics');
 
     expect(screen.queryByText(/Search Index neu aufbauen/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Reindex/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Cleanup/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/Backup/i)).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/admin-token/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/must-not-render/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Sensitive filename/i)).not.toBeInTheDocument();

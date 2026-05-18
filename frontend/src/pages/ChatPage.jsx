@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { createChatSession, getChatSession, getChatSessions, postChatMessage } from '../api/chat.js';
+import { createRequestCoordinator } from '../api/requestCoordinator.js';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { ChatComposer } from '../components/chat/ChatComposer.jsx';
 import { ChatMessageThread } from '../components/chat/ChatMessageThread.jsx';
@@ -14,86 +15,111 @@ import { mapChatSessionDetail, mapChatSessionSummary, mapError, mapPostedChatRes
 export function ChatPage() {
   const navigate = useNavigate();
   const { id: activeSessionId } = useParams();
-  const { active_workspace_id: workspaceId, isAuthReady } = useAuth();
+  const { token, active_workspace_id: workspaceId, isAuthReady } = useAuth();
 
   const [sessionsState, setSessionsState] = useState({ status: 'loading', items: [], error: null });
   const [detailState, setDetailState] = useState({ status: 'idle', item: null, error: null });
   const [titleInput, setTitleInput] = useState('');
   const [questionInput, setQuestionInput] = useState('');
   const prevWorkspaceIdRef = useRef(workspaceId);
+  const requestContextRef = useRef({ authToken: '', workspaceId: '' });
+  const requestCoordinatorRef = useRef(null);
+  const chatWriteInFlightRef = useRef(false);
+
+  requestContextRef.current = { authToken: token || '', workspaceId: workspaceId || '' };
+  if (!requestCoordinatorRef.current) {
+    requestCoordinatorRef.current = createRequestCoordinator({
+      getContext: () => requestContextRef.current,
+    });
+  }
 
   // Rule 6: navigate away from session-specific URL on workspace switch so the
   // detail load effect gets activeSessionId = undefined and resets detailState.
   useEffect(() => {
     if (prevWorkspaceIdRef.current === workspaceId) return;
     prevWorkspaceIdRef.current = workspaceId;
+    requestCoordinatorRef.current.cancelAll();
+    chatWriteInFlightRef.current = false;
+    setTitleInput('');
+    setQuestionInput('');
+    setSessionsState({ status: 'loading', items: [], error: null });
+    setDetailState({ status: 'idle', item: null, error: null });
     navigate('/chat', { replace: true });
   }, [workspaceId, navigate]);
 
   useEffect(() => {
-    let cancelled = false;
-
     if (!isAuthReady) {
       setSessionsState({ status: 'loading', items: [], error: null });
       return () => {
-        cancelled = true;
+        requestCoordinatorRef.current.cancel('chat:sessions');
       };
     }
 
     async function loadSessions() {
+      const ticket = requestCoordinatorRef.current.begin('chat:sessions');
       setSessionsState({ status: 'loading', items: [], error: null });
       try {
-        const response = await getChatSessions({ limit: 20, offset: 0 });
-        if (cancelled) return;
+        const response = await getChatSessions(
+          { limit: 20, offset: 0 },
+          { signal: ticket.signal, correlationId: ticket.correlationId },
+        );
+        if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
         const items = response.map(mapChatSessionSummary);
         setSessionsState({ status: 'success', items, error: null });
         if (!activeSessionId && items.length > 0) {
           navigate(`/chat/${items[0].id}`, { replace: true });
         }
       } catch (error) {
-        if (cancelled) return;
+        if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
         setSessionsState({ status: 'error', items: [], error: mapError(error) });
+      } finally {
+        requestCoordinatorRef.current.complete(ticket);
       }
     }
 
     loadSessions();
     return () => {
-      cancelled = true;
+      requestCoordinatorRef.current.cancel('chat:sessions');
     };
   }, [activeSessionId, navigate, workspaceId, isAuthReady]);
 
   useEffect(() => {
-    let cancelled = false;
     if (!isAuthReady) {
       setDetailState({ status: 'loading', item: null, error: null });
       return () => {
-        cancelled = true;
+        requestCoordinatorRef.current.cancel('chat:detail');
       };
     }
     if (!activeSessionId) {
       setDetailState({ status: 'idle', item: null, error: null });
       return () => {
-        cancelled = true;
+        requestCoordinatorRef.current.cancel('chat:detail');
       };
     }
 
     async function loadDetail() {
+      const ticket = requestCoordinatorRef.current.begin('chat:detail');
       setDetailState({ status: 'loading', item: null, error: null });
       try {
-        const response = await getChatSession(activeSessionId);
-        if (cancelled) return;
+        const response = await getChatSession(activeSessionId, {
+          signal: ticket.signal,
+          correlationId: ticket.correlationId,
+        });
+        if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
         setDetailState({ status: 'success', item: mapChatSessionDetail(response), error: null });
       } catch (error) {
-        if (cancelled) return;
+        if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
         setDetailState({ status: 'error', item: null, error: mapError(error) });
+      } finally {
+        requestCoordinatorRef.current.complete(ticket);
       }
     }
 
     loadDetail();
     return () => {
-      cancelled = true;
+      requestCoordinatorRef.current.cancel('chat:detail');
     };
-  }, [activeSessionId, isAuthReady]);
+  }, [activeSessionId, isAuthReady, workspaceId]);
 
   async function handleCreateSession(event) {
     event.preventDefault();
@@ -103,8 +129,13 @@ export function ChatPage() {
       return;
     }
 
+    const ticket = requestCoordinatorRef.current.begin('chat:create-session');
     try {
-      const created = mapChatSessionSummary(await createChatSession({ title }));
+      const created = mapChatSessionSummary(await createChatSession(
+        { title },
+        { signal: ticket.signal, correlationId: ticket.correlationId },
+      ));
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       setTitleInput('');
       setSessionsState((current) => ({
         status: 'success',
@@ -113,13 +144,16 @@ export function ChatPage() {
       }));
       navigate(`/chat/${created.id}`);
     } catch (error) {
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       setSessionsState((current) => ({ ...current, status: 'error', error: mapError(error) }));
+    } finally {
+      requestCoordinatorRef.current.complete(ticket);
     }
   }
 
   async function handleSubmitQuestion(event) {
     event.preventDefault();
-    if (!activeSessionId) {
+    if (!activeSessionId || chatWriteInFlightRef.current) {
       return;
     }
 
@@ -128,11 +162,19 @@ export function ChatPage() {
       return;
     }
 
+    const ticket = requestCoordinatorRef.current.begin('chat:message');
+    const ticketSessionId = activeSessionId;
+    chatWriteInFlightRef.current = true;
     try {
       const response = mapPostedChatResponse(
-        await postChatMessage(activeSessionId, { question, retrievalLimit: 8 }),
+        await postChatMessage(
+          activeSessionId,
+          { question, retrievalLimit: 8 },
+          { signal: ticket.signal, correlationId: ticket.correlationId },
+        ),
         { question },
       );
+      if (!requestCoordinatorRef.current.isCurrent(ticket) || ticketSessionId !== activeSessionId) return;
       setQuestionInput('');
       setDetailState((current) => {
         const existingMessages = current.item?.messages || [];
@@ -151,7 +193,11 @@ export function ChatPage() {
         error: null,
       }));
     } catch (error) {
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       setDetailState((current) => ({ ...current, status: 'error', error: mapError(error) }));
+    } finally {
+      chatWriteInFlightRef.current = false;
+      requestCoordinatorRef.current.complete(ticket);
     }
   }
 

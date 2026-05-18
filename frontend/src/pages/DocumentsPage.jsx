@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { getDocuments, importDocument } from '../api/documents.js';
 import { getJob } from '../api/jobs.js';
+import { createRequestCoordinator } from '../api/requestCoordinator.js';
 import { searchChunks } from '../api/search.js';
 import { DocumentTable } from '../components/documents/DocumentTable.jsx';
 import { SearchResultList } from '../components/documents/SearchResultList.jsx';
@@ -16,7 +17,7 @@ const POLL_MAX_ATTEMPTS = 120; // 30s at 250ms intervals
 const POLL_MAX_NETWORK_ERRORS = 3;
 
 export function DocumentsPage() {
-  const { active_workspace_id: workspaceId, isAuthReady } = useAuth();
+  const { token, active_workspace_id: workspaceId, isAuthReady } = useAuth();
   const [state, setState] = useState({ status: 'loading', items: [], error: null });
   const [searchState, setSearchState] = useState({ status: 'idle', items: [], error: null, query: '' });
   const [uploadState, setUploadState] = useState({ status: 'idle', fileName: '', job: null, result: null, error: null });
@@ -25,39 +26,53 @@ export function DocumentsPage() {
   const pollTimeoutRef = useRef(null);
   const pollAttemptsRef = useRef(0);
   const pollNetworkErrorRef = useRef(0);
-  const searchAbortRef = useRef(null);
+  const requestContextRef = useRef({ authToken: '', workspaceId: '' });
+  const requestCoordinatorRef = useRef(null);
+  const uploadInFlightRef = useRef(false);
+  const prevWorkspaceIdRef = useRef(workspaceId);
   const uploadJobState = mapJobStatus(uploadState.job);
   const uploadOutcome =
     uploadState.status === 'success'
       ? mapImportOutcome(uploadState.result, { fileName: uploadState.fileName })
       : null;
 
-  async function loadDocuments({ cancelled = false } = {}) {
+  requestContextRef.current = { authToken: token || '', workspaceId: workspaceId || '' };
+  if (!requestCoordinatorRef.current) {
+    requestCoordinatorRef.current = createRequestCoordinator({
+      getContext: () => requestContextRef.current,
+    });
+  }
+
+  async function loadDocuments() {
+    const ticket = requestCoordinatorRef.current.begin('documents:list');
     setState({ status: 'loading', items: [], error: null });
     try {
-      const response = await getDocuments({ limit: 20, offset: 0, lifecycleStatus: lifecycleFilter });
-      if (cancelled) return;
+      const response = await getDocuments(
+        { limit: 20, offset: 0, lifecycleStatus: lifecycleFilter },
+        { signal: ticket.signal, correlationId: ticket.correlationId },
+      );
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       const items = response.map(mapDocumentListItem).filter((item) => item.lifecycleStatus.kind !== 'deleted');
       setState({ status: 'success', items, error: null });
     } catch (error) {
-      if (cancelled) return;
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       setState({ status: 'error', items: [], error: mapError(error) });
+    } finally {
+      requestCoordinatorRef.current.complete(ticket);
     }
   }
 
   useEffect(() => {
-    let cancelled = false;
-
     if (!isAuthReady) {
       setState({ status: 'loading', items: [], error: null });
       return () => {
-        cancelled = true;
+        requestCoordinatorRef.current.cancel('documents:list');
       };
     }
 
-    void loadDocuments({ cancelled });
+    void loadDocuments();
     return () => {
-      cancelled = true;
+      requestCoordinatorRef.current.cancel('documents:list');
     };
   }, [isAuthReady, workspaceId, lifecycleFilter]);
 
@@ -66,26 +81,29 @@ export function DocumentsPage() {
       if (pollTimeoutRef.current) {
         clearTimeout(pollTimeoutRef.current);
       }
-      if (searchAbortRef.current) {
-        searchAbortRef.current.abort();
-      }
+      requestCoordinatorRef.current.cancelAll();
     };
   }, []);
 
   // Rule 6: reset transient upload/search state whenever the active workspace changes
   useEffect(() => {
+    if (prevWorkspaceIdRef.current === workspaceId) return;
+    prevWorkspaceIdRef.current = workspaceId;
     if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
-    if (searchAbortRef.current) {
-      searchAbortRef.current.abort();
-      searchAbortRef.current = null;
-    }
+    requestCoordinatorRef.current.cancelAll();
+    uploadInFlightRef.current = false;
     setUploadState({ status: 'idle', fileName: '', job: null, result: null, error: null });
     setSearchState({ status: 'idle', items: [], error: null, query: '' });
     setQueryInput('');
   }, [workspaceId]);
 
-  async function pollImportJob(jobId, fileName) {
+  async function pollImportJob(jobId, fileName, ticket) {
+    if (!requestCoordinatorRef.current.isCurrent(ticket)) {
+      uploadInFlightRef.current = false;
+      return;
+    }
     if (pollAttemptsRef.current >= POLL_MAX_ATTEMPTS) {
+      uploadInFlightRef.current = false;
       setUploadState({
         status: 'error',
         fileName,
@@ -98,14 +116,18 @@ export function DocumentsPage() {
     pollAttemptsRef.current += 1;
 
     try {
-      const job = await getJob(jobId);
+      const job = await getJob(jobId, { signal: ticket.signal, correlationId: ticket.correlationId });
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       pollNetworkErrorRef.current = 0;
       if (job.status === 'completed') {
+        uploadInFlightRef.current = false;
         setUploadState({ status: 'success', fileName, job, result: job.result, error: null });
         await loadDocuments();
+        requestCoordinatorRef.current.complete(ticket);
         return;
       }
       if (job.status === 'failed') {
+        uploadInFlightRef.current = false;
         setUploadState({
           status: 'error',
           fileName,
@@ -113,27 +135,34 @@ export function DocumentsPage() {
           result: null,
           error: mapError({ code: job.error_code, message: job.error_message, details: {} }),
         });
+        requestCoordinatorRef.current.complete(ticket);
         return;
       }
 
       setUploadState({ status: 'polling', fileName, job, result: null, error: null });
       pollTimeoutRef.current = setTimeout(() => {
-        void pollImportJob(jobId, fileName);
+        void pollImportJob(jobId, fileName, ticket);
       }, 250);
     } catch (error) {
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       pollNetworkErrorRef.current += 1;
       if (pollNetworkErrorRef.current <= POLL_MAX_NETWORK_ERRORS) {
         pollTimeoutRef.current = setTimeout(() => {
-          void pollImportJob(jobId, fileName);
+          void pollImportJob(jobId, fileName, ticket);
         }, 1000 * pollNetworkErrorRef.current);
       } else {
+        uploadInFlightRef.current = false;
         setUploadState({ status: 'error', fileName, job: null, result: null, error: mapError(error) });
+        requestCoordinatorRef.current.complete(ticket);
       }
     }
   }
 
   async function handleUploadSubmit(event) {
     event.preventDefault();
+    if (uploadInFlightRef.current || uploadState.status === 'loading' || uploadState.status === 'polling') {
+      return;
+    }
     const form = event.currentTarget;
     const file = form.elements.file?.files?.[0];
     if (!file) {
@@ -149,14 +178,20 @@ export function DocumentsPage() {
 
     pollAttemptsRef.current = 0;
     pollNetworkErrorRef.current = 0;
+    uploadInFlightRef.current = true;
+    const ticket = requestCoordinatorRef.current.begin('documents:upload');
     setUploadState({ status: 'loading', fileName: file.name, job: null, result: null, error: null });
     try {
-      const job = await importDocument(file);
+      const job = await importDocument(file, { signal: ticket.signal, correlationId: ticket.correlationId });
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       setUploadState({ status: 'polling', fileName: file.name, job, result: null, error: null });
       form.reset();
-      void pollImportJob(job.id, file.name);
+      void pollImportJob(job.id, file.name, ticket);
     } catch (error) {
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
+      uploadInFlightRef.current = false;
       setUploadState({ status: 'error', fileName: file.name, job: null, result: null, error: mapError(error) });
+      requestCoordinatorRef.current.complete(ticket);
     }
   }
 
@@ -169,27 +204,26 @@ export function DocumentsPage() {
       return;
     }
 
-    if (searchAbortRef.current) {
-      searchAbortRef.current.abort();
-    }
-    searchAbortRef.current = new AbortController();
-    const { signal } = searchAbortRef.current;
+    const ticket = requestCoordinatorRef.current.begin('documents:search');
 
     setSearchState({ status: 'loading', items: [], error: null, query });
     try {
-      const response = await searchChunks({ query, limit: 10, offset: 0 }, { signal });
+      const response = await searchChunks(
+        { query, limit: 10, offset: 0 },
+        { signal: ticket.signal, correlationId: ticket.correlationId },
+      );
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       setSearchState({ status: 'success', items: response.map(mapSearchResult), error: null, query });
     } catch (error) {
-      if (signal.aborted) return;
+      if (!requestCoordinatorRef.current.isCurrent(ticket)) return;
       setSearchState({ status: 'error', items: [], error: mapError(error), query });
+    } finally {
+      requestCoordinatorRef.current.complete(ticket);
     }
   }
 
   function handleSearchReset() {
-    if (searchAbortRef.current) {
-      searchAbortRef.current.abort();
-      searchAbortRef.current = null;
-    }
+    requestCoordinatorRef.current.cancel('documents:search');
     setQueryInput('');
     setSearchState({ status: 'idle', items: [], error: null, query: '' });
   }
