@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-05-19T10:02:55.059248+00:00",
+  "generated_at": "2026-05-19T10:02:55.059261+00:00",
+  "collected": 7,
+  "passed": 6,
+  "failed": 1,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 41.76,
+  "duration_seconds": 41.76,
+  "failed_flows": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: page.waitForResponse: Test timeout of 30000ms exceeded.\n\n  54 |\n  55 |     await authedPage.getByLabel('Frage').fill('truthneedle active knowledge base content');\n> 56 |     const answerResponsePromise = authedPage.waitForResponse((response) => (\n     |                                              ^\n  57 |       response.request().method() === 'POST'\n  58 |       && response.url().includes('/api/v1/chat/sessions/')\n  59 |       && response.url()"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: page.waitForResponse: Test timeout of 30000ms exceeded.\n\n  54 |\n  55 |     await authedPage.getByLabel('Frage').fill('truthneedle active knowledge base content');\n> 56 |     const answerResponsePromise = authedPage.waitForResponse((response) => (\n     |                                              ^\n  57 |       response.request().method() === 'POST'\n  58 |       && response.url().includes('/api/v1/chat/sessions/')\n  59 |       && response.url()"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "07 Chat flow > shows chat page heading and workspace context",
+    "07 Chat flow > shows empty chat state or session list",
+    "07 Chat flow > shows chat composer form",
+    "07 Chat flow > navigation from documents to chat preserves workspace context",
+    "07 Chat flow > creates a chat session through the real API",
+    "07 Chat flow > insufficient context is rendered as a controlled error state"
+  ]
+}

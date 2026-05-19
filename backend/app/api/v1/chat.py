@@ -1,4 +1,5 @@
 from collections.abc import Iterator
+import os
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
@@ -22,6 +23,7 @@ from app.schemas.chat import (
 )
 from app.services.chat.citation_mapper import CitationMapper
 from app.services.chat.context_builder import ContextBuilder
+from app.services.chat.fake_llm_provider import FakeLlmProvider
 from app.services.chat.insufficient_context_policy import InsufficientContextPolicy
 from app.services.chat.persistence_service import (
     ChatPersistenceError,
@@ -41,6 +43,12 @@ class UnconfiguredLlmProvider:
         raise RuntimeError("LLM provider is not configured")
 
 
+def _build_llm_provider():
+    if os.getenv("GUI_TRUTH_FAKE_LLM") == "1":
+        return FakeLlmProvider()
+    return UnconfiguredLlmProvider()
+
+
 def get_chat_service() -> Iterator[ChatPersistenceService]:
     try:
         for session in get_session():
@@ -58,7 +66,7 @@ def get_rag_chat_service() -> Iterator[RagChatService]:
                 context_builder=ContextBuilder(max_context_chars=12000, max_context_tokens=2500, min_chunk_chars=40),
                 insufficient_context_policy=InsufficientContextPolicy(),
                 prompt_builder=PromptBuilder(),
-                llm_provider=UnconfiguredLlmProvider(),
+                llm_provider=_build_llm_provider(),
                 citation_mapper=CitationMapper(),
                 retrieval_limit=8,
             )

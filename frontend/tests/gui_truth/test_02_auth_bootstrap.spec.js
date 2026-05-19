@@ -172,6 +172,7 @@ test.describe('02 Auth bootstrap — 04 invalid token', () => {
 
     const errorText = await page.locator('.state-card--error').textContent();
     expect(errorText).toBeTruthy();
+    await expect(page.getByText('Fehlercode: AUTH_REQUIRED')).toBeVisible();
   });
 });
 
@@ -191,8 +192,11 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
       { t: token },
     );
 
-    // Intercept /auth/me and abort to simulate network failure
-    await page.route('**/auth/me', (route) => route.abort('failed'));
+    // Intercept GET /auth/me and abort to simulate network failure while keeping CORS preflight recoverable.
+    await page.route('**/auth/me', (route) => {
+      if (route.request().method() === 'GET') return route.abort('failed');
+      return route.continue();
+    });
 
     await page.goto('/documents');
     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });
@@ -222,7 +226,7 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
 
     let blocked = true;
     await page.route('**/auth/me', (route) => {
-      if (blocked) return route.abort('failed');
+      if (blocked && route.request().method() === 'GET') return route.abort('failed');
       return route.continue();
     });
 
@@ -233,6 +237,7 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
     blocked = false;
     await page.getByRole('button', { name: 'Erneut versuchen' }).click();
     await expect.poll(() => authMeCalls.length, { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
+    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
   });
 });
 
@@ -308,55 +313,37 @@ test.describe('02 Auth bootstrap — 07 forbidden', () => {
 });
 
 // ─── Scenario 08: Logout ─────────────────────────────────────────────────────
+async function loginForLogoutScenario(page) {
+  const apiBaseUrl = process.env.VITE_API_BASE_URL || process.env.API_BASE_URL || 'http://127.0.0.1:8000';
+  const response = await page.request.post(`${apiBaseUrl}/api/v1/auth/login`, {
+    data: {
+      login: process.env.TRUTH_LOGIN,
+      password: process.env.TRUTH_PASSWORD,
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+  const authState = await response.json();
+
+  await page.goto('/');
+  await page.evaluate((state) => {
+    window.localStorage.setItem('wissen.authState', JSON.stringify(state));
+    window.localStorage.setItem('wissen.authToken', state.token);
+    window.localStorage.setItem('wissen.workspaceId', state.active_workspace_id);
+  }, authState);
+  await page.goto('/documents');
+  await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
+}
+
 test.describe('02 Auth bootstrap — 08 logout', () => {
   test('logout clears session and redirects to login', async ({ page }) => {
-    const token = process.env.TRUTH_LOGOUT_TOKEN;
-    const workspaceId = process.env.TRUTH_WORKSPACE_ID;
-    const userId = process.env.TRUTH_USER_ID;
-
-    await page.goto('/');
-    await page.evaluate(
-      ({ t, ws, uid }) => {
-        const state = {
-          token: t,
-          user: { id: uid, login: 'gui_truth_user', display_name: 'GUI Truth User' },
-          memberships: [{ workspace_id: ws, role: 'owner' }],
-          active_workspace_id: ws,
-        };
-        window.localStorage.setItem('wissen.authState', JSON.stringify(state));
-        window.localStorage.setItem('wissen.authToken', t);
-        window.localStorage.setItem('wissen.workspaceId', ws);
-      },
-      { t: token, ws: workspaceId, uid: userId },
-    );
-    await page.goto('/documents');
-    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible();
+    await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
     await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
     await expect(page).toHaveURL(/\/login/);
   });
 
   test('after logout, navigating to /documents redirects to login', async ({ page }) => {
-    const token = process.env.TRUTH_LOGOUT_TOKEN;
-    const workspaceId = process.env.TRUTH_WORKSPACE_ID;
-    const userId = process.env.TRUTH_USER_ID;
-
-    await page.goto('/');
-    await page.evaluate(
-      ({ t, ws, uid }) => {
-        const state = {
-          token: t,
-          user: { id: uid, login: 'gui_truth_user', display_name: 'GUI Truth User' },
-          memberships: [{ workspace_id: ws, role: 'owner' }],
-          active_workspace_id: ws,
-        };
-        window.localStorage.setItem('wissen.authState', JSON.stringify(state));
-        window.localStorage.setItem('wissen.authToken', t);
-        window.localStorage.setItem('wissen.workspaceId', ws);
-      },
-      { t: token, ws: workspaceId, uid: userId },
-    );
-    await page.goto('/documents');
+    await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
     await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
 
@@ -365,30 +352,26 @@ test.describe('02 Auth bootstrap — 08 logout', () => {
   });
 
   test('after logout, localStorage is cleared', async ({ page }) => {
-    const token = process.env.TRUTH_LOGOUT_TOKEN;
-    const workspaceId = process.env.TRUTH_WORKSPACE_ID;
-    const userId = process.env.TRUTH_USER_ID;
-
-    await page.goto('/');
-    await page.evaluate(
-      ({ t, ws, uid }) => {
-        const state = {
-          token: t,
-          user: { id: uid, login: 'gui_truth_user', display_name: 'GUI Truth User' },
-          memberships: [{ workspace_id: ws, role: 'owner' }],
-          active_workspace_id: ws,
-        };
-        window.localStorage.setItem('wissen.authState', JSON.stringify(state));
-        window.localStorage.setItem('wissen.authToken', t);
-        window.localStorage.setItem('wissen.workspaceId', ws);
-      },
-      { t: token, ws: workspaceId, uid: userId },
-    );
-    await page.goto('/documents');
+    await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
     await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
 
     const stored = await page.evaluate(() => window.localStorage.getItem('wissen.authToken'));
     expect(stored).toBeNull();
+  });
+
+  test('after logout, a fresh login restores workspace ready state', async ({ page }) => {
+    const workspaceId = process.env.TRUTH_WORKSPACE_ID;
+
+    await loginForLogoutScenario(page);
+    await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
+    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+
+    await page.getByLabel('Login').fill(process.env.TRUTH_LOGIN);
+    await page.getByLabel('Passwort').fill(process.env.TRUTH_PASSWORD);
+    await page.getByRole('button', { name: 'Anmelden' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(`Workspace: ${workspaceId}`)).toBeVisible();
   });
 });

@@ -1,0 +1,100 @@
+{
+  "timestamp": "2026-05-19T09:46:34.748117+00:00",
+  "generated_at": "2026-05-19T09:46:34.748134+00:00",
+  "collected": 41,
+  "passed": 37,
+  "failed": 4,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 98.22,
+  "duration_seconds": 98.22,
+  "failed_flows": [
+    {
+      "name": "04 Dokumentliste > unknown document detail is an error state, not an empty list",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "04 Dokumentliste > empty document list is distinct from an API error",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "04 Dokumentliste > shows lifecycle filter section",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "04 Dokumentliste > shows upload section",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "04 Dokumentliste > unknown document detail is an error state, not an empty list",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "04 Dokumentliste > empty document list is distinct from an API error",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "04 Dokumentliste > shows lifecycle filter section",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "04 Dokumentliste > shows upload section",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "01 Login flow > renders login form with all required elements",
+    "01 Login flow > redirects unauthenticated request to login page",
+    "01 Login flow > shows error state on invalid credentials",
+    "01 Login flow > successful login with truth credentials redirects to documents page",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > root path also redirects to /login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > zero /auth/me calls when no token present",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, a fresh login restores workspace ready state",
+    "03 Workspace loading > shows active workspace id in documents page header",
+    "03 Workspace loading > shows active workspace id in app shell session area",
+    "03 Workspace loading > shows navigation links in shell header",
+    "03 Workspace loading > shows logout button when authenticated",
+    "03 Workspace loading > does not show workspace missing warning when workspace is configured",
+    "04 Dokumentliste > shows documents page heading",
+    "04 Dokumentliste > shows empty state for workspace with no documents",
+    "04 Dokumentliste > loads the seeded active document in the list",
+    "04 Dokumentliste > opens document detail with versions and chunk preview",
+    "04 Dokumentliste > shows search section"
+  ]
+}

@@ -129,6 +129,9 @@ export function ChatPage() {
       return;
     }
 
+    // Prevent a late session-list response from auto-navigating back to an older session.
+    requestCoordinatorRef.current.cancel('chat:sessions');
+    requestCoordinatorRef.current.cancel('chat:detail');
     const ticket = requestCoordinatorRef.current.begin('chat:create-session');
     try {
       const created = mapChatSessionSummary(await createChatSession(
@@ -162,6 +165,9 @@ export function ChatPage() {
       return;
     }
 
+    // A just-created session may still be loading its empty detail view.
+    // Cancel that stale read so it cannot overwrite the posted answer state.
+    requestCoordinatorRef.current.cancel('chat:detail');
     const ticket = requestCoordinatorRef.current.begin('chat:message');
     const ticketSessionId = activeSessionId;
     chatWriteInFlightRef.current = true;

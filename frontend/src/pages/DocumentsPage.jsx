@@ -90,7 +90,8 @@ export function DocumentsPage() {
     if (prevWorkspaceIdRef.current === workspaceId) return;
     prevWorkspaceIdRef.current = workspaceId;
     if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
-    requestCoordinatorRef.current.cancelAll();
+    requestCoordinatorRef.current.cancel('documents:upload');
+    requestCoordinatorRef.current.cancel('documents:search');
     uploadInFlightRef.current = false;
     setUploadState({ status: 'idle', fileName: '', job: null, result: null, error: null });
     setSearchState({ status: 'idle', items: [], error: null, query: '' });
@@ -228,6 +229,8 @@ export function DocumentsPage() {
     setSearchState({ status: 'idle', items: [], error: null, query: '' });
   }
 
+  const canUseDocumentControls = state.status !== 'error';
+
   return (
     <section className="page-stack">
       <div className="page-header">
@@ -237,6 +240,7 @@ export function DocumentsPage() {
         </div>
         <p className="page-header__meta">Workspace: {workspaceId || 'nicht konfiguriert'}</p>
       </div>
+      {canUseDocumentControls ? (
       <section className="panel">
         <div className="panel__header search-bar__header">
           <div>
@@ -258,6 +262,8 @@ export function DocumentsPage() {
           <p>Archivierte Dokumente erscheinen nicht in Suche oder Chat. Geloeschte Dokumente werden in der GUI nicht angezeigt.</p>
         </div>
       </section>
+      ) : null}
+      {canUseDocumentControls ? (
       <section className="panel">
         <div className="panel__header search-bar__header">
           <div>
@@ -341,6 +347,8 @@ export function DocumentsPage() {
 
         {uploadState.status === 'error' ? <ErrorState error={uploadState.error} /> : null}
       </section>
+      ) : null}
+      {canUseDocumentControls ? (
       <section className="panel">
         <div className="panel__header search-bar__header">
           <div>
@@ -364,16 +372,17 @@ export function DocumentsPage() {
           </div>
         </form>
       </section>
+      ) : null}
 
-      {searchState.status === 'loading' ? <LoadingState label="Suchtreffer werden geladen..." /> : null}
-      {searchState.status === 'error' ? <ErrorState error={searchState.error} /> : null}
-      {searchState.status === 'success' && searchState.items.length === 0 ? (
+      {canUseDocumentControls && searchState.status === 'loading' ? <LoadingState label="Suchtreffer werden geladen..." /> : null}
+      {canUseDocumentControls && searchState.status === 'error' ? <ErrorState error={searchState.error} /> : null}
+      {canUseDocumentControls && searchState.status === 'success' && searchState.items.length === 0 ? (
         <EmptyState
           title="Keine Treffer gefunden"
           message={`Fuer \"${searchState.query}\" wurden im aktuellen Workspace keine Chunks gefunden.`}
         />
       ) : null}
-      {searchState.status === 'success' && searchState.items.length > 0 ? (
+      {canUseDocumentControls && searchState.status === 'success' && searchState.items.length > 0 ? (
         <SearchResultList items={searchState.items} query={searchState.query} />
       ) : null}
       {state.status === 'loading' ? (

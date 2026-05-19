@@ -655,6 +655,7 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 - Start von M3a nur, wenn Paket 5 im Abschluss-Gate den Score `>= 90` erreicht und als `freigegeben` bzw. `abgeschlossen` dokumentiert ist.
 - Abschluss von M3a nur, wenn `scripts/validate_m3a_gate.py` gegen aktuelle Reports `PASS` liefert.
 - Die verbindlichen M3a-Reports sind `reports/frontend_truth_report.json`, `reports/gui_truth/latest.json`, `reports/gui_truth/gui_chaos_suite_report.json`, `reports/contract_test_report.json` und `reports/m3a_gate_result.json`.
+- Der verbindliche Full-Suite-Frontend-Truth-Scope steht in `docs/frontend-truth-full-suite-scope.md`; ein Auth-/Bootstrap-Slice oder Mock-only Lauf darf keinen Full-Suite-Pass begruenden.
 - `reports/postgres_truth_report.json` ist keine M3a-Gate-Regel. Es bleibt M4 Backend Truth und M5 Operational Truth.
 - M5 Entropy Tests, Queue Aging Tests sowie M4/M5 Drift-, Cleanup- und Longevity-Tests sind keine M3a-Blocker.
 - Ohne gruenen `reports/m3a_gate_result.json` darf M3a nicht als abgeschlossen, freigegeben oder stabilisiert dokumentiert werden.

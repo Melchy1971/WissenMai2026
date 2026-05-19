@@ -33,4 +33,24 @@ test.describe('08 Lifecycle GUI', () => {
       authedPage.getByText('Archivierte Dokumente erscheinen nicht in Suche oder Chat.'),
     ).toBeVisible();
   });
+
+  test('active document is visible while deleted document is hidden', async ({ authedPage }) => {
+    await authedPage.getByLabel('Statusfilter').selectOption('active');
+    await expect(authedPage.getByRole('link', { name: 'GUI Truth Active Document' })).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByText('GUI Truth Deleted Document')).not.toBeVisible();
+  });
+
+  test('archived document is not returned by active search', async ({ authedPage }) => {
+    await authedPage.getByLabel('Suchbegriff').fill('archivedneedle');
+    await authedPage.getByRole('button', { name: 'Suchen' }).click();
+
+    await expect(authedPage.getByText('Keine Treffer gefunden')).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByText('GUI Truth Archived Document')).not.toBeVisible();
+  });
+
+  test('archived document is visible only in archived filter', async ({ authedPage }) => {
+    await authedPage.getByLabel('Statusfilter').selectOption('archived');
+    await expect(authedPage.getByRole('link', { name: 'GUI Truth Archived Document' })).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByText('GUI Truth Deleted Document')).not.toBeVisible();
+  });
 });

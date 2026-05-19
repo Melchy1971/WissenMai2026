@@ -16,6 +16,8 @@ Verbindliche Cache-Governance: `docs/frontend-cache-governance.md` schreibt work
 
 Verbindliches Concurrency-Modell: `docs/frontend-concurrency-safety.md` beschreibt Request-Tickets, Cancellation, Workspace-/Auth-Snapshots, `correlationId`-Propagation und Race-Simulationen fuer Search, Upload, Workspace-Wechsel, Logout und Chat Retrieval.
 
+Verbindlicher Full-Suite-Frontend-Truth-Scope: `docs/frontend-truth-full-suite-scope.md` definiert die 15 Pflichtflows von Login bis Stale Response Handling, die Testfallliste und die Akzeptanzkriterien. Ein fokussierter Auth-/Bootstrap-Lauf zaehlt nicht als Full-Suite.
+
 Verbindliche Telemetry-Governance: `docs/frontend-telemetry-governance.md` definiert das Frontend-Telemetry-Modell, Datenschutzgrenzen, Workspace-Aggregation, optionale `correlation_id` und die Pflichtmetriken fuer API-Fehler, Bootstrap, Search, Upload, Chat-Retrieval, stale response drops und Reconnect-Events.
 
 Verbindliche Offline-/Degraded-Strategie: `docs/frontend-offline-degraded-strategy.md` definiert fuer API down, Search down, Queue degraded, Reindex, Restore und temporaer unverfuegbaren Chat die erlaubten Aktionen, Blocker, Retry-Regeln, UI-Indikatoren und Cache-Nutzung.
@@ -179,6 +181,7 @@ Bekannte Einschraenkungen im Lifecycle-Slice:
 - `docs/frontend-runtime-state-machine.md`: verbindliche Runtime States, Transition Matrix, verbotene Transitions und Cache-/Upload-Regeln.
 - `docs/frontend-cache-governance.md`: verbindliche Cache-Governance, Invalidierungsregeln und Stale-State-Regeln.
 - `docs/frontend-concurrency-safety.md`: verbindliches Request-Management und Race-Sicherheitsmodell.
+- `docs/frontend-truth-full-suite-scope.md`: verbindlicher Full-Suite-Frontend-Truth-Scope mit Pflichtflows und Akzeptanzkriterien.
 - `docs/m3a-gate-policy.md`: verbindliche Trennung zwischen M3a Frontend Truth, M4 Backend Truth und M5 Operational Truth.
 
 ## Aktueller Nachweis

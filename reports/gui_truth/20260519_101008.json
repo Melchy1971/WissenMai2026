@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-05-19T10:10:08.623427+00:00",
+  "generated_at": "2026-05-19T10:10:08.623440+00:00",
+  "collected": 0,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 2.9,
+  "duration_seconds": 2.9,
+  "failed_flows": [],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": []
+}

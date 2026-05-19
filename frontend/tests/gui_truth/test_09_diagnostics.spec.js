@@ -38,4 +38,14 @@ test.describe('09 Diagnostics GUI', () => {
     await expect(authedPage).toHaveURL(/\/admin\/diagnostics/);
     await expect(authedPage.locator('.shell')).toBeVisible();
   });
+
+  test('non-admin workspace member receives FORBIDDEN for diagnostics', async ({ multiWorkspacePage }) => {
+    const memberWorkspace = process.env.TRUTH_MULTI_WS_WORKSPACE_2_ID;
+    await multiWorkspacePage.getByRole('combobox', { name: 'Workspace wechseln' }).selectOption(memberWorkspace);
+    await expect(multiWorkspacePage.getByText(`Workspace: ${memberWorkspace}`)).toBeVisible({ timeout: 10_000 });
+
+    await multiWorkspacePage.goto('/admin/diagnostics');
+    await expect(multiWorkspacePage.locator('.state-card--error')).toBeVisible({ timeout: 10_000 });
+    await expect(multiWorkspacePage.getByText('Fehlercode: FORBIDDEN')).toBeVisible();
+  });
 });

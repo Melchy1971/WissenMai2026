@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-05-19T09:46:58.665102+00:00",
+  "generated_at": "2026-05-19T09:46:58.665111+00:00",
+  "collected": 9,
+  "passed": 9,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 9.0,
+  "duration_seconds": 9.0,
+  "failed_flows": [],
+  "errors": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "04 Dokumentliste > shows documents page heading",
+    "04 Dokumentliste > shows empty state for workspace with no documents",
+    "04 Dokumentliste > loads the seeded active document in the list",
+    "04 Dokumentliste > opens document detail with versions and chunk preview",
+    "04 Dokumentliste > unknown document detail is an error state, not an empty list",
+    "04 Dokumentliste > empty document list is distinct from an API error",
+    "04 Dokumentliste > shows lifecycle filter section",
+    "04 Dokumentliste > shows upload section",
+    "04 Dokumentliste > shows search section"
+  ]
+}

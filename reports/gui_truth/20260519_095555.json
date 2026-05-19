@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-05-19T09:55:55.602504+00:00",
+  "generated_at": "2026-05-19T09:55:55.602514+00:00",
+  "collected": 7,
+  "passed": 5,
+  "failed": 2,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 62.11,
+  "duration_seconds": 62.11,
+  "failed_flows": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.chat-message--assistant').last()\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for locator('.chat-message--assistant').last()\u001b[22m\n\n\n  57 |\n  58 |     const assistantMessage = authedPage.locator('.chat-message--assistant').last();\n> 59 |     await expect(assistantMessage).toBeVisible({ time"
+    },
+    {
+      "name": "07 Chat flow > insufficient context is rendered as a controlled error state",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Titel der Sitzung')\u001b[22m\n\n\n  65 |     const title = `GUI Truth No Context Chat ${Date.now()}`;\n  66 |     await authedPage.goto('/chat');\n> 67 |     await authedPage.getByLabel('Titel der Sitzung').fill(title);\n     |                                                      ^\n  68 |     await authedPage.getByRole('button', { name: 'Neue Sitzung' }).click();\n  6"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.chat-message--assistant').last()\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for locator('.chat-message--assistant').last()\u001b[22m\n\n\n  57 |\n  58 |     const assistantMessage = authedPage.locator('.chat-message--assistant').last();\n> 59 |     await expect(assistantMessage).toBeVisible({ time"
+    },
+    {
+      "name": "07 Chat flow > insufficient context is rendered as a controlled error state",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.fill: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Titel der Sitzung')\u001b[22m\n\n\n  65 |     const title = `GUI Truth No Context Chat ${Date.now()}`;\n  66 |     await authedPage.goto('/chat');\n> 67 |     await authedPage.getByLabel('Titel der Sitzung').fill(title);\n     |                                                      ^\n  68 |     await authedPage.getByRole('button', { name: 'Neue Sitzung' }).click();\n  6"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "07 Chat flow > shows chat page heading and workspace context",
+    "07 Chat flow > shows empty chat state or session list",
+    "07 Chat flow > shows chat composer form",
+    "07 Chat flow > navigation from documents to chat preserves workspace context",
+    "07 Chat flow > creates a chat session through the real API"
+  ]
+}

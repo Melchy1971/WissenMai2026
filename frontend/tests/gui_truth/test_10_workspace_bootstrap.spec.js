@@ -113,6 +113,31 @@ test.describe('10 Workspace bootstrap — 04 workspace switch header', () => {
     // AuthContext.switchWorkspace validates membership → rejects → active workspace unchanged
     await expect(select).toHaveValue(ws1);
   });
+
+  test('manipulated workspace id cannot load protected document controls', async ({ page }) => {
+    const token = process.env.TRUTH_TOKEN;
+    const manipulatedWorkspace = process.env.TRUTH_MULTI_WS_WORKSPACE_2_ID;
+    await page.goto('/');
+    await page.evaluate(
+      ({ t, ws }) => {
+        window.localStorage.setItem('wissen.authState', JSON.stringify({
+          token: t,
+          user: { id: 'truth-user', login: 'gui_truth_user' },
+          memberships: [{ workspace_id: ws, role: 'owner' }],
+          active_workspace_id: ws,
+        }));
+        window.localStorage.setItem('wissen.authToken', t);
+        window.localStorage.setItem('wissen.workspaceId', ws);
+      },
+      { t: token, ws: manipulatedWorkspace },
+    );
+
+    await page.goto('/documents');
+    await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('Fehlercode: WORKSPACE_ACCESS_FORBIDDEN')).toBeVisible();
+    await expect(page.getByText('Technischer Code: WORKSPACE_NOT_CONFIGURED')).toBeVisible();
+    await expect(page.getByText('Dokument hochladen')).not.toBeVisible();
+  });
 });
 
 // ─── Scenario 05: Workspace switch reloads documents ─────────────────────────

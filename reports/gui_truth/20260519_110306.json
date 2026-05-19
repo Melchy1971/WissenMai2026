@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-05-19T11:03:06.239589+00:00",
+  "generated_at": "2026-05-19T11:03:06.239604+00:00",
+  "collected": 7,
+  "passed": 5,
+  "failed": 2,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 47.86,
+  "duration_seconds": 47.86,
+  "failed_flows": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Antwort', { exact: true })\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Antwort', { exact: true })\u001b[22m\n\n\n  59 |\n  60 |     await expect(authedPage.locator('.state-card--error')).not.toBeVisible();\n> 61 |     await expect(authedPage.getByText('Antwort', { exact: true })).to"
+    },
+    {
+      "name": "07 Chat flow > insufficient context is rendered as a controlled error state",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  74 |     await authedPage.getByRole('button', { name: 'Frage senden' }).click();\n  75 |\n> 76 |     await expect(authedPage.locator('.state-card--error')).toBeVisible({ timeout: 15_00"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Antwort', { exact: true })\nExpected: visible\nTimeout: 20000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Antwort', { exact: true })\u001b[22m\n\n\n  59 |\n  60 |     await expect(authedPage.locator('.state-card--error')).not.toBeVisible();\n> 61 |     await expect(authedPage.getByText('Antwort', { exact: true })).to"
+    },
+    {
+      "name": "07 Chat flow > insufficient context is rendered as a controlled error state",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  74 |     await authedPage.getByRole('button', { name: 'Frage senden' }).click();\n  75 |\n> 76 |     await expect(authedPage.locator('.state-card--error')).toBeVisible({ timeout: 15_00"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "07 Chat flow > shows chat page heading and workspace context",
+    "07 Chat flow > shows empty chat state or session list",
+    "07 Chat flow > shows chat composer form",
+    "07 Chat flow > navigation from documents to chat preserves workspace context",
+    "07 Chat flow > creates a chat session through the real API"
+  ]
+}

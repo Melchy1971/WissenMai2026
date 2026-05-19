@@ -44,6 +44,7 @@ Stand des Abgleichs mit Code, Frontend Truth Report und M3a Gate am 2026-05-19:
 - Aktueller M3a-Gate-Report: `reports/m3a_gate_result.json` mit `PASS`, Score `100.0`.
 - Finaler M3a-Gate-Report: `reports/m3a_final_gate_report.json` mit `PASS`, Score `100.0`.
 - Contract-Test-Nachweis ist gruen: `reports/contract_test_report.json` weist `8 collected`, `8 passed`, `0 failed`, `0 skipped` aus.
+- Der verbindliche Full-Suite-Frontend-Truth-Scope ist in `docs/frontend-truth-full-suite-scope.md` finalisiert. Kuenftige Full-Suite-Aussagen brauchen alle 15 Pflichtflows; ein Auth-/Bootstrap-Slice reicht nicht.
 - PostgreSQL-Truth ist nicht gruen: `reports/postgres_truth_report.json` weist `138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1` aus. Dieser Report ist M4 Backend Truth/M5 Operational Truth und blockiert M3a nicht.
 
 Bewertung:

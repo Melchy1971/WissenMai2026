@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-05-19T09:59:23.323185+00:00",
+  "generated_at": "2026-05-19T09:59:23.323199+00:00",
+  "collected": 23,
+  "passed": 17,
+  "failed": 6,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8010",
+  "test_database_url_set": true,
+  "duration": 173.26,
+  "duration_seconds": 173.26,
+  "failed_flows": [
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Abmelden' })\u001b[22m\n\n\n  347 |   test('after logout, navigating to /documents redirects to login', async ({ page }) => {\n  348 |     await loginForLogoutScenario(page);\n> 349 |     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });\n      |                                                          ^\n  350 |     await e"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Abmelden' })\u001b[22m\n\n\n  356 |   test('after logout, localStorage is cleared', async ({ page }) => {\n  357 |     await loginForLogoutScenario(page);\n> 358 |     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });\n      |                                                          ^\n  359 |     await expect(page.getByRole"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, a fresh login restores workspace ready state",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Abmelden' })\u001b[22m\n\n\n  367 |\n  368 |     await loginForLogoutScenario(page);\n> 369 |     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });\n      |                                                          ^\n  370 |     await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });\n"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8010/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+      "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Abmelden' })\u001b[22m\n\n\n  347 |   test('after logout, navigating to /documents redirects to login', async ({ page }) => {\n  348 |     await loginForLogoutScenario(page);\n> 349 |     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });\n      |                                                          ^\n  350 |     await e"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Abmelden' })\u001b[22m\n\n\n  356 |   test('after logout, localStorage is cleared', async ({ page }) => {\n  357 |     await loginForLogoutScenario(page);\n> 358 |     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });\n      |                                                          ^\n  359 |     await expect(page.getByRole"
+    },
+    {
+      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, a fresh login restores workspace ready state",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Abmelden' })\u001b[22m\n\n\n  367 |\n  368 |     await loginForLogoutScenario(page);\n> 369 |     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });\n      |                                                          ^\n  370 |     await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });\n"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > root path also redirects to /login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > zero /auth/me calls when no token present",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login"
+  ]
+}

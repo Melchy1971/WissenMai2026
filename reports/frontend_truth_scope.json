@@ -1,0 +1,118 @@
+{
+  "timestamp": "2026-05-19T00:00:00+02:00",
+  "scope": "Frontend Truth Full Suite",
+  "source": "docs/frontend-truth-full-suite-scope.md",
+  "required_report_rules": {
+    "real_api": true,
+    "mock_only": false,
+    "test_database_url_set": true,
+    "api_database_health_ok": true,
+    "passed_equals_collected": true,
+    "failed": 0,
+    "skipped": 0,
+    "playwright_exit_code": 0
+  },
+  "required_flows": [
+    {
+      "id": "FT-01",
+      "name": "Login",
+      "primary_spec": "frontend/tests/gui_truth/test_01_login.spec.js",
+      "minimum": "Login form, unauthenticated redirect, invalid credentials, successful login"
+    },
+    {
+      "id": "FT-02",
+      "name": "Auth Bootstrap",
+      "primary_spec": "frontend/tests/gui_truth/test_02_auth_bootstrap.spec.js",
+      "minimum": "No token, valid bootstrap, complete session, invalid token, backend unreachable, no membership, forbidden, logout"
+    },
+    {
+      "id": "FT-03",
+      "name": "Workspace Bootstrap",
+      "primary_spec": "frontend/tests/gui_truth/test_10_workspace_bootstrap.spec.js",
+      "minimum": "Membership workspace, single/multi workspace, switcher, invalid switch rejection, no membership"
+    },
+    {
+      "id": "FT-04",
+      "name": "Dokumentliste",
+      "primary_spec": "frontend/tests/gui_truth/test_04_documents.spec.js",
+      "minimum": "Heading, empty/list state, lifecycle filter, upload and search controls"
+    },
+    {
+      "id": "FT-05",
+      "name": "Dokumentdetail",
+      "primary_spec": "frontend/tests/gui_truth/test_04_documents.spec.js or dedicated detail spec",
+      "minimum": "Open /documents/:id, metadata, versions, chunk preview, not-found error state"
+    },
+    {
+      "id": "FT-06",
+      "name": "Upload Job Flow",
+      "primary_spec": "frontend/tests/gui_truth/test_05_upload.spec.js",
+      "minimum": "File selection, validation, upload, job polling, completion, result"
+    },
+    {
+      "id": "FT-07",
+      "name": "Search Flow",
+      "primary_spec": "frontend/tests/gui_truth/test_06_search.spec.js",
+      "minimum": "Form, empty query, real API request, result or empty state"
+    },
+    {
+      "id": "FT-08",
+      "name": "Chat Flow",
+      "primary_spec": "frontend/tests/gui_truth/test_07_chat.spec.js",
+      "minimum": "Chat route, session list or empty state, composer, workspace context"
+    },
+    {
+      "id": "FT-09",
+      "name": "Lifecycle Flow",
+      "primary_spec": "frontend/tests/gui_truth/test_08_lifecycle.spec.js",
+      "minimum": "Active/archived filter switch, API request, restore to active filter, warning hint"
+    },
+    {
+      "id": "FT-10",
+      "name": "Diagnostics read-only",
+      "primary_spec": "frontend/tests/gui_truth/test_09_diagnostics.spec.js",
+      "minimum": "Admin route, system/db/migration status, no mutating admin actions"
+    },
+    {
+      "id": "FT-11",
+      "name": "Error-State Flow",
+      "primary_spec": "frontend/tests/gui_truth/test_11_state_invariants.spec.js",
+      "minimum": "API_UNREACHABLE not empty, FORBIDDEN no retry, no protected controls without workspace"
+    },
+    {
+      "id": "FT-12",
+      "name": "Workspace-Wechsel",
+      "primary_spec": "frontend/tests/gui_truth/test_10_workspace_bootstrap.spec.js",
+      "minimum": "Switch updates header, reloads documents, resets search/upload/chat context"
+    },
+    {
+      "id": "FT-13",
+      "name": "Logout/Login Recovery",
+      "primary_spec": "frontend/tests/gui_truth/test_02_auth_bootstrap.spec.js and test_01_login.spec.js",
+      "minimum": "Logout clears session and protected route returns to login; re-login restores workspace context"
+    },
+    {
+      "id": "FT-14",
+      "name": "API reconnect",
+      "primary_spec": "frontend/tests/gui_truth/test_02_auth_bootstrap.spec.js or dedicated recovery spec",
+      "minimum": "API_UNREACHABLE with retry; successful retry after API is reachable"
+    },
+    {
+      "id": "FT-15",
+      "name": "Stale Response Handling",
+      "primary_spec": "frontend/tests/gui_truth/test_12_concurrency.spec.js",
+      "minimum": "Parallel search and workspace switch during in-flight request cannot overwrite current state"
+    }
+  ],
+  "current_report_assessment": {
+    "report": "reports/frontend_truth_report.json",
+    "generated_at": "2026-05-19T07:54:48.841245+00:00",
+    "collected": 82,
+    "passed": 82,
+    "failed": 0,
+    "skipped": 0,
+    "real_api": true,
+    "test_database_url_set": true,
+    "scope_warning": "The report is green, but FT-05 document detail, FT-13 re-login recovery and FT-14 successful reconnect must be explicitly named before future reports are treated as complete full-suite evidence."
+  }
+}

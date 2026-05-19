@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-05-19T11:07:02.986756+00:00",
+  "generated_at": "2026-05-19T11:07:02.986771+00:00",
+  "collected": 7,
+  "passed": 6,
+  "failed": 1,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 12.36,
+  "duration_seconds": 12.36,
+  "failed_flows": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m503\u001b[39m\n\n  80 |     ]);\n  81 |\n> 82 |     expect(response.status()).toBe(201);\n     |                               ^\n  83 |     const payload = await response.json();\n  84 |     expect(payload.role).toBe('assistant');\n  85 |     expect(Array.isArray(payload.citations)).toBe(true);\n    at H:\\WissenMai2026\\frontend\\tests\\gui_truth\\test_07_ch"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m201\u001b[39m\nReceived: \u001b[31m503\u001b[39m\n\n  80 |     ]);\n  81 |\n> 82 |     expect(response.status()).toBe(201);\n     |                               ^\n  83 |     const payload = await response.json();\n  84 |     expect(payload.role).toBe('assistant');\n  85 |     expect(Array.isArray(payload.citations)).toBe(true);\n    at H:\\WissenMai2026\\frontend\\tests\\gui_truth\\test_07_ch"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "07 Chat flow > shows chat page heading and workspace context",
+    "07 Chat flow > shows empty chat state or session list",
+    "07 Chat flow > shows chat composer form",
+    "07 Chat flow > navigation from documents to chat preserves workspace context",
+    "07 Chat flow > creates a chat session through the real API",
+    "07 Chat flow > insufficient context is rendered as a controlled error state"
+  ]
+}

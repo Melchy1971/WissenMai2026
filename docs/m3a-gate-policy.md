@@ -50,6 +50,7 @@ Die Detailklassifikation der aktuellen roten `postgres_truth`-Findings steht in 
 M3a ist abgeschlossen, wenn alle M3a-Regeln in `scripts/validate_m3a_gate.py` gruen sind:
 
 - Full-Suite Frontend Truth gruen.
+- Der Full-Suite-Scope entspricht `docs/frontend-truth-full-suite-scope.md`; ein Auth-/Bootstrap-Slice reicht nicht.
 - M3a Backend-Minimum gruen.
 - Contract Tests gruen.
 - GUI Chaos Tests gruen.

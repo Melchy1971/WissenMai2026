@@ -14,11 +14,13 @@ import argparse
 import hashlib
 import json
 import os
+import socket
 import subprocess
 import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import urlparse
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
@@ -27,6 +29,7 @@ REPORTS_DIR = ROOT / "reports" / "gui_truth"
 FRONTEND_JSON_REPORT_PATH = ROOT / "reports" / "frontend_truth_report.json"
 FRONTEND_MARKDOWN_REPORT_PATH = ROOT / "reports" / "frontend_truth_report.md"
 DEFAULT_API_BASE_URL = "http://127.0.0.1:8000"
+DEFAULT_GUI_TRUTH_API_BASE_URL = "http://127.0.0.1:8013"
 LOCAL_DEV_DATABASE_URL = "postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test"
 
 NAMESPACE = "gui_truth_static"
@@ -65,9 +68,43 @@ MULTI_WS_TOKEN = f"gui-truth-multi-ws-token-{NAMESPACE}"
 MULTI_WS_MEMBERSHIP_1_ID = "truth-gui-truth-mw-membership-1"
 MULTI_WS_MEMBERSHIP_2_ID = "truth-gui-truth-mw-membership-2"
 
+ACTIVE_DOCUMENT_ID = _uuid_with_prefix("f3000000", NAMESPACE, "active-document")
+ACTIVE_VERSION_ID = _uuid_with_prefix("f4000000", NAMESPACE, "active-version")
+ACTIVE_CHUNK_ID = _uuid_with_prefix("f5000000", NAMESPACE, "active-chunk")
+ARCHIVED_DOCUMENT_ID = _uuid_with_prefix("f3000000", NAMESPACE, "archived-document")
+ARCHIVED_VERSION_ID = _uuid_with_prefix("f4000000", NAMESPACE, "archived-version")
+ARCHIVED_CHUNK_ID = _uuid_with_prefix("f5000000", NAMESPACE, "archived-chunk")
+DELETED_DOCUMENT_ID = _uuid_with_prefix("f3000000", NAMESPACE, "deleted-document")
+DELETED_VERSION_ID = _uuid_with_prefix("f4000000", NAMESPACE, "deleted-version")
+DELETED_CHUNK_ID = _uuid_with_prefix("f5000000", NAMESPACE, "deleted-chunk")
+
 
 def _psycopg_url(url: str) -> str:
     return url.replace("postgresql+psycopg://", "postgresql://", 1)
+
+
+def _reserve_free_api_base_url(preferred_url: str) -> str:
+    parsed = urlparse(preferred_url)
+    host = parsed.hostname or "127.0.0.1"
+    preferred_port = parsed.port or 8013
+    for port in range(preferred_port, preferred_port + 20):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            if sock.connect_ex((host, port)) != 0:
+                return f"http://{host}:{port}"
+    raise RuntimeError("No free GUI truth API port found in reserved range")
+
+
+def _reserve_free_frontend_base_url(preferred_url: str) -> str:
+    parsed = urlparse(preferred_url)
+    host = parsed.hostname or "127.0.0.1"
+    preferred_port = parsed.port or 7474
+    for port in range(preferred_port, preferred_port + 20):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            if sock.connect_ex((host, port)) != 0:
+                return f"http://{host}:{port}"
+    raise RuntimeError("No free GUI truth frontend port found in reserved range")
 
 
 def hash_password(password: str, *, salt: str) -> str:
@@ -79,6 +116,110 @@ def hash_password(password: str, *, salt: str) -> str:
 def hash_token(token: str) -> str:
     """Mirrors backend app/services/auth.py hash_token."""
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def _hash_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _insert_truth_document(
+    cur,
+    *,
+    document_id: str,
+    version_id: str,
+    chunk_id: str,
+    workspace_id: str,
+    owner_user_id: str,
+    title: str,
+    lifecycle_status: str,
+    content: str,
+    created: datetime,
+) -> None:
+    archived_at = created if lifecycle_status == "archived" else None
+    deleted_at = created if lifecycle_status == "deleted" else None
+    cur.execute(
+        """
+        INSERT INTO documents (
+            id, workspace_id, owner_user_id, current_version_id, title, source_type, mime_type,
+            content_hash, import_status, lifecycle_status, archived_at, deleted_at, created_at, updated_at
+        )
+        VALUES (
+            %s::uuid, %s::uuid, %s::uuid, null, %s, 'upload', 'text/plain',
+            %s, 'pending', %s, %s, %s, %s, %s
+        )
+        ON CONFLICT (id) DO UPDATE SET
+            title = EXCLUDED.title,
+            content_hash = EXCLUDED.content_hash,
+            lifecycle_status = EXCLUDED.lifecycle_status,
+            archived_at = EXCLUDED.archived_at,
+            deleted_at = EXCLUDED.deleted_at,
+            updated_at = EXCLUDED.updated_at
+        """,
+        (
+            document_id,
+            workspace_id,
+            owner_user_id,
+            title,
+            _hash_text(f"document::{document_id}::{content}"),
+            lifecycle_status,
+            archived_at,
+            deleted_at,
+            created,
+            created,
+        ),
+    )
+    cur.execute(
+        """
+        INSERT INTO document_versions (
+            id, document_id, version_number, normalized_markdown, markdown_hash, parser_version,
+            ocr_used, ki_provider, ki_model, metadata, created_at
+        )
+        VALUES (%s::uuid, %s::uuid, 1, %s, %s, 'truth-parser-1.0', false, null, null, %s::jsonb, %s)
+        ON CONFLICT (id) DO UPDATE SET
+            normalized_markdown = EXCLUDED.normalized_markdown,
+            markdown_hash = EXCLUDED.markdown_hash,
+            metadata = EXCLUDED.metadata
+        """,
+        (
+            version_id,
+            document_id,
+            content,
+            _hash_text(f"version::{version_id}::{content}"),
+            json.dumps({"source": "gui_truth_seed"}),
+            created,
+        ),
+    )
+    cur.execute(
+        """
+        INSERT INTO document_chunks (
+            id, document_id, document_version_id, chunk_index, heading_path, anchor, content,
+            is_searchable, content_hash, token_estimate, metadata, created_at
+        )
+        VALUES (
+            %s::uuid, %s::uuid, %s::uuid, 0, %s::jsonb, 'p1', %s,
+            true, %s, 64, %s::jsonb, %s
+        )
+        ON CONFLICT (id) DO UPDATE SET
+            content = EXCLUDED.content,
+            is_searchable = EXCLUDED.is_searchable,
+            content_hash = EXCLUDED.content_hash,
+            metadata = EXCLUDED.metadata
+        """,
+        (
+            chunk_id,
+            document_id,
+            version_id,
+            json.dumps(["GUI Truth"]),
+            content,
+            _hash_text(f"chunk::{chunk_id}::{content}"),
+            json.dumps({"source_anchor": {"type": "text", "page": None, "paragraph": 1, "char_start": 0, "char_end": min(len(content), 120)}}),
+            created,
+        ),
+    )
+    cur.execute(
+        "UPDATE documents SET current_version_id = %s, import_status = 'chunked' WHERE id = %s",
+        (version_id, document_id),
+    )
 
 
 def seed(conn) -> dict:
@@ -102,7 +243,11 @@ def seed(conn) -> dict:
             """
             INSERT INTO users (id, display_name, login, password_hash, is_active, is_default, created_at)
             VALUES (%s::uuid, %s, %s, %s, true, false, %s)
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (id) DO UPDATE SET
+                display_name = EXCLUDED.display_name,
+                login = EXCLUDED.login,
+                password_hash = EXCLUDED.password_hash,
+                is_active = true
             """,
             (USER_ID, "GUI Truth User", TRUTH_LOGIN, password_hash, created),
         )
@@ -119,7 +264,11 @@ def seed(conn) -> dict:
             INSERT INTO auth_sessions
                 (id, user_id, token_hash, expires_at, created_at, last_seen_at, revoked_at)
             VALUES (%s, %s::uuid, %s, %s, %s, %s, null)
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (id) DO UPDATE SET
+                token_hash = EXCLUDED.token_hash,
+                expires_at = EXCLUDED.expires_at,
+                last_seen_at = EXCLUDED.last_seen_at,
+                revoked_at = null
             """,
             (SESSION_ID, USER_ID, token_hash, expires, created, created),
         )
@@ -128,7 +277,11 @@ def seed(conn) -> dict:
             INSERT INTO auth_sessions
                 (id, user_id, token_hash, expires_at, created_at, last_seen_at, revoked_at)
             VALUES (%s, %s::uuid, %s, %s, %s, %s, null)
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (id) DO UPDATE SET
+                token_hash = EXCLUDED.token_hash,
+                expires_at = EXCLUDED.expires_at,
+                last_seen_at = EXCLUDED.last_seen_at,
+                revoked_at = null
             """,
             (LOGOUT_SESSION_ID, USER_ID, logout_token_hash, expires, created, created),
         )
@@ -137,7 +290,11 @@ def seed(conn) -> dict:
             """
             INSERT INTO users (id, display_name, login, password_hash, is_active, is_default, created_at)
             VALUES (%s::uuid, 'GUI Truth No Membership', 'gui-truth-no-membership', %s, true, false, %s)
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (id) DO UPDATE SET
+                display_name = EXCLUDED.display_name,
+                login = EXCLUDED.login,
+                password_hash = EXCLUDED.password_hash,
+                is_active = true
             """,
             (NO_MEMBERSHIP_USER_ID, hash_password("nm-pw", salt="nm-salt"), created),
         )
@@ -146,7 +303,11 @@ def seed(conn) -> dict:
             INSERT INTO auth_sessions
                 (id, user_id, token_hash, expires_at, created_at, last_seen_at, revoked_at)
             VALUES (%s, %s::uuid, %s, %s, %s, %s, null)
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (id) DO UPDATE SET
+                token_hash = EXCLUDED.token_hash,
+                expires_at = EXCLUDED.expires_at,
+                last_seen_at = EXCLUDED.last_seen_at,
+                revoked_at = null
             """,
             (NO_MEMBERSHIP_SESSION_ID, NO_MEMBERSHIP_USER_ID, no_membership_token_hash, expires, created, created),
         )
@@ -163,7 +324,11 @@ def seed(conn) -> dict:
             """
             INSERT INTO users (id, display_name, login, password_hash, is_active, is_default, created_at)
             VALUES (%s::uuid, 'GUI Truth Multi WS', 'gui-truth-multi-ws', %s, true, false, %s)
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (id) DO UPDATE SET
+                display_name = EXCLUDED.display_name,
+                login = EXCLUDED.login,
+                password_hash = EXCLUDED.password_hash,
+                is_active = true
             """,
             (MULTI_WS_USER_ID, hash_password("mw-pw", salt="mw-salt"), created),
         )
@@ -188,9 +353,55 @@ def seed(conn) -> dict:
             INSERT INTO auth_sessions
                 (id, user_id, token_hash, expires_at, created_at, last_seen_at, revoked_at)
             VALUES (%s, %s::uuid, %s, %s, %s, %s, null)
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (id) DO UPDATE SET
+                token_hash = EXCLUDED.token_hash,
+                expires_at = EXCLUDED.expires_at,
+                last_seen_at = EXCLUDED.last_seen_at,
+                revoked_at = null
             """,
             (MULTI_WS_SESSION_ID, MULTI_WS_USER_ID, hash_token(MULTI_WS_TOKEN), expires, created, created),
+        )
+        _insert_truth_document(
+            cur,
+            document_id=ACTIVE_DOCUMENT_ID,
+            version_id=ACTIVE_VERSION_ID,
+            chunk_id=ACTIVE_CHUNK_ID,
+            workspace_id=WORKSPACE_ID,
+            owner_user_id=USER_ID,
+            title="GUI Truth Active Document",
+            lifecycle_status="active",
+            content=(
+                "GUI Truth Active Document\n\n"
+                "truthneedle active knowledge base content for frontend truth search and citation tests. "
+                "truthneedle active knowledge base content appears again for retrieval ranking. "
+                "truthneedle active knowledge base content appears a third time for deterministic citations. "
+                "This paragraph contains enough supporting text for retrieval and deterministic citations."
+            ),
+            created=created,
+        )
+        _insert_truth_document(
+            cur,
+            document_id=ARCHIVED_DOCUMENT_ID,
+            version_id=ARCHIVED_VERSION_ID,
+            chunk_id=ARCHIVED_CHUNK_ID,
+            workspace_id=WORKSPACE_ID,
+            owner_user_id=USER_ID,
+            title="GUI Truth Archived Document",
+            lifecycle_status="archived",
+            content="archivedneedle archived content must stay hidden from active search results.",
+            created=created,
+        )
+        _insert_truth_document(
+            cur,
+            document_id=DELETED_DOCUMENT_ID,
+            version_id=DELETED_VERSION_ID,
+            chunk_id=DELETED_CHUNK_ID,
+            workspace_id=WORKSPACE_ID,
+            owner_user_id=USER_ID,
+            title="GUI Truth Deleted Document",
+            lifecycle_status="deleted",
+            content="deletedneedle deleted content must never be visible in the document list.",
+            created=created,
         )
     conn.commit()
 
@@ -206,6 +417,10 @@ def seed(conn) -> dict:
         "multi_ws_token": MULTI_WS_TOKEN,
         "multi_ws_workspace_id": WORKSPACE_ID,
         "multi_ws_workspace_2_id": WORKSPACE_2_ID,
+        "active_document_id": ACTIVE_DOCUMENT_ID,
+        "active_chunk_id": ACTIVE_CHUNK_ID,
+        "archived_document_id": ARCHIVED_DOCUMENT_ID,
+        "deleted_document_id": DELETED_DOCUMENT_ID,
     }
 
 
@@ -217,6 +432,41 @@ def cleanup(conn) -> None:
             print(f"  cleanup warning: {exc}", file=sys.stderr)
 
     with conn.cursor() as cur:
+        _try(
+            cur,
+            """
+            DELETE FROM chat_citations
+            WHERE message_id IN (
+                SELECT m.id
+                FROM chat_messages m
+                JOIN chat_sessions s ON s.id = m.session_id
+                WHERE s.workspace_id::text IN (%s, %s)
+                   OR s.owner_user_id::text IN (%s, %s, %s)
+            )
+            """,
+            (WORKSPACE_ID, WORKSPACE_2_ID, USER_ID, NO_MEMBERSHIP_USER_ID, MULTI_WS_USER_ID),
+        )
+        _try(
+            cur,
+            """
+            DELETE FROM chat_messages
+            WHERE session_id IN (
+                SELECT id FROM chat_sessions
+                WHERE workspace_id::text IN (%s, %s)
+                   OR owner_user_id::text IN (%s, %s, %s)
+            )
+            """,
+            (WORKSPACE_ID, WORKSPACE_2_ID, USER_ID, NO_MEMBERSHIP_USER_ID, MULTI_WS_USER_ID),
+        )
+        _try(
+            cur,
+            """
+            DELETE FROM chat_sessions
+            WHERE workspace_id::text IN (%s, %s)
+               OR owner_user_id::text IN (%s, %s, %s)
+            """,
+            (WORKSPACE_ID, WORKSPACE_2_ID, USER_ID, NO_MEMBERSHIP_USER_ID, MULTI_WS_USER_ID),
+        )
         _try(cur, "DELETE FROM chat_citations WHERE id::text LIKE %s", ("truth-%",))
         _try(cur, "DELETE FROM chat_messages WHERE id::text LIKE %s", ("truth-%",))
         _try(cur, "DELETE FROM chat_sessions WHERE id::text LIKE %s", ("truth-%",))
@@ -259,6 +509,11 @@ def cleanup(conn) -> None:
         _try(cur, "DELETE FROM auth_sessions WHERE id = %s", (NO_MEMBERSHIP_SESSION_ID,))
         _try(cur, "DELETE FROM auth_sessions WHERE id = %s", (LOGOUT_SESSION_ID,))
         _try(cur, "DELETE FROM auth_sessions WHERE id = %s", (MULTI_WS_SESSION_ID,))
+        _try(
+            cur,
+            "DELETE FROM auth_sessions WHERE user_id::text IN (%s, %s, %s)",
+            (USER_ID, NO_MEMBERSHIP_USER_ID, MULTI_WS_USER_ID),
+        )
         _try(cur, "DELETE FROM workspace_memberships WHERE id = %s", (MEMBERSHIP_ID,))
         _try(cur, "DELETE FROM workspace_memberships WHERE id = %s", (MULTI_WS_MEMBERSHIP_1_ID,))
         _try(cur, "DELETE FROM workspace_memberships WHERE id = %s", (MULTI_WS_MEMBERSHIP_2_ID,))
@@ -286,6 +541,10 @@ def run_playwright(seeds: dict, headed: bool, spec_filter: str | None) -> dict:
         "TRUTH_MULTI_WS_TOKEN": seeds["multi_ws_token"],
         "TRUTH_MULTI_WS_WORKSPACE_ID": seeds["multi_ws_workspace_id"],
         "TRUTH_MULTI_WS_WORKSPACE_2_ID": seeds["multi_ws_workspace_2_id"],
+        "TRUTH_ACTIVE_DOCUMENT_ID": seeds["active_document_id"],
+        "TRUTH_ACTIVE_CHUNK_ID": seeds["active_chunk_id"],
+        "TRUTH_ARCHIVED_DOCUMENT_ID": seeds["archived_document_id"],
+        "TRUTH_DELETED_DOCUMENT_ID": seeds["deleted_document_id"],
         "GUI_TRUTH_EXTERNAL_FRONTEND": os.environ.get("GUI_TRUTH_EXTERNAL_FRONTEND", ""),
     }
 
@@ -394,9 +653,13 @@ def start_api_process(api_base_url: str, database_url: str) -> subprocess.Popen 
     env = {
         **os.environ,
         "DATABASE_URL": database_url,
+        "GUI_TRUTH_FAKE_LLM": "1",
     }
-    out = (ROOT / "reports" / "frontend-api-8000.out.log").open("ab")
-    err = (ROOT / "reports" / "frontend-api-8000.err.log").open("ab")
+    parsed_api_url = urlparse(api_base_url)
+    api_host = parsed_api_url.hostname or "127.0.0.1"
+    api_port = str(parsed_api_url.port or 8000)
+    out = (ROOT / "reports" / f"frontend-api-{api_port}.out.log").open("ab")
+    err = (ROOT / "reports" / f"frontend-api-{api_port}.err.log").open("ab")
     process = subprocess.Popen(
         [
             str(backend_python),
@@ -406,9 +669,9 @@ def start_api_process(api_base_url: str, database_url: str) -> subprocess.Popen 
             str(ROOT / "backend"),
             "app.main:app",
             "--host",
-            "127.0.0.1",
+            api_host,
             "--port",
-            "8000",
+            api_port,
         ],
         cwd=ROOT,
         env=env,
@@ -440,8 +703,11 @@ def start_frontend_process(base_url: str) -> subprocess.Popen | None:
         return None
 
     npm = "npm.cmd" if os.name == "nt" else "npm"
-    out = (ROOT / "reports" / "frontend-vite-7474.out.log").open("ab")
-    err = (ROOT / "reports" / "frontend-vite-7474.err.log").open("ab")
+    parsed_frontend_url = urlparse(base_url)
+    frontend_host = parsed_frontend_url.hostname or "127.0.0.1"
+    frontend_port = str(parsed_frontend_url.port or 7474)
+    out = (ROOT / "reports" / f"frontend-vite-{frontend_port}.out.log").open("ab")
+    err = (ROOT / "reports" / f"frontend-vite-{frontend_port}.err.log").open("ab")
     env = {
         **os.environ,
         "VITE_API_BASE_URL": os.environ.get("VITE_API_BASE_URL")
@@ -449,7 +715,7 @@ def start_frontend_process(base_url: str) -> subprocess.Popen | None:
         or DEFAULT_API_BASE_URL,
     }
     process = subprocess.Popen(
-        [npm, "run", "dev", "--", "--host", "127.0.0.1", "--port", "7474"],
+        [npm, "run", "dev", "--", "--host", frontend_host, "--port", frontend_port],
         cwd=ROOT / "frontend",
         env=env,
         stdout=out,
@@ -614,7 +880,14 @@ def main() -> None:
 
     start = datetime.now(UTC)
     api_base_url = os.environ.get("VITE_API_BASE_URL") or os.environ.get("API_BASE_URL") or DEFAULT_API_BASE_URL
+    if args.start_api and not (os.environ.get("VITE_API_BASE_URL") or os.environ.get("API_BASE_URL")):
+        api_base_url = _reserve_free_api_base_url(DEFAULT_GUI_TRUTH_API_BASE_URL)
+        os.environ["API_BASE_URL"] = api_base_url
+        os.environ["VITE_API_BASE_URL"] = api_base_url
     frontend_base_url = os.environ.get("GUI_TRUTH_BASE_URL") or "http://127.0.0.1:7474"
+    if args.start_frontend and not os.environ.get("GUI_TRUTH_BASE_URL"):
+        frontend_base_url = _reserve_free_frontend_base_url(frontend_base_url)
+        os.environ["GUI_TRUTH_BASE_URL"] = frontend_base_url
     api_process = None
     frontend_process = None
     try:
@@ -624,6 +897,9 @@ def main() -> None:
             frontend_process = start_frontend_process(frontend_base_url)
             os.environ["GUI_TRUTH_EXTERNAL_FRONTEND"] = "1"
         with psycopg.connect(_psycopg_url(db_url)) as conn:
+            if not args.no_cleanup:
+                print("Pre-cleaning stale GUI truth data...")
+                cleanup(conn)
             print(f"Seeding GUI truth data (workspace={WORKSPACE_ID[:16]}...)...")
             seeds = seed(conn)
             api_health = check_api_database_health(api_base_url, seeds)

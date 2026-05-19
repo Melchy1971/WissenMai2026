@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-05-19T10:03:47.781022+00:00",
+  "generated_at": "2026-05-19T10:03:47.781068+00:00",
+  "collected": 7,
+  "passed": 6,
+  "failed": 1,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 13.74,
+  "duration_seconds": 13.74,
+  "failed_flows": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mundefined\u001b[39m\n\n  74 |     await expect.poll(() => chatResponses.length, { timeout: 10_000 }).toBeGreaterThan(0);\n  75 |     const answerResponse = chatResponses.find((response) => response.status === 201);\n> 76 |     expect(answerResponse).toBeTruthy();\n     |                            ^\n  77 |     expect(answerResponse.payload?.role).toBe('assistant');\n  78 |     expect(Array.isArray(answerResponse.paylo"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "07 Chat flow > posts a question and renders an answer with citations",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mundefined\u001b[39m\n\n  74 |     await expect.poll(() => chatResponses.length, { timeout: 10_000 }).toBeGreaterThan(0);\n  75 |     const answerResponse = chatResponses.find((response) => response.status === 201);\n> 76 |     expect(answerResponse).toBeTruthy();\n     |                            ^\n  77 |     expect(answerResponse.payload?.role).toBe('assistant');\n  78 |     expect(Array.isArray(answerResponse.paylo"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "07 Chat flow > shows chat page heading and workspace context",
+    "07 Chat flow > shows empty chat state or session list",
+    "07 Chat flow > shows chat composer form",
+    "07 Chat flow > navigation from documents to chat preserves workspace context",
+    "07 Chat flow > creates a chat session through the real API",
+    "07 Chat flow > insufficient context is rendered as a controlled error state"
+  ]
+}

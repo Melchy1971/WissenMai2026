@@ -17,6 +17,35 @@ test.describe('04 Dokumentliste', () => {
     }
   });
 
+  test('loads the seeded active document in the list', async ({ authedPage }) => {
+    await expect(authedPage.getByRole('link', { name: 'GUI Truth Active Document' })).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByText('GUI Truth Deleted Document')).not.toBeVisible();
+  });
+
+  test('opens document detail with versions and chunk preview', async ({ authedPage }) => {
+    await authedPage.getByRole('link', { name: 'GUI Truth Active Document' }).click();
+    await expect(authedPage).toHaveURL(/\/documents\/.+/);
+    await expect(authedPage.getByRole('heading', { name: 'GUI Truth Active Document' }).first()).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByRole('heading', { name: 'Versionen' })).toBeVisible();
+    await expect(authedPage.getByRole('heading', { name: 'Chunk-Vorschau' })).toBeVisible();
+    await expect(authedPage.getByText(/truthneedle active knowledge base content/)).toBeVisible();
+  });
+
+  test('unknown document detail is an error state, not an empty list', async ({ authedPage }) => {
+    await authedPage.goto('/documents/00000000-0000-0000-0000-000000000000');
+    await expect(authedPage.locator('.state-card--error')).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByText('Keine Dokumente vorhanden')).not.toBeVisible();
+  });
+
+  test('empty document list is distinct from an API error', async ({ multiWorkspacePage }) => {
+    const ws2 = process.env.TRUTH_MULTI_WS_WORKSPACE_2_ID;
+    await multiWorkspacePage.getByRole('combobox', { name: 'Workspace wechseln' }).selectOption(ws2);
+    await expect(multiWorkspacePage.getByText(`Workspace: ${ws2}`)).toBeVisible({ timeout: 10_000 });
+    await expect(multiWorkspacePage.getByText('Dokumente werden geladen...')).not.toBeVisible({ timeout: 15_000 });
+    await expect(multiWorkspacePage.locator('.state-card--error')).not.toBeVisible();
+    await expect(multiWorkspacePage.getByText('Keine Dokumente vorhanden')).toBeVisible({ timeout: 15_000 });
+  });
+
   test('shows lifecycle filter section', async ({ authedPage }) => {
     await expect(authedPage.getByText('Sichtbarkeit')).toBeVisible();
     await expect(authedPage.getByLabel('Statusfilter')).toBeVisible();

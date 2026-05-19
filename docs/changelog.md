@@ -2,6 +2,19 @@
 
 Stand: 2026-05-19
 
+## 2026-05-19 - Frontend Truth Full-Suite Scope finalisiert
+
+### Added
+
+- `docs/frontend-truth-full-suite-scope.md` definiert die 15 Pflichtflows, die Testfallliste und die Akzeptanzkriterien fuer Full-Suite-Frontend-Truth.
+- `reports/frontend_truth_scope.json` stellt den Scope maschinenlesbar bereit.
+
+### Decision
+
+- Ein Auth-/Bootstrap-Slice reicht nicht als Full-Suite-Frontend-Truth.
+- Full-Suite-Reports muessen gegen echte API und echte PostgreSQL-Testdatenbank laufen, `real_api = true`, `mock_only = false`, `test_database_url_set = true`, `skipped = 0` und alle 15 Pflichtflows explizit ausweisen.
+- Dokumentdetail, Re-Login-Recovery und erfolgreicher API-Reconnect muessen in kuenftigen Reports explizit benannt sein, wenn der Lauf als vollstaendige Frontend-Truth-Suite gelten soll.
+
 ## 2026-05-19 - Finales M3a-Gate nach Full-Suite-Frontend-Truth
 
 ### Added
