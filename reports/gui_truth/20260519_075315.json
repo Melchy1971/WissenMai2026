@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-05-19T07:53:15.038124+00:00",
+  "generated_at": "2026-05-19T07:53:15.038132+00:00",
+  "collected": 3,
+  "passed": 3,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 5.25,
+  "duration_seconds": 5.25,
+  "failed_flows": [],
+  "errors": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "11 GUI state invariants > documents route does not render data controls without validated workspace",
+    "11 GUI state invariants > API_UNREACHABLE on documents is not rendered as empty list",
+    "11 GUI state invariants > FORBIDDEN bootstrap state has no retry action"
+  ]
+}

@@ -25,6 +25,27 @@ async function clearAuthState(page) {
   }, KEYS);
 }
 
+async function waitForProtectedDocumentsReady(page) {
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForFunction(
+    () => !document.body.textContent?.includes('Authentifizierung wird initialisiert...'),
+    undefined,
+    { timeout: 15_000 },
+  );
+  await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });
+  await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });
+}
+
+async function waitForProtectedErrorReady(page) {
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForFunction(
+    () => !document.body.textContent?.includes('Authentifizierung wird initialisiert...'),
+    undefined,
+    { timeout: 15_000 },
+  );
+  await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });
+}
+
 export const test = base.extend({
   /**
    * Pre-authenticated page: complete auth state injected, bootstrap skipped.
@@ -44,6 +65,7 @@ export const test = base.extend({
       active_workspace_id: workspaceId,
     });
     await page.goto('/documents');
+    await waitForProtectedDocumentsReady(page);
     await use(page);
   },
 
@@ -62,6 +84,7 @@ export const test = base.extend({
       active_workspace_id: '',
     });
     await page.goto('/documents');
+    await waitForProtectedDocumentsReady(page);
     await use(page);
   },
 
@@ -85,6 +108,7 @@ export const test = base.extend({
       active_workspace_id: workspaceId,
     });
     await page.goto('/documents');
+    await waitForProtectedDocumentsReady(page);
     await use(page);
   },
 
@@ -103,6 +127,7 @@ export const test = base.extend({
       active_workspace_id: '',
     });
     await page.goto('/documents');
+    await waitForProtectedErrorReady(page);
     await use(page);
   },
 

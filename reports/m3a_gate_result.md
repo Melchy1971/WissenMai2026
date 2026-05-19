@@ -1,38 +1,59 @@
-# M3a Operational Truth Report
+# M3a Gate Result
 
 | Feld | Wert |
 |---|---|
-| Gate Result | BLOCKED |
-| Entscheidung | M3a blockiert |
-| M3a Score | 70 / 100 |
-| Schwelle | `>= 90` |
-| Voraussetzungen | `7 / 9` |
-| Timestamp | `2026-05-18T14:45:46.6959150+02:00` |
+| Gate Result | PASS |
+| Score | 100.0 |
+| Entscheidung | M3a abgeschlossen |
+| Regeln | 9 / 9 |
+| Timestamp | `2026-05-19T08:59:27.903906+00:00` |
 
-## Gate-Matrix
+## Regeln
 
-| Voraussetzung | Status | Score | Evidenz |
-|---|---|---:|---|
-| Frontend Truth Tests gruen | FAIL | 0 / 20 | aktueller Auth-Bootstrap-Slice ist gruen (`22 / 22`), aber ein gruener Full-Suite-Frontend-Truth-Nachweis fehlt weiterhin |
-| GUI Chaos-Tests gruen | PASS | 10 / 10 | `reports/gui_truth/gui_chaos_suite_report.json` (`8 / 8`) |
-| Runtime State Machine validiert | PASS | 10 / 10 | `docs/frontend-runtime-state-machine.md`, `GuiStateInvariants.test.jsx` |
-| Cache Governance validiert | PASS | 10 / 10 | `docs/frontend-cache-governance.md`, `RequestCoordinator.test.js` |
-| Contract Registry stabil | PASS | 10 / 10 | `docs/api/frontend-backend-contract-registry.md`, `reports/contract_test_report.json` |
-| Error-State Matrix vollstaendig | PASS | 10 / 10 | Error-Catalog-, ClientErrors- und ErrorState-Tests gruen |
-| Drift Awareness integriert | PASS | 10 / 10 | echte operative Metriken in Diagnostics UI/Backend vorhanden |
-| Recovery UX vorhanden | PASS | 10 / 10 | `docs/frontend-recovery-ux-model.md`, Chaos-/Bootstrap-Evidenz |
-| Frontend Security Hardening gruen | FAIL | 0 / 10 | `docs/security.md` und `docs/frontend.md` dokumentieren offene Produktluecken |
+| Regel | Status | Blocker |
+|---|---|---|
+| `full_suite_frontend_truth_green` | PASS |  |
+| `m3a_backend_minimum_green` | PASS |  |
+| `contract_tests_green` | PASS |  |
+| `gui_chaos_tests_green` | PASS |  |
+| `frontend_truth_passed_equals_collected` | PASS |  |
+| `frontend_truth_failed_zero` | PASS |  |
+| `frontend_truth_skipped_zero` | PASS |  |
+| `no_api_unreachable_in_normalflow` | PASS |  |
+| `no_workspace_not_configured_after_valid_login` | PASS |  |
 
-## Operational Truth Report
+## Blocker
 
-- Der Auth-Bootstrap-Produktpfad ist kanonisch gruen belegt (`22/22`), ersetzt aber keinen grünen Full-Suite-Frontend-Truth-Nachweis.
-- Globaler Frontend-Truth-Status fuer das Gesamtgate bleibt deshalb offen/blockierend und verhindert produktionsnahe M3a-Aussagen.
-- Die neue GUI-Chaos-Suite ist gruen und belegt Stabilitaet fuer API-Slow, API-Down, DB-Restart, Workspace-Switch, Token-Ablauf, Restore, Reindex und Queue-Backlog.
-- Runtime-State-Machine, Cache-Governance, Error-State-Matrix, Drift-Awareness und Recovery-UX sind dokumentiert und durch fokussierte Frontend-Tests positiv belegt.
-- Contract-Stabilitaet ist gruen; der Diagnostics-/Contract-Slice ist damit nicht der aktuelle Gate-Blocker.
+- keine
 
-## Restblocker
+## Scope-Entscheidung
 
-- Es fehlt ein aktueller gruener Full-Suite-Frontend-Truth-Nachweis fuer alle GUI-Slices; der zuletzt vollstaendige Lauf bleibt mit `58 / 80 passed`, `22 failed` rot.
-- Frontend Security Hardening ist nicht gruen: Auth-Bootstrap, Retry, Forbidden und Logout sind zwar browsernah belegt, aber Sessionwiederherstellung, kompletter Login-Produktnachweis und CSRF-Nachweis fehlen weiter.
-- Damit bleibt M3a unter der Stabilisierungsschwelle von `90` Punkten.
+- M3a Frontend Truth: `frontend_truth_report.json`, `gui_truth/latest.json`, GUI Chaos und Contract Tests sind blockierend.
+- M3a Backend-Minimum: echte API erreichbar, echte DB aktiv, Contract Tests gruen und relevante M3a-Endpunktflows im Frontend Truth belegt.
+- M4 Backend Truth: `postgres_truth_report.json` bewertet Backend-Hardening und ist keine M3a-Gate-Regel.
+- M5 Operational Truth: Entropy-, Queue-Aging-, Drift-, Cleanup- und Longevity-Tests sind keine M3a-Gate-Regeln.
+
+## M4/M5 Referenz
+
+- `postgres_truth_considered_for_m3a`: `false`
+
+| Failure/Error | Gruppe | M4-kritisch | M5-kritisch | M3a-relevant |
+|---|---|---|---|---|
+| `tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_chunk_deletion_increases_citation_orphan_rate` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_citation_orphan_rate_tracks_deletion_scale` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_drift_trend_function_returns_valid_structure` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_entropy_simulation_detects_chaos_and_verifies_recovery` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_repeated_archive_restore_cycles_stay_entropy_neutral` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_chunks_are_detected_by_metric` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_purge_restores_clean_state` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_dead_letter_accumulation_is_detected` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_draining_jobs_reduces_backlog` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_retryable_jobs_accumulate_and_are_detected` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_retrieval_repair_restores_coverage` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_searchability_drift_reduces_coverage` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_restore_cycle_does_not_create_stale_entries` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_cleared_by_repair_pass` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_grows_when_archive_skips_repair` | M5 entropy/drift | no | yes | no |
+| `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows` | M4b | yes | no | no |
+| `unclassified_setup_error_1` | Setup/Error | yes | yes | no |
+| `unclassified_setup_error_2` | Setup/Error | yes | yes | no |

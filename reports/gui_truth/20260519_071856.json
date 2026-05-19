@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-05-19T07:18:56.930670+00:00",
+  "generated_at": "2026-05-19T07:18:56.930679+00:00",
+  "collected": 4,
+  "passed": 4,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 9.1,
+  "duration_seconds": 9.1,
+  "failed_flows": [],
+  "errors": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "07 Chat flow > shows chat page heading and workspace context",
+    "07 Chat flow > shows empty chat state or session list",
+    "07 Chat flow > shows chat composer form",
+    "07 Chat flow > navigation from documents to chat preserves workspace context"
+  ]
+}

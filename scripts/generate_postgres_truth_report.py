@@ -47,6 +47,7 @@ class RunSummary:
     xpassed: int
     duration_seconds: float
     failed_tests: list[str] = field(default_factory=list)
+    error_tests: list[str] = field(default_factory=list)
     passed_tests: list[str] = field(default_factory=list)
 
 
@@ -78,6 +79,7 @@ class ResultCapturePlugin:
             "xpassed": 0,
         }
         self.failed_tests: list[str] = []
+        self.error_tests: list[str] = []
         self.passed_tests: list[str] = []
 
     def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
@@ -87,6 +89,7 @@ class ResultCapturePlugin:
                 self.counts["skipped"] += 1
             elif report.failed:
                 self.counts["errors"] += 1
+                self.error_tests.append(report.nodeid)
             return
         if report.passed and was_xfail:
             self.counts["xpassed"] += 1
@@ -106,6 +109,7 @@ class ResultCapturePlugin:
     def pytest_collectreport(self, report: pytest.CollectReport) -> None:
         if report.failed:
             self.counts["errors"] += 1
+            self.error_tests.append(report.nodeid)
 
 
 def _build_alembic_config() -> Config:
@@ -163,6 +167,7 @@ def _run_truth_suite() -> RunSummary:
         xpassed=plugin.counts["xpassed"],
         duration_seconds=round(duration_seconds, 3),
         failed_tests=sorted(plugin.failed_tests),
+        error_tests=sorted(plugin.error_tests),
         passed_tests=sorted(plugin.passed_tests),
     )
 
@@ -233,6 +238,7 @@ def _build_report_payload() -> dict[str, Any]:
         "gate_scores": gate_scores,
         "rc_blockers_open": rc_blockers_open,
         "failed_tests": summary.failed_tests,
+        "error_tests": summary.error_tests,
         "passed_tests": summary.passed_tests,
     }
 

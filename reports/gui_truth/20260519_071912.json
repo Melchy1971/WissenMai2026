@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-05-19T07:19:12.613947+00:00",
+  "generated_at": "2026-05-19T07:19:12.613957+00:00",
+  "collected": 5,
+  "passed": 5,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 13.24,
+  "duration_seconds": 13.24,
+  "failed_flows": [],
+  "errors": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "08 Lifecycle GUI > shows lifecycle filter with correct default option",
+    "08 Lifecycle GUI > lifecycle filter shows correct option labels",
+    "08 Lifecycle GUI > switching to archived filter triggers API call without error",
+    "08 Lifecycle GUI > switching back to active filter restores document list",
+    "08 Lifecycle GUI > shows lifecycle warning hint text"
+  ]
+}

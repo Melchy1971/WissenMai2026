@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-05-19T07:18:19.476747+00:00",
+  "generated_at": "2026-05-19T07:18:19.476763+00:00",
+  "collected": 4,
+  "passed": 4,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 14.07,
+  "duration_seconds": 14.07,
+  "failed_flows": [],
+  "errors": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "06 Search flow > shows search form elements",
+    "06 Search flow > submitting empty search term shows idle state without error",
+    "06 Search flow > search returns results or empty state without error",
+    "06 Search flow > search with workspace context sends request to real backend"
+  ]
+}

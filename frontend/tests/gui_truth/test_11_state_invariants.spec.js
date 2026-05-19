@@ -8,7 +8,7 @@ import { expect, test } from './fixtures.js';
 
 test.describe('11 GUI state invariants', () => {
   test('documents route does not render data controls without validated workspace', async ({ page }) => {
-    const token = process.env.TRUTH_TOKEN || 'truth-token';
+    const token = process.env.TRUTH_NO_MEMBERSHIP_TOKEN || 'truth-token';
     await page.goto('/');
     await page.evaluate((t) => {
       window.localStorage.setItem('wissen.authState', JSON.stringify({

@@ -1,130 +1,524 @@
 {
-  "timestamp": "2026-05-18T14:45:46.6959150+02:00",
-  "generated_at": "2026-05-18T14:45:46.6959150+02:00",
-  "gate": "M3a Operational Truth",
-  "gate_result": "BLOCKED",
-  "decision": "M3a blockiert",
-  "score": 70,
-  "threshold": 90,
-  "stabilized": false,
-  "prerequisites_passed": 7,
-  "prerequisites_total": 9,
-  "prerequisites": [
+  "timestamp": "2026-05-19T08:59:27.903906+00:00",
+  "gate": "M3a",
+  "gate_result": "PASS",
+  "score": 100.0,
+  "decision": "M3a abgeschlossen",
+  "rules_passed": 9,
+  "rules_total": 9,
+  "blockers": [],
+  "scope_decision": {
+    "frontend_foundation": "blocking",
+    "backend_minimum": "blocking_for_m3a",
+    "contract_tests": "blocking",
+    "gui_chaos": "blocking",
+    "postgres_truth": "not_an_m3a_gate_rule",
+    "postgres_truth_m4_backend_hardening": "blocking",
+    "m5_entropy_queue_drift": "not_an_m3a_gate_rule"
+  },
+  "truth_domains": {
+    "m3a_frontend_truth": [
+      "reports/frontend_truth_report.json",
+      "reports/gui_truth/latest.json",
+      "reports/gui_truth/gui_chaos_suite_report.json",
+      "reports/contract_test_report.json"
+    ],
+    "m4_backend_truth": [
+      "reports/postgres_truth_report.json marker groups m4a_gate/m4b_gate/m4c_gate"
+    ],
+    "m5_operational_truth": [
+      "entropy, queue aging, drift, cleanup, longevity and operational postgres_truth blocks"
+    ]
+  },
+  "m4_m5_reference": {
+    "postgres_truth_considered_for_m3a": false,
+    "failure_to_gate_matrix": [
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_chunk_deletion_increases_citation_orphan_rate",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_citation_orphan_rate_tracks_deletion_scale",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_drift_trend_function_returns_valid_structure",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_entropy_simulation_detects_chaos_and_verifies_recovery",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_repeated_archive_restore_cycles_stay_entropy_neutral",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_chunks_are_detected_by_metric",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_purge_restores_clean_state",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_dead_letter_accumulation_is_detected",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_draining_jobs_reduces_backlog",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_retryable_jobs_accumulate_and_are_detected",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_retrieval_repair_restores_coverage",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_searchability_drift_reduces_coverage",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_restore_cycle_does_not_create_stale_entries",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_cleared_by_repair_pass",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_grows_when_archive_skips_repair",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows",
+        "kind": "failure",
+        "group": "M4b",
+        "domain": "M4 Backend Truth",
+        "m4_critical": "yes",
+        "m5_critical": "no",
+        "m3a_relevant": "no",
+        "reason": "Upload-/Queue-Recovery ist M4b-gate-kritisch"
+      },
+      {
+        "nodeid": "unclassified_setup_error_1",
+        "kind": "error",
+        "group": "Setup/Error",
+        "domain": "Report integrity",
+        "m4_critical": "yes",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Setup-/Collect-Error ohne Nodeid im historischen Report"
+      },
+      {
+        "nodeid": "unclassified_setup_error_2",
+        "kind": "error",
+        "group": "Setup/Error",
+        "domain": "Report integrity",
+        "m4_critical": "yes",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Setup-/Collect-Error ohne Nodeid im historischen Report"
+      }
+    ],
+    "m3a_relevant_blockers": [],
+    "m4_backend_blockers": [
+      {
+        "nodeid": "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows",
+        "kind": "failure",
+        "group": "M4b",
+        "domain": "M4 Backend Truth",
+        "m4_critical": "yes",
+        "m5_critical": "no",
+        "m3a_relevant": "no",
+        "reason": "Upload-/Queue-Recovery ist M4b-gate-kritisch"
+      },
+      {
+        "nodeid": "unclassified_setup_error_1",
+        "kind": "error",
+        "group": "Setup/Error",
+        "domain": "Report integrity",
+        "m4_critical": "yes",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Setup-/Collect-Error ohne Nodeid im historischen Report"
+      },
+      {
+        "nodeid": "unclassified_setup_error_2",
+        "kind": "error",
+        "group": "Setup/Error",
+        "domain": "Report integrity",
+        "m4_critical": "yes",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Setup-/Collect-Error ohne Nodeid im historischen Report"
+      }
+    ],
+    "m5_operational_blockers": [
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_chunk_deletion_increases_citation_orphan_rate",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_citation_orphan_rate_tracks_deletion_scale",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_drift_trend_function_returns_valid_structure",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_entropy_simulation_detects_chaos_and_verifies_recovery",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_repeated_archive_restore_cycles_stay_entropy_neutral",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_chunks_are_detected_by_metric",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_purge_restores_clean_state",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_dead_letter_accumulation_is_detected",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_draining_jobs_reduces_backlog",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_retryable_jobs_accumulate_and_are_detected",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_retrieval_repair_restores_coverage",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_searchability_drift_reduces_coverage",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_restore_cycle_does_not_create_stale_entries",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_cleared_by_repair_pass",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_grows_when_archive_skips_repair",
+        "kind": "failure",
+        "group": "M5 entropy/drift",
+        "domain": "M5 Operational Truth",
+        "m4_critical": "no",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M3a Gate"
+      },
+      {
+        "nodeid": "unclassified_setup_error_1",
+        "kind": "error",
+        "group": "Setup/Error",
+        "domain": "Report integrity",
+        "m4_critical": "yes",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Setup-/Collect-Error ohne Nodeid im historischen Report"
+      },
+      {
+        "nodeid": "unclassified_setup_error_2",
+        "kind": "error",
+        "group": "Setup/Error",
+        "domain": "Report integrity",
+        "m4_critical": "yes",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Setup-/Collect-Error ohne Nodeid im historischen Report"
+      }
+    ]
+  },
+  "rule_results": [
     {
-      "id": "frontend_truth_tests_green",
-      "label": "Frontend Truth Tests gruen",
-      "weight": 20,
-      "passed": false,
-      "score_awarded": 0,
-      "evidence": "reports/frontend_truth_report.json",
-      "summary": "Frontend truth report bleibt rot: 58/80 passed, 22 failed, exit_code=1. Fokussierte grüne Läufe überstimmen diesen Pflichtreport nicht."
+      "id": "full_suite_frontend_truth_green",
+      "passed": true,
+      "blocker": null
+    },
+    {
+      "id": "m3a_backend_minimum_green",
+      "passed": true,
+      "blocker": null
+    },
+    {
+      "id": "contract_tests_green",
+      "passed": true,
+      "blocker": null
     },
     {
       "id": "gui_chaos_tests_green",
-      "label": "GUI Chaos-Tests gruen",
-      "weight": 10,
       "passed": true,
-      "score_awarded": 10,
-      "evidence": "reports/gui_truth/gui_chaos_suite_report.json",
-      "summary": "Neue Chaos-Suite ist gruen: 8/8 Szenarien bestanden."
+      "blocker": null
     },
     {
-      "id": "runtime_state_machine_validated",
-      "label": "Runtime State Machine validiert",
-      "weight": 10,
+      "id": "frontend_truth_passed_equals_collected",
       "passed": true,
-      "score_awarded": 10,
-      "evidence": "docs/frontend-runtime-state-machine.md + src/tests/app/GuiStateInvariants.test.jsx",
-      "summary": "Runtime-State-Regeln sind dokumentiert und fokussiert validiert; GuiStateInvariants gruen (7/7)."
+      "blocker": null
     },
     {
-      "id": "cache_governance_validated",
-      "label": "Cache Governance validiert",
-      "weight": 10,
+      "id": "frontend_truth_failed_zero",
       "passed": true,
-      "score_awarded": 10,
-      "evidence": "docs/frontend-cache-governance.md + src/tests/api/RequestCoordinator.test.js",
-      "summary": "Workspace-scoped Cache-/Request-Regeln sind dokumentiert; RequestCoordinator und stale-response Guards gruen (5/5)."
+      "blocker": null
     },
     {
-      "id": "contract_registry_stable",
-      "label": "Contract Registry stabil",
-      "weight": 10,
+      "id": "frontend_truth_skipped_zero",
       "passed": true,
-      "score_awarded": 10,
-      "evidence": "docs/api/frontend-backend-contract-registry.md + reports/contract_test_report.json",
-      "summary": "Contract Registry gepflegt, Contract-Tests gruen: 8/8, exit_code=0."
+      "blocker": null
     },
     {
-      "id": "error_state_matrix_complete",
-      "label": "Error-State Matrix vollstaendig",
-      "weight": 10,
+      "id": "no_api_unreachable_in_normalflow",
       "passed": true,
-      "score_awarded": 10,
-      "evidence": "docs/frontend-error-state-catalog.md + focused Vitest evidence",
-      "summary": "Error Catalog, ClientErrors und ErrorState sind gruen; fokussierte Evidenz 42/42 fuer Error-Mapping und Darstellung."
+      "blocker": null
     },
     {
-      "id": "drift_awareness_integrated",
-      "label": "Drift Awareness integriert",
-      "weight": 10,
+      "id": "no_workspace_not_configured_after_valid_login",
       "passed": true,
-      "score_awarded": 10,
-      "evidence": "backend/app/services/diagnostics.py + frontend/src/pages/AdminDiagnosticsPage.jsx",
-      "summary": "Drift, Queue, Backup, Reindex, Restore und Retrieval Regression sind sichtbar integriert und vertraglich abgesichert."
-    },
-    {
-      "id": "recovery_ux_present",
-      "label": "Recovery UX vorhanden",
-      "weight": 10,
-      "passed": true,
-      "score_awarded": 10,
-      "evidence": "docs/frontend-recovery-ux-model.md + GuiChaosSuite/AuthBootstrap evidence",
-      "summary": "Recovery-Regeln sind dokumentiert und fokussiert fuer API-Ausfall, DB-Restart, Token-Ablauf und degraded Modi belegt."
-    },
-    {
-      "id": "frontend_security_hardening_green",
-      "label": "Frontend Security Hardening gruen",
-      "weight": 10,
-      "passed": false,
-      "score_awarded": 0,
-      "evidence": "docs/security.md + docs/frontend.md",
-      "summary": "Security-Hardening bleibt nicht gruen: dokumentiert fehlen vollstaendiger Login-/Logout-/Route-Guard-Produktflow, Sessionwiederherstellung und CSRF-Nachweis."
+      "blocker": null
     }
   ],
-  "restblockers": [
-    "Frontend Truth Tests sind nicht gruen: reports/frontend_truth_report.json weist 22 Failures bei 80 gesammelten Flows aus.",
-    "Frontend Security Hardening ist nicht gruen: docs/security.md und docs/frontend.md dokumentieren fehlende Logout-, Sessionwiederherstellungs-, Route-Guard- und CSRF-Nachweise.",
-    "Globaler M3a-Freigabestatus bleibt damit trotz gruener fokussierter Slices unter dem Gate-Schwellenwert."
-  ],
-  "evidence": {
-    "frontend_truth_report": {
-      "path": "H:\\WissenMai2026\\reports\\frontend_truth_report.json",
-      "collected": 80,
-      "passed": 58,
-      "failed": 22,
-      "exit_code": 1,
-      "timestamp": "2026-05-18T09:57:14.609538+00:00"
+  "inputs": {
+    "frontend_truth_report": "H:\\WissenMai2026\\reports\\frontend_truth_report.json",
+    "gui_truth_latest": "H:\\WissenMai2026\\reports\\gui_truth\\latest.json",
+    "gui_chaos_suite_report": "H:\\WissenMai2026\\reports\\gui_truth\\gui_chaos_suite_report.json",
+    "contract_test_report": "H:\\WissenMai2026\\reports\\contract_test_report.json",
+    "postgres_truth_report": "H:\\WissenMai2026\\reports\\postgres_truth_report.json"
+  },
+  "input_summaries": {
+    "frontend_truth": {
+      "collected": 82,
+      "passed": 82,
+      "failed": 0,
+      "skipped": 0,
+      "errors": [],
+      "exit_code": 0,
+      "timestamp": "2026-05-19T07:54:48.841078+00:00"
     },
-    "gui_chaos_suite": {
-      "path": "H:\\WissenMai2026\\reports\\gui_truth\\gui_chaos_suite_report.json",
+    "gui_truth_latest": {
+      "collected": 82,
+      "passed": 82,
+      "failed": 0,
+      "skipped": 0,
+      "errors": [],
+      "exit_code": 0,
+      "timestamp": "2026-05-19T07:54:48.841078+00:00"
+    },
+    "gui_chaos": {
       "collected": 8,
       "passed": 8,
       "failed": 0,
-      "command": ".\\node_modules\\.bin\\vitest.cmd run src\\tests\\app\\GuiChaosSuite.test.jsx"
-    },
-    "focused_frontend_validations": {
-      "command": ".\\node_modules\\.bin\\vitest.cmd run src/tests/app/GuiStateInvariants.test.jsx src/tests/api/RequestCoordinator.test.js src/tests/view-models/ErrorCatalog.test.js src/tests/components/ErrorState.test.jsx src/tests/api/ClientErrors.test.js src/tests/auth/AuthBootstrap.test.jsx",
-      "passed": 64,
-      "failed": 0
+      "skipped": null,
+      "errors": null,
+      "exit_code": null,
+      "timestamp": "2026-05-18T14:45:46.6959150+02:00"
     },
     "contract_tests": {
-      "path": "H:\\WissenMai2026\\reports\\contract_test_report.json",
       "collected": 8,
       "passed": 8,
       "failed": 0,
+      "skipped": 0,
+      "errors": 0,
       "exit_code": 0,
       "timestamp": "2026-05-18T09:58:09.169571+00:00"
+    },
+    "postgres_truth": {
+      "collected": 138,
+      "passed": 120,
+      "failed": 16,
+      "skipped": 0,
+      "errors": 2,
+      "exit_code": 1,
+      "timestamp": "2026-05-18T09:45:45.351580Z"
     }
   }
 }

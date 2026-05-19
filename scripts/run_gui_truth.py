@@ -49,6 +49,8 @@ USER_ID = _uuid_with_prefix("f2000000", NAMESPACE, "user")
 MEMBERSHIP_ID = "truth-gui-truth-membership-1"
 SESSION_ID = "truth-gui-truth-session-1"
 SESSION_TOKEN = f"gui-truth-session-token-{NAMESPACE}"
+LOGOUT_SESSION_ID = "truth-gui-truth-logout-session-1"
+LOGOUT_SESSION_TOKEN = f"gui-truth-logout-token-{NAMESPACE}"
 
 # No-membership user: valid session, zero workspace memberships → WORKSPACE_NOT_CONFIGURED
 NO_MEMBERSHIP_USER_ID = _uuid_with_prefix("f2000000", NAMESPACE, "no-membership-user")
@@ -83,6 +85,7 @@ def seed(conn) -> dict:
     password_hash = hash_password(TRUTH_PASSWORD, salt=TRUTH_SALT)
     token_hash = hash_token(SESSION_TOKEN)
     no_membership_token_hash = hash_token(NO_MEMBERSHIP_TOKEN)
+    logout_token_hash = hash_token(LOGOUT_SESSION_TOKEN)
     created = datetime(2026, 5, 13, 10, 0, tzinfo=UTC)
     expires = datetime(2036, 5, 13, 10, 0, tzinfo=UTC)
 
@@ -119,6 +122,15 @@ def seed(conn) -> dict:
             ON CONFLICT (id) DO NOTHING
             """,
             (SESSION_ID, USER_ID, token_hash, expires, created, created),
+        )
+        cur.execute(
+            """
+            INSERT INTO auth_sessions
+                (id, user_id, token_hash, expires_at, created_at, last_seen_at, revoked_at)
+            VALUES (%s, %s::uuid, %s, %s, %s, %s, null)
+            ON CONFLICT (id) DO NOTHING
+            """,
+            (LOGOUT_SESSION_ID, USER_ID, logout_token_hash, expires, created, created),
         )
         # No-membership user: valid session, no workspace_membership → WORKSPACE_NOT_CONFIGURED
         cur.execute(
@@ -187,6 +199,7 @@ def seed(conn) -> dict:
         "workspace_2_id": WORKSPACE_2_ID,
         "user_id": USER_ID,
         "token": SESSION_TOKEN,
+        "logout_token": LOGOUT_SESSION_TOKEN,
         "login": TRUTH_LOGIN,
         "password": TRUTH_PASSWORD,
         "no_membership_token": NO_MEMBERSHIP_TOKEN,
@@ -217,29 +230,34 @@ def cleanup(conn) -> None:
             """
             DELETE FROM document_chunks
             WHERE document_id IN (
-                SELECT id FROM documents WHERE workspace_id::text = %s
+                SELECT id FROM documents WHERE workspace_id::text IN (%s, %s)
             )
             """,
-            (WORKSPACE_ID,),
+            (WORKSPACE_ID, WORKSPACE_2_ID),
         )
         _try(
             cur,
-            "UPDATE documents SET current_version_id = NULL WHERE workspace_id::text = %s",
-            (WORKSPACE_ID,),
+            """
+            UPDATE documents
+            SET import_status = 'pending', current_version_id = NULL
+            WHERE workspace_id::text IN (%s, %s)
+            """,
+            (WORKSPACE_ID, WORKSPACE_2_ID),
         )
         _try(
             cur,
             """
             DELETE FROM document_versions
             WHERE document_id IN (
-                SELECT id FROM documents WHERE workspace_id::text = %s
+                SELECT id FROM documents WHERE workspace_id::text IN (%s, %s)
             )
             """,
-            (WORKSPACE_ID,),
+            (WORKSPACE_ID, WORKSPACE_2_ID),
         )
-        _try(cur, "DELETE FROM documents WHERE workspace_id::text = %s", (WORKSPACE_ID,))
+        _try(cur, "DELETE FROM documents WHERE workspace_id::text IN (%s, %s)", (WORKSPACE_ID, WORKSPACE_2_ID))
         _try(cur, "DELETE FROM auth_sessions WHERE id = %s", (SESSION_ID,))
         _try(cur, "DELETE FROM auth_sessions WHERE id = %s", (NO_MEMBERSHIP_SESSION_ID,))
+        _try(cur, "DELETE FROM auth_sessions WHERE id = %s", (LOGOUT_SESSION_ID,))
         _try(cur, "DELETE FROM auth_sessions WHERE id = %s", (MULTI_WS_SESSION_ID,))
         _try(cur, "DELETE FROM workspace_memberships WHERE id = %s", (MEMBERSHIP_ID,))
         _try(cur, "DELETE FROM workspace_memberships WHERE id = %s", (MULTI_WS_MEMBERSHIP_1_ID,))
@@ -260,6 +278,7 @@ def run_playwright(seeds: dict, headed: bool, spec_filter: str | None) -> dict:
         "TRUTH_WORKSPACE_ID": seeds["workspace_id"],
         "TRUTH_WORKSPACE_2_ID": seeds["workspace_2_id"],
         "TRUTH_TOKEN": seeds["token"],
+        "TRUTH_LOGOUT_TOKEN": seeds["logout_token"],
         "TRUTH_LOGIN": seeds["login"],
         "TRUTH_PASSWORD": seeds["password"],
         "TRUTH_USER_ID": seeds["user_id"],

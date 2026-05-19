@@ -205,7 +205,7 @@ test.describe('10 Workspace bootstrap — 07 chat workspace reset', () => {
     const select = multiWorkspacePage.getByRole('combobox', { name: 'Workspace wechseln' });
     await select.selectOption(ws2);
 
-    await expect(multiWorkspacePage.getByText(`Workspace: ${ws2}`)).toBeVisible({ timeout: 5_000 });
+    await expect(select).toHaveValue(ws2);
   });
 });
 

@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-05-19T07:20:18.447376+00:00",
+  "generated_at": "2026-05-19T07:20:18.447389+00:00",
+  "collected": 2,
+  "passed": 1,
+  "failed": 1,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 9.0,
+  "duration_seconds": 9.0,
+  "failed_flows": [
+    {
+      "name": "12 Concurrency safety > workspace switch during an in-flight real request does not keep old workspace UI state",
+      "error": "Error: \"page.waitForTimeout: Test ended.\" while running route callback.\nConsider awaiting `await page.unrouteAll({ behavior: 'ignoreErrors' })`\nbefore the end of the test to ignore remaining routes in flight.\n\n  27 |\n  28 |     await multiWorkspacePage.route('**/documents?**', async (route) => {\n> 29 |       await multiWorkspacePage.waitForTimeout(1000);\n     |                                ^\n  30 |       await route.continue();\n  31 |     });\n  32 |\n    at H:\\WissenMai2026\\frontend\\tests\\gui_t"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "12 Concurrency safety > workspace switch during an in-flight real request does not keep old workspace UI state",
+      "error": "Error: \"page.waitForTimeout: Test ended.\" while running route callback.\nConsider awaiting `await page.unrouteAll({ behavior: 'ignoreErrors' })`\nbefore the end of the test to ignore remaining routes in flight.\n\n  27 |\n  28 |     await multiWorkspacePage.route('**/documents?**', async (route) => {\n> 29 |       await multiWorkspacePage.waitForTimeout(1000);\n     |                                ^\n  30 |       await route.continue();\n  31 |     });\n  32 |\n    at H:\\WissenMai2026\\frontend\\tests\\gui_t"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "12 Concurrency safety > parallel search requests use the real backend and do not surface stale errors"
+  ]
+}

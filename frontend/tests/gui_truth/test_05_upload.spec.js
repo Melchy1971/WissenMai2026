@@ -11,7 +11,7 @@ test.describe('05 Upload flow', () => {
 
   test('shows error when submitting without a file', async ({ authedPage }) => {
     await authedPage.getByRole('button', { name: 'Dokument importieren' }).click();
-    await expect(authedPage.getByText('Datei fehlt')).toBeVisible({ timeout: 5_000 });
+    await expect(authedPage.getByText('Fehlercode: FILE_REQUIRED')).toBeVisible({ timeout: 5_000 });
   });
 
   test('uploads a text file and completes the import job', async ({ authedPage }) => {

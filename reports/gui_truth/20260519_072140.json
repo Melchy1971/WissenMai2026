@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-05-19T07:21:40.226034+00:00",
+  "generated_at": "2026-05-19T07:21:40.226157+00:00",
+  "collected": 20,
+  "passed": 19,
+  "failed": 1,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 25.9,
+  "duration_seconds": 25.9,
+  "failed_flows": [
+    {
+      "name": "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > chat page shows workspace label after workspace switch",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumentgestuetzter Chat' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumentgestuetzter Chat' })\u001b[22m\n\n\n  206 |     await select.selectOption(ws2);\n  207 |\n> 208 |     await expect(multiWorkspacePage.getByRole('heading', { name: '"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > chat page shows workspace label after workspace switch",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumentgestuetzter Chat' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumentgestuetzter Chat' })\u001b[22m\n\n\n  206 |     await select.selectOption(ws2);\n  207 |\n> 208 |     await expect(multiWorkspacePage.getByRole('heading', { name: '"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id shown in document page header after bootstrap",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id shown in AppShell header after bootstrap",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id from bootstrap matches injected membership workspace",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 02 single workspace > single workspace shown as text, no dropdown switcher",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 02 single workspace > no workspace switcher visible for single-workspace user",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > workspace switcher select rendered for multi-workspace user",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > workspace switcher contains both workspace ids",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > initial active workspace is first injected workspace",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching workspace updates select value",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching workspace updates document page workspace label",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching to invalid workspace is rejected (select stays on valid workspace)",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 05 workspace switch reloads documents > switching workspace triggers documents reload",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 05 workspace switch reloads documents > documents page remains visible after workspace switch",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 06 state reset on switch > search result area is empty after workspace switch",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 06 state reset on switch > upload area is idle after workspace switch",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > switching workspace from chat page navigates back to /chat root",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership user sees WORKSPACE_NOT_CONFIGURED error",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership error is not session-expired",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership page does not show workspace switcher"
+  ]
+}

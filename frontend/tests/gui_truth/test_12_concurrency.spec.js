@@ -26,12 +26,13 @@ test.describe('12 Concurrency safety', () => {
     const workspace2Id = process.env.TRUTH_MULTI_WS_WORKSPACE_2_ID;
 
     await multiWorkspacePage.route('**/documents?**', async (route) => {
-      await multiWorkspacePage.waitForTimeout(1000);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       await route.continue();
     });
 
     await multiWorkspacePage.getByLabel('Workspace wechseln').selectOption(workspace2Id);
     await expect(multiWorkspacePage.getByText(`Workspace: ${workspace2Id}`)).toBeVisible({ timeout: 10_000 });
     await expect(multiWorkspacePage.locator('.state-card--error')).not.toBeVisible();
+    await multiWorkspacePage.unrouteAll({ behavior: 'ignoreErrors' });
   });
 });

@@ -309,26 +309,86 @@ test.describe('02 Auth bootstrap — 07 forbidden', () => {
 
 // ─── Scenario 08: Logout ─────────────────────────────────────────────────────
 test.describe('02 Auth bootstrap — 08 logout', () => {
-  test('logout clears session and redirects to login', async ({ authedPage }) => {
-    await expect(authedPage.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible();
-    await authedPage.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(authedPage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
-    await expect(authedPage).toHaveURL(/\/login/);
+  test('logout clears session and redirects to login', async ({ page }) => {
+    const token = process.env.TRUTH_LOGOUT_TOKEN;
+    const workspaceId = process.env.TRUTH_WORKSPACE_ID;
+    const userId = process.env.TRUTH_USER_ID;
+
+    await page.goto('/');
+    await page.evaluate(
+      ({ t, ws, uid }) => {
+        const state = {
+          token: t,
+          user: { id: uid, login: 'gui_truth_user', display_name: 'GUI Truth User' },
+          memberships: [{ workspace_id: ws, role: 'owner' }],
+          active_workspace_id: ws,
+        };
+        window.localStorage.setItem('wissen.authState', JSON.stringify(state));
+        window.localStorage.setItem('wissen.authToken', t);
+        window.localStorage.setItem('wissen.workspaceId', ws);
+      },
+      { t: token, ws: workspaceId, uid: userId },
+    );
+    await page.goto('/documents');
+    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
+    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+    await expect(page).toHaveURL(/\/login/);
   });
 
-  test('after logout, navigating to /documents redirects to login', async ({ authedPage }) => {
-    await authedPage.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(authedPage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+  test('after logout, navigating to /documents redirects to login', async ({ page }) => {
+    const token = process.env.TRUTH_LOGOUT_TOKEN;
+    const workspaceId = process.env.TRUTH_WORKSPACE_ID;
+    const userId = process.env.TRUTH_USER_ID;
 
-    await authedPage.goto('/documents');
-    await expect(authedPage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 5_000 });
+    await page.goto('/');
+    await page.evaluate(
+      ({ t, ws, uid }) => {
+        const state = {
+          token: t,
+          user: { id: uid, login: 'gui_truth_user', display_name: 'GUI Truth User' },
+          memberships: [{ workspace_id: ws, role: 'owner' }],
+          active_workspace_id: ws,
+        };
+        window.localStorage.setItem('wissen.authState', JSON.stringify(state));
+        window.localStorage.setItem('wissen.authToken', t);
+        window.localStorage.setItem('wissen.workspaceId', ws);
+      },
+      { t: token, ws: workspaceId, uid: userId },
+    );
+    await page.goto('/documents');
+    await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
+    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+
+    await page.goto('/documents');
+    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 5_000 });
   });
 
-  test('after logout, localStorage is cleared', async ({ authedPage }) => {
-    await authedPage.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(authedPage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+  test('after logout, localStorage is cleared', async ({ page }) => {
+    const token = process.env.TRUTH_LOGOUT_TOKEN;
+    const workspaceId = process.env.TRUTH_WORKSPACE_ID;
+    const userId = process.env.TRUTH_USER_ID;
 
-    const stored = await authedPage.evaluate(() => window.localStorage.getItem('wissen.authToken'));
+    await page.goto('/');
+    await page.evaluate(
+      ({ t, ws, uid }) => {
+        const state = {
+          token: t,
+          user: { id: uid, login: 'gui_truth_user', display_name: 'GUI Truth User' },
+          memberships: [{ workspace_id: ws, role: 'owner' }],
+          active_workspace_id: ws,
+        };
+        window.localStorage.setItem('wissen.authState', JSON.stringify(state));
+        window.localStorage.setItem('wissen.authToken', t);
+        window.localStorage.setItem('wissen.workspaceId', ws);
+      },
+      { t: token, ws: workspaceId, uid: userId },
+    );
+    await page.goto('/documents');
+    await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
+    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+
+    const stored = await page.evaluate(() => window.localStorage.getItem('wissen.authToken'));
     expect(stored).toBeNull();
   });
 });

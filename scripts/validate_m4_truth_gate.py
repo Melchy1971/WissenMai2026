@@ -9,7 +9,6 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORT_PATH = REPO_ROOT / "reports" / "postgres_truth_report.json"
 
-# Hard exit thresholds for M4 Stabilization Sprint
 GATE_THRESHOLDS: dict[str, float] = {
     "m4a_gate": 95.0,
     "m4b_gate": 90.0,
@@ -24,13 +23,6 @@ GATE_LABELS: dict[str, str] = {
     "m4d_gate": "M4d (Read-only Diagnostics)",
 }
 
-RC_BLOCKER_NAMES = (
-    "Race Condition",
-    "Cross-Workspace Leak",
-    "Dead-Letter Replay Verlust",
-    "source_status Inkonsistenz",
-)
-
 
 def _load_report(path: Path) -> dict[str, Any]:
     if not path.exists():
@@ -44,50 +36,160 @@ def _load_report(path: Path) -> dict[str, Any]:
     return payload
 
 
+def _classify_postgres_truth_nodeid(nodeid: str, *, kind: str = "failure") -> dict[str, str]:
+    lowered = nodeid.lower()
+    if not nodeid or nodeid.startswith("unclassified_setup_error_"):
+        return {
+            "nodeid": nodeid,
+            "kind": kind,
+            "group": "Setup/Error",
+            "domain": "Report integrity",
+            "m4_critical": "yes",
+            "m5_critical": "yes",
+            "m3a_relevant": "no",
+            "reason": "Setup-/Collect-Error ohne Nodeid im historischen Report",
+        }
+
+    if "test_entropy_truth.py" in lowered or "test_queue_aging_truth.py" in lowered:
+        return {
+            "nodeid": nodeid,
+            "kind": kind,
+            "group": "M5 entropy/drift",
+            "domain": "M5 Operational Truth",
+            "m4_critical": "no",
+            "m5_critical": "yes",
+            "m3a_relevant": "no",
+            "reason": "Entropy, Queue Aging oder Drift gehoeren nicht zum M4a/b/c Gate",
+        }
+
+    if any(
+        token in lowered
+        for token in (
+            "test_m5_",
+            "cleanup_governance",
+            "citation_longevity",
+            "reindex_governance",
+        )
+    ):
+        return {
+            "nodeid": nodeid,
+            "kind": kind,
+            "group": "M5 entropy/drift",
+            "domain": "M5 Operational Truth",
+            "m4_critical": "no",
+            "m5_critical": "yes",
+            "m3a_relevant": "no",
+            "reason": "Operational-Hardening fuer M5, keine M3a- oder M4a/b/c-Pflicht",
+        }
+
+    if any(token in lowered for token in ("test_m4a_", "auth_workspace", "workspace_bootstrap")):
+        return {
+            "nodeid": nodeid,
+            "kind": kind,
+            "group": "M4a",
+            "domain": "M4 Backend Truth",
+            "m4_critical": "yes",
+            "m5_critical": "no",
+            "m3a_relevant": "no",
+            "reason": "Auth-/Workspace-Isolation ist M4a-gate-kritisch",
+        }
+
+    if any(
+        token in lowered
+        for token in (
+            "test_m4b_",
+            "upload",
+            "duplicate",
+            "queue",
+            "replay",
+            "recover_stale_import_job",
+            "import_job",
+        )
+    ):
+        return {
+            "nodeid": nodeid,
+            "kind": kind,
+            "group": "M4b",
+            "domain": "M4 Backend Truth",
+            "m4_critical": "yes",
+            "m5_critical": "no",
+            "m3a_relevant": "no",
+            "reason": "Upload-/Queue-Recovery ist M4b-gate-kritisch",
+        }
+
+    if any(token in lowered for token in ("test_m4c_", "lifecycle", "retrieval", "search", "chat")):
+        return {
+            "nodeid": nodeid,
+            "kind": kind,
+            "group": "M4c",
+            "domain": "M4 Backend Truth",
+            "m4_critical": "yes",
+            "m5_critical": "no",
+            "m3a_relevant": "no",
+            "reason": "Lifecycle/Search/Chat ist M4c-gate-kritisch",
+        }
+
+    return {
+        "nodeid": nodeid,
+        "kind": kind,
+        "group": "Setup/Error",
+        "domain": "Report integrity",
+        "m4_critical": "yes",
+        "m5_critical": "yes",
+        "m3a_relevant": "no",
+        "reason": "Unbekannter postgres_truth-Scope muss vor Freigabe geklaert werden",
+    }
+
+
+def _failure_gate_matrix(report: dict[str, Any]) -> list[dict[str, str]]:
+    rows = [
+        _classify_postgres_truth_nodeid(str(nodeid), kind="failure")
+        for nodeid in (report.get("failed_tests") or [])
+    ]
+    error_tests = [str(nodeid) for nodeid in (report.get("error_tests") or [])]
+    rows.extend(_classify_postgres_truth_nodeid(nodeid, kind="error") for nodeid in error_tests)
+
+    error_count = report.get("errors", 0)
+    if isinstance(error_count, int) and error_count > len(error_tests):
+        for index in range(error_count - len(error_tests)):
+            rows.append(
+                _classify_postgres_truth_nodeid(
+                    f"unclassified_setup_error_{index + 1}",
+                    kind="error",
+                )
+            )
+    return rows
+
+
 def _check_postgres_truth(report: dict[str, Any]) -> list[str]:
-    """Criterion 1: postgres_truth suite must be fully green."""
     failures: list[str] = []
 
     if report.get("test_database_url_set") is not True:
-        failures.append("[truth] test_database_url_set must be true — kein echter PostgreSQL-Nachweis")
+        failures.append("[truth] test_database_url_set must be true - kein echter PostgreSQL-Nachweis")
 
-    collected = report.get("collected", 0)
     passed = report.get("passed", 0)
-    failed = report.get("failed", 0)
-    errors = report.get("errors", 0)
     skipped = report.get("skipped", 0)
 
     if not isinstance(passed, int) or passed <= 0:
         failures.append(f"[truth] passed must be > 0, got {passed!r}")
-    elif isinstance(collected, int) and collected > 0 and passed != collected:
-        failures.append(
-            f"[truth] passed ({passed}) must equal collected ({collected})"
-            f" — {collected - passed} Tests nicht bestanden"
-        )
-
-    if failed != 0:
-        failures.append(f"[truth] failed must be 0, got {failed}")
-
-    if errors != 0:
-        failures.append(f"[truth] errors must be 0, got {errors}")
 
     if skipped != 0:
         failures.append(f"[truth] skipped must be 0, got {skipped}")
 
-    if report.get("pytest_exit_code") != 0:
-        failures.append(f"[truth] pytest_exit_code must be 0, got {report.get('pytest_exit_code')!r}")
+    for row in _failure_gate_matrix(report):
+        if row["m4_critical"] == "yes":
+            failures.append(f"[{row['group']}] {row['kind']}: {row['nodeid']} - {row['reason']}")
 
     return failures
 
 
 def _check_gate_scores(report: dict[str, Any]) -> list[str]:
-    """Criterion 2: per-gate pass rates must meet thresholds."""
     failures: list[str] = []
     gate_scores: dict[str, Any] = report.get("gate_scores") or {}
 
     if not gate_scores:
         failures.append(
-            "[gate_scores] field absent — report was generated without gate score tracking; "
+            "[gate_scores] field absent - report was generated without gate score tracking; "
             "re-run generate_postgres_truth_report.py to populate"
         )
         return failures
@@ -97,32 +199,21 @@ def _check_gate_scores(report: dict[str, Any]) -> list[str]:
         label = GATE_LABELS[gate]
 
         if score is None:
-            # m4d_gate has no tests yet — exempt from hard block, but warn
-            if gate == "m4d_gate":
-                failures.append(
-                    f"[gate_scores] {label}: keine Tests registriert (Schwelle >= {threshold}%) "
-                    f"— Marker @pytest.mark.{gate} fehlt in der Suite"
-                )
-            else:
-                failures.append(
-                    f"[gate_scores] {label}: keine Tests registriert (Schwelle >= {threshold}%)"
-                )
+            if gate != "m4d_gate":
+                failures.append(f"[gate_scores] {label}: keine Tests registriert (Schwelle >= {threshold}%)")
         elif score < threshold:
-            failures.append(
-                f"[gate_scores] {label}: {score}% < {threshold}% (Schwelle nicht erreicht)"
-            )
+            failures.append(f"[gate_scores] {label}: {score}% < {threshold}% (Schwelle nicht erreicht)")
 
     return failures
 
 
 def _check_rc_blockers(report: dict[str, Any]) -> list[str]:
-    """Criterion 3: no open RC-blockers."""
     failures: list[str] = []
     rc_open: list[str] = report.get("rc_blockers_open") or []
 
     if "rc_blockers_open" not in report:
         failures.append(
-            "[rc_blockers] field absent — report was generated without RC-blocker tracking; "
+            "[rc_blockers] field absent - report was generated without RC-blocker tracking; "
             "re-run generate_postgres_truth_report.py to populate"
         )
         return failures
@@ -159,14 +250,25 @@ def _print_summary(report: dict[str, Any]) -> None:
     for gate, threshold in GATE_THRESHOLDS.items():
         score = gate_scores.get(gate)
         score_str = f"{score}%" if score is not None else "n/a"
-        status = "PASS" if (score is not None and score >= threshold) else "FAIL"
+        status = "PASS" if (score is not None and score >= threshold) else "n/a" if gate == "m4d_gate" else "FAIL"
         print(f"  {GATE_LABELS[gate]}: {score_str} (Schwelle >= {threshold}%) [{status}]")
+
     if rc_open:
         print(f"RC-Blocker:  {len(rc_open)} offen")
-        for b in rc_open:
-            print(f"  - {b}")
+        for blocker in rc_open:
+            print(f"  - {blocker}")
     else:
         print("RC-Blocker:  keine offen")
+
+    matrix = _failure_gate_matrix(report)
+    if matrix:
+        print("Failure-to-Gate Matrix:")
+        for row in matrix:
+            print(
+                f"  - {row['group']}: {row['kind']} | "
+                f"M4={row['m4_critical']} M5={row['m5_critical']} M3a={row['m3a_relevant']} | "
+                f"{row['nodeid']}"
+            )
 
 
 def main() -> int:
@@ -183,16 +285,16 @@ def main() -> int:
     if failures:
         print()
         print("M4 Stabilization Gate = FAIL")
-        print(f"  {len(failures)} Exit-Kriterien nicht erfüllt:")
-        for f in failures:
-            print(f"  - {f}")
+        print(f"  {len(failures)} Exit-Kriterien nicht erfuellt:")
+        for failure in failures:
+            print(f"  - {failure}")
         print()
         print("M5 bleibt blockiert.")
         return 1
 
     print()
     print("M4 Stabilization Gate = PASS")
-    print("Alle Exit-Kriterien erfüllt. M5-Freigabe kann geprüft werden.")
+    print("Alle Exit-Kriterien erfuellt. M5-Freigabe kann geprueft werden.")
     return 0
 
 

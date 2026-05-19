@@ -100,12 +100,12 @@ Quelle:
 Policy:
 
 - `test_database_url_set = true`
-- `passed = collected`
-- `failed = 0`
-- `errors = 0`
+- M4a/M4b/M4c-klassifizierte Failures muessen `0` sein
+- Setup-/Collect-Errors muessen `0` sein oder konkret klassifiziert und als nicht M4-relevant belegt sein
 - `skipped = 0`
-- `pytest_exit_code = 0`
-- `m4_gate_blockers = []`
+- M5 Entropy-, Queue-Aging- und Drift-Failures blockieren M4 nicht
+- `scripts/validate_m4_truth_gate.py` erzeugt die verbindliche Failure-to-Gate-Klassifikation
+- Detailmatrix: `docs/postgres-truth-failure-gate-matrix.md`
 
 Dokumentation darf M4 nur dann als gruen beschreiben, wenn sie diesen Report und Validatorstatus referenziert.
 
@@ -114,25 +114,33 @@ Dokumentation darf M4 nur dann als gruen beschreiben, wenn sie diesen Report und
 Quelle:
 
 - `reports/frontend_truth_report.json`
+- `reports/gui_truth/latest.json`
+- `reports/gui_truth/gui_chaos_suite_report.json`
 - `reports/contract_test_report.json`
 - `reports/m3a_gate_result.json`
-- Drift-Evidenz aus `GET /api/v1/admin/diagnostics` oder einem spaeteren maschinenlesbaren Frontend-Drift-Report
+- Detailregel: `docs/m3a-gate-policy.md`
 
 Policy:
 
 - `frontend_truth_report.json` ist Pflichtartefakt; fehlt der Report, ist M3a mindestens `unknown`, nie `pass`
-- `test_database_url_set = true`, sofern der Frontend-Truth-Lauf gegen echte Fachpfade und Auth-/Workspace-Bootstrap Aussagen trifft
+- Full-Suite Frontend Truth muss gruen sein; ein Auth-Bootstrap-Slice reicht nicht
+- `real_api = true`
+- `mock_only = false`
+- `test_database_url_set = true`
+- `/health/db` der echten API muss gruen sein
 - `passed = collected`
 - `failed = 0`
 - `errors = 0`, falls das Artefakt dieses Feld fuehrt
 - `skipped = 0`
 - `exit_code = 0`
-- GUI-Regressionen in Auth-Bootstrap, Workspace-Bootstrap, Documents, Search, Chat, Upload, Lifecycle oder Diagnostics sind gate-relevant
+- GUI-Regressionen in Auth-Bootstrap, Workspace-Bootstrap, Documents, Search, Chat, Upload, Lifecycle, Diagnostics, Error States, Recovery oder Concurrency sind gate-relevant
 - `contract_test_report.json` muss gruen sein; ein gruener Frontend-Truth-Report ersetzt keine Contract-Governance
-- Drift darf nicht still bleiben: kritische oder warnende Frontend-Drift-Signale muessen im GUI sichtbar sein oder M3a bleibt `fail` oder `watch`
+- GUI Chaos muss gruen sein
 - Recovery-relevante Flows wie API down, Reconnect, Restore-Mode, Retry-Buttons und sichtbare Error States muessen durch Truth-Artefakte oder fokussierte Pflichtreports belegt sein
 - Security-relevante Frontend-Flows wie Auth Required, Forbidden, Workspace-Isolation, Route-Guard-Verhalten und Logout-/Session-Invalidierung duerfen nicht nur dokumentiert, sondern muessen fuer produktionsnahe Aussagen durch Truth-Reports belegt sein
 - `m3a_gate_result.json` muss alle blockierenden Findings maschinenlesbar ausweisen
+- `reports/postgres_truth_report.json` ist keine blockierende M3a-Quelle. Es gehoert zu M4 Backend Truth und M5 Operational Truth.
+- M5 Entropy Tests, Queue Aging Tests sowie M4/M5 Drift-, Cleanup- und Longevity-Tests sind keine M3a-Gate-Regeln.
 
 Dokumentation darf M3a nur dann als `stabilisiert`, `freigabefaehig` oder `operational bereit` beschreiben, wenn diese Artefakte vorhanden und aktuell sind.
 

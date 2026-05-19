@@ -1,0 +1,81 @@
+{
+  "timestamp": "2026-05-19T10:57:45.4813616+02:00",
+  "gate": "M3a Final Gate",
+  "gate_result": "PASS",
+  "score": 100.0,
+  "score_threshold": 90.0,
+  "decision": "M3a abgeschlossen",
+  "m4_total_completion": {
+    "go_no_go": "NO_GO",
+    "reason": "M3a blockiert M4 nicht mehr, aber M4 Backend Truth ist weiterhin blockiert.",
+    "blocking_sources": [
+      "reports/postgres_truth_report.json",
+      "scripts/validate_m4_truth_gate.py"
+    ],
+    "blocking_summary": {
+      "m4_backend_blockers": 3,
+      "m4b_failures": 1,
+      "setup_errors": 2,
+      "m5_entropy_drift_findings_not_m4_blocking": 15
+    }
+  },
+  "inputs": {
+    "frontend_truth_report": "reports/frontend_truth_report.json",
+    "gui_truth_latest": "reports/gui_truth/latest.json",
+    "gui_chaos_suite_report": "reports/gui_truth/gui_chaos_suite_report.json",
+    "contract_test_report": "reports/contract_test_report.json",
+    "m3a_gate_result": "reports/m3a_gate_result.json",
+    "error_state_catalog": "docs/frontend-error-state-catalog.md",
+    "security_documentation": "docs/security.md",
+    "frontend_documentation": "docs/frontend.md",
+    "status_documentation": "docs/status.md",
+    "masterplan": "masterplan.md"
+  },
+  "checks": [
+    {
+      "id": "full_suite_frontend_truth_green",
+      "passed": true,
+      "evidence": "82 collected, 82 passed, 0 failed, 0 skipped; real_api=true; mock_only=false; test_database_url_set=true; /health/db ok"
+    },
+    {
+      "id": "gui_chaos_suite_green",
+      "passed": true,
+      "evidence": "8 collected, 8 passed, 0 failed; result=PASS"
+    },
+    {
+      "id": "contract_tests_green",
+      "passed": true,
+      "evidence": "8 collected, 8 passed, 0 failed, 0 skipped, 0 errors"
+    },
+    {
+      "id": "auth_bootstrap_green",
+      "passed": true,
+      "evidence": "Frontend Truth includes Auth bootstrap scenarios for no token, valid bootstrap, invalid token, API_UNREACHABLE, no membership, FORBIDDEN and logout"
+    },
+    {
+      "id": "workspace_bootstrap_green",
+      "passed": true,
+      "evidence": "Frontend Truth includes Workspace bootstrap scenarios for membership, switcher, invalid switch rejection, document reload, state reset and no-membership error"
+    },
+    {
+      "id": "error_state_matrix_complete",
+      "passed": true,
+      "evidence": "docs/frontend-error-state-catalog.md covers API_UNREACHABLE, AUTH_REQUIRED, FORBIDDEN, WORKSPACE_NOT_CONFIGURED, TIMEOUT, VALIDATION_ERROR, SERVER_ERROR, IMPORT_FAILED, OCR_REQUIRED and DUPLICATE_DOCUMENT"
+    },
+    {
+      "id": "security_hardening_evaluated",
+      "passed": true,
+      "evidence": "M3a-relevant route guards, logout clearing, forbidden handling, workspace context and no retry loop are covered by Frontend Truth and documented; broader M4 security hardening remains outside M3a"
+    },
+    {
+      "id": "documentation_updated",
+      "passed": true,
+      "evidence": "masterplan.md, docs/status.md, docs/frontend.md, docs/m3a-gate-policy.md and docs/operational-truth-governance.md reference the green M3a evidence and separate M4/M5 blockers"
+    }
+  ],
+  "blockers": [],
+  "warnings": [
+    "M4 Gesamtabschluss bleibt No-Go, bis M4 Backend Truth gruen ist.",
+    "reports/postgres_truth_report.json bleibt rot, ist aber keine M3a-Gate-Regel."
+  ]
+}

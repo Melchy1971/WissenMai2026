@@ -1,12 +1,14 @@
 # Frontend M3a, M3b Retrieval-UI, M3c Chat/RAG-Foundation-UI und M4-Produktisierungsstand
 
-Stand: 2026-05-18
+Stand: 2026-05-19
 
 ## Status
 
-Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erweitert, fuer M3c um eine dokumentgestuetzte Chat-Oberflaeche ergaenzt und in M4 um Upload-, Lifecycle- sowie read-only Admin-Diagnostics-Slices erweitert. Das belegt: GUI vorhanden. Es belegt nicht: GUI stabilisiert. Der aktuelle M3a-Gate-Report `reports/m3a_gate_result.json` steht auf `BLOCKED` mit Score `70`.
+Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erweitert, fuer M3c um eine dokumentgestuetzte Chat-Oberflaeche ergaenzt und in M4 um Upload-, Lifecycle- sowie read-only Admin-Diagnostics-Slices erweitert. Das belegt: GUI vorhanden. Der aktuelle M3a-Gate-Report `reports/m3a_gate_result.json` steht auf `PASS` mit Score `100.0`; damit ist M3a Frontend Foundation abgeschlossen.
 
-Verbindliche Nachweisgrenze: Gruene Aussagen zum Frontend duerfen nur aus aktuellen Reports abgeleitet werden. Der zuletzt vollstaendige Frontend-Truth-Lauf liegt in `reports/gui_truth/20260518_095714.json` und bleibt rot mit `80 collected`, `58 passed`, `22 failed`, `0 skipped`. Der aktuelle kanonische Nachlauf `reports/frontend_truth_report.json` ist ein fokussierter Auth-Bootstrap-Slice und gruen mit `22 collected`, `22 passed`, `0 failed`, `0 skipped`. Damit ist der Auth-Produktpfad lokal belegt, M3a aber weiterhin nicht abgeschlossen.
+Verbindliche Nachweisgrenze: Gruene Aussagen zum Frontend duerfen nur aus aktuellen Reports abgeleitet werden. Der aktuelle Full-Suite-Frontend-Truth-Lauf liegt in `reports/frontend_truth_report.json` und `reports/gui_truth/latest.json` mit `82 collected`, `82 passed`, `0 failed`, `0 skipped`, echter API, echter PostgreSQL-Testdatenbank und gruenem `/health/db`. `reports/gui_truth/gui_chaos_suite_report.json` ist ebenfalls gruen mit `8/8`. Die Gate-Regel ist in `docs/m3a-gate-policy.md` dokumentiert.
+
+Fehlkopplungsregel: `reports/postgres_truth_report.json` ist fuer M3a Frontend Foundation keine blockierende Quelle. Der rote PostgreSQL-Truth-Gesamtstatus bleibt M4 Backend Truth/M5 Operational Truth und darf M3a nur blockieren, wenn API-Erreichbarkeit, echte DB, Contract Tests oder relevante M3a-Endpunktflows verletzt sind.
 
 Verbindlicher Runtime-Vertrag: Die explizite Frontend-State-Machine steht in `docs/frontend-runtime-state-machine.md`. Fachrouten duerfen nur aus `workspace_ready` heraus frische Daten und Mutationen anbieten; `api_unreachable`, `forbidden`, `restore_mode` und `reconnecting` duerfen nie als Empty-State gerendert werden.
 
@@ -177,6 +179,7 @@ Bekannte Einschraenkungen im Lifecycle-Slice:
 - `docs/frontend-runtime-state-machine.md`: verbindliche Runtime States, Transition Matrix, verbotene Transitions und Cache-/Upload-Regeln.
 - `docs/frontend-cache-governance.md`: verbindliche Cache-Governance, Invalidierungsregeln und Stale-State-Regeln.
 - `docs/frontend-concurrency-safety.md`: verbindliches Request-Management und Race-Sicherheitsmodell.
+- `docs/m3a-gate-policy.md`: verbindliche Trennung zwischen M3a Frontend Truth, M4 Backend Truth und M5 Operational Truth.
 
 ## Aktueller Nachweis
 
@@ -185,33 +188,27 @@ Bekannte Einschraenkungen im Lifecycle-Slice:
 - Screen-Tests fuer Chat-Sessionliste, Chat-Nachrichten, Quellenanzeige und Insufficient-Context-Zustand: vorhanden.
 - Screen-Tests fuer neue Session, Frage senden, Assistant-Antwort mit Quellen und Chat-Fehlercodes: vorhanden.
 - Historische Screen- und Unit-Tests sind vorhanden, ersetzen aber keinen gruenen Frontend Truth Report.
-- Full-Suite-Frontend-Truth-Baseline: `reports/gui_truth/20260518_095714.json`, Stand 2026-05-18, `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
-- Aktueller Auth-Bootstrap-Truth-Slice: `reports/frontend_truth_report.json`, Stand 2026-05-18, `22 collected`, `22 passed`, `0 failed`, `0 skipped`, Browser `chromium`, API `http://127.0.0.1:8000`, echte PostgreSQL-DB nachgewiesen.
-- M3a Gate: `reports/m3a_gate_result.json`, `BLOCKED`, Score `70`.
+- Full-Suite-Frontend-Truth: `reports/frontend_truth_report.json` und `reports/gui_truth/latest.json`, Stand 2026-05-19, `82 collected`, `82 passed`, `0 failed`, `0 skipped`, Browser `chromium`, API `http://127.0.0.1:8000`, echte PostgreSQL-DB nachgewiesen.
+- GUI Chaos Truth: `reports/gui_truth/gui_chaos_suite_report.json`, `8 collected`, `8 passed`, `0 failed`.
+- M3a Gate: `reports/m3a_gate_result.json`, `PASS`, Score `100.0`.
+- Finales M3a Gate: `reports/m3a_final_gate_report.json`, `PASS`, Score `100.0`, M3a abgeschlossen.
 
 Keine Freigabeaussage:
 
 - Ein lokaler Unit-/Build-Lauf darf die Browser-E2E-Fehler nicht ueberstimmen.
-- M3a darf nicht als `abgeschlossen`, `freigegeben` oder `stabilisiert` markiert werden, solange das M3a-Gate nicht gruen ist.
+- M3a darf als `abgeschlossen` dokumentiert werden, solange der aktuelle M3a-Gate-Report gruen bleibt und keine neuere rote M3a-Quelle existiert.
 
-## Aktuelle Luecken vor finaler Freigabe
+## Restpunkte ausserhalb des finalen M3a-Gates
 
-- 22 fehlgeschlagene Frontend-E2E-Flows im aktuellen Frontend Truth Report.
-- gruener `reports/contract_test_report.json`; Contract Tests blockieren M3a aktuell nicht.
-- roter `reports/postgres_truth_report.json`.
-- M3a Gate `FAIL`.
+- Roter `reports/postgres_truth_report.json` bleibt M4/M5-Blocker, nicht M3a-Blocker.
 - Keine separaten Routen fuer Versionen- und Chunk-Ansicht; beides ist aktuell in die Detailseite integriert.
-- Keine echten Unit-Tests fuer ViewModel-Mapping und Fehlerabbildung.
-- Keine separaten API-Mock-Tests fuer `404`, `409` und Netzwerkfehler auf API-Client-Ebene.
-- Kein E2E-Smoke-Test fuer den Kernflow.
+- ViewModel-Mapping, Fehlerabbildung und zentrale API-Client-Fehler sind getestet, bleiben aber als Pflegebereich fuer neue Codes relevant.
 - Keine GUI-Pagination fuer umfangreiche Suchtreffermengen.
-- Kein Browser-E2E-Test gegen einen laufenden Backend-Prozess; die aktuelle Absicherung erfolgt ueber Vitest/Fetch-Mocks gegen den echten API-Vertrag.
 - Kein Direktlink in die Dokumentdetailansicht nach erfolgreichem Upload.
 - Keine Darstellung von `warnings` im Upload-Ergebnis.
 - Polling nutzt festen 250-ms-Takt ohne Backoff.
 - Dokument-, Search- und Chat-API-Clients senden keinen `workspace_id` mehr in Query oder Body, sondern nutzen den zentralen Request-Kontext fuer `X-Workspace-Id`.
-- Ein vollstaendiger Frontend-Produktflow fuer Login, Logout, Sessionwiederherstellung und geschuetzte Route-Guards fehlt weiterhin.
-- Kein Login-Screen und kein Logout; die GUI konsumiert geschuetzte Endpunkte ueber den Request-Kontext, bietet aber keinen vollstaendigen M4a-Produktfluss.
+- Erweiterte M4a-Produktfragen wie Cookie-Session-Standard, CSRF und Enterprise-Rollenmodell bleiben ausserhalb des M3a-Gates.
 - Admin-Diagnostik nutzt den zentralen Auth-/Workspace-Kontext; die GUI zeigt keinen manuellen `x-admin-token`-Pfad und keine mutierenden Admin-Aktionen mehr.
 
 ## M4a Konsistenzstand im Frontend
@@ -222,14 +219,13 @@ Nachweisbar implementiert:
 - Read-only Admin-Diagnostik mit Membership-/Rollenpruefung aus dem AuthContext
 - Workspace-Sichtbarkeit in Dokument- und Chat-Routen
 
-Nicht nachweisbar implementiert:
+Nicht als M3a-Blocker bewertet:
 
-- Login-Screen
-- Logout-Flow
-- Sessionwiederherstellung
-- geschuetzter Route-Guard aus einem echten Auth-Kontext
-- vollstaendige geschuetzte Navigation ohne manuelle Workspace-Kontextannahmen
+- Cookie-Session-Produktstandard
+- CSRF-Nachweis
+- Enterprise-Rollenmodell
+- vollstaendige M4a-Backend-Hardening-Freigabe
 
 ## Fazit
 
-Der Frontend-Schnitt deckt Dokumente, Suche, Chat sowie erste M4-Produktisierungs-Slices fuer Upload, Lifecycle und read-only Diagnostics ab. Das ist ein vorhandener GUI-Stand, aber kein stabilisierter M3a-Abschluss. Aktuell blockieren der rote Frontend Truth Report und der rote PostgreSQL Truth Report das M3a-Gate; der Contract-Test-Report ist gruen. M4d ist im Frontend nur read-only vorbereitet; Reparatur-, Reindex-, Cleanup- und Backup-Aktionen sind nicht Teil eines freigegebenen UI-Scope.
+Der Frontend-Schnitt deckt Dokumente, Suche, Chat sowie erste M4-Produktisierungs-Slices fuer Upload, Lifecycle und read-only Diagnostics ab. M3a Frontend Foundation ist durch `reports/m3a_gate_result.json` abgeschlossen. Der rote PostgreSQL Truth Report blockiert weiterhin M4/M5, aber nicht M3a. M4d ist im Frontend nur read-only vorbereitet; Reparatur-, Reindex-, Cleanup- und Backup-Aktionen sind nicht Teil eines freigegebenen UI-Scope.

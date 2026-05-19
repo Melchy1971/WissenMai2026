@@ -1,6 +1,56 @@
 # Changelog
 
-Stand: 2026-05-18
+Stand: 2026-05-19
+
+## 2026-05-19 - Finales M3a-Gate nach Full-Suite-Frontend-Truth
+
+### Added
+
+- `reports/m3a_final_gate_report.json` und `reports/m3a_final_gate_report.md` dokumentieren das finale M3a-Gate.
+
+### Findings
+
+- Full-Suite Frontend Truth ist gruen: `82/82`, `0 failed`, `0 skipped`, echte API, echte PostgreSQL-Testdatenbank.
+- GUI Chaos Suite ist gruen: `8/8`.
+- Contract Tests sind gruen: `8/8`.
+- Auth Bootstrap, Workspace Bootstrap, Error-State Matrix und M3a-relevante Security-Hardening-Flows sind belegt.
+
+### Decision
+
+- M3a Final Gate: `PASS`, Score `100.0`, M3a abgeschlossen.
+- M4-Gesamtabschluss: `No-Go`, weil M4 Backend Truth weiterhin durch 1 M4b-Failure und 2 Setup/Error-Faelle blockiert ist.
+
+## 2026-05-19 - PostgreSQL Truth Failure-to-Gate Matrix
+
+### Added
+
+- `docs/postgres-truth-failure-gate-matrix.md` klassifiziert die 16 Failures und 2 Errors aus `reports/postgres_truth_report.json` nach M4a, M4b, M4c, M5 entropy/drift und Setup/Error.
+
+### Changed
+
+- `scripts/validate_m4_truth_gate.py` blockiert M4 nicht mehr pauschal auf roten M5-Entropy-/Drift-Findings.
+- `scripts/validate_m3a_gate.py` weist `postgres_truth`-Findings als M4/M5-Referenzmatrix aus, ohne sie zu M3a-Blockern zu machen.
+- `scripts/generate_postgres_truth_report.py` erfasst kuenftig `error_tests`, damit Setup-/Collect-Errors nicht nur als Zaehler sichtbar sind.
+
+### Decision
+
+- M3a: keine Relevanz der 18 aktuellen `postgres_truth`-Findings.
+- M4: blockiert durch 1 M4b-Failure und 2 unklassifizierte Setup/Error-Faelle.
+- M5: blockiert durch 15 Entropy-/Drift-Failures und die Setup/Error-Faelle.
+
+## 2026-05-19 - M3a Gate-Regel entkoppelt
+
+### Changed
+
+- `scripts/validate_m3a_gate.py` bewertet `postgres_truth_report.json` nicht mehr als M3a-Gate-Regel.
+- Neue M3a-Backend-Minimum-Regel: echte API erreichbar, echte DB aktiv, Contract Tests gruen und relevante M3a-/GUI-Endpunktflows im Frontend Truth belegt.
+- `docs/m3a-gate-policy.md` trennt M3a Frontend Truth, M4 Backend Truth und M5 Operational Truth.
+- `masterplan.md`, `docs/status.md`, `docs/frontend.md`, `docs/api.md` und `docs/operational-truth-governance.md` dokumentieren die reduzierte Fehlkopplung.
+
+### Decision
+
+- M5 Entropy Tests, Queue Aging Tests sowie M4/M5 Drift-, Cleanup- und Longevity-Tests sind keine M3a-Blocker.
+- Rote `postgres_truth`-Bloecke bleiben M4/M5-Blocker, koennen M3a aber nur ueber das definierte Backend-Minimum blockieren.
 
 ## 2026-05-18 - Auth-Bootstrap-Truth-Slice gruen nachgezogen
 

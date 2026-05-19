@@ -1,0 +1,232 @@
+{
+  "timestamp": "2026-05-19T07:10:49.378922+00:00",
+  "generated_at": "2026-05-19T07:10:49.378945+00:00",
+  "collected": 82,
+  "passed": 65,
+  "failed": 17,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8000",
+  "test_database_url_set": true,
+  "duration": 443.08,
+  "duration_seconds": 443.08,
+  "failed_flows": [
+    {
+      "name": "05 Upload flow > shows error when submitting without a file",
+      "error": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Dokument importieren' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"submit\">Dokument importieren</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, e"
+    },
+    {
+      "name": "05 Upload flow > uploads a text file and completes the import job",
+      "error": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Dokument importieren' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"submit\">Dokument importieren</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\n\n  24 |     });\n  25 |\n> 26 |     await authedPage.getByRole"
+    },
+    {
+      "name": "06 Search flow > submitting empty search term shows idle state without error",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Suchen' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"submit\">Suchen</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m "
+    },
+    {
+      "name": "06 Search flow > search returns results or empty state without error",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Suchen' })\u001b[22m\n\n\n  14 |   test('search returns results or empty state without error', async ({ authedPage }) => {\n  15 |     await authedPage.getByLabel('Suchbegriff').fill('test');\n> 16 |     await authedPage.getByRole('button', { name: 'Suchen' }).click();\n     |                                                              ^\n  17 |\n  18"
+    },
+    {
+      "name": "06 Search flow > search with workspace context sends request to real backend",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Suchen' })\u001b[22m\n\n\n  28 |\n  29 |     await authedPage.getByLabel('Suchbegriff').fill('gui truth');\n> 30 |     await authedPage.getByRole('button', { name: 'Suchen' }).click();\n     |                                                              ^\n  31 |\n  32 |     // Wait for the backend to respond\n  33 |     await authedPage.waitForTimeout("
+    },
+    {
+      "name": "07 Chat flow > shows chat page heading and workspace context",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumentgestuetzter Chat' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumentgestuetzter Chat' })\u001b[22m\n\n\n   5 |     const workspaceId = process.env.TRUTH_WORKSPACE_ID;\n   6 |     await authedPage.goto('/chat');\n>  7 |     await exp"
+    },
+    {
+      "name": "07 Chat flow > shows chat composer form",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Titel der Sitzung')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Titel der Sitzung')\u001b[22m\n\n\n  22 |     // Wait for loading to finish\n  23 |     await expect(authedPage.locator('.state-card--error')).not.toBeVisible({ timeout: 10_000 });\n> 24 |     await expect(authedPage.ge"
+    },
+    {
+      "name": "07 Chat flow > navigation from documents to chat preserves workspace context",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('link', { name: 'Chat' })\u001b[22m\n\u001b[2m    - locator resolved to <a class=\"\" href=\"/chat\" data-discover=\"true\">Chat</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\n\n  31 |     await expect(authedPage.getByText(`Workspace: ${workspaceId}`))"
+    },
+    {
+      "name": "08 Lifecycle GUI > switching back to active filter restores document list",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.selectOption: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Statusfilter')\u001b[22m\n\n\n  24 |     await select.selectOption('archived');\n  25 |     await authedPage.waitForTimeout(1_000);\n> 26 |     await select.selectOption('active');\n     |                  ^\n  27 |     await authedPage.waitForTimeout(3_000);\n  28 |     await expect(authedPage.locator('.state-card--error')).not.toBeVisible();\n  29 |   });\n    a"
+    },
+    {
+      "name": "09 Diagnostics GUI > shows system status card",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Systemstatus')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Systemstatus')\u001b[22m\n\n\n  12 |     const hasError = await authedPage.locator('.state-card--error').isVisible().catch(() => false);\n  13 |     if (!hasError) {\n> 14 |       await expect(authedPage.getByText('Systemstatu"
+    },
+    {
+      "name": "09 Diagnostics GUI > shows database status card",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('DB Status')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('DB Status')\u001b[22m\n\n\n  21 |     const hasError = await authedPage.locator('.state-card--error').isVisible().catch(() => false);\n  22 |     if (!hasError) {\n> 23 |       await expect(authedPage.getByText('DB Status')).toBe"
+    },
+    {
+      "name": "09 Diagnostics GUI > shows migration status card",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Migration Status')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Migration Status')\u001b[22m\n\n\n  30 |     const hasError = await authedPage.locator('.state-card--error').isVisible().catch(() => false);\n  31 |     if (!hasError) {\n> 32 |       await expect(authedPage.getByText('Mig"
+    },
+    {
+      "name": "09 Diagnostics GUI > diagnostics page accessible via admin nav link",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('link', { name: 'Admin' })\u001b[22m\n\u001b[2m    - locator resolved to <a class=\"\" data-discover=\"true\" href=\"/admin/diagnostics\">Admin</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, e"
+    },
+    {
+      "name": "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id from bootstrap matches injected membership workspace",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  30 |   test('workspace id from bootstrap matches injected membership workspace', async ({ partialAuthPage }) => {\n  31 |     con"
+    },
+    {
+      "name": "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > chat page shows workspace label after workspace switch",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Workspace: f1000000-7afb-8eed-c585-775b8f00679a')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Workspace: f1000000-7afb-8eed-c585-775b8f00679a')\u001b[22m\n\n\n  206 |     await select.selectOption(ws2);\n  207 |\n> 208 |     await expect(multiWorkspacePage.getByText(`Workspace: ${ws2}"
+    },
+    {
+      "name": "12 Concurrency safety > parallel search requests use the real backend and do not surface stale errors",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Suchen' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"submit\">Suchen</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\n\n  13 |\n  14 |     await authedPage.getByLabel('Suchbegriff').fill('slow truth');\n> 15 |"
+    },
+    {
+      "name": "12 Concurrency safety > workspace switch during an in-flight real request does not keep old workspace UI state",
+      "error": "Error: \"page.waitForTimeout: Test ended.\" while running route callback.\nConsider awaiting `await page.unrouteAll({ behavior: 'ignoreErrors' })`\nbefore the end of the test to ignore remaining routes in flight.\n\n  27 |\n  28 |     await multiWorkspacePage.route('**/documents?**', async (route) => {\n> 29 |       await multiWorkspacePage.waitForTimeout(1000);\n     |                                ^\n  30 |       await route.continue();\n  31 |     });\n  32 |\n    at H:\\WissenMai2026\\frontend\\tests\\gui_t"
+    }
+  ],
+  "errors": [],
+  "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8000/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "05 Upload flow > shows error when submitting without a file",
+      "error": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Dokument importieren' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"submit\">Dokument importieren</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, e"
+    },
+    {
+      "name": "05 Upload flow > uploads a text file and completes the import job",
+      "error": "\u001b[31mTest timeout of 45000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Dokument importieren' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"submit\">Dokument importieren</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\n\n  24 |     });\n  25 |\n> 26 |     await authedPage.getByRole"
+    },
+    {
+      "name": "06 Search flow > submitting empty search term shows idle state without error",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Suchen' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"submit\">Suchen</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m "
+    },
+    {
+      "name": "06 Search flow > search returns results or empty state without error",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Suchen' })\u001b[22m\n\n\n  14 |   test('search returns results or empty state without error', async ({ authedPage }) => {\n  15 |     await authedPage.getByLabel('Suchbegriff').fill('test');\n> 16 |     await authedPage.getByRole('button', { name: 'Suchen' }).click();\n     |                                                              ^\n  17 |\n  18"
+    },
+    {
+      "name": "06 Search flow > search with workspace context sends request to real backend",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Suchen' })\u001b[22m\n\n\n  28 |\n  29 |     await authedPage.getByLabel('Suchbegriff').fill('gui truth');\n> 30 |     await authedPage.getByRole('button', { name: 'Suchen' }).click();\n     |                                                              ^\n  31 |\n  32 |     // Wait for the backend to respond\n  33 |     await authedPage.waitForTimeout("
+    },
+    {
+      "name": "07 Chat flow > shows chat page heading and workspace context",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumentgestuetzter Chat' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumentgestuetzter Chat' })\u001b[22m\n\n\n   5 |     const workspaceId = process.env.TRUTH_WORKSPACE_ID;\n   6 |     await authedPage.goto('/chat');\n>  7 |     await exp"
+    },
+    {
+      "name": "07 Chat flow > shows chat composer form",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Titel der Sitzung')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Titel der Sitzung')\u001b[22m\n\n\n  22 |     // Wait for loading to finish\n  23 |     await expect(authedPage.locator('.state-card--error')).not.toBeVisible({ timeout: 10_000 });\n> 24 |     await expect(authedPage.ge"
+    },
+    {
+      "name": "07 Chat flow > navigation from documents to chat preserves workspace context",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('link', { name: 'Chat' })\u001b[22m\n\u001b[2m    - locator resolved to <a class=\"\" href=\"/chat\" data-discover=\"true\">Chat</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\n\n  31 |     await expect(authedPage.getByText(`Workspace: ${workspaceId}`))"
+    },
+    {
+      "name": "08 Lifecycle GUI > switching back to active filter restores document list",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.selectOption: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Statusfilter')\u001b[22m\n\n\n  24 |     await select.selectOption('archived');\n  25 |     await authedPage.waitForTimeout(1_000);\n> 26 |     await select.selectOption('active');\n     |                  ^\n  27 |     await authedPage.waitForTimeout(3_000);\n  28 |     await expect(authedPage.locator('.state-card--error')).not.toBeVisible();\n  29 |   });\n    a"
+    },
+    {
+      "name": "09 Diagnostics GUI > shows system status card",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Systemstatus')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Systemstatus')\u001b[22m\n\n\n  12 |     const hasError = await authedPage.locator('.state-card--error').isVisible().catch(() => false);\n  13 |     if (!hasError) {\n> 14 |       await expect(authedPage.getByText('Systemstatu"
+    },
+    {
+      "name": "09 Diagnostics GUI > shows database status card",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('DB Status')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('DB Status')\u001b[22m\n\n\n  21 |     const hasError = await authedPage.locator('.state-card--error').isVisible().catch(() => false);\n  22 |     if (!hasError) {\n> 23 |       await expect(authedPage.getByText('DB Status')).toBe"
+    },
+    {
+      "name": "09 Diagnostics GUI > shows migration status card",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Migration Status')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Migration Status')\u001b[22m\n\n\n  30 |     const hasError = await authedPage.locator('.state-card--error').isVisible().catch(() => false);\n  31 |     if (!hasError) {\n> 32 |       await expect(authedPage.getByText('Mig"
+    },
+    {
+      "name": "09 Diagnostics GUI > diagnostics page accessible via admin nav link",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('link', { name: 'Admin' })\u001b[22m\n\u001b[2m    - locator resolved to <a class=\"\" data-discover=\"true\" href=\"/admin/diagnostics\">Admin</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is not stable\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, e"
+    },
+    {
+      "name": "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id from bootstrap matches injected membership workspace",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  30 |   test('workspace id from bootstrap matches injected membership workspace', async ({ partialAuthPage }) => {\n  31 |     con"
+    },
+    {
+      "name": "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > chat page shows workspace label after workspace switch",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('Workspace: f1000000-7afb-8eed-c585-775b8f00679a')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByText('Workspace: f1000000-7afb-8eed-c585-775b8f00679a')\u001b[22m\n\n\n  206 |     await select.selectOption(ws2);\n  207 |\n> 208 |     await expect(multiWorkspacePage.getByText(`Workspace: ${ws2}"
+    },
+    {
+      "name": "12 Concurrency safety > parallel search requests use the real backend and do not surface stale errors",
+      "error": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m Error: locator.click: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Suchen' })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"submit\">Suchen</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n\n\n  13 |\n  14 |     await authedPage.getByLabel('Suchbegriff').fill('slow truth');\n> 15 |"
+    },
+    {
+      "name": "12 Concurrency safety > workspace switch during an in-flight real request does not keep old workspace UI state",
+      "error": "Error: \"page.waitForTimeout: Test ended.\" while running route callback.\nConsider awaiting `await page.unrouteAll({ behavior: 'ignoreErrors' })`\nbefore the end of the test to ignore remaining routes in flight.\n\n  27 |\n  28 |     await multiWorkspacePage.route('**/documents?**', async (route) => {\n> 29 |       await multiWorkspacePage.waitForTimeout(1000);\n     |                                ^\n  30 |       await route.continue();\n  31 |     });\n  32 |\n    at H:\\WissenMai2026\\frontend\\tests\\gui_t"
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "01 Login flow > renders login form with all required elements",
+    "01 Login flow > redirects unauthenticated request to login page",
+    "01 Login flow > shows error state on invalid credentials",
+    "01 Login flow > successful login with truth credentials redirects to documents page",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > root path also redirects to /login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > zero /auth/me calls when no token present",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
+    "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
+    "03 Workspace loading > shows active workspace id in documents page header",
+    "03 Workspace loading > shows active workspace id in app shell session area",
+    "03 Workspace loading > shows navigation links in shell header",
+    "03 Workspace loading > shows logout button when authenticated",
+    "03 Workspace loading > does not show workspace missing warning when workspace is configured",
+    "04 Dokumentliste > shows documents page heading",
+    "04 Dokumentliste > shows empty state for workspace with no documents",
+    "04 Dokumentliste > shows lifecycle filter section",
+    "04 Dokumentliste > shows upload section",
+    "04 Dokumentliste > shows search section",
+    "05 Upload flow > shows upload form elements",
+    "06 Search flow > shows search form elements",
+    "07 Chat flow > shows empty chat state or session list",
+    "08 Lifecycle GUI > shows lifecycle filter with correct default option",
+    "08 Lifecycle GUI > lifecycle filter shows correct option labels",
+    "08 Lifecycle GUI > switching to archived filter triggers API call without error",
+    "08 Lifecycle GUI > shows lifecycle warning hint text",
+    "09 Diagnostics GUI > shows admin diagnostics page heading",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id shown in document page header after bootstrap",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id shown in AppShell header after bootstrap",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 02 single workspace > single workspace shown as text, no dropdown switcher",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 02 single workspace > no workspace switcher visible for single-workspace user",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > workspace switcher select rendered for multi-workspace user",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > workspace switcher contains both workspace ids",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > initial active workspace is first injected workspace",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching workspace updates select value",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching workspace updates document page workspace label",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching to invalid workspace is rejected (select stays on valid workspace)",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 05 workspace switch reloads documents > switching workspace triggers documents reload",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 05 workspace switch reloads documents > documents page remains visible after workspace switch",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 06 state reset on switch > search result area is empty after workspace switch",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 06 state reset on switch > upload area is idle after workspace switch",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > switching workspace from chat page navigates back to /chat root",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership user sees WORKSPACE_NOT_CONFIGURED error",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership error is not session-expired",
+    "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership page does not show workspace switcher",
+    "11 GUI state invariants > documents route does not render data controls without validated workspace",
+    "11 GUI state invariants > API_UNREACHABLE on documents is not rendered as empty list",
+    "11 GUI state invariants > FORBIDDEN bootstrap state has no retry action"
+  ]
+}
