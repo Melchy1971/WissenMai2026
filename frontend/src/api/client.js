@@ -1,4 +1,4 @@
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL != null ? import.meta.env.VITE_API_BASE_URL : 'http://127.0.0.1:8000').replace(/\/$/, '');
 const AUTH_TOKEN_STORAGE_KEY = 'wissen.authToken';
 const WORKSPACE_ID_STORAGE_KEY = 'wissen.workspaceId';
 const DEFAULT_TIMEOUT_MS = 15000;

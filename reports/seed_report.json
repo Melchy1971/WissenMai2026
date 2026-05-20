@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-05-20T11:31:10.961385Z",
+  "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026",
+  "status": "success",
+  "seeded": {
+    "workspace": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "Default Workspace",
+      "is_default": true
+    },
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "login": "mdickscheit@googlemail.com",
+      "role": "owner"
+    },
+    "membership": {
+      "workspace_id": "00000000-0000-0000-0000-000000000001",
+      "user_id": "00000000-0000-0000-0000-000000000001",
+      "role": "owner"
+    }
+  },
+  "alembic": "head"
+}

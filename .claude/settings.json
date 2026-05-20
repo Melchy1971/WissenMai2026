@@ -129,7 +129,26 @@
       "PowerShell($result = Test-NetConnection -ComputerName 127.0.0.1 -Port 5432 -WarningAction SilentlyContinue -InformationLevel Quiet; Write-Host \"Port 5432 offen: $result\")",
       "PowerShell(Get-Process -Name \"ssh\" -ErrorAction SilentlyContinue)",
       "PowerShell(Get-NetTCPConnection -LocalPort 5432 -ErrorAction SilentlyContinue)",
-      "Bash(DATABASE_URL=postgresql+psycopg://appuser:Markus..2026@127.0.0.1:5432/wissen2026 .venv/Scripts/python.exe -c ' *)"
+      "Bash(DATABASE_URL=postgresql+psycopg://appuser:Markus..2026@127.0.0.1:5432/wissen2026 .venv/Scripts/python.exe -c ' *)",
+      "Bash(DATABASE_URL=postgresql+psycopg://Markus:Markus..2026@85.215.131.200:5432/wissen2026 .venv/Scripts/python.exe -c ' *)",
+      "Bash(DATABASE_URL=\"postgresql+psycopg://Markus:Markus..2026@85.215.131.200:5432/wissen2026\" WISSEN_DEV_LOGIN=\"mdickscheit@googlemail.com\" WISSEN_DEV_PASSWORD=\"Alex..2026\" backend/.venv/Scripts/python.exe scripts/bootstrap_local_backend.py)",
+      "Bash(curl -s http://127.0.0.1:8000/health)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"login\":\"mdickscheit@googlemail.com\",\"password\":\"Alex..2026\"}')",
+      "Bash(curl -s http://127.0.0.1:8000/openapi.json)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s --max-time 2 http://127.0.0.1:8000/health)",
+      "PowerShell(Test-NetConnection -ComputerName 127.0.0.1 -Port 8000 -WarningAction SilentlyContinue -InformationLevel Quiet)",
+      "Bash(curl -s -I -H 'Origin: http://localhost:5173' -H 'Access-Control-Request-Method: POST' -X OPTIONS http://127.0.0.1:8000/api/v1/auth/login)",
+      "Bash(cmd.exe /c \"taskkill /F /IM python.exe 2>&1 & taskkill /F /IM node.exe 2>&1 & echo DONE\")",
+      "Bash(cmd.exe /c \"taskkill /F /IM python.exe\")",
+      "Bash(cmd.exe /c \"taskkill /F /IM node.exe\")",
+      "Bash(curl -s --max-time 2 http://localhost:5173/)",
+      "Bash(curl -s --max-time 2 http://localhost:5177/)",
+      "Bash(cmd.exe /c \"netstat -ano | findstr :8000\")",
+      "Bash(netstat -tlnp)",
+      "Bash(kill -9 267 372)"
     ]
   },
   "hooks": {

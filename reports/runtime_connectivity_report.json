@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-05-20T11:31:14.480112Z",
+  "status": "all_green",
+  "checks": {
+    "backend_health": {
+      "endpoint": "GET /health",
+      "result": {
+        "status": "ok",
+        "env": "local"
+      },
+      "pass": true
+    },
+    "auth_login": {
+      "endpoint": "POST /api/v1/auth/login",
+      "pass": true,
+      "token_issued": true
+    },
+    "auth_me": {
+      "endpoint": "GET /api/v1/auth/me",
+      "pass": true,
+      "workspace_id": "00000000-0000-0000-0000-000000000001"
+    },
+    "documents_list": {
+      "endpoint": "GET /documents",
+      "pass": true,
+      "result": []
+    },
+    "frontend": {
+      "url": "http://localhost:5173",
+      "http_status": 200,
+      "pass": true
+    }
+  },
+  "m3a_impact": {
+    "API_UNREACHABLE": "resolved",
+    "backend_status": "running",
+    "auth_bootstrap": "success",
+    "workspace_bootstrap": "success",
+    "document_list": "empty_but_reachable"
+  }
+}
