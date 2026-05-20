@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "release_candidate": "M3a Frontend Foundation",
+  "status": "gate_passed",
+  "generated_at": "2026-05-20T10:15:00+02:00",
+  "decision": "M3a RC GO",
+  "go_no_go": {
+    "result": "GO",
+    "reason": "All M3a release-candidate prerequisites are green in the available machine-readable reports. M4 and M5 blockers are explicitly out of M3a scope."
+  },
+  "reports": {
+    "frontend_truth": {
+      "path": "reports/frontend_truth_report.json",
+      "timestamp": "2026-05-19T11:14:36.757370+00:00",
+      "collected": 100,
+      "passed": 100,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "exit_code": 0,
+      "real_api": true,
+      "mock_only": false,
+      "test_database_url_set": true,
+      "api_database_health_ok": true
+    },
+    "gui_truth_latest": {
+      "path": "reports/gui_truth/latest.json",
+      "timestamp": "2026-05-19T11:14:36.757370+00:00",
+      "collected": 100,
+      "passed": 100,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "exit_code": 0
+    },
+    "gui_chaos": {
+      "path": "reports/gui_truth/gui_chaos_suite_report.json",
+      "timestamp": "2026-05-18T14:45:46.6959150+02:00",
+      "result": "PASS",
+      "collected": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    "contract_tests": {
+      "path": "reports/contract_test_report.json",
+      "timestamp": "2026-05-18T09:58:09.169571+00:00",
+      "collected": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "exit_code": 0
+    },
+    "m3a_gate": {
+      "path": "reports/m3a_gate_result.json",
+      "timestamp": "2026-05-19T08:59:27.903906+00:00",
+      "gate_result": "PASS",
+      "score": 100.0,
+      "rules_passed": 9,
+      "rules_total": 9,
+      "blockers": []
+    },
+    "m3a_final_gate": {
+      "path": "reports/m3a_final_gate_report.json",
+      "timestamp": "2026-05-19T10:57:45.4813616+02:00",
+      "gate_result": "PASS",
+      "score": 100.0,
+      "score_threshold": 90.0,
+      "decision": "M3a abgeschlossen",
+      "blockers": []
+    },
+    "error_state_catalog": {
+      "path": "docs/frontend-error-state-catalog.md",
+      "coverage": "complete",
+      "covered_states": [
+        "API_UNREACHABLE",
+        "AUTH_REQUIRED",
+        "FORBIDDEN",
+        "WORKSPACE_NOT_CONFIGURED",
+        "TIMEOUT",
+        "VALIDATION_ERROR",
+        "SERVER_ERROR",
+        "IMPORT_FAILED",
+        "OCR_REQUIRED",
+        "DUPLICATE_DOCUMENT"
+      ]
+    },
+    "security_documentation": {
+      "path": "docs/security.md",
+      "m3a_critical_hardening": "PASS",
+      "scope": [
+        "route guards",
+        "logout clearing",
+        "forbidden handling",
+        "workspace context",
+        "no retry loop"
+      ]
+    },
+    "documentation_audit": {
+      "path": "reports/m3a_final_gate_report.json",
+      "result": "PASS",
+      "evidence": "masterplan.md, docs/status.md, docs/frontend.md, docs/m3a-gate-policy.md and docs/operational-truth-governance.md reference the green M3a evidence and separate M4/M5 blockers."
+    }
+  },
+  "scores": {
+    "m3a_gate_score": 100.0,
+    "m3a_final_gate_score": 100.0,
+    "frontend_truth_pass_rate": 100.0,
+    "gui_chaos_pass_rate": 100.0,
+    "contract_test_pass_rate": 100.0,
+    "error_state_coverage": 100.0,
+    "security_hardening_critical": 100.0,
+    "documentation_current": 100.0
+  },
+  "prerequisites": [
+    {
+      "id": "full_suite_frontend_truth_green",
+      "passed": true,
+      "evidence": "reports/frontend_truth_report.json: 100 collected, 100 passed, 0 failed, 0 skipped, real_api=true, mock_only=false, TEST_DATABASE_URL set and /health/db ok."
+    },
+    {
+      "id": "gui_chaos_green",
+      "passed": true,
+      "evidence": "reports/gui_truth/gui_chaos_suite_report.json: result PASS, 8 collected, 8 passed, 0 failed."
+    },
+    {
+      "id": "contract_tests_green",
+      "passed": true,
+      "evidence": "reports/contract_test_report.json: 8 collected, 8 passed, 0 failed, 0 skipped, 0 errors."
+    },
+    {
+      "id": "error_state_coverage_complete",
+      "passed": true,
+      "evidence": "reports/m3a_final_gate_report.json check error_state_matrix_complete PASS; docs/frontend-error-state-catalog.md covers all 10 required states."
+    },
+    {
+      "id": "security_hardening_critical_green",
+      "passed": true,
+      "evidence": "reports/m3a_final_gate_report.json check security_hardening_evaluated PASS for M3a-critical hardening."
+    },
+    {
+      "id": "documentation_current",
+      "passed": true,
+      "evidence": "reports/m3a_final_gate_report.json check documentation_updated PASS."
+    }
+  ],
+  "blockers": [],
+  "known_limitations": [
+    "M3a RC covers the frontend foundation and M3a backend minimum only; M4 Backend Truth remains separate.",
+    "reports/postgres_truth_report.json is red and blocks M4/M5, but it is not an M3a gate rule.",
+    "Broader M4 security hardening remains outside M3a and must be evaluated through M4a/M4b/M4c/M4e gates.",
+    "reports/m3a_final_gate_report.json references an earlier green frontend truth run with 82/82; the latest frontend_truth_report.json is also green with 100/100."
+  ],
+  "scope_decision": {
+    "m3a": "GO",
+    "m4": "OUT_OF_SCOPE",
+    "m5": "OUT_OF_SCOPE",
+    "governance": "OUT_OF_SCOPE"
+  }
+}

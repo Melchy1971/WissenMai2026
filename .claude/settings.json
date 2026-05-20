@@ -114,7 +114,22 @@
       "PowerShell(\\(Get-Content \"h:\\\\WissenMai2026\\\\backend\\\\tests\\\\test_frontend_backend_contracts.py\" | Measure-Object -Line\\).Lines; \\(Get-Content \"h:\\\\WissenMai2026\\\\docs\\\\api\\\\frontend-backend-contract-registry.md\" | Measure-Object -Line\\).Lines)",
       "PowerShell($tf = Get-Content \"h:\\\\WissenMai2026\\\\backend\\\\tests\\\\test_frontend_backend_contracts.py\"; $tf.Count)",
       "PowerShell(\\(Get-Content \"h:\\\\WissenMai2026\\\\backend\\\\tests\\\\test_frontend_backend_contracts.py\"\\).Count)",
-      "Bash(npm view *)"
+      "Bash(npm view *)",
+      "Bash(curl -s http://localhost:8000/)",
+      "Bash(curl -s http://localhost:8001/health)",
+      "Bash(python -m uvicorn app.main:app --host 0.0.0.0 --port 8000)",
+      "PowerShell(netstat -ano)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue)",
+      "Bash(DATABASE_URL=postgresql+psycopg://appuser:Markus..2026@85.215.131.200:5432/wissen2026 .venv/Scripts/python.exe -c ' *)",
+      "Bash(ping -c 2 -W 3 85.215.131.200)",
+      "Bash(timeout 5 bash -c 'echo >/dev/tcp/85.215.131.200/5432')",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(timeout 3 bash -c 'echo >/dev/tcp/127.0.0.1/5432')",
+      "PowerShell(Test-NetConnection -ComputerName 127.0.0.1 -Port 5432 -WarningAction SilentlyContinue)",
+      "PowerShell($result = Test-NetConnection -ComputerName 127.0.0.1 -Port 5432 -WarningAction SilentlyContinue -InformationLevel Quiet; Write-Host \"Port 5432 offen: $result\")",
+      "PowerShell(Get-Process -Name \"ssh\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5432 -ErrorAction SilentlyContinue)",
+      "Bash(DATABASE_URL=postgresql+psycopg://appuser:Markus..2026@127.0.0.1:5432/wissen2026 .venv/Scripts/python.exe -c ' *)"
     ]
   },
   "hooks": {

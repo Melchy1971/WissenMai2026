@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "docs/masterplan_status.schema.json",
+  "title": "Masterplan Machine Status",
+  "type": "object",
+  "required": [
+    "version",
+    "generated_at",
+    "schema",
+    "authority",
+    "inputs",
+    "overall",
+    "phases",
+    "gate_scores",
+    "blockers"
+  ],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "generated_at": { "type": "string" },
+    "schema": { "type": "string" },
+    "authority": {
+      "type": "object",
+      "required": ["source_of_truth", "manual_status_override_allowed", "rule"],
+      "properties": {
+        "source_of_truth": { "type": "string", "const": "machine_artifacts" },
+        "manual_status_override_allowed": { "type": "boolean", "const": false },
+        "rule": { "type": "string" }
+      }
+    },
+    "inputs": { "type": "object" },
+    "overall": {
+      "type": "object",
+      "required": ["status", "progress_percent", "release_allowed", "blocker_count"],
+      "properties": {
+        "status": { "type": "string" },
+        "progress_percent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "release_allowed": { "type": "boolean" },
+        "blocker_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "phases": {
+      "type": "object",
+      "required": ["m3a", "m4", "m5", "governance"]
+    },
+    "gate_scores": { "type": "object" },
+    "blockers": { "type": "array" },
+    "known_limitations_summary": { "type": "object" },
+    "documentation_audit": { "type": "object" },
+    "gate_drift": { "type": "object" }
+  },
+  "additionalProperties": true
+}

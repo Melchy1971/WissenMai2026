@@ -1,0 +1,192 @@
+{
+  "version": 1,
+  "generated_at": "2026-05-20T10:22:10+02:00",
+  "audit": "Documentation Release Audit",
+  "scope": [
+    "masterplan.md",
+    "docs/status.md",
+    "docs/frontend.md",
+    "docs/api.md",
+    "docs/security.md",
+    "docs/operations.md",
+    "docs/changelog.md",
+    "docs/known_limitations.md"
+  ],
+  "rules": [
+    "Jede abgeschlossen-Aussage braucht ein Gate-Artefakt.",
+    "Jeder offene Blocker braucht einen Known-Limitation-Eintrag.",
+    "M3a, M4 und M5 duerfen nicht vermischt werden.",
+    "Keine statischen gruen-Zahlen ohne Reportreferenz."
+  ],
+  "artifacts_checked": {
+    "m3a_release_candidate": {
+      "path": "reports/m3a_release_candidate.json",
+      "status": "gate_passed",
+      "go_no_go": "GO"
+    },
+    "m4_release_candidate": {
+      "path": "reports/m4_release_candidate.json",
+      "status": "tested",
+      "go_no_go": "NO_GO"
+    },
+    "m4_truth": {
+      "path": "reports/postgres_truth_report.json",
+      "collected": 138,
+      "passed": 120,
+      "failed": 16,
+      "errors": 2,
+      "exit_code": 1
+    },
+    "known_limitations": {
+      "path": "docs/known_limitations.json",
+      "limitation_count": 15
+    }
+  },
+  "findings": [
+    {
+      "id": "DRA-001",
+      "severity": "critical",
+      "rule": "abgeschlossen-Aussage braucht Gate-Artefakt",
+      "file": "docs/security.md",
+      "lines": [
+        7,
+        119
+      ],
+      "finding": "M4a wird als im aktuellen M4-Gate-Stand freigabefaehig bzw. abgeschlossen dargestellt.",
+      "evidence": "reports/m4_release_candidate.json steht auf NO_GO; reports/m4a_auth_truth_report.json fehlt; M4 Gesamtgate ist nicht bestanden.",
+      "required_fix": "M4a nur als technischer Teilbefund dokumentieren und Abschluss-/Freigabeaussage an einen maschinenlesbaren M4a-Report plus M4-Gesamtgate binden."
+    },
+    {
+      "id": "DRA-002",
+      "severity": "critical",
+      "rule": "M3a/M4/M5 duerfen nicht vermischt werden",
+      "file": "docs/security.md",
+      "lines": [
+        81
+      ],
+      "finding": "Lifecycle-Mutationen werden mit gruenem Truth- und Transition-Nachweis als nicht mehr offener M4-Blocker beschrieben.",
+      "evidence": "reports/m4_release_candidate.json nennt fehlende M4-Splitreports und postgres_truth_m4_not_green als Blocker.",
+      "required_fix": "Die Aussage auf den vorhandenen Slice begrenzen und M4-Blockerstatus aus M4 RC und Known-Limitation-Register uebernehmen."
+    },
+    {
+      "id": "DRA-003",
+      "severity": "critical",
+      "rule": "Keine statischen gruen-Zahlen ohne aktuelle Reportreferenz",
+      "file": "masterplan.md",
+      "lines": [
+        1251,
+        1252,
+        1253,
+        1396,
+        1399
+      ],
+      "finding": "Masterplan enthaelt aktuelle oder nicht ausreichend historisierte gruene M4-Aussagen zu Truth-Gate, M4a/b/c und postgres_truth.",
+      "evidence": "reports/postgres_truth_report.json ist rot: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.",
+      "required_fix": "Die Aussagen als historische Sprintziele markieren oder in Startbedingungen umformulieren; aktuelle M4-Bewertung muss auf m4_release_candidate.json NO_GO verweisen."
+    },
+    {
+      "id": "DRA-004",
+      "severity": "high",
+      "rule": "Jeder offene Blocker braucht Known-Limitation-Eintrag",
+      "file": "docs/security.md",
+      "lines": [
+        21,
+        22,
+        23,
+        109,
+        110,
+        111
+      ],
+      "finding": "Security-Doku listet offene Auth-/Session-/CSRF-/Lifecycle-Limitations, aber das Known-Limitation-Register enthaelt keinen expliziten M4a-Security-Eintrag dafuer.",
+      "evidence": "docs/known_limitations.json deckt M4 Truth, M4b, Report Integrity und Split-Reports ab, aber keinen eigenen Auth-/Session-/CSRF-Blocker.",
+      "required_fix": "Known-Limitation fuer M4a Security/Auth-Produktflow anlegen oder die offenen Punkte eindeutig als non-blocking/deferred klassifizieren."
+    },
+    {
+      "id": "DRA-005",
+      "severity": "medium",
+      "rule": "Keine statischen gruen-Zahlen ohne Reportreferenz",
+      "file": "docs/changelog.md",
+      "lines": [
+        241,
+        242,
+        414,
+        415,
+        449,
+        450,
+        451,
+        513,
+        514,
+        541,
+        542
+      ],
+      "finding": "Historische Changelog-Eintraege enthalten statische passed-Zahlen ohne direkte Reportpfad-Referenz.",
+      "evidence": "Die Eintraege sind historisch, koennen aber bei Release-Audits als aktuelle gruene Evidenz missverstanden werden.",
+      "required_fix": "Historische Zahlen mit Reportpfad, Datum und historisch/ueberholt-Kennzeichnung versehen oder auf Detailberichte verweisen."
+    },
+    {
+      "id": "DRA-006",
+      "severity": "medium",
+      "rule": "abgeschlossen-Aussage braucht Gate-Artefakt",
+      "file": "docs/status.md",
+      "lines": [
+        16,
+        94,
+        159,
+        849
+      ],
+      "finding": "Aeltere Paket-/M3b-/M3c-Abschlussaussagen stehen teilweise mit Testzahlen, aber ohne einheitliches RC-/Gate-Artefakt im neuen Modell.",
+      "evidence": "M3a besitzt Gate-Artefakte; fuer aeltere Abschlussaussagen ist die neue RC-/Gate-Form nicht durchgaengig abgebildet.",
+      "required_fix": "Historische Abschlussaussagen entweder mit vorhandenen Gate-Artefakten verknuepfen oder als historischer Vor-RC-Stand markieren."
+    }
+  ],
+  "fixlist": [
+    {
+      "id": "FIX-001",
+      "priority": "P0",
+      "files": [
+        "docs/security.md"
+      ],
+      "action": "M4a-Freigabe- und Abschlussaussagen entfernen oder an m4a_auth_truth_report.json plus M4 Gesamtgate PASS binden.",
+      "blocks_documentation_release": true
+    },
+    {
+      "id": "FIX-002",
+      "priority": "P0",
+      "files": [
+        "masterplan.md"
+      ],
+      "action": "Aktuelle gruene M4-Aussagen korrigieren und auf reports/m4_release_candidate.json NO_GO sowie reports/postgres_truth_report.json verweisen.",
+      "blocks_documentation_release": true
+    },
+    {
+      "id": "FIX-003",
+      "priority": "P1",
+      "files": [
+        "docs/known_limitations.md",
+        "docs/known_limitations.json"
+      ],
+      "action": "Expliziten M4a-Security/Auth-Produktflow-Eintrag fuer Session, Logout, CSRF und Lifecycle-Hardening anlegen oder als non-blocking/deferred klassifizieren.",
+      "blocks_documentation_release": true
+    },
+    {
+      "id": "FIX-004",
+      "priority": "P2",
+      "files": [
+        "docs/changelog.md",
+        "docs/status.md"
+      ],
+      "action": "Historische passed-Zahlen und Abschlussaussagen mit Reportpfaden oder historisch/ueberholt-Markierung versehen.",
+      "blocks_documentation_release": false
+    }
+  ],
+  "release_decision": {
+    "freigabe": "nein",
+    "reason": "Die Dokumentation enthaelt noch kritische M4-Freigabe- und gruen-Aussagen, die durch die aktuellen Gate-Artefakte nicht gedeckt sind.",
+    "blocking_findings": [
+      "DRA-001",
+      "DRA-002",
+      "DRA-003",
+      "DRA-004"
+    ]
+  }
+}

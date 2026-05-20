@@ -22,6 +22,28 @@ from app.services.documents.read_service import DocumentReadService
 from app.services.jobs.background_jobs import BackgroundJobService
 
 
+GATE_MARKERS = {
+    "frontend_truth",
+    "m3a_truth",
+    "m4_truth",
+    "m4a_auth_truth",
+    "m4b_upload_queue_truth",
+    "m4c_lifecycle_retrieval_truth",
+    "m4e_backup_restore_truth",
+    "m5_truth",
+    "governance_truth",
+    "chaos_truth",
+    "slow_truth",
+}
+M4_BLOCKING_MARKERS = {
+    "m4_truth",
+    "m4a_auth_truth",
+    "m4b_upload_queue_truth",
+    "m4c_lifecycle_retrieval_truth",
+    "m4e_backup_restore_truth",
+}
+LEGACY_CRITICAL_GATE_MARKERS = {"m4a_gate", "m4b_gate", "m4c_gate"}
+
 TEST_TEMP_ROOT = Path(__file__).resolve().parents[1] / ".pytest-tmp"
 DEFAULT_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001"
 DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001"
@@ -34,18 +56,118 @@ SECOND_CHUNK_ID = "00000000-0000-0000-0000-000000000302"
 SESSION_TOKEN = "test-session-token"
 
 
-CRITICAL_GATE_MARKERS = {"m4a_gate", "m4b_gate", "m4c_gate"}
-
-
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    unclassified: list[str] = []
+    ambiguous: list[str] = []
+
     for item in items:
         marker_names = {marker.name for marker in item.iter_markers()}
-        critical_markers = sorted(CRITICAL_GATE_MARKERS.intersection(marker_names))
+        explicit_gate_markers = sorted(GATE_MARKERS.intersection(marker_names))
+        if not explicit_gate_markers:
+            marker = _classify_truth_gate(item, marker_names)
+            if marker is None:
+                unclassified.append(item.nodeid)
+            else:
+                item.add_marker(getattr(pytest.mark, marker))
+                explicit_gate_markers = [marker]
+        if len(explicit_gate_markers) > 1:
+            ambiguous.append(f"{item.nodeid} -> {', '.join(explicit_gate_markers)}")
+
+        critical_markers = sorted(LEGACY_CRITICAL_GATE_MARKERS.intersection(marker_names))
         if critical_markers and "postgres_truth" not in marker_names:
             joined = ", ".join(critical_markers)
             raise pytest.UsageError(
                 f"Critical gate test {item.nodeid} uses {joined} but is missing the required postgres_truth marker"
             )
+
+    if unclassified or ambiguous:
+        details: list[str] = []
+        if unclassified:
+            details.append("Unclassified truth tests:")
+            details.extend(f"- {nodeid}" for nodeid in unclassified)
+        if ambiguous:
+            details.append("Ambiguous truth tests:")
+            details.extend(f"- {nodeid}" for nodeid in ambiguous)
+        raise pytest.UsageError("\n".join(details))
+
+
+def _classify_truth_gate(item: pytest.Item, marker_names: set[str]) -> str | None:
+    nodeid = item.nodeid.replace("\\", "/").lower()
+
+    if "test_frontend_backend_contracts.py" in nodeid:
+        return "frontend_truth"
+
+    if "postgres_truth/" in nodeid:
+        return _classify_postgres_truth_gate(nodeid, marker_names)
+
+    if "test_backup_restore" in nodeid:
+        return "m4e_backup_restore_truth"
+    if "chaos" in nodeid or "workspace_leakage" in nodeid or "lifecycle_reindex" in nodeid:
+        return "chaos_truth"
+    if "test_m5_longrun_simulation.py" in nodeid or "test_m5_retrieval_benchmark.py" in nodeid:
+        return "slow_truth"
+    if "test_m5_" in nodeid:
+        return "m5_truth"
+    if (
+        "test_health.py" in nodeid
+        or "/unit/" in nodeid
+        or "test_migrations.py" in nodeid
+        or "test_truth_split_report_generator.py" in nodeid
+        or "test_gate_hierarchy_validator.py" in nodeid
+        or "test_release_candidate_model.py" in nodeid
+    ):
+        return "m3a_truth"
+    if "test_m4a_auth" in nodeid or "secure_api" in nodeid:
+        return "m4a_auth_truth"
+    if "upload" in nodeid or "import" in nodeid or "queue" in nodeid or "retry_import" in nodeid:
+        return "m4b_upload_queue_truth"
+    if (
+        "document" in nodeid
+        or "search" in nodeid
+        or "chat" in nodeid
+        or "citation" in nodeid
+        or "retrieval" in nodeid
+        or "context_builder" in nodeid
+        or "prompt_builder" in nodeid
+        or "insufficient_context" in nodeid
+        or "rag_chat" in nodeid
+        or "fake_llm" in nodeid
+        or "admin_search_index" in nodeid
+        or "diagnostics" in nodeid
+        or "observability" in nodeid
+    ):
+        return "m4c_lifecycle_retrieval_truth"
+    return None
+
+
+def _classify_postgres_truth_gate(nodeid: str, marker_names: set[str]) -> str:
+    if "test_m4a_auth_workspace_truth.py" in nodeid:
+        return "m4a_auth_truth"
+    if "test_auth_bootstrap_truth.py" in nodeid or "test_workspace_bootstrap_truth.py" in nodeid:
+        return "m4a_auth_truth"
+    if "test_m4b_upload_queue_truth.py" in nodeid:
+        return "m4b_upload_queue_truth"
+    if "test_m4c_lifecycle_retrieval_truth.py" in nodeid:
+        return "m4c_lifecycle_retrieval_truth"
+    if "test_m4_crash_recovery_truth.py" in nodeid or "test_m4_truth_flows.py" in nodeid:
+        if "m4a_gate" in marker_names:
+            return "m4a_auth_truth"
+        if "m4b_gate" in marker_names:
+            return "m4b_upload_queue_truth"
+        if "m4c_gate" in marker_names:
+            return "m4c_lifecycle_retrieval_truth"
+        return "m4_truth"
+    if "test_rc3_chaos_truth.py" in nodeid:
+        return "chaos_truth"
+    if "test_m5_cleanup_truth.py" in nodeid or "test_entropy_truth.py" in nodeid or "test_queue_aging_truth.py" in nodeid:
+        return "m5_truth"
+    if (
+        "test_cleanup_governance_truth.py" in nodeid
+        or "test_reindex_governance_truth.py" in nodeid
+        or "test_citation_longevity_truth.py" in nodeid
+    ):
+        return "governance_truth"
+    return "m4_truth"
 
 
 @pytest.fixture(autouse=True)

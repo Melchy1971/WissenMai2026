@@ -24,7 +24,26 @@ MARKDOWN_REPORT_PATH = REPORTS_DIR / "postgres_truth_report.md"
 DELTA_MARKDOWN_PATH = REPORTS_DIR / "postgres_truth_delta.md"
 LATEST_JSON_PATH = VERSIONED_DIR / "latest.json"
 
-GATE_MARKERS = ("m4a_gate", "m4b_gate", "m4c_gate", "m4d_gate")
+GATE_MARKERS = (
+    "frontend_truth",
+    "m3a_truth",
+    "m4_truth",
+    "m4a_auth_truth",
+    "m4b_upload_queue_truth",
+    "m4c_lifecycle_retrieval_truth",
+    "m4e_backup_restore_truth",
+    "m5_truth",
+    "governance_truth",
+    "chaos_truth",
+    "slow_truth",
+)
+M4_BLOCKING_MARKERS = (
+    "m4_truth",
+    "m4a_auth_truth",
+    "m4b_upload_queue_truth",
+    "m4c_lifecycle_retrieval_truth",
+    "m4e_backup_restore_truth",
+)
 
 # One representative test per RC-blocker category. A blocker is open if its
 # canonical test is not in passed_tests (failed, skipped, or did not run).
@@ -49,6 +68,7 @@ class RunSummary:
     failed_tests: list[str] = field(default_factory=list)
     error_tests: list[str] = field(default_factory=list)
     passed_tests: list[str] = field(default_factory=list)
+    skipped_tests: list[str] = field(default_factory=list)
 
 
 class CollectOnlyPlugin:
@@ -81,12 +101,14 @@ class ResultCapturePlugin:
         self.failed_tests: list[str] = []
         self.error_tests: list[str] = []
         self.passed_tests: list[str] = []
+        self.skipped_tests: list[str] = []
 
     def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
         was_xfail = hasattr(report, "wasxfail")
         if report.when != "call":
             if report.skipped:
                 self.counts["skipped"] += 1
+                self.skipped_tests.append(report.nodeid)
             elif report.failed:
                 self.counts["errors"] += 1
                 self.error_tests.append(report.nodeid)
@@ -105,6 +127,7 @@ class ResultCapturePlugin:
             self.counts["xfailed"] += 1
         elif report.skipped:
             self.counts["skipped"] += 1
+            self.skipped_tests.append(report.nodeid)
 
     def pytest_collectreport(self, report: pytest.CollectReport) -> None:
         if report.failed:
@@ -169,6 +192,7 @@ def _run_truth_suite() -> RunSummary:
         failed_tests=sorted(plugin.failed_tests),
         error_tests=sorted(plugin.error_tests),
         passed_tests=sorted(plugin.passed_tests),
+        skipped_tests=sorted(plugin.skipped_tests),
     )
 
 
@@ -196,6 +220,35 @@ def _compute_rc_blockers(passed_tests: list[str]) -> list[str]:
     ]
 
 
+def _nodeid_is_m4_blocking(nodeid: str) -> bool:
+    lowered = nodeid.replace("\\", "/").lower()
+    if any(token in lowered for token in ("m5_", "entropy_truth", "queue_aging_truth")):
+        return False
+    if any(token in lowered for token in ("governance_truth", "citation_longevity_truth")):
+        return False
+    if "test_rc3_chaos_truth.py" in lowered or "chaos" in lowered:
+        return False
+    return any(
+        token in lowered
+        for token in (
+            "m4_",
+            "m4a",
+            "m4b",
+            "m4c",
+            "backup_restore",
+            "upload",
+            "import",
+            "queue",
+            "document",
+            "search",
+            "chat",
+            "citation",
+            "retrieval",
+            "diagnostics",
+        )
+    )
+
+
 def _build_report_payload() -> dict[str, Any]:
     generated_at = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     collected, marker_counts, marker_test_ids = _run_collection()
@@ -206,15 +259,25 @@ def _build_report_payload() -> dict[str, Any]:
     gate_scores = _compute_gate_scores(marker_test_ids, summary.passed_tests)
     rc_blockers_open = _compute_rc_blockers(summary.passed_tests)
 
+    m4_test_ids = set()
+    for marker in M4_BLOCKING_MARKERS:
+        m4_test_ids.update(marker_test_ids.get(marker) or [])
+    failed_m4_tests = sorted(set(summary.failed_tests).intersection(m4_test_ids))
+    skipped_m4_tests = sorted(set(summary.skipped_tests).intersection(m4_test_ids))
+    m4_error_tests = sorted(nodeid for nodeid in summary.error_tests if _nodeid_is_m4_blocking(nodeid))
+    unclassified_error_count = max(0, summary.errors - len(summary.error_tests))
+
     gate_blockers = []
     if not test_database_url:
         gate_blockers.append("TEST_DATABASE_URL fehlt")
-    if summary.failed:
-        gate_blockers.append(f"{summary.failed} Testfehler")
-    if summary.errors:
-        gate_blockers.append(f"{summary.errors} Setup-/Collect-Fehler")
-    if test_database_url and summary.skipped:
-        gate_blockers.append(f"{summary.skipped} unerlaubte Skips bei gesetzter TEST_DATABASE_URL")
+    if failed_m4_tests:
+        gate_blockers.append(f"{len(failed_m4_tests)} M4-Testfehler")
+    if m4_error_tests:
+        gate_blockers.append(f"{len(m4_error_tests)} M4-Setup-/Collect-Fehler")
+    if unclassified_error_count:
+        gate_blockers.append(f"{unclassified_error_count} unklassifizierte Setup-/Collect-Fehler")
+    if test_database_url and skipped_m4_tests:
+        gate_blockers.append(f"{len(skipped_m4_tests)} unerlaubte M4-Skips bei gesetzter TEST_DATABASE_URL")
 
     m4_gate_impact = "M4-Gate BLOCKED" if gate_blockers else "M4-Gate PASS"
     return {
@@ -235,11 +298,16 @@ def _build_report_payload() -> dict[str, Any]:
         "commit_hash": _get_commit_hash(),
         "m4_gate_impact": m4_gate_impact,
         "m4_gate_blockers": gate_blockers,
+        "m4_blocking_markers": list(M4_BLOCKING_MARKERS),
+        "m4_failed_tests": failed_m4_tests,
+        "m4_skipped_tests": skipped_m4_tests,
+        "m4_error_tests": m4_error_tests,
         "gate_scores": gate_scores,
         "rc_blockers_open": rc_blockers_open,
         "failed_tests": summary.failed_tests,
         "error_tests": summary.error_tests,
         "passed_tests": summary.passed_tests,
+        "skipped_tests": summary.skipped_tests,
     }
 
 
@@ -377,10 +445,14 @@ def _render_markdown(report: dict[str, Any]) -> str:
         f"| TEST_DATABASE_URL gesetzt | {str(report['test_database_url_set']).lower()} |",
         f"| Alembic head | {', '.join(alembic_heads)} |",
         f"| Collected | {report['collected']} |",
-        f"| M4a-Gate Tests | {report.get('marker_counts', {}).get('m4a_gate', 0)} |",
-        f"| M4b-Gate Tests | {report.get('marker_counts', {}).get('m4b_gate', 0)} |",
-        f"| M4c-Gate Tests | {report.get('marker_counts', {}).get('m4c_gate', 0)} |",
-        f"| M4d-Gate Tests | {report.get('marker_counts', {}).get('m4d_gate', 0)} |",
+        f"| M4-Gate Tests | {report.get('marker_counts', {}).get('m4_truth', 0)} |",
+        f"| M4a-Gate Tests | {report.get('marker_counts', {}).get('m4a_auth_truth', 0)} |",
+        f"| M4b-Gate Tests | {report.get('marker_counts', {}).get('m4b_upload_queue_truth', 0)} |",
+        f"| M4c-Gate Tests | {report.get('marker_counts', {}).get('m4c_lifecycle_retrieval_truth', 0)} |",
+        f"| M4e-Gate Tests | {report.get('marker_counts', {}).get('m4e_backup_restore_truth', 0)} |",
+        f"| M5 Tests | {report.get('marker_counts', {}).get('m5_truth', 0)} |",
+        f"| Governance Tests | {report.get('marker_counts', {}).get('governance_truth', 0)} |",
+        f"| Chaos Tests | {report.get('marker_counts', {}).get('chaos_truth', 0)} |",
         f"| Passed | {report['passed']} |",
         f"| Failed | {report['failed']} |",
         f"| Skipped | {report['skipped']} |",
@@ -394,10 +466,14 @@ def _render_markdown(report: dict[str, Any]) -> str:
         "",
         "| Gate | Score | Schwelle | Status |",
         "|---|---|---|---|",
-        f"| M4a | {score_str('m4a_gate')} | >= 95% | {'PASS' if (gate_scores.get('m4a_gate') or 0) >= 95 else 'FAIL'} |",
-        f"| M4b | {score_str('m4b_gate')} | >= 90% | {'PASS' if (gate_scores.get('m4b_gate') or 0) >= 90 else 'FAIL'} |",
-        f"| M4c | {score_str('m4c_gate')} | >= 90% | {'PASS' if (gate_scores.get('m4c_gate') or 0) >= 90 else 'FAIL'} |",
-        f"| M4d | {score_str('m4d_gate')} | >= 85% | {'PASS' if (gate_scores.get('m4d_gate') or 0) >= 85 else 'n/a' if gate_scores.get('m4d_gate') is None else 'FAIL'} |",
+        f"| M4 | {score_str('m4_truth')} | >= 90% | {'PASS' if (gate_scores.get('m4_truth') or 0) >= 90 else 'FAIL'} |",
+        f"| M4a | {score_str('m4a_auth_truth')} | >= 95% | {'PASS' if (gate_scores.get('m4a_auth_truth') or 0) >= 95 else 'FAIL'} |",
+        f"| M4b | {score_str('m4b_upload_queue_truth')} | >= 90% | {'PASS' if (gate_scores.get('m4b_upload_queue_truth') or 0) >= 90 else 'FAIL'} |",
+        f"| M4c | {score_str('m4c_lifecycle_retrieval_truth')} | >= 90% | {'PASS' if (gate_scores.get('m4c_lifecycle_retrieval_truth') or 0) >= 90 else 'FAIL'} |",
+        f"| M4e | {score_str('m4e_backup_restore_truth')} | >= 90% | {'PASS' if (gate_scores.get('m4e_backup_restore_truth') or 0) >= 90 else 'n/a' if gate_scores.get('m4e_backup_restore_truth') is None else 'FAIL'} |",
+        f"| M5 | {score_str('m5_truth')} | n/a fuer M4 | n/a |",
+        f"| Governance | {score_str('governance_truth')} | n/a fuer M4 | n/a |",
+        f"| Chaos | {score_str('chaos_truth')} | n/a fuer M4 | n/a |",
         "",
         "## RC-Blocker",
         "",

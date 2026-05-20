@@ -67,6 +67,8 @@ def pytest_collection_modifyitems(items):
 
 
 def pytest_collection_finish(session: pytest.Session) -> None:
+    if os.getenv("WISSEN_MARKER_TAXONOMY_ONLY") == "1":
+        return
     if any("postgres_truth" in str(item.fspath) for item in session.items):
         try:
             _ensure_postgres_truth_preflight(_database_url())

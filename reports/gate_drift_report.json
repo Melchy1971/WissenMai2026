@@ -1,0 +1,157 @@
+{
+  "version": 1,
+  "generated_at": "2026-05-20T08:27:56.314584+00:00",
+  "result": "FAIL",
+  "fail_rules": [
+    "Gate report missing, unreadable, timestamp-less or stale.",
+    "Current report collected count below baseline.",
+    "Required gate marker missing from taxonomy.",
+    "Unclassified or ambiguous tests present.",
+    "Gate score rises while failed+error count rises.",
+    "Documentation references missing or stale gate report.",
+    "Baseline missing or unreadable."
+  ],
+  "inputs": {
+    "report_dir": "H:\\WissenMai2026\\reports",
+    "taxonomy_report": "H:\\WissenMai2026\\reports\\truth_marker_taxonomy.json",
+    "baseline": "H:\\WissenMai2026\\reports\\gate_drift_baseline.json",
+    "max_report_age_hours": 168
+  },
+  "reports": {
+    "frontend_truth_report.json": {
+      "available": true,
+      "error": null
+    },
+    "m3a_truth_report.json": {
+      "available": false,
+      "error": "missing: H:\\WissenMai2026\\reports\\m3a_truth_report.json"
+    },
+    "m4_truth_report.json": {
+      "available": false,
+      "error": "missing: H:\\WissenMai2026\\reports\\m4_truth_report.json"
+    },
+    "m4a_auth_truth_report.json": {
+      "available": false,
+      "error": "missing: H:\\WissenMai2026\\reports\\m4a_auth_truth_report.json"
+    },
+    "m4b_upload_queue_truth_report.json": {
+      "available": false,
+      "error": "missing: H:\\WissenMai2026\\reports\\m4b_upload_queue_truth_report.json"
+    },
+    "m4c_lifecycle_retrieval_truth_report.json": {
+      "available": false,
+      "error": "missing: H:\\WissenMai2026\\reports\\m4c_lifecycle_retrieval_truth_report.json"
+    },
+    "m4e_backup_restore_truth_report.json": {
+      "available": false,
+      "error": "missing: H:\\WissenMai2026\\reports\\m4e_backup_restore_truth_report.json"
+    },
+    "m5_truth_report.json": {
+      "available": false,
+      "error": "missing: H:\\WissenMai2026\\reports\\m5_truth_report.json"
+    },
+    "governance_truth_report.json": {
+      "available": false,
+      "error": "missing: H:\\WissenMai2026\\reports\\governance_truth_report.json"
+    }
+  },
+  "taxonomy": {
+    "available": true,
+    "error": null,
+    "collected": 465,
+    "unclassified": 0,
+    "ambiguous": 0
+  },
+  "findings": [
+    {
+      "id": "GDD-BASELINE-MISSING",
+      "severity": "critical",
+      "rule": "Gate Drift Detection braucht eine Baseline.",
+      "message": "Baseline fehlt oder ist unlesbar; Regressionen gegen vorherige Testmengen koennen nicht bewertet werden.",
+      "evidence": {
+        "baseline": "H:\\WissenMai2026\\reports\\gate_drift_baseline.json",
+        "error": "missing: H:\\WissenMai2026\\reports\\gate_drift_baseline.json"
+      }
+    },
+    {
+      "id": "GDD-REPORT-MISSING",
+      "severity": "critical",
+      "rule": "Gate nutzt keinen fehlenden oder unlesbaren Report.",
+      "message": "m3a_truth_report.json ist nicht verfuegbar.",
+      "evidence": {
+        "report": "m3a_truth_report.json",
+        "error": "missing: H:\\WissenMai2026\\reports\\m3a_truth_report.json"
+      }
+    },
+    {
+      "id": "GDD-REPORT-MISSING",
+      "severity": "critical",
+      "rule": "Gate nutzt keinen fehlenden oder unlesbaren Report.",
+      "message": "m4_truth_report.json ist nicht verfuegbar.",
+      "evidence": {
+        "report": "m4_truth_report.json",
+        "error": "missing: H:\\WissenMai2026\\reports\\m4_truth_report.json"
+      }
+    },
+    {
+      "id": "GDD-REPORT-MISSING",
+      "severity": "critical",
+      "rule": "Gate nutzt keinen fehlenden oder unlesbaren Report.",
+      "message": "m4a_auth_truth_report.json ist nicht verfuegbar.",
+      "evidence": {
+        "report": "m4a_auth_truth_report.json",
+        "error": "missing: H:\\WissenMai2026\\reports\\m4a_auth_truth_report.json"
+      }
+    },
+    {
+      "id": "GDD-REPORT-MISSING",
+      "severity": "critical",
+      "rule": "Gate nutzt keinen fehlenden oder unlesbaren Report.",
+      "message": "m4b_upload_queue_truth_report.json ist nicht verfuegbar.",
+      "evidence": {
+        "report": "m4b_upload_queue_truth_report.json",
+        "error": "missing: H:\\WissenMai2026\\reports\\m4b_upload_queue_truth_report.json"
+      }
+    },
+    {
+      "id": "GDD-REPORT-MISSING",
+      "severity": "critical",
+      "rule": "Gate nutzt keinen fehlenden oder unlesbaren Report.",
+      "message": "m4c_lifecycle_retrieval_truth_report.json ist nicht verfuegbar.",
+      "evidence": {
+        "report": "m4c_lifecycle_retrieval_truth_report.json",
+        "error": "missing: H:\\WissenMai2026\\reports\\m4c_lifecycle_retrieval_truth_report.json"
+      }
+    },
+    {
+      "id": "GDD-REPORT-MISSING",
+      "severity": "critical",
+      "rule": "Gate nutzt keinen fehlenden oder unlesbaren Report.",
+      "message": "m4e_backup_restore_truth_report.json ist nicht verfuegbar.",
+      "evidence": {
+        "report": "m4e_backup_restore_truth_report.json",
+        "error": "missing: H:\\WissenMai2026\\reports\\m4e_backup_restore_truth_report.json"
+      }
+    },
+    {
+      "id": "GDD-REPORT-MISSING",
+      "severity": "critical",
+      "rule": "Gate nutzt keinen fehlenden oder unlesbaren Report.",
+      "message": "m5_truth_report.json ist nicht verfuegbar.",
+      "evidence": {
+        "report": "m5_truth_report.json",
+        "error": "missing: H:\\WissenMai2026\\reports\\m5_truth_report.json"
+      }
+    },
+    {
+      "id": "GDD-REPORT-MISSING",
+      "severity": "critical",
+      "rule": "Gate nutzt keinen fehlenden oder unlesbaren Report.",
+      "message": "governance_truth_report.json ist nicht verfuegbar.",
+      "evidence": {
+        "report": "governance_truth_report.json",
+        "error": "missing: H:\\WissenMai2026\\reports\\governance_truth_report.json"
+      }
+    }
+  ]
+}

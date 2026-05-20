@@ -1,0 +1,239 @@
+{
+  "model": "release_candidate",
+  "version": 1,
+  "statuses": [
+    {
+      "id": "draft",
+      "order": 1,
+      "terminal": false,
+      "meaning": "Scope, Akzeptanzkriterien und Gate-Zuordnung sind beschrieben, aber noch nicht implementiert.",
+      "required_evidence": [
+        "masterplan_entry",
+        "acceptance_criteria"
+      ]
+    },
+    {
+      "id": "implemented",
+      "order": 2,
+      "terminal": false,
+      "meaning": "Code, Migrationen oder Dokumentation wurden umgesetzt, aber noch nicht belastbar verifiziert.",
+      "required_evidence": [
+        "code_or_doc_change",
+        "test_plan"
+      ]
+    },
+    {
+      "id": "tested",
+      "order": 3,
+      "terminal": false,
+      "meaning": "Unit-, Contract- oder Integrationstests wurden ausgefuehrt und dokumentiert.",
+      "required_evidence": [
+        "pytest_or_tool_output",
+        "failed_tests_list_if_any"
+      ]
+    },
+    {
+      "id": "truth_validated",
+      "order": 4,
+      "terminal": false,
+      "meaning": "Der passende Truth-Report wurde erzeugt und enthaelt die RC-relevanten Marker.",
+      "required_evidence": [
+        "truth_split_report",
+        "truth_marker_taxonomy_pass"
+      ]
+    },
+    {
+      "id": "gate_passed",
+      "order": 5,
+      "terminal": false,
+      "meaning": "Das passende Gate ist maschinenlesbar PASS.",
+      "required_evidence": [
+        "machine_readable_gate_report"
+      ]
+    },
+    {
+      "id": "released",
+      "order": 6,
+      "terminal": true,
+      "meaning": "RC ist freigegeben, dokumentiert und auditierbar.",
+      "required_evidence": [
+        "machine_readable_gate_report",
+        "documentation_audit"
+      ]
+    }
+  ],
+  "status_rules": [
+    {
+      "id": "implemented_not_done",
+      "severity": "blocking",
+      "rule": "implemented without truth_validated is not completed",
+      "applies_to": [
+        "implemented"
+      ]
+    },
+    {
+      "id": "gate_passed_requires_machine_report",
+      "severity": "blocking",
+      "rule": "gate_passed requires a machine-readable gate report with status PASS",
+      "applies_to": [
+        "gate_passed",
+        "released"
+      ]
+    },
+    {
+      "id": "released_requires_documentation_audit",
+      "severity": "blocking",
+      "rule": "released requires a documentation audit that reconciles masterplan, docs and reports",
+      "applies_to": [
+        "released"
+      ]
+    },
+    {
+      "id": "m4_rc_no_m5_dependency",
+      "severity": "blocking",
+      "rule": "M4 release-candidate evaluation must not depend on M5 or governance reports",
+      "applies_to": [
+        "m4a",
+        "m4b",
+        "m4c",
+        "m4e",
+        "m4_overall"
+      ]
+    }
+  ],
+  "rc_scopes": {
+    "m3a": {
+      "gate": "m3a_gate",
+      "truth_reports": [
+        "reports/m3a_truth_report.json",
+        "reports/frontend_truth_report.json"
+      ],
+      "allowed_dependencies": [
+        "frontend_truth",
+        "m3a_truth"
+      ],
+      "forbidden_dependencies": [
+        "m4_truth",
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m4a": {
+      "gate": "m4a_gate",
+      "truth_reports": [
+        "reports/m4a_auth_truth_report.json"
+      ],
+      "allowed_dependencies": [
+        "m4a_auth_truth"
+      ],
+      "forbidden_dependencies": [
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m4b": {
+      "gate": "m4b_gate",
+      "truth_reports": [
+        "reports/m4b_upload_queue_truth_report.json"
+      ],
+      "allowed_dependencies": [
+        "m4b_upload_queue_truth"
+      ],
+      "forbidden_dependencies": [
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m4c": {
+      "gate": "m4c_gate",
+      "truth_reports": [
+        "reports/m4c_lifecycle_retrieval_truth_report.json"
+      ],
+      "allowed_dependencies": [
+        "m4c_lifecycle_retrieval_truth"
+      ],
+      "forbidden_dependencies": [
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m4e": {
+      "gate": "m4e_gate",
+      "truth_reports": [
+        "reports/m4e_backup_restore_truth_report.json"
+      ],
+      "allowed_dependencies": [
+        "m4e_backup_restore_truth"
+      ],
+      "forbidden_dependencies": [
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m4_overall": {
+      "gate": "m4_overall_gate",
+      "truth_reports": [
+        "reports/m3a_truth_report.json",
+        "reports/frontend_truth_report.json",
+        "reports/m4a_auth_truth_report.json",
+        "reports/m4b_upload_queue_truth_report.json",
+        "reports/m4c_lifecycle_retrieval_truth_report.json",
+        "reports/m4e_backup_restore_truth_report.json"
+      ],
+      "allowed_dependencies": [
+        "m3a",
+        "m4a",
+        "m4b",
+        "m4c",
+        "m4e"
+      ],
+      "forbidden_dependencies": [
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m5_start": {
+      "gate": "m5_start_gate",
+      "truth_reports": [
+        "reports/gate_hierarchy_result.json"
+      ],
+      "allowed_dependencies": [
+        "m4_overall_gate"
+      ],
+      "forbidden_dependencies": []
+    },
+    "operational_governance": {
+      "gate": "operational_governance_gate",
+      "truth_reports": [
+        "reports/governance_truth_report.json",
+        "reports/gate_hierarchy_result.json"
+      ],
+      "allowed_dependencies": [
+        "m5_start_gate",
+        "governance_truth"
+      ],
+      "forbidden_dependencies": []
+    }
+  },
+  "completion_rule": {
+    "minimum_completed_status": "released",
+    "not_completed_statuses": [
+      "draft",
+      "implemented",
+      "tested",
+      "truth_validated",
+      "gate_passed"
+    ],
+    "completed_statuses": [
+      "released"
+    ]
+  },
+  "masterplan_mapping": {
+    "draft": "Backlog or Partial/Missing entry with acceptance criteria and gate assignment.",
+    "implemented": "Implemented section may mention the work, but it remains open until truth_validated.",
+    "tested": "Implemented or Partial with test evidence, but no release claim.",
+    "truth_validated": "Truth split report exists for the assigned marker and taxonomy validation is PASS.",
+    "gate_passed": "Gate hierarchy result contains PASS for the assigned gate.",
+    "released": "Masterplan, docs and reports have been reconciled by documentation audit."
+  }
+}

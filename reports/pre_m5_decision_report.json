@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "report": "Pre-M5 Decision Report",
+  "generated_at": "2026-05-20T10:35:43+02:00",
+  "decision": {
+    "m5_remains_blocked": true,
+    "m5_preparation_allowed": true,
+    "m5_implementation_allowed": false,
+    "go_no_go": "NO_GO_FOR_M5_IMPLEMENTATION"
+  },
+  "rule": {
+    "m5_implementation_requires": [
+      "M3a RC gate_passed",
+      "M4 RC gate_passed",
+      "M4e consciously decided",
+      "no M4-blocking known limitations",
+      "Documentation Audit green"
+    ],
+    "preparation_boundary": "M5 preparation may cover documentation, prioritization, measurement design and planning only. It must not start M5 implementation, override M4 blockers or reinterpret failed M4 evidence."
+  },
+  "inputs": {
+    "m3a_rc": {
+      "path": "reports/m3a_release_candidate.json",
+      "status": "gate_passed",
+      "go_no_go": "GO",
+      "passed": true
+    },
+    "m4_rc": {
+      "path": "reports/m4_release_candidate.json",
+      "status": "tested",
+      "go_no_go": "NO_GO",
+      "passed": false,
+      "blockers": [
+        "missing_m4_split_gate_reports",
+        "postgres_truth_m4_not_green",
+        "m4b_truth_failure",
+        "postgres_truth_setup_errors"
+      ]
+    },
+    "m4e_decision": {
+      "path": "reports/restore_truth_report.md",
+      "status": "DECIDED_PASS_AS_DOCUMENTATION_POINT",
+      "consciously_decided": true,
+      "machine_gate_report": "missing: reports/m4e_backup_restore_truth_report.json",
+      "limitation": "M4e minimal is documented as a restore-truth point, but split m4e_backup_restore_truth_report.json is missing."
+    },
+    "known_limitations": {
+      "path": "docs/known_limitations.json",
+      "m4_blocking_limitations": [
+        "KL-M4-001",
+        "KL-M4-002",
+        "KL-M4-003",
+        "KL-M4-004"
+      ],
+      "m5_blocking_limitations": [
+        "KL-M5-001",
+        "KL-M5-002",
+        "KL-M5-003"
+      ],
+      "no_m4_blockers": false
+    },
+    "documentation_audit": {
+      "path": "reports/documentation_release_audit.json",
+      "freigabe": "nein",
+      "green": false,
+      "blocking_findings": [
+        "DRA-001",
+        "DRA-002",
+        "DRA-003",
+        "DRA-004"
+      ]
+    },
+    "gate_drift": {
+      "path": "reports/gate_drift_report.json",
+      "result": "FAIL",
+      "green": false,
+      "findings": 9,
+      "blocking_summary": [
+        "missing gate_drift_baseline.json",
+        "missing split truth reports for M3a/M4/M5/Governance gates"
+      ]
+    }
+  },
+  "prerequisite_evaluation": [
+    {
+      "id": "m3a_rc_gate_passed",
+      "required_for_m5_implementation": true,
+      "passed": true,
+      "evidence": "reports/m3a_release_candidate.json status=gate_passed and go_no_go=GO."
+    },
+    {
+      "id": "m4_rc_gate_passed",
+      "required_for_m5_implementation": true,
+      "passed": false,
+      "evidence": "reports/m4_release_candidate.json status=tested and go_no_go=NO_GO; M4 split reports are missing and postgres_truth_m4 is red."
+    },
+    {
+      "id": "m4e_consciously_decided",
+      "required_for_m5_implementation": true,
+      "passed": true,
+      "evidence": "M4e restore truth is documented in reports/restore_truth_report.md and M4 RC marks M4e minimal as DECIDED_PASS_AS_DOCUMENTATION_POINT."
+    },
+    {
+      "id": "no_m4_blocking_known_limitations",
+      "required_for_m5_implementation": true,
+      "passed": false,
+      "evidence": "docs/known_limitations.json contains M4 blockers KL-M4-001, KL-M4-002, KL-M4-003 and KL-M4-004."
+    },
+    {
+      "id": "documentation_audit_green",
+      "required_for_m5_implementation": true,
+      "passed": false,
+      "evidence": "reports/documentation_release_audit.json release_decision.freigabe=nein with blocking findings DRA-001..DRA-004."
+    },
+    {
+      "id": "gate_drift_green",
+      "required_for_pre_m5_confidence": true,
+      "passed": false,
+      "evidence": "reports/gate_drift_report.json result=FAIL with 9 findings."
+    }
+  ],
+  "blockers": [
+    {
+      "id": "m4_rc_not_gate_passed",
+      "severity": "blocking",
+      "blocks": [
+        "m5_implementation"
+      ],
+      "source": "reports/m4_release_candidate.json"
+    },
+    {
+      "id": "m4_known_limitations_open",
+      "severity": "blocking",
+      "blocks": [
+        "m5_implementation"
+      ],
+      "source": "docs/known_limitations.json"
+    },
+    {
+      "id": "documentation_audit_not_green",
+      "severity": "blocking",
+      "blocks": [
+        "m5_implementation"
+      ],
+      "source": "reports/documentation_release_audit.json"
+    },
+    {
+      "id": "gate_drift_fail",
+      "severity": "blocking",
+      "blocks": [
+        "m5_implementation",
+        "m5_gate_confidence"
+      ],
+      "source": "reports/gate_drift_report.json"
+    }
+  ],
+  "allowed_work": {
+    "m5_preparation": [
+      "M5 scope clarification",
+      "measurement and report design",
+      "prioritization of M5 known limitations",
+      "planning documents that do not claim M5 start",
+      "non-invasive analysis of M5 truth failures"
+    ],
+    "forbidden_until_go": [
+      "M5 implementation",
+      "Operational Governance gate enforcement",
+      "M5 release claims",
+      "changes that treat M4 as passed",
+      "using M5/governance findings to block or override M4"
+    ]
+  },
+  "final_go_no_go": {
+    "m5_start": "NO_GO",
+    "m5_preparation": "GO",
+    "m5_implementation": "NO_GO",
+    "reason": "M3a is gate_passed and M4e minimal is consciously decided, but M4 RC is not gate_passed, M4-blocking known limitations remain open, documentation audit is not green and gate drift detection is failing."
+  }
+}

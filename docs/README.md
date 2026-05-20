@@ -29,6 +29,10 @@ Die kompakte Freigabefassung fuer den aktuell zulaessigen M4/M5-Dokumentationsst
 
 Der aktuelle echte Restore-Truth-Nachweis steht in [reports/restore_truth_report.md](H:/WissenMai2026/reports/restore_truth_report.md).
 
+Das Release-Candidate-Modell fuer Zwischenstatus zwischen Entwicklung und abgeschlossen steht in `docs/release-candidate-model.md`; die maschinenlesbare Quelle ist `docs/release-candidate-model.json`.
+
+Der governance-stabile Entwicklungsmodus nach M3a/M4 steht in `docs/governance-stable-development-mode.md`; die maschinenlesbare Quelle ist `docs/governance-stable-development-mode.json`.
+
 Sie ist die bevorzugte Kurzreferenz fuer:
 
 - aktuellen M4-Hardening-Status
@@ -48,6 +52,8 @@ Sie duerfen nicht als Beleg fuer einen gestarteten M5-Betrieb, eine laufende Imp
 - [docs/health-score.md](H:/WissenMai2026/docs/health-score.md): Vorbereitungsrahmen fuer M5 Health Score
 - [docs/operations.md](H:/WissenMai2026/docs/operations.md): Betriebsrahmen inklusive M5-Dokumentationslogik
 - [docs/operational-truth-governance.md](H:/WissenMai2026/docs/operational-truth-governance.md): Governance-Regeln fuer messbare Truth-Quellen und Gate-Policies
+- [docs/governance-boundary.md](H:/WissenMai2026/docs/governance-boundary.md): Boundary-Regeln zwischen M3a, M4, M5 und Operational Governance
+- [docs/governance-stable-development-mode.md](H:/WissenMai2026/docs/governance-stable-development-mode.md): Entwicklungsmodus gegen Rueckfall in feature-getriebene Arbeit nach M3a/M4
 - [docs/feature-governance-model.md](H:/WissenMai2026/docs/feature-governance-model.md): kontrollierte Einfuehrung neuer Features mit Risikoklassen und Pflichtnachweisen
 - [docs/m5-observability.md](H:/WissenMai2026/docs/m5-observability.md): M5-Metriken, Logging-Erweiterungen und Dashboard-Konzept
 - [docs/operational-drift-dashboard-scope.md](H:/WissenMai2026/docs/operational-drift-dashboard-scope.md): Scope fuer Operational Drift Dashboard, Drift-Metriken und Eskalation

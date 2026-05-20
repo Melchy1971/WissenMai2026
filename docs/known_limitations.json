@@ -1,0 +1,261 @@
+{
+  "version": 1,
+  "generated_at": "2026-05-20T10:35:00+02:00",
+  "categories": [
+    "M3a blocker",
+    "M4 blocker",
+    "M5 blocker",
+    "non-blocking debt",
+    "explicitly deferred"
+  ],
+  "limitations": [
+    {
+      "id": "KL-M4-001",
+      "category": "M4 blocker",
+      "bereich": "M4 Truth / PostgreSQL",
+      "beschreibung": "Der aktuelle PostgreSQL-Truth-Report ist nicht gruen: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.",
+      "blockiert_gate": [
+        "m4_overall_gate",
+        "m5_start_gate"
+      ],
+      "risiko": "M4 kann nicht als stabil oder gate_passed bewertet werden; M5 darf nicht starten.",
+      "workaround": "Keine Freigabe ableiten; M4-Truth-Fehler beheben und Report neu erzeugen.",
+      "zielphase": "M4",
+      "review_datum": "2026-05-27",
+      "sources": [
+        "reports/postgres_truth_report.json",
+        "reports/m4_release_candidate.json"
+      ]
+    },
+    {
+      "id": "KL-M4-002",
+      "category": "M4 blocker",
+      "bereich": "M4b Upload/Queue",
+      "beschreibung": "M4b-kritischer Truth-Test fuer stale import job recovery ist rot.",
+      "blockiert_gate": [
+        "m4b_gate",
+        "m4_overall_gate"
+      ],
+      "risiko": "Upload-/Queue-Recovery kann bei Fehlerfaellen doppelte oder verlorene Zustandsuebergaenge erzeugen.",
+      "workaround": "M4b nicht freigeben; Recovery-Pfad isoliert fixen und gegen echte PostgreSQL-DB erneut validieren.",
+      "zielphase": "M4b",
+      "review_datum": "2026-05-27",
+      "sources": [
+        "reports/postgres_truth_report.json",
+        "docs/postgres-truth-failure-gate-matrix.md"
+      ]
+    },
+    {
+      "id": "KL-M4-003",
+      "category": "M4 blocker",
+      "bereich": "Report Integrity",
+      "beschreibung": "PostgreSQL Truth enthaelt 2 Setup-/Collect-Errors; unklassifizierte Setup-Errors bleiben gate-blockierend.",
+      "blockiert_gate": [
+        "m4_overall_gate",
+        "m5_start_gate"
+      ],
+      "risiko": "Report kann nicht vollstaendig bewertet werden; unbekannte Fehler koennen echte M4-Regressionen verbergen.",
+      "workaround": "Setup-/Collect-Fehler vor fachlicher Gateentscheidung isolieren und beheben.",
+      "zielphase": "M4",
+      "review_datum": "2026-05-27",
+      "sources": [
+        "reports/postgres_truth_report.json",
+        "reports/m4_release_candidate.json"
+      ]
+    },
+    {
+      "id": "KL-M4-004",
+      "category": "M4 blocker",
+      "bereich": "Gate Reporting",
+      "beschreibung": "Split-Reports fuer M4a, M4b, M4c, M4e und M4 Gesamt fehlen im reports-Verzeichnis.",
+      "blockiert_gate": [
+        "m4a_gate",
+        "m4b_gate",
+        "m4c_gate",
+        "m4e_gate",
+        "m4_overall_gate"
+      ],
+      "risiko": "Teilgate-Status kann nicht mit der neuen Gate-Hierarchie maschinenlesbar nachgewiesen werden.",
+      "workaround": "generate_truth_split_reports.py gegen die vollstaendige relevante Suite ausfuehren und validate_gate_hierarchy.py danach auswerten.",
+      "zielphase": "M4",
+      "review_datum": "2026-05-27",
+      "sources": [
+        "reports/m4_release_candidate.json",
+        "scripts/generate_truth_split_reports.py",
+        "scripts/validate_gate_hierarchy.py"
+      ]
+    },
+    {
+      "id": "KL-M5-001",
+      "category": "M5 blocker",
+      "bereich": "M5 Transition",
+      "beschreibung": "M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.",
+      "blockiert_gate": [
+        "m5_start_gate",
+        "operational_governance_gate"
+      ],
+      "risiko": "Operational-Governance-Entscheidungen wuerden auf nicht freigegebener M4-Basis aufsetzen.",
+      "workaround": "M5 nur konzeptionell vorbereiten; keine M5-Freigabe ohne M4 Gesamtgate PASS.",
+      "zielphase": "M5",
+      "review_datum": "2026-05-27",
+      "sources": [
+        "docs/m4-m5-freigabefassung.md",
+        "reports/m4_release_candidate.json"
+      ]
+    },
+    {
+      "id": "KL-M5-002",
+      "category": "M5 blocker",
+      "bereich": "M5 Entropy/Drift",
+      "beschreibung": "Aktuelle PostgreSQL-Truth-Findings enthalten 15 M5 Entropy-/Drift-Failures.",
+      "blockiert_gate": [
+        "m5_start_gate"
+      ],
+      "risiko": "Langzeitbetrieb, Datenalterung und Drift-Recovery sind nicht belastbar freigegeben.",
+      "workaround": "M5-Fehler nicht fuer M4 bewerten; nach M4 PASS gezielt M5-Truth-Suite reparieren.",
+      "zielphase": "M5",
+      "review_datum": "2026-06-03",
+      "sources": [
+        "reports/postgres_truth_report.json",
+        "docs/postgres-truth-failure-gate-matrix.md"
+      ]
+    },
+    {
+      "id": "KL-M5-003",
+      "category": "M5 blocker",
+      "bereich": "Operational Governance",
+      "beschreibung": "Operational Governance Gate darf erst nach M5 Startgate blockierend bewertet werden.",
+      "blockiert_gate": [
+        "operational_governance_gate"
+      ],
+      "risiko": "Governance-Findings koennten faelschlich M4 blockieren oder zu frueh als Release-Kriterium gelten.",
+      "workaround": "Governance-Reports nur nach M5 Startgate als blockierend verwenden.",
+      "zielphase": "M5",
+      "review_datum": "2026-06-03",
+      "sources": [
+        "scripts/validate_gate_hierarchy.py",
+        "docs/release-candidate-model.json"
+      ]
+    },
+    {
+      "id": "KL-NB-001",
+      "category": "non-blocking debt",
+      "bereich": "M3a Evidence Drift",
+      "beschreibung": "m3a_final_gate_report.json referenziert einen frueheren gruenen Frontend-Truth-Lauf mit 82/82; der aktuelle frontend_truth_report.json ist ebenfalls gruen mit 100/100.",
+      "blockiert_gate": [],
+      "risiko": "Verwirrung bei manueller Auswertung, obwohl beide Quellen gruene M3a-Evidenz liefern.",
+      "workaround": "Fuer neue RCs den aktuellen frontend_truth_report.json direkt zitieren.",
+      "zielphase": "M3a documentation maintenance",
+      "review_datum": "2026-05-27",
+      "sources": [
+        "reports/m3a_release_candidate.json",
+        "reports/frontend_truth_report.json",
+        "reports/m3a_final_gate_report.json"
+      ]
+    },
+    {
+      "id": "KL-NB-002",
+      "category": "non-blocking debt",
+      "bereich": "M4e Backup/Restore",
+      "beschreibung": "M4e Minimal ist als Restore-Truth dokumentiert, aber Produktionshaertung und externe Betriebsvalidierung bleiben offen.",
+      "blockiert_gate": [],
+      "risiko": "Minimalpfad ist belegt, aber produktionsnahe Betriebsqualitaet ist noch nicht voll abgesichert.",
+      "workaround": "M4e Minimal nur als dokumentierten Minimalpfad nutzen; produktionsnahe Automatisierung in M5/Operations haerten.",
+      "zielphase": "M5 Operations",
+      "review_datum": "2026-06-03",
+      "sources": [
+        "reports/restore_truth_report.md",
+        "docs/runbooks/backup-restore.md",
+        "masterplan.md"
+      ]
+    },
+    {
+      "id": "KL-NB-003",
+      "category": "non-blocking debt",
+      "bereich": "M4d Diagnostics",
+      "beschreibung": "M4d ist nur read-only vorbereitet; mutierende Admin-Aktionen bleiben blockiert.",
+      "blockiert_gate": [],
+      "risiko": "Operatoren koennen Diagnose sehen, aber keine allgemeinen Reparaturaktionen ueber UI ausloesen.",
+      "workaround": "Nur read-only Diagnostics verwenden; operative Aktionen ueber Runbooks/CLI und spaetere M5-Governance fuehren.",
+      "zielphase": "M5 Operations",
+      "review_datum": "2026-06-03",
+      "sources": [
+        "docs/m4d-admin-diagnostics.md",
+        "docs/api.md",
+        "masterplan.md"
+      ]
+    },
+    {
+      "id": "KL-NB-004",
+      "category": "non-blocking debt",
+      "bereich": "API Versioning",
+      "beschreibung": "Der Alias /api/v1/documents ist nicht durchgaengig als Zielpfad verfuegbar; aktuelle Pfade nutzen teilweise /documents.",
+      "blockiert_gate": [],
+      "risiko": "Spaetere Clients koennen an uneinheitliche Pfade koppeln.",
+      "workaround": "Vor neuer Clientbindung API-Vertrag pruefen und Alias oder Routing-Konsolidierung umsetzen.",
+      "zielphase": "M4/M5 API hardening",
+      "review_datum": "2026-06-03",
+      "sources": [
+        "masterplan.md",
+        "docs/api.md"
+      ]
+    },
+    {
+      "id": "KL-DEF-001",
+      "category": "explicitly deferred",
+      "bereich": "OCR",
+      "beschreibung": "OCR fuer gescannte PDFs ist bewusst nicht Teil des aktuellen Gates; PDFs ohne extrahierbaren Text bleiben OCR_REQUIRED.",
+      "blockiert_gate": [],
+      "risiko": "Gescannte PDFs sind fuer Suche/Chat nicht nutzbar.",
+      "workaround": "OCR_REQUIRED sichtbar halten und OCR als eigenes Paket planen.",
+      "zielphase": "Post-M4 feature",
+      "review_datum": "2026-06-17",
+      "sources": [
+        "masterplan.md",
+        "docs/paket-5-technical-debt-register.md"
+      ]
+    },
+    {
+      "id": "KL-DEF-002",
+      "category": "explicitly deferred",
+      "bereich": "Embeddings/Vektorsuche",
+      "beschreibung": "Embeddings und Vektorsuche sind optional und nicht V1-kritisch.",
+      "blockiert_gate": [],
+      "risiko": "Semantische Suche bleibt begrenzt auf aktuelle Retrieval-Strategien.",
+      "workaround": "FTS-/Retrieval-Baseline weiter nutzen; Vektorsuche separat konzipieren.",
+      "zielphase": "Post-V1 or M5+",
+      "review_datum": "2026-07-01",
+      "sources": [
+        "masterplan.md"
+      ]
+    },
+    {
+      "id": "KL-DEF-003",
+      "category": "explicitly deferred",
+      "bereich": "Analyse/Merge/Refine",
+      "beschreibung": "Analyse-, Merge- und Refine-Fachlogik ist vorbereitet, aber nicht umgesetzt.",
+      "blockiert_gate": [],
+      "risiko": "Erweiterte Wissensbearbeitung steht fachlich noch nicht zur Verfuegung.",
+      "workaround": "Dokumentimport, Retrieval und Chat als Kernpfade nutzen; Analyse als eigenes Feature planen.",
+      "zielphase": "Post-M4 feature",
+      "review_datum": "2026-07-01",
+      "sources": [
+        "masterplan.md"
+      ]
+    },
+    {
+      "id": "KL-M3A-001",
+      "category": "M3a blocker",
+      "bereich": "M3a Gate",
+      "beschreibung": "Kein aktueller M3a-Blocker bekannt; M3a RC steht auf GO.",
+      "blockiert_gate": [],
+      "risiko": "Nur wenn neuere Frontend Truth, GUI Chaos oder Contract Reports rot werden, wird M3a wieder blockiert.",
+      "workaround": "Vor neuen M3a-Freigabeaussagen aktuelle Reports erneut pruefen.",
+      "zielphase": "M3a maintenance",
+      "review_datum": "2026-05-27",
+      "sources": [
+        "reports/m3a_release_candidate.json"
+      ]
+    }
+  ]
+}

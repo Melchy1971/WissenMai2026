@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "model": "governance_stable_development_mode",
+  "status": "defined",
+  "authority": {
+    "source_of_truth": "machine_artifacts",
+    "manual_override_allowed": false,
+    "rule": "Nach M3a/M4 darf Entwicklung nur im artefakt-, gate- und auditgesteuerten Modus fortgesetzt werden."
+  },
+  "goal": "Nach M3a/M4 darf Entwicklung nicht wieder in einen feature-getriebenen Modus zurueckfallen.",
+  "mode": {
+    "id": "governance_stable",
+    "name": "Governance-stabiler Entwicklungsmodus",
+    "entry_condition": [
+      "M3a ist als eigener RC oder Gate bewertet.",
+      "M4 wird ueber RC, Truth Reports, Gate-Hierarchie und Known Limitations bewertet.",
+      "M5-Arbeit ist nur im Rahmen der Pre-M5-Decision erlaubt."
+    ],
+    "default_behavior": "Jede Arbeit beginnt mit Scope, Gate-Zuordnung, Marker-Zuordnung, erwarteten Artefakten und No-Go-Kriterien.",
+    "forbidden_default": "Keine Feature-Implementierung ohne Release-Candidate-Zuordnung und ohne definierte Truth-/Gate-Artefakte."
+  },
+  "principles": [
+    {
+      "id": "GSDM-001",
+      "name": "Artefaktbasierte Wahrheit",
+      "rule": "Status, Fortschritt und Freigabe werden aus maschinenlesbaren Artefakten berechnet, nicht aus manuellen Aussagen.",
+      "required_artifacts": [
+        "reports/masterplan_status.json",
+        "reports/*_release_candidate.json",
+        "reports/*_truth_report.json"
+      ],
+      "no_go": "Wenn Artefakte fehlen oder widerspruechlich sind, ist der Status blocked, unknown oder not_verified, niemals pass."
+    },
+    {
+      "id": "GSDM-002",
+      "name": "Gate-spezifische Reports",
+      "rule": "Ein Gate darf nur seinen eigenen Report und explizit erlaubte Dependencies auswerten.",
+      "required_artifacts": [
+        "reports/frontend_truth_report.json",
+        "reports/m3a_truth_report.json",
+        "reports/m4a_auth_truth_report.json",
+        "reports/m4b_upload_queue_truth_report.json",
+        "reports/m4c_lifecycle_retrieval_truth_report.json",
+        "reports/m4e_backup_restore_truth_report.json",
+        "reports/m5_truth_report.json",
+        "reports/governance_truth_report.json"
+      ],
+      "no_go": "Keine Aggregatfreigabe aus fremden Reports; M5/Governance darf M4 nicht blockieren."
+    },
+    {
+      "id": "GSDM-003",
+      "name": "Marker-disziplinierte Tests",
+      "rule": "Jeder Gate-Test braucht genau einen Gate-Marker; unklassifizierte oder mehrdeutige Tests sind Fehler.",
+      "required_artifacts": [
+        "reports/truth_marker_taxonomy.json"
+      ],
+      "no_go": "Neue Tests ohne eindeutigen Marker blockieren Gate- und Statusberechnung."
+    },
+    {
+      "id": "GSDM-004",
+      "name": "Release Candidate Pflicht",
+      "rule": "Kein Meilenstein gilt als abgeschlossen, bevor ein RC mit Status, Reports, Blockern, Known Limitations und Go/No-Go existiert.",
+      "required_artifacts": [
+        "docs/release-candidate-model.json",
+        "reports/m3a_release_candidate.json",
+        "reports/m4_release_candidate.json"
+      ],
+      "no_go": "implemented oder tested ohne truth_validated/gate_passed zaehlt nicht als abgeschlossen."
+    },
+    {
+      "id": "GSDM-005",
+      "name": "Known Limitations Register",
+      "rule": "Jeder offene Blocker muss im Known-Limitation-Register klassifiziert sein.",
+      "required_artifacts": [
+        "docs/known_limitations.json",
+        "docs/known_limitations.md"
+      ],
+      "no_go": "Unregistrierte Blocker verhindern Release- oder Gate-Freigaben."
+    },
+    {
+      "id": "GSDM-006",
+      "name": "Documentation Audit Pflicht",
+      "rule": "Release- oder Abschlussaussagen brauchen einen Documentation Audit, der Doku, Masterplan und Reports abgleicht.",
+      "required_artifacts": [
+        "reports/documentation_release_audit.json",
+        "reports/documentation_release_audit.md"
+      ],
+      "no_go": "Doku-Widersprueche, alte Gruen-Zahlen oder Abschlussaussagen ohne Artefakt blockieren Freigabe."
+    },
+    {
+      "id": "GSDM-007",
+      "name": "Gate Drift Detection",
+      "rule": "Gate-Drift muss vor Freigaben geprueft werden: Reportalter, Testanzahl, Marker, unklassifizierte Tests, Score-Anomalien und Doku-Referenzen.",
+      "required_artifacts": [
+        "reports/gate_drift_report.json",
+        "reports/gate_drift_baseline.json"
+      ],
+      "no_go": "Gate Drift FAIL blockiert Implementierungs- oder Release-Go fuer betroffene Gates."
+    },
+    {
+      "id": "GSDM-008",
+      "name": "Masterplan Status Engine",
+      "rule": "Der Masterplan-Status wird aus Artefakten generiert; manuelle Statusaussagen duerfen ihn nicht ueberschreiben.",
+      "required_artifacts": [
+        "reports/masterplan_status.json",
+        "reports/masterplan_status_section.md",
+        "docs/masterplan_status.schema.json"
+      ],
+      "no_go": "Manuell gepflegte Statusaussagen gelten nicht als Quelle der Wahrheit."
+    }
+  ],
+  "workflow_rules": [
+    {
+      "id": "WF-001",
+      "rule": "Vor Implementierung muss der Ziel-Gate-Scope benannt sein.",
+      "no_go_behavior": "Arbeit bleibt im Analyse-/Planungsmodus."
+    },
+    {
+      "id": "WF-002",
+      "rule": "Vor Merge oder Abschluss muss der passende Truth-Report existieren.",
+      "no_go_behavior": "Kein Abschlussclaim, kein Gate-Pass, kein Releaseclaim."
+    },
+    {
+      "id": "WF-003",
+      "rule": "Neue Tests muessen sofort markerklassifiziert werden.",
+      "no_go_behavior": "Unklassifizierte Tests sind Fehler und blockieren Drift-/Taxonomie-Pass."
+    },
+    {
+      "id": "WF-004",
+      "rule": "Neue Anforderungen duerfen nicht rueckwirkend fruehere Gates blockieren.",
+      "no_go_behavior": "Anforderung wird als spaeterer Gate-Scope, Known Limitation oder explicitly deferred klassifiziert."
+    },
+    {
+      "id": "WF-005",
+      "rule": "Feature-Arbeit darf bekannte Gate-Blocker nicht ueberdecken.",
+      "no_go_behavior": "Stop Feature Work; zuerst Gate-Blocker, RC oder Limitation aktualisieren."
+    },
+    {
+      "id": "WF-006",
+      "rule": "M5-Vorbereitung darf M5-Implementierung nicht implizieren.",
+      "no_go_behavior": "Nur Planung, Messlogik und Analyse; kein M5-Code-Go ohne Pre-M5 GO."
+    }
+  ],
+  "no_go_behavior": {
+    "missing_artifact": "Status wird unknown/not_verified; keine Freigabe.",
+    "failed_gate": "Betroffener Gate-Status bleibt FAIL oder BLOCKED.",
+    "unclassified_tests": "Taxonomie und Drift Detection schlagen fehl.",
+    "known_limitation_missing": "Blocker muss registriert werden, bevor Entscheidung fortgesetzt wird.",
+    "documentation_audit_red": "Keine Release- oder Abschlussfreigabe.",
+    "gate_drift_fail": "Keine Implementierungs- oder Releasefreigabe fuer betroffene Gates.",
+    "manual_status_conflict": "Maschinenstatus gewinnt; Doku wird korrigiert oder als historisch markiert.",
+    "feature_pressure": "Feature-Wunsch wird in RC/Backlog/Gate-Scope ueberfuehrt; keine Umgehung der Gate-Regeln."
+  },
+  "allowed_work_when_blocked": [
+    "Root-Cause-Analyse",
+    "Report-Generatoren und Validatoren verbessern",
+    "Known Limitations aktualisieren",
+    "Documentation Audit Fixes",
+    "Gate-Blocker beheben",
+    "nicht-invasive Planung innerhalb erlaubter Boundary"
+  ],
+  "forbidden_work_when_blocked": [
+    "neue Feature-Implementierung ohne Gate-Zuordnung",
+    "Release-Claims ohne RC und Audit",
+    "manuelle Gruen- oder Abschlussaussagen",
+    "M5-Implementierung vor M5-Go",
+    "M5/Governance-Findings als M4-Blocker verwenden",
+    "alte Reports als aktuelle Wahrheit verwenden"
+  ],
+  "related_artifacts": [
+    "docs/governance-boundary.json",
+    "docs/release-candidate-model.json",
+    "docs/known_limitations.json",
+    "reports/documentation_release_audit.json",
+    "reports/gate_drift_report.json",
+    "reports/masterplan_status.json",
+    "reports/pre_m5_decision_report.json"
+  ]
+}

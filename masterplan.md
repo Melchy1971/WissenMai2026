@@ -41,6 +41,46 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 
 ## 2. Aktueller Scope-Stand
 
+### Release-Candidate-Modell
+
+Zwischen Entwicklung und abgeschlossen gilt ab sofort das Release-Candidate-Modell aus `docs/release-candidate-model.json` und `docs/release-candidate-model.md`.
+
+| RC-Status | Masterplan-Bedeutung |
+|---|---|
+| `draft` | Scope, Akzeptanzkriterien und Gate-Zuordnung sind beschrieben. |
+| `implemented` | Umsetzung existiert, ist aber ohne Truth-Nachweis nicht abgeschlossen. |
+| `tested` | Tests wurden ausgefuehrt, ersetzen aber keinen Truth- oder Gate-Nachweis. |
+| `truth_validated` | Passender Truth-Split-Report existiert und die Marker-Taxonomie ist gruen. |
+| `gate_passed` | Passendes Gate ist maschinenlesbar `PASS`. |
+| `released` | Gate-Report und Dokumentationsaudit sind abgeschlossen; erst dieser Status zaehlt als abgeschlossen. |
+
+Regeln:
+
+- `implemented` ohne `truth_validated` zaehlt nicht als abgeschlossen.
+- `gate_passed` braucht einen maschinenlesbaren Gate-Report.
+- `released` braucht einen Dokumentationsaudit ueber Masterplan, Doku und Reports.
+- Ein M4-RC darf bei M4-Bewertung keine M5- oder Governance-Abhaengigkeiten haben.
+
+### Bereits umgesetzte Governance-Artefakte
+
+Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten nicht automatisch, dass das betroffene Gate freigegeben ist; massgeblich bleibt der maschinell erzeugte Status aus `reports/masterplan_status.json`.
+
+| Bereich | Artefakt | Status |
+|---|---|---|
+| Truth-Test Marker Taxonomie | `reports/truth_marker_taxonomy.json`, `reports/truth_marker_taxonomy.md`, `scripts/validate_truth_marker_taxonomy.py` | ✅ umgesetzt |
+| Report Split Generator | `scripts/generate_truth_split_reports.py` und Tests | ✅ umgesetzt |
+| Gate Validator Hierarchie | `scripts/validate_gate_hierarchy.py`, Abhaengigkeitsgraph und Tests | ✅ umgesetzt |
+| Release-Candidate-Modell | `docs/release-candidate-model.json`, `docs/release-candidate-model.md` | ✅ umgesetzt |
+| M3a Release Candidate | `reports/m3a_release_candidate.json` | ✅ umgesetzt; Entscheidung `GO` |
+| M4 Release Candidate | `reports/m4_release_candidate.json` | ✅ umgesetzt; Entscheidung `NO_GO` |
+| Known Limitations Register | `docs/known_limitations.json`, `docs/known_limitations.md` | ✅ umgesetzt |
+| Documentation Release Audit | `reports/documentation_release_audit.json`, `reports/documentation_release_audit.md` | ✅ umgesetzt; Freigabe `nein` |
+| Gate Drift Detection | `scripts/detect_gate_drift.py`, `reports/gate_drift_report.json` | ✅ umgesetzt; aktueller Drift-Status `FAIL` |
+| Masterplan Status Engine | `scripts/generate_masterplan_status.py`, `reports/masterplan_status.json`, `reports/masterplan_status_section.md` | ✅ umgesetzt; Gesamtstatus `blocked` |
+| Governance Boundary | `docs/governance-boundary.json`, `docs/governance-boundary.md` | ✅ umgesetzt |
+| Pre-M5 Decision Report | `reports/pre_m5_decision_report.json`, `reports/pre_m5_decision_report.md` | ✅ umgesetzt; M5 Vorbereitung `GO`, M5 Implementierung `NO_GO` |
+| Governance-stabiler Entwicklungsmodus | `docs/governance-stable-development-mode.json`, `docs/governance-stable-development-mode.md` | ✅ umgesetzt |
+
 ### Implemented
 
 - FastAPI-App mit Healthchecks.

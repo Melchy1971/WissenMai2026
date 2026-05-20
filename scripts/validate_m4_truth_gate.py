@@ -10,17 +10,19 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORT_PATH = REPO_ROOT / "reports" / "postgres_truth_report.json"
 
 GATE_THRESHOLDS: dict[str, float] = {
-    "m4a_gate": 95.0,
-    "m4b_gate": 90.0,
-    "m4c_gate": 90.0,
-    "m4d_gate": 85.0,
+    "m4_truth": 90.0,
+    "m4a_auth_truth": 95.0,
+    "m4b_upload_queue_truth": 90.0,
+    "m4c_lifecycle_retrieval_truth": 90.0,
+    "m4e_backup_restore_truth": 90.0,
 }
 
 GATE_LABELS: dict[str, str] = {
-    "m4a_gate": "M4a (Auth/Workspace-Isolation)",
-    "m4b_gate": "M4b (Upload-Stabilitaet)",
-    "m4c_gate": "M4c (Lifecycle/Search/Chat)",
-    "m4d_gate": "M4d (Read-only Diagnostics)",
+    "m4_truth": "M4 (Backend Stabilization)",
+    "m4a_auth_truth": "M4a (Auth/Workspace-Isolation)",
+    "m4b_upload_queue_truth": "M4b (Upload-Stabilitaet)",
+    "m4c_lifecycle_retrieval_truth": "M4c (Lifecycle/Search/Chat)",
+    "m4e_backup_restore_truth": "M4e (Backup/Restore)",
 }
 
 
@@ -173,12 +175,24 @@ def _check_postgres_truth(report: dict[str, Any]) -> list[str]:
     if not isinstance(passed, int) or passed <= 0:
         failures.append(f"[truth] passed must be > 0, got {passed!r}")
 
-    if skipped != 0:
+    if "m4_skipped_tests" not in report and skipped != 0:
         failures.append(f"[truth] skipped must be 0, got {skipped}")
 
-    for row in _failure_gate_matrix(report):
-        if row["m4_critical"] == "yes":
-            failures.append(f"[{row['group']}] {row['kind']}: {row['nodeid']} - {row['reason']}")
+    if "m4_failed_tests" in report:
+        for nodeid in report.get("m4_failed_tests") or []:
+            failures.append(f"[M4] failure: {nodeid}")
+        for nodeid in report.get("m4_skipped_tests") or []:
+            failures.append(f"[M4] skipped: {nodeid}")
+        for nodeid in report.get("m4_error_tests") or []:
+            failures.append(f"[Setup/Error] error: {nodeid}")
+        errors = report.get("errors", 0)
+        known_errors = len(report.get("error_tests") or [])
+        if isinstance(errors, int) and errors > known_errors:
+            failures.append(f"[Setup/Error] {errors - known_errors} unclassified setup/collect error(s)")
+    else:
+        for row in _failure_gate_matrix(report):
+            if row["m4_critical"] == "yes":
+                failures.append(f"[{row['group']}] {row['kind']}: {row['nodeid']} - {row['reason']}")
 
     return failures
 
@@ -199,7 +213,7 @@ def _check_gate_scores(report: dict[str, Any]) -> list[str]:
         label = GATE_LABELS[gate]
 
         if score is None:
-            if gate != "m4d_gate":
+            if gate != "m4e_backup_restore_truth":
                 failures.append(f"[gate_scores] {label}: keine Tests registriert (Schwelle >= {threshold}%)")
         elif score < threshold:
             failures.append(f"[gate_scores] {label}: {score}% < {threshold}% (Schwelle nicht erreicht)")
@@ -250,7 +264,7 @@ def _print_summary(report: dict[str, Any]) -> None:
     for gate, threshold in GATE_THRESHOLDS.items():
         score = gate_scores.get(gate)
         score_str = f"{score}%" if score is not None else "n/a"
-        status = "PASS" if (score is not None and score >= threshold) else "n/a" if gate == "m4d_gate" else "FAIL"
+        status = "PASS" if (score is not None and score >= threshold) else "n/a" if gate == "m4e_backup_restore_truth" else "FAIL"
         print(f"  {GATE_LABELS[gate]}: {score_str} (Schwelle >= {threshold}%) [{status}]")
 
     if rc_open:

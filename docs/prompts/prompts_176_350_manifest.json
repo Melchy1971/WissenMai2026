@@ -1,0 +1,1052 @@
+[
+  {
+    "number": 176,
+    "title": "Full-System Crash Recovery Test",
+    "phase": "M4 Final Hardening",
+    "file": "176_full-system-crash-recovery-test.md"
+  },
+  {
+    "number": 177,
+    "title": "Queue Locking & Claiming Audit",
+    "phase": "M4 Final Hardening",
+    "file": "177_queue-locking-claiming-audit.md"
+  },
+  {
+    "number": 178,
+    "title": "Search Index Drift Detection",
+    "phase": "M4 Final Hardening",
+    "file": "178_search-index-drift-detection.md"
+  },
+  {
+    "number": 179,
+    "title": "Retrieval Snapshot Consistency",
+    "phase": "M4 Final Hardening",
+    "file": "179_retrieval-snapshot-consistency.md"
+  },
+  {
+    "number": 180,
+    "title": "Historical Chat Replay Test",
+    "phase": "M4 Final Hardening",
+    "file": "180_historical-chat-replay-test.md"
+  },
+  {
+    "number": 181,
+    "title": "Workspace Leakage Chaos-Test",
+    "phase": "M4 Final Hardening",
+    "file": "181_workspace-leakage-chaos-test.md"
+  },
+  {
+    "number": 182,
+    "title": "Metrics & Logs Truth Audit",
+    "phase": "M4 Final Hardening",
+    "file": "182_metrics-logs-truth-audit.md"
+  },
+  {
+    "number": 183,
+    "title": "Lifecycle/Reindex Chaos-Test",
+    "phase": "M4 Final Hardening",
+    "file": "183_lifecycle-reindex-chaos-test.md"
+  },
+  {
+    "number": 184,
+    "title": "Hardening Completion Matrix",
+    "phase": "M4 Final Hardening",
+    "file": "184_hardening-completion-matrix.md"
+  },
+  {
+    "number": 185,
+    "title": "Finales M4 Truth Gate",
+    "phase": "M4 Final Hardening",
+    "file": "185_finales-m4-truth-gate.md"
+  },
+  {
+    "number": 186,
+    "title": "postgres_truth Suite vollständig grün führen",
+    "phase": "RC-3 / Stabilisierung",
+    "file": "186_postgres-truth-suite-vollstaendig-gruen-fuehren.md"
+  },
+  {
+    "number": 187,
+    "title": "RC-3 Advisory-Lock implementieren",
+    "phase": "RC-3 / Stabilisierung",
+    "file": "187_rc-3-advisory-lock-implementieren.md"
+  },
+  {
+    "number": 188,
+    "title": "RC-3 Chaos-Test verifizieren",
+    "phase": "RC-3 / Stabilisierung",
+    "file": "188_rc-3-chaos-test-verifizieren.md"
+  },
+  {
+    "number": 189,
+    "title": "source_status Live-Lookup implementieren",
+    "phase": "RC-3 / Stabilisierung",
+    "file": "189_source-status-live-lookup-implementieren.md"
+  },
+  {
+    "number": 190,
+    "title": "Dead-Letter Replay-Endpoint implementieren",
+    "phase": "RC-3 / Stabilisierung",
+    "file": "190_dead-letter-replay-endpoint-implementieren.md"
+  },
+  {
+    "number": 191,
+    "title": "Truth Gate nach Stabilisierung erneut durchführen",
+    "phase": "RC-3 / Stabilisierung",
+    "file": "191_truth-gate-nach-stabilisierung-erneut-durchfuehren.md"
+  },
+  {
+    "number": 192,
+    "title": "source_status korrigieren",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "192_source-status-korrigieren.md"
+  },
+  {
+    "number": 193,
+    "title": "Truth-Test-Zählung korrigieren",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "193_truth-test-zaehlung-korrigieren.md"
+  },
+  {
+    "number": 194,
+    "title": "Dead-Letter Replay Audit-Trail härten",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "194_dead-letter-replay-audit-trail-haerten.md"
+  },
+  {
+    "number": 195,
+    "title": "Lokale Testumgebung installierbar machen",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "195_lokale-testumgebung-installierbar-machen.md"
+  },
+  {
+    "number": 196,
+    "title": "M4 Truth-Report artefaktfähig machen",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "196_m4-truth-report-artefaktfaehig-machen.md"
+  },
+  {
+    "number": 197,
+    "title": "Frontend Runtime Connectivity Audit",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "197_frontend-runtime-connectivity-audit.md"
+  },
+  {
+    "number": 198,
+    "title": "AuthContext Initialisierung härten",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "198_authcontext-initialisierung-haerten.md"
+  },
+  {
+    "number": 199,
+    "title": "API Reachability vs Auth Failure trennen",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "199_api-reachability-vs-auth-failure-trennen.md"
+  },
+  {
+    "number": 200,
+    "title": "Frontend/Backend Contract Verification",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "200_frontend-backend-contract-verification.md"
+  },
+  {
+    "number": 201,
+    "title": "PostgreSQL Truth-Lauf mit echter DB erzwingen",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "201_postgresql-truth-lauf-mit-echter-db-erzwingen.md"
+  },
+  {
+    "number": 202,
+    "title": "M4a Auth/Workspace Isolation Truth-Test ergänzen",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "202_m4a-auth-workspace-isolation-truth-test-ergaenzen.md"
+  },
+  {
+    "number": 203,
+    "title": "Frontend Auth Bootstrap E2E prüfen",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "203_frontend-auth-bootstrap-e2e-pruefen.md"
+  },
+  {
+    "number": 204,
+    "title": "Truth-Report als Gate-Quelle hart erzwingen",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "204_truth-report-als-gate-quelle-hart-erzwingen.md"
+  },
+  {
+    "number": 205,
+    "title": "M4 Gate nach echtem Truth-Run neu bewerten",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "205_m4-gate-nach-echtem-truth-run-neu-bewerten.md"
+  },
+  {
+    "number": 206,
+    "title": "postgres_truth Fehler vollständig extrahieren",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "206_postgres-truth-fehler-vollstaendig-extrahieren.md"
+  },
+  {
+    "number": 207,
+    "title": "Setup-/Collect-Errors isolieren",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "207_setup-collect-errors-isolieren.md"
+  },
+  {
+    "number": 208,
+    "title": "Truth-Test Flakiness Audit",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "208_truth-test-flakiness-audit.md"
+  },
+  {
+    "number": 209,
+    "title": "M4 Failure Concentration Report",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "209_m4-failure-concentration-report.md"
+  },
+  {
+    "number": 210,
+    "title": "M4 Final Stabilization Sprint",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "210_m4-final-stabilization-sprint.md"
+  },
+  {
+    "number": 211,
+    "title": "Truth-Failure Fixplan pro Test",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "211_truth-failure-fixplan-pro-test.md"
+  },
+  {
+    "number": 212,
+    "title": "Errors vor Failures beheben",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "212_errors-vor-failures-beheben.md"
+  },
+  {
+    "number": 213,
+    "title": "Testdaten-Isolation erzwingen",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "213_testdaten-isolation-erzwingen.md"
+  },
+  {
+    "number": 214,
+    "title": "Migration-State Verifikation im Teststart",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "214_migration-state-verifikation-im-teststart.md"
+  },
+  {
+    "number": 215,
+    "title": "Failure-to-Gate Mapping",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "215_failure-to-gate-mapping.md"
+  },
+  {
+    "number": 216,
+    "title": "Queue Recovery Truth Fix",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "216_queue-recovery-truth-fix.md"
+  },
+  {
+    "number": 217,
+    "title": "Lifecycle/Retrieval Truth Fix",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "217_lifecycle-retrieval-truth-fix.md"
+  },
+  {
+    "number": 218,
+    "title": "Auth/Workspace Truth Fix",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "218_auth-workspace-truth-fix.md"
+  },
+  {
+    "number": 219,
+    "title": "Truth-Report Delta Tracking",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "219_truth-report-delta-tracking.md"
+  },
+  {
+    "number": 220,
+    "title": "M4 Stabilization Exit Criteria",
+    "phase": "M4 Truth / Failure Elimination",
+    "file": "220_m4-stabilization-exit-criteria.md"
+  },
+  {
+    "number": 221,
+    "title": "Masterplan Completion Matrix",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "221_masterplan-completion-matrix.md"
+  },
+  {
+    "number": 222,
+    "title": "Feature-Reife-Differenzanalyse",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "222_feature-reife-differenzanalyse.md"
+  },
+  {
+    "number": 223,
+    "title": "M4a Final Truth Hardening",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "223_m4a-final-truth-hardening.md"
+  },
+  {
+    "number": 224,
+    "title": "M4b Final Truth Hardening",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "224_m4b-final-truth-hardening.md"
+  },
+  {
+    "number": 225,
+    "title": "M4c Final Truth Hardening",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "225_m4c-final-truth-hardening.md"
+  },
+  {
+    "number": 226,
+    "title": "M4e Backup/Restore Scope neu bewerten",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "226_m4e-backup-restore-scope-neu-bewerten.md"
+  },
+  {
+    "number": 227,
+    "title": "M4d Full bewusst verschieben",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "227_m4d-full-bewusst-verschieben.md"
+  },
+  {
+    "number": 228,
+    "title": "Produktionsreife-Score berechnen",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "228_produktionsreife-score-berechnen.md"
+  },
+  {
+    "number": 229,
+    "title": "Finaler M4 Stabilization Sprint Plan",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "229_finaler-m4-stabilization-sprint-plan.md"
+  },
+  {
+    "number": 230,
+    "title": "Finales M4 Exit Gate",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "230_finales-m4-exit-gate.md"
+  },
+  {
+    "number": 231,
+    "title": "M4e Minimal Scope final definieren",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "231_m4e-minimal-scope-final-definieren.md"
+  },
+  {
+    "number": 232,
+    "title": "Backup Architektur implementieren",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "232_backup-architektur-implementieren.md"
+  },
+  {
+    "number": 233,
+    "title": "Restore Pipeline implementieren",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "233_restore-pipeline-implementieren.md"
+  },
+  {
+    "number": 234,
+    "title": "Backup/Restore Truth-Test",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "234_backup-restore-truth-test.md"
+  },
+  {
+    "number": 235,
+    "title": "Disaster-Recovery Runbook",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "235_disaster-recovery-runbook.md"
+  },
+  {
+    "number": 236,
+    "title": "Backup Integritätsprüfung",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "236_backup-integritaetspruefung.md"
+  },
+  {
+    "number": 237,
+    "title": "Reindex nach Restore härten",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "237_reindex-nach-restore-haerten.md"
+  },
+  {
+    "number": 238,
+    "title": "Backup/Restore Security Audit",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "238_backup-restore-security-audit.md"
+  },
+  {
+    "number": 239,
+    "title": "M4e Minimal Gate",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "239_m4e-minimal-gate.md"
+  },
+  {
+    "number": 240,
+    "title": "M4 Gesamtabschluss neu bewerten",
+    "phase": "M4 Completion / Backup-Restore",
+    "file": "240_m4-gesamtabschluss-neu-bewerten.md"
+  },
+  {
+    "number": 241,
+    "title": "M4→M5 Transition Gate",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "241_m4-m5-transition-gate.md"
+  },
+  {
+    "number": 242,
+    "title": "M5 Vorbereitung ohne Implementierung",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "242_m5-vorbereitung-ohne-implementierung.md"
+  },
+  {
+    "number": 243,
+    "title": "M5 Risikoanalyse",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "243_m5-risikoanalyse.md"
+  },
+  {
+    "number": 244,
+    "title": "M5 Data Quality Scope",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "244_m5-data-quality-scope.md"
+  },
+  {
+    "number": 245,
+    "title": "M5 Drift Detection Scope",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "245_m5-drift-detection-scope.md"
+  },
+  {
+    "number": 246,
+    "title": "M5 Cleanup Scope",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "246_m5-cleanup-scope.md"
+  },
+  {
+    "number": 247,
+    "title": "M5 Health Score Scope",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "247_m5-health-score-scope.md"
+  },
+  {
+    "number": 248,
+    "title": "M5 Truth Integration",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "248_m5-truth-integration.md"
+  },
+  {
+    "number": 249,
+    "title": "M5 Dokumentationsrahmen",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "249_m5-dokumentationsrahmen.md"
+  },
+  {
+    "number": 250,
+    "title": "M5 Startentscheidung",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "250_m5-startentscheidung.md"
+  },
+  {
+    "number": 251,
+    "title": "M5 Activation Preconditions Audit",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "251_m5-activation-preconditions-audit.md"
+  },
+  {
+    "number": 252,
+    "title": "Langzeitbetriebs-Simulation definieren",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "252_langzeitbetriebs-simulation-definieren.md"
+  },
+  {
+    "number": 253,
+    "title": "Retrieval Quality Baseline definieren",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "253_retrieval-quality-baseline-definieren.md"
+  },
+  {
+    "number": 254,
+    "title": "Data Aging & Entropy Audit",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "254_data-aging-entropy-audit.md"
+  },
+  {
+    "number": 255,
+    "title": "M5 Operations Model",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "255_m5-operations-model.md"
+  },
+  {
+    "number": 256,
+    "title": "Drift Repair Strategy",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "256_drift-repair-strategy.md"
+  },
+  {
+    "number": 257,
+    "title": "M5 Observability Expansion",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "257_m5-observability-expansion.md"
+  },
+  {
+    "number": 258,
+    "title": "Controlled Cleanup Truth Tests",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "258_controlled-cleanup-truth-tests.md"
+  },
+  {
+    "number": 259,
+    "title": "M5 Controlled Start Gate",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "259_m5-controlled-start-gate.md"
+  },
+  {
+    "number": 260,
+    "title": "Strategische Reifegradbewertung",
+    "phase": "M5 Vorbereitung / Controlled Activation",
+    "file": "260_strategische-reifegradbewertung.md"
+  },
+  {
+    "number": 261,
+    "title": "Operational Truth Governance",
+    "phase": "Operational Governance",
+    "file": "261_operational-truth-governance.md"
+  },
+  {
+    "number": 262,
+    "title": "Operational Drift Dashboard Scope",
+    "phase": "Operational Governance",
+    "file": "262_operational-drift-dashboard-scope.md"
+  },
+  {
+    "number": 263,
+    "title": "Retrieval Regression Detection",
+    "phase": "Operational Governance",
+    "file": "263_retrieval-regression-detection.md"
+  },
+  {
+    "number": 264,
+    "title": "Queue Aging & Starvation Detection",
+    "phase": "Operational Governance",
+    "file": "264_queue-aging-starvation-detection.md"
+  },
+  {
+    "number": 265,
+    "title": "Controlled Reindex Governance",
+    "phase": "Operational Governance",
+    "file": "265_controlled-reindex-governance.md"
+  },
+  {
+    "number": 266,
+    "title": "Citation Longevity Audit",
+    "phase": "Operational Governance",
+    "file": "266_citation-longevity-audit.md"
+  },
+  {
+    "number": 267,
+    "title": "Controlled Cleanup Governance",
+    "phase": "Operational Governance",
+    "file": "267_controlled-cleanup-governance.md"
+  },
+  {
+    "number": 268,
+    "title": "Long-Running System Entropy Tests",
+    "phase": "Operational Governance",
+    "file": "268_long-running-system-entropy-tests.md"
+  },
+  {
+    "number": 269,
+    "title": "Operational Readiness Review",
+    "phase": "Operational Governance",
+    "file": "269_operational-readiness-review.md"
+  },
+  {
+    "number": 270,
+    "title": "Strategischer Zielzustand definieren",
+    "phase": "Operational Governance",
+    "file": "270_strategischer-zielzustand-definieren.md"
+  },
+  {
+    "number": 271,
+    "title": "Architectural Change Governance",
+    "phase": "Operational Governance",
+    "file": "271_architectural-change-governance.md"
+  },
+  {
+    "number": 272,
+    "title": "Schema Evolution Safety Model",
+    "phase": "Operational Governance",
+    "file": "272_schema-evolution-safety-model.md"
+  },
+  {
+    "number": 273,
+    "title": "Controlled Feature Introduction Model",
+    "phase": "Operational Governance",
+    "file": "273_controlled-feature-introduction-model.md"
+  },
+  {
+    "number": 274,
+    "title": "Retrieval Contract Stability Model",
+    "phase": "Operational Governance",
+    "file": "274_retrieval-contract-stability-model.md"
+  },
+  {
+    "number": 275,
+    "title": "Operational SLA Framework",
+    "phase": "Operational Governance",
+    "file": "275_operational-sla-framework.md"
+  },
+  {
+    "number": 276,
+    "title": "Controlled Failure Philosophy",
+    "phase": "Operational Governance",
+    "file": "276_controlled-failure-philosophy.md"
+  },
+  {
+    "number": 277,
+    "title": "Operational Audit Trail Expansion",
+    "phase": "Operational Governance",
+    "file": "277_operational-audit-trail-expansion.md"
+  },
+  {
+    "number": 278,
+    "title": "System Invariant Registry",
+    "phase": "Operational Governance",
+    "file": "278_system-invariant-registry.md"
+  },
+  {
+    "number": 279,
+    "title": "Long-Term Governance Review",
+    "phase": "Operational Governance",
+    "file": "279_long-term-governance-review.md"
+  },
+  {
+    "number": 280,
+    "title": "Langfristige Architekturstrategie",
+    "phase": "Operational Governance",
+    "file": "280_langfristige-architekturstrategie.md"
+  },
+  {
+    "number": 281,
+    "title": "M3a Realitätsbewertung",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "281_m3a-realitaetsbewertung.md"
+  },
+  {
+    "number": 282,
+    "title": "Frontend Truth-Test Framework",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "282_frontend-truth-test-framework.md"
+  },
+  {
+    "number": 283,
+    "title": "Frontend State Governance",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "283_frontend-state-governance.md"
+  },
+  {
+    "number": 284,
+    "title": "GUI Runtime Recovery",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "284_gui-runtime-recovery.md"
+  },
+  {
+    "number": 285,
+    "title": "Frontend/Backend Contract Freeze",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "285_frontend-backend-contract-freeze.md"
+  },
+  {
+    "number": 286,
+    "title": "GUI Error-State Matrix",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "286_gui-error-state-matrix.md"
+  },
+  {
+    "number": 287,
+    "title": "Frontend E2E Truth Gate",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "287_frontend-e2e-truth-gate.md"
+  },
+  {
+    "number": 288,
+    "title": "M3a→M4 Reconciliation",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "288_m3a-m4-reconciliation.md"
+  },
+  {
+    "number": 289,
+    "title": "M3a Scope neu einfrieren",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "289_m3a-scope-neu-einfrieren.md"
+  },
+  {
+    "number": 290,
+    "title": "Auth Bootstrap Truth Flow",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "290_auth-bootstrap-truth-flow.md"
+  },
+  {
+    "number": 291,
+    "title": "Workspace Bootstrap Truth Flow",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "291_workspace-bootstrap-truth-flow.md"
+  },
+  {
+    "number": 292,
+    "title": "Frontend API Client härten",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "292_frontend-api-client-haerten.md"
+  },
+  {
+    "number": 293,
+    "title": "GUI State Invariant Tests",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "293_gui-state-invariant-tests.md"
+  },
+  {
+    "number": 294,
+    "title": "GUI Contract Registry",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "294_gui-contract-registry.md"
+  },
+  {
+    "number": 295,
+    "title": "GUI Error Copy und technische Fehlertrennung",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "295_gui-error-copy-und-technische-fehlertrennung.md"
+  },
+  {
+    "number": 296,
+    "title": "Frontend E2E Truth Report",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "296_frontend-e2e-truth-report.md"
+  },
+  {
+    "number": 297,
+    "title": "M3a Gate Validator",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "297_m3a-gate-validator.md"
+  },
+  {
+    "number": 298,
+    "title": "M3a Dokumentation korrigieren",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "298_m3a-dokumentation-korrigieren.md"
+  },
+  {
+    "number": 299,
+    "title": "M3a Final Gate",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "299_m3a-final-gate.md"
+  },
+  {
+    "number": 300,
+    "title": "M3a/M4 Gesamt-Reconciliation",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "300_m3a-m4-gesamt-reconciliation.md"
+  },
+  {
+    "number": 301,
+    "title": "Frontend Runtime State Machine",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "301_frontend-runtime-state-machine.md"
+  },
+  {
+    "number": 302,
+    "title": "Frontend Cache Governance",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "302_frontend-cache-governance.md"
+  },
+  {
+    "number": 303,
+    "title": "Frontend Concurrency Safety",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "303_frontend-concurrency-safety.md"
+  },
+  {
+    "number": 304,
+    "title": "GUI Drift Awareness",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "304_gui-drift-awareness.md"
+  },
+  {
+    "number": 305,
+    "title": "Frontend Telemetry Governance",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "305_frontend-telemetry-governance.md"
+  },
+  {
+    "number": 306,
+    "title": "Frontend Offline/Degraded Strategy",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "306_frontend-offline-degraded-strategy.md"
+  },
+  {
+    "number": 307,
+    "title": "Frontend Security Hardening",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "307_frontend-security-hardening.md"
+  },
+  {
+    "number": 308,
+    "title": "GUI Operational Readiness Review",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "308_gui-operational-readiness-review.md"
+  },
+  {
+    "number": 309,
+    "title": "M3a Governance Integration",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "309_m3a-governance-integration.md"
+  },
+  {
+    "number": 310,
+    "title": "Strategische GUI-Prinzipien",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "310_strategische-gui-prinzipien.md"
+  },
+  {
+    "number": 311,
+    "title": "GUI Truth Surface Model",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "311_gui-truth-surface-model.md"
+  },
+  {
+    "number": 312,
+    "title": "Frontend Event Consistency Model",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "312_frontend-event-consistency-model.md"
+  },
+  {
+    "number": 313,
+    "title": "Frontend Data Freshness Governance",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "313_frontend-data-freshness-governance.md"
+  },
+  {
+    "number": 314,
+    "title": "Frontend Recovery UX",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "314_frontend-recovery-ux.md"
+  },
+  {
+    "number": 315,
+    "title": "Frontend Performance Governance",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "315_frontend-performance-governance.md"
+  },
+  {
+    "number": 316,
+    "title": "Frontend Accessibility & Operational Clarity",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "316_frontend-accessibility-operational-clarity.md"
+  },
+  {
+    "number": 317,
+    "title": "Frontend Operational Metrics Integration",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "317_frontend-operational-metrics-integration.md"
+  },
+  {
+    "number": 318,
+    "title": "GUI Chaos-Test Suite",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "318_gui-chaos-test-suite.md"
+  },
+  {
+    "number": 319,
+    "title": "M3a Operational Truth Gate",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "319_m3a-operational-truth-gate.md"
+  },
+  {
+    "number": 320,
+    "title": "Gesamtarchitektur Reconciliation",
+    "phase": "M3a GUI Stabilisierung",
+    "file": "320_gesamtarchitektur-reconciliation.md"
+  },
+  {
+    "number": 321,
+    "title": "Full-Suite Frontend Truth wiederherstellen",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "321_full-suite-frontend-truth-wiederherstellen.md"
+  },
+  {
+    "number": 322,
+    "title": "M3a Gate-Report neu generieren",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "322_m3a-gate-report-neu-generieren.md"
+  },
+  {
+    "number": 323,
+    "title": "M3a-Gate-Regel bereinigen",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "323_m3a-gate-regel-bereinigen.md"
+  },
+  {
+    "number": 324,
+    "title": "PostgreSQL Truth Failures klassifizieren",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "324_postgresql-truth-failures-klassifizieren.md"
+  },
+  {
+    "number": 325,
+    "title": "M3a Abschluss nach Full-Suite",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "325_m3a-abschluss-nach-full-suite.md"
+  },
+  {
+    "number": 326,
+    "title": "Frontend Full-Suite Truth Scope finalisieren",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "326_frontend-full-suite-truth-scope-finalisieren.md"
+  },
+  {
+    "number": 327,
+    "title": "Frontend Full-Suite Truth implementieren",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "327_frontend-full-suite-truth-implementieren.md"
+  },
+  {
+    "number": 328,
+    "title": "Workspace-Concurrency Frontend Tests",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "328_workspace-concurrency-frontend-tests.md"
+  },
+  {
+    "number": 329,
+    "title": "Frontend Security Hardening Tests",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "329_frontend-security-hardening-tests.md"
+  },
+  {
+    "number": 330,
+    "title": "GUI Error-State Coverage schließen",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "330_gui-error-state-coverage-schliessen.md"
+  },
+  {
+    "number": 331,
+    "title": "M3a Gate nach Full-Suite erneut ausführen",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "331_m3a-gate-nach-full-suite-erneut-ausfuehren.md"
+  },
+  {
+    "number": 332,
+    "title": "postgres_truth Failure Taxonomie erstellen",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "332_postgres-truth-failure-taxonomie-erstellen.md"
+  },
+  {
+    "number": 333,
+    "title": "postgres_truth Errors zuerst auf 0 bringen",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "333_postgres-truth-errors-zuerst-auf-0-bringen.md"
+  },
+  {
+    "number": 334,
+    "title": "M4-blockierende Failures priorisiert beheben",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "334_m4-blockierende-failures-priorisiert-beheben.md"
+  },
+  {
+    "number": 335,
+    "title": "M5-only Tests aus M4-Gate entkoppeln",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "335_m5-only-tests-aus-m4-gate-entkoppeln.md"
+  },
+  {
+    "number": 336,
+    "title": "M4 Backend Truth Gate nach Split",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "336_m4-backend-truth-gate-nach-split.md"
+  },
+  {
+    "number": 337,
+    "title": "M3a + M4 Gesamtgate",
+    "phase": "M3a/M4 Gate-Trennung",
+    "file": "337_m3a-m4-gesamtgate.md"
+  },
+  {
+    "number": 338,
+    "title": "Truth-Test Marker Taxonomie finalisieren",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "338_truth-test-marker-taxonomie-finalisieren.md"
+  },
+  {
+    "number": 339,
+    "title": "Report Split Generator",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "339_report-split-generator.md"
+  },
+  {
+    "number": 340,
+    "title": "Gate Validator Hierarchie",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "340_gate-validator-hierarchie.md"
+  },
+  {
+    "number": 341,
+    "title": "Release Candidate Modell",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "341_release-candidate-modell.md"
+  },
+  {
+    "number": 342,
+    "title": "M3a Release Candidate erzeugen",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "342_m3a-release-candidate-erzeugen.md"
+  },
+  {
+    "number": 343,
+    "title": "M4 Release Candidate erzeugen",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "343_m4-release-candidate-erzeugen.md"
+  },
+  {
+    "number": 344,
+    "title": "Known Limitations Register",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "344_known-limitations-register.md"
+  },
+  {
+    "number": 345,
+    "title": "Documentation Release Audit",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "345_documentation-release-audit.md"
+  },
+  {
+    "number": 346,
+    "title": "Gate Drift Detection",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "346_gate-drift-detection.md"
+  },
+  {
+    "number": 347,
+    "title": "Masterplan Status Engine",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "347_masterplan-status-engine.md"
+  },
+  {
+    "number": 348,
+    "title": "M3a/M4/M5 Governance Boundary",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "348_m3a-m4-m5-governance-boundary.md"
+  },
+  {
+    "number": 349,
+    "title": "Finaler Pre-M5 Decision Report",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "349_finaler-pre-m5-decision-report.md"
+  },
+  {
+    "number": 350,
+    "title": "Governance-Stabiler Entwicklungsmodus",
+    "phase": "Governance-stabile Release-Logik",
+    "file": "350_governance-stabiler-entwicklungsmodus.md"
+  }
+]

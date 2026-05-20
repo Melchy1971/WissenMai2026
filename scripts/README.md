@@ -17,7 +17,77 @@ Hilfsskripte fuer lokale Entwicklung und wiederkehrende Arbeitsablaeufe.
 - `run-postgres-truth.ps1` fuehrt `pytest -m postgres_truth tests/postgres_truth -q` ueber das Backend-Venv aus und schreibt den Truth-Test-Report nach `reports/`.
 - `validate-m4-truth-gate.ps1` liest ausschliesslich `reports/postgres_truth_report.json` und setzt das M4 Truth Gate auf `PASS` oder `FAIL`.
 - `run-m4-truth-gate.ps1` erzeugt den PostgreSQL-Truth-Report und fuehrt danach den M4-Truth-Gate-Validator aus.
+- `generate_truth_split_reports.py` fuehrt pytest aus, liest die Truth-Gate-Marker je Test und schreibt pro Gate genau einen JSON-Report nach `reports/*_truth_report.json`. Gate-Validatoren duerfen nur ihren eigenen Split-Report auswerten.
+- `validate_gate_hierarchy.py` liest die Split-Reports und erzeugt `reports/gate_hierarchy_result.json` plus Markdown mit Gate-Status, Abhaengigkeitsgraph und Blockern.
+- `detect_gate_drift.py` vergleicht aktuelle Gate-Reports, Marker-Taxonomie und Dokumentationsreferenzen gegen `reports/gate_drift_baseline.json`. Drift ist ein Fail, wenn Reports fehlen/veraltet sind, weniger Tests als die Baseline enthalten, Marker fehlen, Tests unklassifiziert sind, Scores trotz neuer Failures steigen oder Dokumente alte Reports referenzieren.
+- `generate_masterplan_status.py` berechnet den Masterplan-Status aus Gate-Reports, Release Candidates, Truth Reports, Known Limitations, Documentation Audit und Gate Drift. Es schreibt `reports/masterplan_status.json` und den generierbaren Abschnitt `reports/masterplan_status_section.md`; manuelle Statusaussagen duerfen diesen Maschinenstatus nicht ueberschreiben.
 - `bootstrap_local_backend.py` fuehrt `alembic upgrade head` gegen die lokale Dev-DB aus und legt einen Default-Workspace plus Default-User an.
+
+## Truth Split Reportformat
+
+Jeder Split-Report enthaelt mindestens:
+
+- `collected`
+- `passed`
+- `failed`
+- `errors`
+- `skipped`
+- `exit_code`
+- `test_database_url_set`
+- `failed_tests`
+- `timestamp`
+
+## Gate-Hierarchie
+
+- M3a Gate: `m3a_truth_report.json` und `frontend_truth_report.json`
+- M4a Gate: `m4a_auth_truth_report.json`
+- M4b Gate: `m4b_upload_queue_truth_report.json`
+- M4c Gate: `m4c_lifecycle_retrieval_truth_report.json`
+- M4e Gate: `m4e_backup_restore_truth_report.json`
+- M4 Gesamtgate: M3a + M4a/b/c/e
+- M5 Startgate: M4 Gesamtgate
+- Operational Governance Gate: M5 Startgate + `governance_truth_report.json`
+
+## Gate Drift Detection
+
+Baseline erzeugen:
+
+```powershell
+python scripts\detect_gate_drift.py --write-baseline
+```
+
+Drift pruefen:
+
+```powershell
+python scripts\detect_gate_drift.py
+```
+
+Der Drift-Report wird nach `reports/gate_drift_report.json` und `reports/gate_drift_report.md` geschrieben. Ein `FAIL` ist blockierend fuer Gate-Freigaben, bis die Findings erklaert oder behoben sind.
+
+## Masterplan Status Engine
+
+```powershell
+python scripts\generate_masterplan_status.py
+```
+
+Outputs:
+
+- `reports/masterplan_status.json`
+- `reports/masterplan_status_section.md`
+- JSON Schema: `docs/masterplan_status.schema.json`
+
+Die Engine ist die Status-Quelle fuer Masterplan-Fortschritt, Gate-Scores und Blocker. Dokumentation darf den erzeugten Status zitieren, aber nicht manuell ueberschreiben.
+
+## Governance Boundary
+
+Die Boundary zwischen M3a, M4, M5 und Operational Governance ist in `docs/governance-boundary.json` und `docs/governance-boundary.md` definiert:
+
+- M3a prueft GUI Foundation.
+- M4 prueft Produktisierung und Stabilisierung.
+- M5 prueft Langzeitbetrieb und Governance.
+- `m5_truth` und `governance_truth` duerfen M4 nicht blockieren.
+- M4-Gates duerfen M5 blockieren.
+- `frontend_truth` darf M4 nur bei deklarierter `gui_dependency=true` blockieren.
 
 `dev-backend.ps1` und `dev-backend.sh` nutzen lokal automatisch
 `postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test`, wenn `DATABASE_URL` nicht gesetzt ist.

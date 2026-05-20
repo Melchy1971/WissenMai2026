@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "release_candidate": "M4 Stabilization",
+  "status": "tested",
+  "generated_at": "2026-05-20T10:25:00+02:00",
+  "decision": "M4 RC NO_GO",
+  "m3a_dependency_status": {
+    "status": "gate_passed",
+    "go_no_go": "GO",
+    "source": "reports/m3a_release_candidate.json",
+    "gate_score": 100.0,
+    "blockers": []
+  },
+  "m4_scores": {
+    "m4a_auth": {
+      "source": "reports/postgres_truth_report.json",
+      "score": 100.0,
+      "threshold": 95.0,
+      "status": "PARTIAL_PASS_BLOCKED_BY_M4_TRUTH",
+      "machine_gate_report": "missing: reports/m4a_auth_truth_report.json"
+    },
+    "m4b_upload_queue": {
+      "source": "reports/postgres_truth_report.json",
+      "score": 91.7,
+      "threshold": 90.0,
+      "status": "PARTIAL_PASS_BLOCKED_BY_M4_TRUTH",
+      "machine_gate_report": "missing: reports/m4b_upload_queue_truth_report.json"
+    },
+    "m4c_lifecycle_retrieval": {
+      "source": "reports/postgres_truth_report.json",
+      "score": 100.0,
+      "threshold": 90.0,
+      "status": "PARTIAL_PASS_BLOCKED_BY_M4_TRUTH",
+      "machine_gate_report": "missing: reports/m4c_lifecycle_retrieval_truth_report.json"
+    },
+    "m4e_backup_restore_minimal": {
+      "source": "reports/restore_truth_report.md",
+      "score": null,
+      "threshold": null,
+      "status": "DECIDED_PASS_AS_DOCUMENTATION_POINT",
+      "machine_gate_report": "missing: reports/m4e_backup_restore_truth_report.json"
+    },
+    "postgres_truth_m4": {
+      "source": "reports/postgres_truth_report.json",
+      "score": null,
+      "threshold": "passed == collected, failed == 0, errors == 0, skipped == 0, exit_code == 0",
+      "status": "FAIL",
+      "collected": 138,
+      "passed": 120,
+      "failed": 16,
+      "errors": 2,
+      "skipped": 0,
+      "exit_code": 1
+    }
+  },
+  "truth_reports": {
+    "m3a_release_candidate": {
+      "path": "reports/m3a_release_candidate.json",
+      "status": "gate_passed",
+      "go_no_go": "GO"
+    },
+    "postgres_truth": {
+      "path": "reports/postgres_truth_report.json",
+      "generated_at": "2026-05-18T09:45:45.351580Z",
+      "test_database_url_set": true,
+      "m4_gate_impact": "M4-Gate BLOCKED",
+      "pytest_exit_code": 1,
+      "gate_scores": {
+        "m4a_gate": 100.0,
+        "m4b_gate": 91.7,
+        "m4c_gate": 100.0,
+        "m4d_gate": null
+      }
+    },
+    "m4e_restore_truth": {
+      "path": "reports/restore_truth_report.md",
+      "status": "documented"
+    },
+    "m4_split_reports": {
+      "m4a_auth_truth_report": {
+        "path": "reports/m4a_auth_truth_report.json",
+        "available": false
+      },
+      "m4b_upload_queue_truth_report": {
+        "path": "reports/m4b_upload_queue_truth_report.json",
+        "available": false
+      },
+      "m4c_lifecycle_retrieval_truth_report": {
+        "path": "reports/m4c_lifecycle_retrieval_truth_report.json",
+        "available": false
+      },
+      "m4e_backup_restore_truth_report": {
+        "path": "reports/m4e_backup_restore_truth_report.json",
+        "available": false
+      },
+      "m4_truth_report": {
+        "path": "reports/m4_truth_report.json",
+        "available": false
+      }
+    }
+  },
+  "prerequisites": [
+    {
+      "id": "m3a_rc_gate_passed",
+      "passed": true,
+      "evidence": "reports/m3a_release_candidate.json has status gate_passed and go_no_go GO."
+    },
+    {
+      "id": "m4a_auth_gate_green",
+      "passed": false,
+      "evidence": "Legacy postgres marker score is 100.0, but reports/m4a_auth_truth_report.json is missing and the overall M4 truth report is blocked."
+    },
+    {
+      "id": "m4b_upload_queue_gate_green",
+      "passed": false,
+      "evidence": "Legacy postgres marker score is 91.7, but reports/m4b_upload_queue_truth_report.json is missing and a M4b truth failure remains in postgres_truth_report.json."
+    },
+    {
+      "id": "m4c_lifecycle_retrieval_gate_green",
+      "passed": false,
+      "evidence": "Legacy postgres marker score is 100.0, but reports/m4c_lifecycle_retrieval_truth_report.json is missing and the overall M4 truth report is blocked."
+    },
+    {
+      "id": "m4e_minimal_gate_decided",
+      "passed": true,
+      "evidence": "M4e minimal restore truth is documented in reports/restore_truth_report.md and masterplan.md."
+    },
+    {
+      "id": "postgres_truth_m4_green",
+      "passed": false,
+      "evidence": "reports/postgres_truth_report.json has collected=138, passed=120, failed=16, errors=2, exit_code=1 and m4_gate_impact=M4-Gate BLOCKED."
+    },
+    {
+      "id": "documentation_current",
+      "passed": true,
+      "evidence": "masterplan.md documents that M4 remains blocked, M4e minimal is documented, and postgres_truth_report.json is the M4 truth anchor."
+    }
+  ],
+  "blockers": [
+    {
+      "id": "missing_m4_split_gate_reports",
+      "severity": "blocking",
+      "detail": "reports/m4a_auth_truth_report.json, reports/m4b_upload_queue_truth_report.json, reports/m4c_lifecycle_retrieval_truth_report.json, reports/m4e_backup_restore_truth_report.json and reports/m4_truth_report.json are not present."
+    },
+    {
+      "id": "postgres_truth_m4_not_green",
+      "severity": "blocking",
+      "detail": "reports/postgres_truth_report.json is blocked: 120/138 passed, 16 failed, 2 errors, exit_code=1."
+    },
+    {
+      "id": "m4b_truth_failure",
+      "severity": "blocking",
+      "detail": "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows failed and is M4b-critical."
+    },
+    {
+      "id": "postgres_truth_setup_errors",
+      "severity": "blocking",
+      "detail": "reports/postgres_truth_report.json records 2 setup/collect errors; unclassified setup errors are gate-blocking until resolved."
+    }
+  ],
+  "known_limitations": [
+    "Legacy marker scores in reports/postgres_truth_report.json are positive partial findings, but they do not override the blocked overall M4 truth result.",
+    "M5 entropy/drift failures are not M4 blockers under the current taxonomy, but the current legacy postgres report still records them in the overall failed count.",
+    "M4e minimal is documented as a restore-truth point, but no split m4e_backup_restore_truth_report.json exists yet.",
+    "M4 RC cannot be promoted to gate_passed until split reports and the M4 hierarchy validator produce machine-readable PASS for M4a, M4b, M4c, M4e and M4 overall."
+  ],
+  "go_no_go": {
+    "result": "NO_GO",
+    "reason": "M3a dependency is green, but M4 split gate reports are missing and postgres_truth_m4 is not green. M4 cannot be considered gate_passed or released."
+  }
+}

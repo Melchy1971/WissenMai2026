@@ -1,0 +1,329 @@
+{
+  "version": 1,
+  "model": "governance_boundary",
+  "authority": {
+    "source_of_truth": "machine_artifacts",
+    "manual_override_allowed": false,
+    "rule": "Spaetere Anforderungen duerfen fruehere Gates nicht blockieren, ausser die Boundary erlaubt die Abhaengigkeit explizit."
+  },
+  "phases": {
+    "m3a": {
+      "label": "M3a GUI Foundation",
+      "purpose": "M3a prueft GUI Foundation, API-Erreichbarkeit, Frontend-Truth, GUI-Chaos und Contract-Kompatibilitaet im M3a-Scope.",
+      "gate": "m3a_gate",
+      "blocking_reports": [
+        "reports/m3a_truth_report.json",
+        "reports/frontend_truth_report.json",
+        "reports/gui_truth/latest.json",
+        "reports/gui_truth/gui_chaos_suite_report.json",
+        "reports/contract_test_report.json",
+        "reports/m3a_gate_result.json"
+      ],
+      "blocking_markers": [
+        "m3a_truth",
+        "frontend_truth"
+      ],
+      "allowed_upstream_dependencies": [],
+      "forbidden_blockers": [
+        "m4_truth",
+        "m4a_auth_truth",
+        "m4b_upload_queue_truth",
+        "m4c_lifecycle_retrieval_truth",
+        "m4e_backup_restore_truth",
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m4": {
+      "label": "M4 Produktisierung und Stabilisierung",
+      "purpose": "M4 prueft Produktisierung, Stabilisierung, Auth/Workspace, Upload/Queue, Lifecycle/Retrieval und Backup/Restore-Minimalpfad.",
+      "gate": "m4_overall_gate",
+      "blocking_reports": [
+        "reports/m4_truth_report.json",
+        "reports/m4a_auth_truth_report.json",
+        "reports/m4b_upload_queue_truth_report.json",
+        "reports/m4c_lifecycle_retrieval_truth_report.json",
+        "reports/m4e_backup_restore_truth_report.json",
+        "reports/gate_hierarchy_result.json"
+      ],
+      "blocking_markers": [
+        "m4_truth",
+        "m4a_auth_truth",
+        "m4b_upload_queue_truth",
+        "m4c_lifecycle_retrieval_truth",
+        "m4e_backup_restore_truth"
+      ],
+      "allowed_upstream_dependencies": [
+        "m3a_gate"
+      ],
+      "conditional_blockers": [
+        {
+          "marker": "frontend_truth",
+          "condition": "Frontend-GUI-Tests duerfen M4 nur blockieren, wenn das bewertete M4-Slice eine GUI-Abhaengigkeit deklariert.",
+          "required_evidence": "M4 RC oder Gate-Report enthaelt gui_dependency=true fuer den betroffenen Slice."
+        }
+      ],
+      "forbidden_blockers": [
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m5": {
+      "label": "M5 Langzeitbetrieb und Governance",
+      "purpose": "M5 prueft Langzeitbetrieb, Drift, Entropy, Betriebsreife und Governance nach bestandenem M4-Gesamtgate.",
+      "gate": "m5_start_gate",
+      "blocking_reports": [
+        "reports/m5_truth_report.json",
+        "reports/gate_hierarchy_result.json"
+      ],
+      "blocking_markers": [
+        "m5_truth",
+        "m4_truth"
+      ],
+      "allowed_upstream_dependencies": [
+        "m4_overall_gate"
+      ],
+      "forbidden_blockers": []
+    },
+    "operational_governance": {
+      "label": "Operational Governance",
+      "purpose": "Operational Governance bewertet Governance-Truth erst nach M5-Start.",
+      "gate": "operational_governance_gate",
+      "blocking_reports": [
+        "reports/governance_truth_report.json",
+        "reports/gate_hierarchy_result.json"
+      ],
+      "blocking_markers": [
+        "governance_truth"
+      ],
+      "allowed_upstream_dependencies": [
+        "m5_start_gate"
+      ],
+      "forbidden_blockers_before": {
+        "m5_start_gate": [
+          "governance_truth"
+        ]
+      }
+    }
+  },
+  "boundary_rules": [
+    {
+      "id": "GB-001",
+      "severity": "blocking",
+      "rule": "M3a prueft GUI Foundation.",
+      "gate": "m3a_gate",
+      "allowed_blocking_markers": [
+        "m3a_truth",
+        "frontend_truth"
+      ]
+    },
+    {
+      "id": "GB-002",
+      "severity": "blocking",
+      "rule": "M4 prueft Produktisierung und Stabilisierung.",
+      "gate": "m4_overall_gate",
+      "allowed_blocking_markers": [
+        "m4_truth",
+        "m4a_auth_truth",
+        "m4b_upload_queue_truth",
+        "m4c_lifecycle_retrieval_truth",
+        "m4e_backup_restore_truth"
+      ]
+    },
+    {
+      "id": "GB-003",
+      "severity": "blocking",
+      "rule": "M5 prueft Langzeitbetrieb und Governance.",
+      "gate": "m5_start_gate",
+      "allowed_blocking_markers": [
+        "m5_truth",
+        "m4_truth"
+      ]
+    },
+    {
+      "id": "GB-004",
+      "severity": "blocking",
+      "rule": "M5-Tests duerfen M4 nicht blockieren.",
+      "gate": "m4_overall_gate",
+      "forbidden_blocking_markers": [
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    {
+      "id": "GB-005",
+      "severity": "blocking",
+      "rule": "M4-Tests duerfen M5 blockieren.",
+      "gate": "m5_start_gate",
+      "allowed_upstream_blockers": [
+        "m4_overall_gate",
+        "m4_truth"
+      ]
+    },
+    {
+      "id": "GB-006",
+      "severity": "blocking",
+      "rule": "Frontend-GUI-Tests duerfen M4 nur blockieren, wenn M4 vom GUI-Slice abhaengig ist.",
+      "gate": "m4_overall_gate",
+      "conditional_marker": "frontend_truth",
+      "condition": "gui_dependency=true im betroffenen M4 Gate- oder RC-Artefakt"
+    }
+  ],
+  "gate_mapping": {
+    "m3a_gate": {
+      "phase": "m3a",
+      "blocks": [
+        "m3a"
+      ],
+      "may_block_later": [
+        "m4_overall_gate"
+      ],
+      "must_not_be_blocked_by": [
+        "m4_truth",
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m4_overall_gate": {
+      "phase": "m4",
+      "blocks": [
+        "m4",
+        "m5_start_gate"
+      ],
+      "may_block_later": [
+        "m5_start_gate",
+        "operational_governance_gate"
+      ],
+      "must_not_be_blocked_by": [
+        "m5_truth",
+        "governance_truth"
+      ]
+    },
+    "m5_start_gate": {
+      "phase": "m5",
+      "blocks": [
+        "m5",
+        "operational_governance_gate"
+      ],
+      "may_block_later": [
+        "operational_governance_gate"
+      ],
+      "must_not_be_blocked_by": []
+    },
+    "operational_governance_gate": {
+      "phase": "operational_governance",
+      "blocks": [
+        "operational_governance"
+      ],
+      "may_block_later": [],
+      "must_not_be_blocked_by_before_m5_start": [
+        "governance_truth"
+      ]
+    }
+  },
+  "test_classification": {
+    "frontend_truth": {
+      "primary_phase": "m3a",
+      "primary_gate": "m3a_gate",
+      "blocks": [
+        "m3a_gate"
+      ],
+      "conditional_blocks": [
+        "m4_overall_gate when gui_dependency=true"
+      ],
+      "does_not_block": [
+        "m4_overall_gate without gui_dependency",
+        "m5_start_gate"
+      ]
+    },
+    "m3a_truth": {
+      "primary_phase": "m3a",
+      "primary_gate": "m3a_gate",
+      "blocks": [
+        "m3a_gate"
+      ],
+      "does_not_block": [
+        "m4_overall_gate except as m3a_gate dependency"
+      ]
+    },
+    "m4_truth": {
+      "primary_phase": "m4",
+      "primary_gate": "m4_overall_gate",
+      "blocks": [
+        "m4_overall_gate",
+        "m5_start_gate"
+      ]
+    },
+    "m4a_auth_truth": {
+      "primary_phase": "m4",
+      "primary_gate": "m4a_gate",
+      "blocks": [
+        "m4a_gate",
+        "m4_overall_gate",
+        "m5_start_gate"
+      ]
+    },
+    "m4b_upload_queue_truth": {
+      "primary_phase": "m4",
+      "primary_gate": "m4b_gate",
+      "blocks": [
+        "m4b_gate",
+        "m4_overall_gate",
+        "m5_start_gate"
+      ]
+    },
+    "m4c_lifecycle_retrieval_truth": {
+      "primary_phase": "m4",
+      "primary_gate": "m4c_gate",
+      "blocks": [
+        "m4c_gate",
+        "m4_overall_gate",
+        "m5_start_gate"
+      ]
+    },
+    "m4e_backup_restore_truth": {
+      "primary_phase": "m4",
+      "primary_gate": "m4e_gate",
+      "blocks": [
+        "m4e_gate",
+        "m4_overall_gate",
+        "m5_start_gate"
+      ]
+    },
+    "m5_truth": {
+      "primary_phase": "m5",
+      "primary_gate": "m5_start_gate",
+      "blocks": [
+        "m5_start_gate"
+      ],
+      "does_not_block": [
+        "m4_overall_gate"
+      ]
+    },
+    "governance_truth": {
+      "primary_phase": "operational_governance",
+      "primary_gate": "operational_governance_gate",
+      "blocks": [
+        "operational_governance_gate after m5_start_gate"
+      ],
+      "does_not_block": [
+        "m4_overall_gate",
+        "m5_start_gate before m5_start_gate is PASS"
+      ]
+    },
+    "chaos_truth": {
+      "primary_phase": "cross_cutting",
+      "primary_gate": "declared_by_test_marker_pair_or_report",
+      "blocks": [
+        "only the gate declared by the accompanying gate marker"
+      ]
+    },
+    "slow_truth": {
+      "primary_phase": "cross_cutting",
+      "primary_gate": "declared_by_test_marker_pair_or_report",
+      "blocks": [
+        "only the gate declared by the accompanying gate marker"
+      ]
+    }
+  }
+}
