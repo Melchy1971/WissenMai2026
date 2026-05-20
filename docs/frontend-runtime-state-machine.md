@@ -6,6 +6,7 @@ Ziel: Frontend-Zustaende duerfen nicht implizit aus verstreuten Flags, leeren Da
 
 Cache-Folgen der States sind in `docs/frontend-cache-governance.md` verbindlich konkretisiert.
 Offline-/Degraded-Verhalten pro Betriebszustand ist in `docs/frontend-offline-degraded-strategy.md` verbindlich konkretisiert.
+API_UNREACHABLE-Recovery, Retry-Grenzen und Reconnect-Verhalten sind in `docs/frontend-api-unreachable-recovery.md` verbindlich konkretisiert.
 
 ## Runtime States
 

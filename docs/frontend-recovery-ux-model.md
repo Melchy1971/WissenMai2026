@@ -8,6 +8,7 @@ Verbindliche Bezugsdokumente:
 
 - `docs/frontend-runtime-state-machine.md`
 - `docs/frontend-offline-degraded-strategy.md`
+- `docs/frontend-api-unreachable-recovery.md`
 - `docs/frontend-error-state-catalog.md`
 - `docs/frontend-event-consistency-model.md`
 - `docs/frontend-cache-governance.md`

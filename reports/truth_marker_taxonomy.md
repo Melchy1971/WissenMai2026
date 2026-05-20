@@ -1,8 +1,8 @@
 # Truth-Test Marker Taxonomie
 
 - Result: `PASS`
-- Collected: `476`
-- Generated: `2026-05-20T08:39:13.134824+00:00`
+- Collected: `485`
+- Generated: `2026-05-20T09:05:46.233708+00:00`
 
 ## Marker
 
@@ -27,7 +27,11 @@
 
 ## Testklassifikation
 
-### `frontend_truth` (8)
+### `frontend_truth` (17)
+- `tests/test_api_unreachable_recovery_contract.py::test_api_unreachable_recovery_defines_required_topics`
+- `tests/test_api_unreachable_recovery_contract.py::test_retry_strategy_is_bounded_and_does_not_retry_non_retryable_errors`
+- `tests/test_api_unreachable_recovery_contract.py::test_runtime_state_machine_forbids_corrupt_recovery_paths`
+- `tests/test_api_unreachable_recovery_contract.py::test_current_implementation_gaps_are_explicit_not_green_claims`
 - `tests/test_frontend_backend_contracts.py::test_auth_me_and_workspace_membership_contract`
 - `tests/test_frontend_backend_contracts.py::test_document_list_and_detail_contract`
 - `tests/test_frontend_backend_contracts.py::test_upload_job_contract`
@@ -36,6 +40,11 @@
 - `tests/test_frontend_backend_contracts.py::test_diagnostics_response_contract`
 - `tests/test_frontend_backend_contracts.py::test_error_response_contract`
 - `tests/test_frontend_backend_contracts.py::test_job_result_schemas`
+- `tests/test_frontend_connectivity_truth_runner.py::test_connectivity_truth_runner_contains_required_checks_and_no_mocking`
+- `tests/test_frontend_connectivity_truth_runner.py::test_connectivity_truth_runner_is_valid_javascript`
+- `tests/test_frontend_runtime_connectivity_gate.py::test_runtime_connectivity_gate_passes_at_100_score`
+- `tests/test_frontend_runtime_connectivity_gate.py::test_runtime_connectivity_gate_blocks_m3a_below_90_score`
+- `tests/test_frontend_runtime_connectivity_gate.py::test_missing_truth_check_is_blocking`
 
 ### `m3a_truth` (76)
 - `tests/integration/test_migrations.py::test_alembic_configuration_is_loadable`

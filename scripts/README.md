@@ -17,6 +17,8 @@ Hilfsskripte fuer lokale Entwicklung und wiederkehrende Arbeitsablaeufe.
 - `run-postgres-truth.ps1` fuehrt `pytest -m postgres_truth tests/postgres_truth -q` ueber das Backend-Venv aus und schreibt den Truth-Test-Report nach `reports/`.
 - `validate-m4-truth-gate.ps1` liest ausschliesslich `reports/postgres_truth_report.json` und setzt das M4 Truth Gate auf `PASS` oder `FAIL`.
 - `run-m4-truth-gate.ps1` erzeugt den PostgreSQL-Truth-Report und fuehrt danach den M4-Truth-Gate-Validator aus.
+- `run_frontend_connectivity_truth.js` fuehrt einen echten Browser-Connectivity-Test gegen eine echte API aus und schreibt `reports/connectivity_truth_report.json` plus Markdown. Der Test nutzt keine Mock-Responses und klassifiziert DNS, Timeout, Refused, CORS und Mixed Content.
+- `validate_frontend_runtime_connectivity_gate.py` wertet ausschliesslich `reports/connectivity_truth_report.json` aus und schreibt den Connectivity-Gate-Score nach `reports/frontend_runtime_connectivity_gate_report.json` plus Markdown.
 - `generate_truth_split_reports.py` fuehrt pytest aus, liest die Truth-Gate-Marker je Test und schreibt pro Gate genau einen JSON-Report nach `reports/*_truth_report.json`. Gate-Validatoren duerfen nur ihren eigenen Split-Report auswerten.
 - `validate_gate_hierarchy.py` liest die Split-Reports und erzeugt `reports/gate_hierarchy_result.json` plus Markdown mit Gate-Status, Abhaengigkeitsgraph und Blockern.
 - `detect_gate_drift.py` vergleicht aktuelle Gate-Reports, Marker-Taxonomie und Dokumentationsreferenzen gegen `reports/gate_drift_baseline.json`. Drift ist ein Fail, wenn Reports fehlen/veraltet sind, weniger Tests als die Baseline enthalten, Marker fehlen, Tests unklassifiziert sind, Scores trotz neuer Failures steigen oder Dokumente alte Reports referenzieren.
@@ -36,6 +38,28 @@ Jeder Split-Report enthaelt mindestens:
 - `test_database_url_set`
 - `failed_tests`
 - `timestamp`
+
+## Frontend Connectivity Truth
+
+```powershell
+node scripts\run_frontend_connectivity_truth.js
+```
+
+Optionale Umgebung:
+
+- `CONNECTIVITY_FRONTEND_BASE_URL`, Default `http://localhost:5173`
+- `VITE_API_BASE_URL` oder `API_BASE_URL`, Default `http://127.0.0.1:8000`
+- `CONNECTIVITY_LOGIN` und `CONNECTIVITY_PASSWORD`
+
+Der Report `reports/connectivity_truth_report.json` ist nur `PASS`, wenn Frontend und echter Browser das Backend erreichen, `/health` und `/api/v1/auth/me` erreichbar sind, Login funktioniert, Auth- und Workspace-Header beobachtet werden und keine CORS-, Mixed-Content-, DNS- oder Timeout-Fehler auftreten.
+
+## Frontend Runtime Connectivity Gate
+
+```powershell
+python scripts\validate_frontend_runtime_connectivity_gate.py
+```
+
+Der Gate-Report `reports/frontend_runtime_connectivity_gate_report.json` wertet nur den eigenen Connectivity-Truth-Report aus. Bewertet werden Backend-Erreichbarkeit, `/health`, `/api/v1/auth/me`, Login, Workspace-Bootstrap, Dokumentliste, API_UNREACHABLE im Normalflow, CORS und Mixed Content. Score `>= 90` bedeutet `CONNECTIVITY_STABLE`; darunter wird `M3A_BLOCKED` ausgegeben.
 
 ## Gate-Hierarchie
 

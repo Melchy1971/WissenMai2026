@@ -1,0 +1,263 @@
+{
+  "version": 1,
+  "model": "frontend_api_unreachable_recovery",
+  "status": "defined",
+  "scope": [
+    "API_UNREACHABLE",
+    "TIMEOUT",
+    "CORS_ERROR during auth/bootstrap surfaces"
+  ],
+  "authority": {
+    "source_of_truth": "frontend_runtime_contract",
+    "manual_override_allowed": false,
+    "rule": "API_UNREACHABLE recovery must be deterministic, bounded and state-machine safe."
+  },
+  "recovery_rules": [
+    {
+      "id": "AUR-001",
+      "name": "Retry Verhalten",
+      "rule": "Retry is allowed only for transient technical connectivity failures: API_UNREACHABLE and TIMEOUT. It is not allowed for AUTH_REQUIRED, FORBIDDEN, WORKSPACE_NOT_CONFIGURED or VALIDATION_ERROR.",
+      "state_effect": "Retry clears the retryable bootstrap error and re-enters authenticating or workspace_loading through the normal bootstrap path."
+    },
+    {
+      "id": "AUR-002",
+      "name": "Reconnect Interval",
+      "rule": "Automatic reconnect uses bounded exponential backoff with jitter: 2s, 5s, 10s, 20s, then capped at 30s. Maximum automatic attempts per outage window: 5.",
+      "state_effect": "After max attempts the UI remains in api_unreachable with manual retry only."
+    },
+    {
+      "id": "AUR-003",
+      "name": "Manual Retry",
+      "rule": "Manual retry is always user-triggered, disabled while a retry request is in flight, and resets the next automatic retry timer.",
+      "state_effect": "Manual retry may run immediately, but must still validate auth and workspace before returning to workspace_ready."
+    },
+    {
+      "id": "AUR-004",
+      "name": "Stale Session Handling",
+      "rule": "A stored token is not trusted after connectivity recovery until /api/v1/auth/me succeeds. 401 clears token and session state; 403 enters forbidden; network failure preserves the stored token but does not mark it valid.",
+      "state_effect": "No workspace-scoped request may be issued from stale session state."
+    },
+    {
+      "id": "AUR-005",
+      "name": "Reconnect waehrend Login",
+      "rule": "If login fails with API_UNREACHABLE or TIMEOUT, no token, user or workspace state is written. Manual retry resubmits login credentials only after explicit user action.",
+      "state_effect": "State remains unauthenticated or api_unreachable; there is no partial authenticated state."
+    },
+    {
+      "id": "AUR-006",
+      "name": "Reconnect waehrend Workspace Bootstrap",
+      "rule": "If /auth/me or workspace bootstrap fails with API_UNREACHABLE or TIMEOUT after a token exists, the token may remain stored as unvalidated, but active_workspace_id is not trusted until /auth/me succeeds.",
+      "state_effect": "Protected routes stay blocked; stale route data may be read-only only when visibly marked stale."
+    },
+    {
+      "id": "AUR-007",
+      "name": "Kein Retry Storm",
+      "rule": "Only one reconnect attempt may be in flight per browser tab. New manual retry aborts or supersedes pending timer; automatic attempts are capped and jittered.",
+      "state_effect": "Duplicate retries must not create concurrent auth/bootstrap requests."
+    },
+    {
+      "id": "AUR-008",
+      "name": "Kein Spinner Loop",
+      "rule": "A loading spinner must have a terminal path: success, retryable error state, non-retryable error state or timeout. API_UNREACHABLE must render an error state with Retry, not an infinite loading state.",
+      "state_effect": "authenticating and workspace_loading must stop loading after the request timeout or failure classification."
+    },
+    {
+      "id": "AUR-009",
+      "name": "Keine State Corruption",
+      "rule": "Late responses from superseded retries may not write auth, workspace or route data unless their request generation matches the current runtime generation.",
+      "state_effect": "Old responses are ignored after logout, new login, workspace switch or newer retry."
+    }
+  ],
+  "retry_strategy": {
+    "retryable_codes": [
+      "API_UNREACHABLE",
+      "TIMEOUT"
+    ],
+    "conditionally_retryable_codes": [
+      "CORS_ERROR only if caused by local transient connectivity/configuration and exposed as retryable by UI"
+    ],
+    "non_retryable_codes": [
+      "AUTH_REQUIRED",
+      "FORBIDDEN",
+      "WORKSPACE_NOT_CONFIGURED",
+      "VALIDATION_ERROR",
+      "AUTH_INVALID_CREDENTIALS",
+      "WORKSPACE_ACCESS_FORBIDDEN"
+    ],
+    "automatic_reconnect": {
+      "enabled_after_validated_session": true,
+      "enabled_during_initial_login": false,
+      "enabled_during_initial_bootstrap": false,
+      "intervals_ms": [
+        2000,
+        5000,
+        10000,
+        20000,
+        30000
+      ],
+      "max_attempts_per_outage": 5,
+      "jitter_percent": 20,
+      "max_in_flight": 1
+    },
+    "manual_retry": {
+      "enabled_for": [
+        "login_api_unreachable",
+        "auth_bootstrap_api_unreachable",
+        "workspace_bootstrap_api_unreachable",
+        "route_load_api_unreachable"
+      ],
+      "disabled_while_in_flight": true,
+      "resets_backoff_timer": true,
+      "requires_visible_error_state": true
+    }
+  },
+  "runtime_recovery_state_machine": {
+    "states": [
+      "unauthenticated",
+      "authenticating",
+      "authenticated_unvalidated",
+      "workspace_loading",
+      "workspace_ready",
+      "api_unreachable",
+      "reconnecting",
+      "forbidden",
+      "stale_read_only"
+    ],
+    "transitions": [
+      {
+        "from": "unauthenticated",
+        "event": "login_submit",
+        "to": "authenticating",
+        "side_effects": [
+          "clear previous auth/workspace context",
+          "disable login submit while in flight"
+        ]
+      },
+      {
+        "from": "authenticating",
+        "event": "login_network_failure",
+        "to": "api_unreachable",
+        "side_effects": [
+          "write no token",
+          "write no user",
+          "write no workspace",
+          "show manual retry"
+        ]
+      },
+      {
+        "from": "authenticating",
+        "event": "login_success",
+        "to": "workspace_loading",
+        "side_effects": [
+          "store token as pending validation",
+          "call /api/v1/auth/me"
+        ]
+      },
+      {
+        "from": "workspace_loading",
+        "event": "auth_me_network_failure",
+        "to": "api_unreachable",
+        "side_effects": [
+          "preserve token as unvalidated",
+          "do not trust active_workspace_id",
+          "show manual retry"
+        ]
+      },
+      {
+        "from": "api_unreachable",
+        "event": "manual_retry_with_token",
+        "to": "authenticating",
+        "side_effects": [
+          "call /api/v1/auth/me",
+          "disable retry while in flight"
+        ]
+      },
+      {
+        "from": "api_unreachable",
+        "event": "manual_retry_without_token",
+        "to": "unauthenticated",
+        "side_effects": [
+          "show login form",
+          "do not auto-submit credentials"
+        ]
+      },
+      {
+        "from": "workspace_ready",
+        "event": "route_request_network_failure",
+        "to": "reconnecting",
+        "side_effects": [
+          "mark current route data stale_read_only",
+          "block mutations",
+          "start bounded reconnect timer"
+        ]
+      },
+      {
+        "from": "reconnecting",
+        "event": "reconnect_success_auth_workspace_valid",
+        "to": "workspace_ready",
+        "side_effects": [
+          "reload stale caches",
+          "clear reconnect banner",
+          "reenable mutations"
+        ]
+      },
+      {
+        "from": "reconnecting",
+        "event": "max_attempts_exhausted",
+        "to": "api_unreachable",
+        "side_effects": [
+          "stop automatic retry",
+          "show manual retry"
+        ]
+      },
+      {
+        "from": "reconnecting",
+        "event": "retry_401",
+        "to": "unauthenticated",
+        "side_effects": [
+          "clear token",
+          "clear workspace",
+          "clear route caches"
+        ]
+      },
+      {
+        "from": "reconnecting",
+        "event": "retry_403",
+        "to": "forbidden",
+        "side_effects": [
+          "stop retry",
+          "keep mutation block"
+        ]
+      }
+    ],
+    "forbidden_transitions": [
+      {
+        "from": "api_unreachable",
+        "to": "workspace_ready",
+        "reason": "Recovery requires successful auth and workspace validation."
+      },
+      {
+        "from": "authenticating",
+        "to": "workspace_ready",
+        "reason": "Workspace validation may not be skipped."
+      },
+      {
+        "from": "reconnecting",
+        "to": "workspace_ready",
+        "reason": "Reconnect success must validate auth/workspace and refresh stale caches first."
+      },
+      {
+        "from": "api_unreachable",
+        "to": "empty_state",
+        "reason": "Connectivity failure must not be rendered as empty data."
+      }
+    ]
+  },
+  "implementation_gap_current": {
+    "manual_retry_for_bootstrap": "present",
+    "automatic_bounded_reconnect": "not_verified",
+    "request_generation_guard": "not_verified",
+    "stale_read_only_route_mode": "partially_documented",
+    "truth_status": "defined_not_fully_truth_validated"
+  }
+}

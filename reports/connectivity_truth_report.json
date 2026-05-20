@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "report": "Frontend Connectivity Truth Report",
+  "generated_at": "2026-05-20T09:05:54.397Z",
+  "result": "FAIL",
+  "rules": {
+    "real_api": true,
+    "real_browser": true,
+    "mock_responses": false
+  },
+  "frontend_base_url": "http://localhost:5173",
+  "api_base_url": "http://127.0.0.1:8000",
+  "checks": [
+    {
+      "id": "frontend_reaches_backend",
+      "result": "FAIL",
+      "evidence": "1 API request(s), 1 failed request(s)."
+    },
+    {
+      "id": "health_reachable",
+      "result": "FAIL",
+      "evidence": "ECONNREFUSED: connect ECONNREFUSED 127.0.0.1:8000"
+    },
+    {
+      "id": "auth_me_reachable",
+      "result": "FAIL",
+      "evidence": "ECONNREFUSED: connect ECONNREFUSED 127.0.0.1:8000"
+    },
+    {
+      "id": "login_possible",
+      "result": "FAIL",
+      "evidence": "Login did not return a successful response."
+    },
+    {
+      "id": "workspace_bootstrap_successful",
+      "result": "FAIL",
+      "evidence": "No successful authenticated /api/v1/auth/me bootstrap observed."
+    },
+    {
+      "id": "document_list_loads",
+      "result": "FAIL",
+      "evidence": "No successful /documents response observed in browser flow."
+    },
+    {
+      "id": "no_api_unreachable_normalflow",
+      "result": "FAIL",
+      "evidence": "API_UNREACHABLE or backend-unreachable copy visible in normal flow."
+    },
+    {
+      "id": "authorization_header_correct",
+      "result": "FAIL",
+      "evidence": "No browser request with Authorization header observed."
+    },
+    {
+      "id": "x_workspace_id_correct",
+      "result": "FAIL",
+      "evidence": "No browser request with X-Workspace-Id observed."
+    },
+    {
+      "id": "no_cors_error",
+      "result": "PASS",
+      "evidence": "No CORS/access-control browser error observed."
+    },
+    {
+      "id": "no_mixed_content_error",
+      "result": "PASS",
+      "evidence": "No mixed-content mismatch detected."
+    },
+    {
+      "id": "no_dns_error",
+      "result": "PASS",
+      "evidence": "No DNS failure detected."
+    },
+    {
+      "id": "no_timeout",
+      "result": "PASS",
+      "evidence": "No timeout detected."
+    }
+  ],
+  "failure_classification": [
+    "REFUSED"
+  ],
+  "probes": {
+    "health": {
+      "ok": false,
+      "status": null,
+      "duration_ms": 5,
+      "body": "",
+      "error": {
+        "code": "ECONNREFUSED",
+        "message": "connect ECONNREFUSED 127.0.0.1:8000"
+      }
+    },
+    "auth_me": {
+      "ok": false,
+      "status": null,
+      "duration_ms": 2,
+      "body": "",
+      "error": {
+        "code": "ECONNREFUSED",
+        "message": "connect ECONNREFUSED 127.0.0.1:8000"
+      }
+    }
+  },
+  "browser": {
+    "login_clicked": true,
+    "api_requests": [
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/api/v1/auth/login",
+        "has_authorization": false,
+        "has_x_workspace_id": false
+      }
+    ],
+    "api_responses": [],
+    "failed_requests": [
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/api/v1/auth/login",
+        "errorText": "net::ERR_CONNECTION_REFUSED"
+      }
+    ],
+    "console_errors": [
+      {
+        "type": "console",
+        "level": "error",
+        "text": "Failed to load resource: net::ERR_CONNECTION_REFUSED"
+      }
+    ],
+    "page_errors": [],
+    "body_excerpt": "M4A AUTH\n\nAnmeldung\n\nLokale Session fuer geschuetzte API-Pfade\n\nSESSION\n\nMit Workspace-Kontext anmelden\nLOGIN\nPASSWORT\nAnmelden\nBackend nicht erreichbar\n\nDas Backend ist nicht erreichbar. Es wurden keine Daten geladen.\n\nFehlercode: API_UNREACHABLE\n\nTechnischer Code: API_UNREACHABLE\n\nAktion: Erneut versuchen"
+  }
+}

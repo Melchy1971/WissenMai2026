@@ -80,6 +80,7 @@ Die folgenden Dokumente bilden das vollstaendige Governance-Framework fuer langf
 
 - [docs/operational-sla-framework.md](H:/WissenMai2026/docs/operational-sla-framework.md): SLA-Framework fuer 8 Betriebsbereiche mit Zielwert, Warnschwelle, kritischer Schwelle und Eskalationskaskade
 - [docs/controlled-failure-philosophy.md](H:/WissenMai2026/docs/controlled-failure-philosophy.md): 5 Fehlerprinzipien, standardisierte Fehlercodes, Recovery-Kategorien und Degraded-States
+- [docs/frontend-api-unreachable-recovery.md](H:/WissenMai2026/docs/frontend-api-unreachable-recovery.md): API_UNREACHABLE-Recovery-Regeln mit Retry-Strategie und Runtime-Recovery-State-Machine
 - [docs/audit-trail-schema.md](H:/WissenMai2026/docs/audit-trail-schema.md): 8 Audit-Event-Typen mit vollstaendigen JSON-Schemas, actor-Feld, Retention-Regeln und Korrelationsanforderungen
 
 ### Invarianten und Langzeit

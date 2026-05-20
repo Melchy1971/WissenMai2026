@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "report": "Frontend Runtime Connectivity Gate Report",
+  "generated_at": "2026-05-20T09:06:12Z",
+  "source_truth_report": "reports/connectivity_truth_report.json",
+  "frontend_base_url": "http://localhost:5173",
+  "api_base_url": "http://127.0.0.1:8000",
+  "score": 22.2,
+  "threshold": 90.0,
+  "result": "FAIL",
+  "decision": "M3A_BLOCKED",
+  "gate_effect": "M3a blockiert",
+  "checks": [
+    {
+      "id": "backend_reachable",
+      "label": "Backend erreichbar",
+      "truth_check_id": "frontend_reaches_backend",
+      "result": "FAIL",
+      "evidence": "1 API request(s), 1 failed request(s)."
+    },
+    {
+      "id": "health_green",
+      "label": "/health gruen",
+      "truth_check_id": "health_reachable",
+      "result": "FAIL",
+      "evidence": "ECONNREFUSED: connect ECONNREFUSED 127.0.0.1:8000"
+    },
+    {
+      "id": "auth_me_reachable",
+      "label": "/auth/me erreichbar",
+      "truth_check_id": "auth_me_reachable",
+      "result": "FAIL",
+      "evidence": "ECONNREFUSED: connect ECONNREFUSED 127.0.0.1:8000"
+    },
+    {
+      "id": "login_successful",
+      "label": "Login erfolgreich",
+      "truth_check_id": "login_possible",
+      "result": "FAIL",
+      "evidence": "Login did not return a successful response."
+    },
+    {
+      "id": "workspace_bootstrap_successful",
+      "label": "Workspace Bootstrap erfolgreich",
+      "truth_check_id": "workspace_bootstrap_successful",
+      "result": "FAIL",
+      "evidence": "No successful authenticated /api/v1/auth/me bootstrap observed."
+    },
+    {
+      "id": "document_list_loads",
+      "label": "Dokumentliste laedt",
+      "truth_check_id": "document_list_loads",
+      "result": "FAIL",
+      "evidence": "No successful /documents response observed in browser flow."
+    },
+    {
+      "id": "no_api_unreachable_normalflow",
+      "label": "Kein API_UNREACHABLE im Normalflow",
+      "truth_check_id": "no_api_unreachable_normalflow",
+      "result": "FAIL",
+      "evidence": "API_UNREACHABLE or backend-unreachable copy visible in normal flow."
+    },
+    {
+      "id": "no_cors_error",
+      "label": "Kein CORS Fehler",
+      "truth_check_id": "no_cors_error",
+      "result": "PASS",
+      "evidence": "No CORS/access-control browser error observed."
+    },
+    {
+      "id": "no_mixed_content_error",
+      "label": "Kein Mixed Content Fehler",
+      "truth_check_id": "no_mixed_content_error",
+      "result": "PASS",
+      "evidence": "No mixed-content mismatch detected."
+    }
+  ],
+  "runtime_blockers": [
+    {
+      "id": "backend_not_reachable",
+      "gate_check": "backend_reachable",
+      "truth_check_id": "frontend_reaches_backend",
+      "evidence": "1 API request(s), 1 failed request(s)."
+    },
+    {
+      "id": "health_not_green",
+      "gate_check": "health_green",
+      "truth_check_id": "health_reachable",
+      "evidence": "ECONNREFUSED: connect ECONNREFUSED 127.0.0.1:8000"
+    },
+    {
+      "id": "auth_me_not_reachable",
+      "gate_check": "auth_me_reachable",
+      "truth_check_id": "auth_me_reachable",
+      "evidence": "ECONNREFUSED: connect ECONNREFUSED 127.0.0.1:8000"
+    },
+    {
+      "id": "login_not_successful",
+      "gate_check": "login_successful",
+      "truth_check_id": "login_possible",
+      "evidence": "Login did not return a successful response."
+    },
+    {
+      "id": "workspace_bootstrap_failed",
+      "gate_check": "workspace_bootstrap_successful",
+      "truth_check_id": "workspace_bootstrap_successful",
+      "evidence": "No successful authenticated /api/v1/auth/me bootstrap observed."
+    },
+    {
+      "id": "document_list_not_loaded",
+      "gate_check": "document_list_loads",
+      "truth_check_id": "document_list_loads",
+      "evidence": "No successful /documents response observed in browser flow."
+    },
+    {
+      "id": "api_unreachable_visible",
+      "gate_check": "no_api_unreachable_normalflow",
+      "truth_check_id": "no_api_unreachable_normalflow",
+      "evidence": "API_UNREACHABLE or backend-unreachable copy visible in normal flow."
+    }
+  ],
+  "failure_classification": [
+    "REFUSED"
+  ],
+  "truth_result": "FAIL"
+}

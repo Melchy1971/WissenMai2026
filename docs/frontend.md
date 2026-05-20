@@ -34,6 +34,8 @@ Verbindliche Freshness-Governance: `docs/frontend-data-freshness-governance.md` 
 
 Verbindliches Recovery-UX-Modell: `docs/frontend-recovery-ux-model.md` definiert fuer Backend/DB-Restart, Restore, Queue-Degradierung, Search-Ausfall, Retrieval-Degradierung, Auth-Expiry und Workspace-Verlust sichtbare Hinweise, erlaubte und blockierte Aktionen, Retry-/Reconnect-Regeln, Recovery-Trigger und UI-Zustandsdiagramme.
 
+Verbindlicher API_UNREACHABLE-Recovery-Vertrag: `docs/frontend-api-unreachable-recovery.md` definiert Retry-Verhalten, Reconnect-Intervalle, Manual Retry, stale Session Handling, Reconnect waehrend Login und Workspace Bootstrap sowie No-Go-Regeln gegen Retry-Storm, Spinner-Loop und State Corruption.
+
 Verbindliche Performance-Governance: `docs/frontend-performance-governance.md` definiert deterministische Rendering-Flows, stabile Request-Ketten, kontrollierte Parallelitaet, vorhersehbare Ladezustaende, Request-Sturm-Schutz, governance-konforme Performance-Metriken und verbotene Performance-Anti-Patterns.
 
 Verbindliche Accessibility- und Operational-Clarity-Standards: `docs/frontend-accessibility-operational-clarity-standards.md` definiert klare Error- und degraded States, sichtbare destructive actions, eindeutige Restore-/Reindex-/Queue-/Drift-Warnungen, Keyboard-Navigation, Screenreader-Kompatibilitaet und UI-Warnstandards ohne reine Farbsemantik.

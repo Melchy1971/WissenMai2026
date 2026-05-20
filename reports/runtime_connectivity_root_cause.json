@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "report": "Runtime Connectivity Root Cause",
+  "generated_at": "2026-05-20T10:50:00+02:00",
+  "symptom": "GUI shows API_UNREACHABLE",
+  "root_cause": {
+    "summary": "Backend API is not listening on the configured API base URL. Frontend is reachable on localhost, but POST http://127.0.0.1:8000/api/v1/auth/login fails with net::ERR_CONNECTION_REFUSED.",
+    "affected_layer": "runtime_process_connectivity",
+    "primary_failure": "backend_not_running",
+    "secondary_failure": "local_database_not_running_for_scripted_backend_start"
+  },
+  "checks": [
+    {
+      "id": "backend_running",
+      "result": "FAIL",
+      "evidence": "No TCP listener on 127.0.0.1:8000, 127.0.0.1:8001 or 127.0.0.1:8013."
+    },
+    {
+      "id": "api_base_url",
+      "result": "PASS",
+      "evidence": "frontend/src/api/client.js defaults to http://127.0.0.1:8000."
+    },
+    {
+      "id": "vite_api_base_url",
+      "result": "DEFAULT_USED",
+      "evidence": "No VITE_API_BASE_URL is set in root .env; frontend uses default http://127.0.0.1:8000."
+    },
+    {
+      "id": "cors",
+      "result": "NOT_ROOT_CAUSE",
+      "evidence": "backend/app/main.py allows http://127.0.0.1:5173, http://localhost:5173, http://127.0.0.1:5174 and http://localhost:5174. Browser failure is ERR_CONNECTION_REFUSED before CORS can be evaluated."
+    },
+    {
+      "id": "https_http_mismatch",
+      "result": "NOT_ROOT_CAUSE",
+      "evidence": "Frontend and API base URL are both http:// localhost/127.0.0.1."
+    },
+    {
+      "id": "reverse_proxy",
+      "result": "NOT_IN_PATH",
+      "evidence": "Frontend calls http://127.0.0.1:8000 directly; no proxy was involved in the failing request."
+    },
+    {
+      "id": "docker_network",
+      "result": "FAIL_OR_UNAVAILABLE",
+      "evidence": "docker API is not reachable; docker_engine pipe is missing. Local DB ports 5432 and 5433 are not listening."
+    },
+    {
+      "id": "health",
+      "result": "FAIL",
+      "evidence": "GET http://127.0.0.1:8000/health and GET http://127.0.0.1:8013/health fail with connection error."
+    },
+    {
+      "id": "auth_me",
+      "result": "FAIL",
+      "evidence": "GET http://127.0.0.1:8000/api/v1/auth/me fails with connection error."
+    },
+    {
+      "id": "browser_console",
+      "result": "CONFIRMED",
+      "evidence": "Playwright captured console error: Failed to load resource: net::ERR_CONNECTION_REFUSED."
+    },
+    {
+      "id": "network_tab",
+      "result": "CONFIRMED_REFUSED",
+      "evidence": "Playwright captured requestfailed for POST http://127.0.0.1:8000/api/v1/auth/login with net::ERR_CONNECTION_REFUSED."
+    }
+  ],
+  "network_classification": {
+    "dns": "not_root_cause",
+    "timeout": "not_observed",
+    "refused": "observed",
+    "cors": "not_observed",
+    "404": "not_observed",
+    "502": "not_observed",
+    "503": "not_observed"
+  },
+  "fix": {
+    "immediate": [
+      "Start the local database: scripts/dev-db.ps1.",
+      "Start the backend: scripts/dev-backend.ps1.",
+      "Start or restart frontend with matching API base URL: npm --prefix frontend run dev -- --host 127.0.0.1.",
+      "Open the frontend via the same host family as Vite serves; currently localhost works, 127.0.0.1 did not for the active Vite process."
+    ],
+    "verify": [
+      "GET http://127.0.0.1:8000/health returns 200.",
+      "GET http://127.0.0.1:8000/health/db returns healthy DB status.",
+      "POST http://127.0.0.1:8000/api/v1/auth/login returns JSON instead of net::ERR_CONNECTION_REFUSED.",
+      "Browser Network tab no longer shows refused requests to 127.0.0.1:8000."
+    ],
+    "configuration_note": "If backend is intentionally started on a different port, set VITE_API_BASE_URL to that exact http URL before starting Vite."
+  },
+  "gate_impact": {
+    "m3a": "Runtime environment is not currently gate-verifiable. This does not change the existing M3a RC artifact, but a new frontend truth run would fail until backend and DB are running.",
+    "m4": "Blocks M4 runtime validation because auth, upload, lifecycle and diagnostics API paths cannot be reached.",
+    "m5": "No M5 implementation impact; M5 remains blocked by M4 and existing Pre-M5 decision."
+  }
+}
