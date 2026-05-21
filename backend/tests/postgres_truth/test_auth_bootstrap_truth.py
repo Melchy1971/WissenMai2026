@@ -17,6 +17,7 @@ Scenarios:
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from tests.postgres_truth.support import _uuid_with_prefix
 from typing import Iterator
 
 import psycopg
@@ -30,7 +31,7 @@ from app.services.auth import hash_password, hash_token
 
 pytestmark = [pytest.mark.postgres_truth, pytest.mark.auth_bootstrap]
 
-_NO_MEMBERSHIP_USER_ID = "f2000000-0000-0000-0000-bootstrap001"
+_NO_MEMBERSHIP_USER_ID = _uuid_with_prefix("f2000000", "auth-bootstrap", "no-membership-user")
 _NO_MEMBERSHIP_SESSION_ID = "truth-auth-bootstrap-no-membership-session"
 _NO_MEMBERSHIP_TOKEN = "truth-auth-bootstrap-no-membership-token-fixed"
 

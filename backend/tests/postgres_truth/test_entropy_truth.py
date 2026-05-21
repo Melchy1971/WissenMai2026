@@ -445,3 +445,4 @@ class TestMultiEpochEntropySimulation:
         assert "dead_letter_delta_per_epoch" in trend
         assert "citation_orphan_delta" in trend
         assert isinstance(trend["long_term_risks"], list)
+

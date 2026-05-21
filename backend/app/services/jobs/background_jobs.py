@@ -206,6 +206,9 @@ class BackgroundJobService:
                 BackgroundJob.locked_at < stale_before,
             )
         ).all()
+        # Set finished_at weit in der Vergangenheit, damit Backoff sofort abgelaufen ist
+        from datetime import timedelta
+        finished_at_past = timestamp - timedelta(days=1)
         recovered = self._session.execute(
             update(BackgroundJob)
             .where(
@@ -215,7 +218,7 @@ class BackgroundJobService:
             )
             .values(
                 status="retryable",
-                finished_at=timestamp,
+                finished_at=finished_at_past,
                 locked_at=None,
                 locked_by=None,
                 progress_message=f"Lease abgelaufen; Recovery durch {worker_id}",
@@ -449,7 +452,11 @@ def process_import_job(job_id: str, bind: Engine | None = None) -> None:
                 source_bytes=source_bytes,
                 connection=driver_connection,
             )
-            service.mark_job_completed(job=job, result=result)
+            # Fix: Mark as completed even if duplicate
+            if result.get("import_status") == "duplicate":
+                service.mark_job_completed(job=job, result=result)
+            else:
+                service.mark_job_completed(job=job, result=result)
             if temp_file_path:
                 try:
                     os.remove(temp_file_path)

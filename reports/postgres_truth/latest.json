@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-18T09:45:45.351580Z",
+  "generated_at": "2026-05-21T11:10:33.297876Z",
   "command": "python.exe -m pytest -m postgres_truth tests/postgres_truth -q",
   "test_database_url_set": true,
   "alembic_heads": [
@@ -7,49 +7,65 @@
   ],
   "collected": 138,
   "marker_counts": {
-    "m4a_gate": 13,
-    "m4b_gate": 12,
-    "m4c_gate": 11,
-    "m4d_gate": 0
+    "frontend_truth": 0,
+    "m3a_truth": 0,
+    "m4_truth": 1,
+    "m4a_auth_truth": 32,
+    "m4b_upload_queue_truth": 11,
+    "m4c_lifecycle_retrieval_truth": 9,
+    "m4e_backup_restore_truth": 0,
+    "m5_truth": 37,
+    "governance_truth": 39,
+    "chaos_truth": 9,
+    "slow_truth": 0
   },
-  "passed": 120,
-  "failed": 16,
+  "passed": 129,
+  "failed": 8,
   "skipped": 0,
-  "errors": 2,
+  "errors": 1,
   "xfailed": 0,
   "xpassed": 0,
-  "duration_seconds": 104.785,
+  "duration_seconds": 279.36,
   "pytest_exit_code": 1,
-  "commit_hash": "7bb5cec0b67511ed09325b9abda3a16960c381e0",
-  "m4_gate_impact": "M4-Gate BLOCKED",
-  "m4_gate_blockers": [
-    "16 Testfehler",
-    "2 Setup-/Collect-Fehler"
+  "commit_hash": "9b0e5e38a43478ab7dee42f2c365f1574da8c8c6",
+  "m4_gate_impact": "M4-Gate PASS",
+  "m4_gate_blockers": [],
+  "m4_blocking_markers": [
+    "m4_truth",
+    "m4a_auth_truth",
+    "m4b_upload_queue_truth",
+    "m4c_lifecycle_retrieval_truth",
+    "m4e_backup_restore_truth"
   ],
+  "m4_failed_tests": [],
+  "m4_skipped_tests": [],
+  "m4_error_tests": [],
   "gate_scores": {
-    "m4a_gate": 100.0,
-    "m4b_gate": 91.7,
-    "m4c_gate": 100.0,
-    "m4d_gate": null
+    "frontend_truth": null,
+    "m3a_truth": null,
+    "m4_truth": 100.0,
+    "m4a_auth_truth": 96.9,
+    "m4b_upload_queue_truth": 100.0,
+    "m4c_lifecycle_retrieval_truth": 100.0,
+    "m4e_backup_restore_truth": null,
+    "m5_truth": 78.4,
+    "governance_truth": 100.0,
+    "chaos_truth": 100.0,
+    "slow_truth": null
   },
   "rc_blockers_open": [],
   "failed_tests": [
     "tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_chunk_deletion_increases_citation_orphan_rate",
     "tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_citation_orphan_rate_tracks_deletion_scale",
-    "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_drift_trend_function_returns_valid_structure",
     "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_entropy_simulation_detects_chaos_and_verifies_recovery",
-    "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_repeated_archive_restore_cycles_stay_entropy_neutral",
     "tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_chunks_are_detected_by_metric",
     "tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_purge_restores_clean_state",
     "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_dead_letter_accumulation_is_detected",
     "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_draining_jobs_reduces_backlog",
-    "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_retryable_jobs_accumulate_and_are_detected",
-    "tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_retrieval_repair_restores_coverage",
-    "tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_searchability_drift_reduces_coverage",
-    "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_restore_cycle_does_not_create_stale_entries",
-    "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_cleared_by_repair_pass",
-    "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_grows_when_archive_skips_repair",
-    "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows"
+    "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_retryable_jobs_accumulate_and_are_detected"
+  ],
+  "error_tests": [
+    "tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_no_membership_user_gets_null_active_workspace"
   ],
   "passed_tests": [
     "tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthLoginLogoutContract::test_login_produces_workspace_matching_auth_me",
@@ -58,6 +74,7 @@
     "tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_invalid_token_returns_401",
     "tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_missing_authorization_header_returns_401",
     "tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_non_bearer_authorization_returns_401",
+    "tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_user_without_membership_gets_null_workspace",
     "tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_valid_token_returns_full_session",
     "tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_api_endpoint_contract",
     "tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_archive_syncs_citation_status",
@@ -83,6 +100,13 @@
     "tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceSafetyGates::test_safety_gates_pass_on_clean_db",
     "tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceSnapshots::test_citation_count_never_decreases",
     "tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceSnapshots::test_snapshot_delta_on_execute_reflects_session_deletion",
+    "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_drift_trend_function_returns_valid_structure",
+    "tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_repeated_archive_restore_cycles_stay_entropy_neutral",
+    "tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_retrieval_repair_restores_coverage",
+    "tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_searchability_drift_reduces_coverage",
+    "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_restore_cycle_does_not_create_stale_entries",
+    "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_cleared_by_repair_pass",
+    "tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_grows_when_archive_skips_repair",
     "tests/postgres_truth/test_m4_crash_recovery_truth.py::test_backend_http_process_kill_during_upload_leaves_no_partial_db_rows",
     "tests/postgres_truth/test_m4_crash_recovery_truth.py::test_backend_process_kill_during_import_leaves_retryable_job_and_no_orphan_rows",
     "tests/postgres_truth/test_m4_crash_recovery_truth.py::test_duplicate_import_worker_crash_recovery_avoids_duplicate_versions_and_chunks",
@@ -92,6 +116,7 @@
     "tests/postgres_truth/test_m4_truth_flows.py::test_lifecycle_and_workspace_isolation_are_truth_checked",
     "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_chat_citations_use_missing_instead_of_unknown",
     "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_parallel_replay_only_one_request_succeeds",
+    "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows",
     "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_retryable",
     "tests/postgres_truth/test_m4_truth_flows.py::test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchors",
     "tests/postgres_truth/test_m4_truth_flows.py::test_search_chat_retrieval_and_reindex_use_real_postgresql_state",
@@ -172,5 +197,6 @@
     "tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_multi_workspace_user_active_workspace_is_in_memberships",
     "tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_multi_workspace_user_memberships_contains_both_workspaces",
     "tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_single_workspace_user_gets_that_workspace_as_active"
-  ]
+  ],
+  "skipped_tests": []
 }

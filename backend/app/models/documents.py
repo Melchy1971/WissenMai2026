@@ -66,7 +66,7 @@ class Document(Base):
             name="ck_documents_import_status_allowed",
         ),
         CheckConstraint(
-            "lifecycle_status in ('active', 'archived', 'deleted')",
+            "lifecycle_status in ('active', 'archived', 'deleted', 'pending')",
             name="ck_documents_lifecycle_status_allowed",
         ),
     )
@@ -220,3 +220,4 @@ class BackgroundJob(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+

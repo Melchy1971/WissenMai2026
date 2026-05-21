@@ -131,10 +131,9 @@ def test_chunk_search_vector_migration_creates_generated_column_and_gin_index(te
                 column_row = cursor.fetchone()
                 assert column_row is not None
                 assert column_row[0] == "tsvector"
-                assert (
-                    "to_tsvector('simple'::regconfig, CASE WHEN is_searchable THEN COALESCE(content, ''::text) "
-                    "ELSE ''::text END)" in column_row[1]
-                )
+                # Robustere Prüfung auf Kernbestandteile, tolerant gegenüber Whitespace und expliziten Typen
+                expr = column_row[1].replace(" ", "").replace("\n", "")
+                assert "to_tsvector('simple'::regconfig,CASEWHENis_searchableTHENCOALESCE(content,''::text)ELSE''::textEND)" in expr
 
                 cursor.execute(
                     """
