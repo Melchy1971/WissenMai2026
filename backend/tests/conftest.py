@@ -35,6 +35,15 @@ GATE_MARKERS = {
     "chaos_truth",
     "slow_truth",
 }
+FINAL_TRUTH_MARKERS = {
+    "m4_truth",
+    "m4a_auth_truth",
+    "m4b_upload_queue_truth",
+    "m4c_lifecycle_retrieval_truth",
+    "m4e_backup_restore_truth",
+    "m5_truth",
+    "governance_truth",
+}
 M4_BLOCKING_MARKERS = {
     "m4_truth",
     "m4a_auth_truth",
@@ -62,16 +71,21 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
     for item in items:
         marker_names = {marker.name for marker in item.iter_markers()}
+        nodeid = item.nodeid.replace("\\", "/")
+        final_truth_markers = sorted(FINAL_TRUTH_MARKERS.intersection(marker_names))
+        is_postgres_truth = "postgres_truth" in marker_names or "postgres_truth/" in nodeid
         explicit_gate_markers = sorted(GATE_MARKERS.intersection(marker_names))
-        if not explicit_gate_markers:
+        if is_postgres_truth and not final_truth_markers:
+            unclassified.append(item.nodeid)
+        elif not explicit_gate_markers:
             marker = _classify_truth_gate(item, marker_names)
             if marker is None:
                 unclassified.append(item.nodeid)
             else:
                 item.add_marker(getattr(pytest.mark, marker))
                 explicit_gate_markers = [marker]
-        if len(explicit_gate_markers) > 1:
-            ambiguous.append(f"{item.nodeid} -> {', '.join(explicit_gate_markers)}")
+        if len(final_truth_markers) > 1:
+            ambiguous.append(f"{item.nodeid} -> {', '.join(final_truth_markers)}")
 
         critical_markers = sorted(LEGACY_CRITICAL_GATE_MARKERS.intersection(marker_names))
         if critical_markers and "postgres_truth" not in marker_names:

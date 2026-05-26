@@ -2,15 +2,15 @@
 
 | Feld | Wert |
 |---|---|
-| timestamp | `2026-05-20T13:38:07.880314+00:00` |
+| timestamp | `2026-05-26T07:55:18.789577+00:00` |
 | collected | 100 |
 | passed | 5 |
 | failed | 37 |
 | skipped | 58 |
 | browser | `chromium` |
-| api_base_url | `http://127.0.0.1:8000` |
+| api_base_url | `http://127.0.0.1:8013` |
 | test_database_url_set | true |
-| duration | 607.49s |
+| duration | 623.26s |
 | playwright_exit_code | 1 |
 | real_api | true |
 | mock_only | false |

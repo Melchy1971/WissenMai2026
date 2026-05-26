@@ -32,7 +32,7 @@ from app.services.reindex_governance import ReindexGovernanceService, ReindexGov
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.reindex_governance]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.reindex_governance, pytest.mark.governance_truth]
 
 
 def _advisory_hash(value: str) -> int:

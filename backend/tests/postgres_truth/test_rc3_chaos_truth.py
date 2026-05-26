@@ -61,6 +61,7 @@ def _acquire_lock_on_raw_connection(
         return bool(row[0]) if row else False
 
 
+@pytest.mark.m4_truth
 def test_chaos_cleanup_starts_without_stale_state(truth_ids: TruthIds, truth_session: Session) -> None:
     """Baseline: no chaos test rows from previous runs."""
     chaos_doc_id = truth_ids.document_id("chaos-cleanup")
@@ -78,6 +79,7 @@ def test_chaos_cleanup_starts_without_stale_state(truth_ids: TruthIds, truth_ses
     assert count == 0
 
 
+@pytest.mark.m4_truth
 def test_chaos_advisory_lock_document_import_scope_blocks_concurrent_session(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],
@@ -133,6 +135,7 @@ def test_chaos_advisory_lock_document_import_scope_blocks_concurrent_session(
         session2.rollback()
 
 
+@pytest.mark.m4_truth
 def test_chaos_lifecycle_lock_blocks_concurrent_session(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],
@@ -166,6 +169,7 @@ def test_chaos_lifecycle_lock_blocks_concurrent_session(
         session2.rollback()
 
 
+@pytest.mark.m4_truth
 def test_chaos_reindex_lock_blocks_concurrent_session(
     truth_seed: dict[str, str],
     postgres_truth_database_url: str,
@@ -203,6 +207,7 @@ def test_chaos_reindex_lock_blocks_concurrent_session(
         session2.rollback()
 
 
+@pytest.mark.m4_truth
 def test_chaos_lifecycle_and_reindex_locks_are_independent(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],
@@ -236,7 +241,7 @@ def test_chaos_lifecycle_and_reindex_locks_are_independent(
         session2.rollback()
 
 
-@pytest.mark.m4b_gate
+@pytest.mark.m4b_upload_queue_truth
 def test_chaos_two_workers_claiming_same_job_only_one_succeeds(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],
@@ -307,6 +312,7 @@ def test_chaos_two_workers_claiming_same_job_only_one_succeeds(
     assert len(blocked) == 1, f"Exactly one worker must be blocked, got: {results}"
 
 
+@pytest.mark.m4_truth
 def test_chaos_dead_letter_replay_blocks_concurrent_session(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],
@@ -339,6 +345,7 @@ def test_chaos_dead_letter_replay_blocks_concurrent_session(
         session2.rollback()
 
 
+@pytest.mark.m4_truth
 def test_chaos_job_claim_and_replay_locks_are_independent(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],
@@ -372,7 +379,7 @@ def test_chaos_job_claim_and_replay_locks_are_independent(
         session2.rollback()
 
 
-@pytest.mark.m4c_gate
+@pytest.mark.m4c_lifecycle_retrieval_truth
 def test_chaos_source_status_live_lookup_reflects_lifecycle_transitions(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],

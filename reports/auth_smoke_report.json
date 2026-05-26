@@ -1,0 +1,86 @@
+{
+  "generated_at": "2026-05-26T07:19:21.221Z",
+  "api_base_url": "http://127.0.0.1:8001",
+  "frontend_base_url": "http://127.0.0.1:5174",
+  "result": "PASS",
+  "checks": [
+    {
+      "id": "backend_health_reachable",
+      "pass": true,
+      "evidence": 200
+    },
+    {
+      "id": "frontend_reachable",
+      "pass": true,
+      "evidence": 200
+    },
+    {
+      "id": "login_successful",
+      "pass": true,
+      "evidence": 200
+    },
+    {
+      "id": "auth_me_returns_user_and_workspace",
+      "pass": true,
+      "evidence": 200
+    },
+    {
+      "id": "frontend_leaves_login_screen",
+      "pass": true,
+      "evidence": "http://127.0.0.1:5174/documents"
+    }
+  ],
+  "login_response": {
+    "status": 200,
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "login": "mdickscheit@gmail.com",
+      "display_name": "mdickscheit@gmail.com"
+    },
+    "memberships": [
+      {
+        "workspace_id": "00000000-0000-0000-0000-000000000001",
+        "role": "admin"
+      }
+    ],
+    "active_workspace_id": "00000000-0000-0000-0000-000000000001"
+  },
+  "auth_me_response": {
+    "status": 200,
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "login": "mdickscheit@gmail.com",
+      "display_name": "mdickscheit@gmail.com"
+    },
+    "memberships": [
+      {
+        "workspace_id": "00000000-0000-0000-0000-000000000001",
+        "role": "admin"
+      }
+    ],
+    "active_workspace_id": "00000000-0000-0000-0000-000000000001"
+  },
+  "browser": {
+    "left_login_screen": true,
+    "final_url": "http://127.0.0.1:5174/documents",
+    "body_excerpt": "DEUTSCHE TELEKOM\n\nWissensbasis V1\nDokumente\nChat\nAdmin\nmdickscheit@gmail.com\n00000000-0000-0000-0000-000000000001\nAbmelden\n\nDOKUMENTUEBERSICHT\n\nDokumente\n\nWorkspace: 00000000-0000-0000-0000-000000000001\n\nLIFECYCLE\n\nSichtbarkeit\nSTATUSFILTER\nNur aktive Dokumente\nNur archivierte Dokumente\nHinweis\n\nArchivierte Dokumente erscheinen nicht in Suche oder Chat. Geloeschte Dokumente werden in der GUI nicht angezeigt.\n\nIMPORT\n\nDokument hochladen\nDATEI\nDokument importieren\n\nEINFACHE SUCHE\n\nChunk-Suche\nSUCHBEGRIFF\nSuchen\nZuruecksetzen\nKeine Dokumente vorhanden\n\nFuer diesen Workspace liegen aktuell keine Dokumente vor.",
+    "events": [
+      {
+        "type": "console",
+        "level": "debug",
+        "text": "[vite] connecting..."
+      },
+      {
+        "type": "console",
+        "level": "debug",
+        "text": "[vite] connected."
+      },
+      {
+        "type": "console",
+        "level": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      }
+    ]
+  },
+  "remaining_errors": []
+}

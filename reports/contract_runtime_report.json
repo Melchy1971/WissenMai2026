@@ -1,0 +1,343 @@
+{
+  "generated_at": "2026-05-26T07:58:07.210405+00:00",
+  "api_base_url": "http://127.0.0.1:8021",
+  "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026",
+  "registry": "docs/api/frontend-backend-contract-registry.md",
+  "runtime_preconditions": {
+    "seed_auth_exit_code": 0,
+    "seed_auth_bootstrap_invariant": "PASS",
+    "backend_health": {
+      "status": 200,
+      "ok": true
+    },
+    "postgres_health": {
+      "status": 200,
+      "ok": true,
+      "body": {
+        "status": "ok"
+      }
+    },
+    "login_status": 200,
+    "login_ok": true,
+    "auth_me_status": 200,
+    "workspace_id": "00000000-0000-0000-0000-000000000001",
+    "real_api": true,
+    "real_postgresql": true,
+    "mock_only": false
+  },
+  "contracts": [
+    {
+      "contract": "AuthMeResponse",
+      "status": "PASS",
+      "http_status": 200,
+      "findings": [],
+      "sample": {
+        "user": {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "login": "mdickscheit@gmail.com",
+          "display_name": "mdickscheit@gmail.com"
+        },
+        "memberships": [
+          {
+            "workspace_id": "00000000-0000-0000-0000-000000000001",
+            "role": "admin"
+          }
+        ],
+        "active_workspace_id": "00000000-0000-0000-0000-000000000001"
+      }
+    },
+    {
+      "contract": "WorkspaceMembership",
+      "status": "PASS",
+      "http_status": 200,
+      "findings": [],
+      "sample": {
+        "workspace_id": "00000000-0000-0000-0000-000000000001",
+        "role": "admin"
+      }
+    },
+    {
+      "contract": "DocumentListResponse",
+      "status": "PASS",
+      "http_status": 200,
+      "findings": [],
+      "sample": [
+        {
+          "id": "87abf356-1d11-42a8-9c99-1d3a60911073",
+          "title": "contractruntime1779782283",
+          "mime_type": "text/plain",
+          "created_at": "2026-05-26T07:57:58.751005Z",
+          "updated_at": "2026-05-26T07:57:58.751005Z",
+          "latest_version_id": "4d60114b-d124-49db-ad19-1d520b3578aa",
+          "import_status": "chunked",
+          "lifecycle_status": "active",
+          "archived_at": null,
+          "deleted_at": null,
+          "version_count": 1,
+          "chunk_count": 1
+        }
+      ]
+    },
+    {
+      "contract": "UploadJobResponse",
+      "status": "PASS",
+      "http_status": 200,
+      "findings": [],
+      "sample": {
+        "id": "8bc0ae86-0403-445c-bd31-9f95fbe665a2",
+        "job_type": "document_import",
+        "status": "completed",
+        "workspace_id": "00000000-0000-0000-0000-000000000001",
+        "requested_by_user_id": "00000000-0000-0000-0000-000000000001",
+        "filename": "contractruntime1779782283.txt",
+        "created_at": "2026-05-26T07:58:03.704750Z",
+        "started_at": "2026-05-26T07:58:03.892331Z",
+        "finished_at": "2026-05-26T07:58:04.112050Z",
+        "progress_current": 1,
+        "progress_total": 1,
+        "progress_message": "Job abgeschlossen",
+        "error_code": null,
+        "error_message": null,
+        "previous_error": null,
+        "replay_history": [],
+        "result": {
+          "document_id": "87abf356-1d11-42a8-9c99-1d3a60911073",
+          "version_id": "4d60114b-d124-49db-ad19-1d520b3578aa",
+          "import_status": "chunked",
+          "duplicate_of_document_id": null,
+          "chunk_count": 1,
+          "parser_type": "txt-parser",
+          "warnings": []
+        }
+      }
+    },
+    {
+      "contract": "SearchResponse",
+      "status": "PASS",
+      "http_status": 200,
+      "findings": [],
+      "sample": [
+        {
+          "document_id": "87abf356-1d11-42a8-9c99-1d3a60911073",
+          "document_title": "contractruntime1779782283",
+          "document_created_at": "2026-05-26T07:57:58.751005Z",
+          "document_version_id": "4d60114b-d124-49db-ad19-1d520b3578aa",
+          "version_number": 1,
+          "chunk_id": "c3d87ca3-4a7c-4226-a0d7-9273c6b82527",
+          "position": 0,
+          "text_preview": "# Contract Runtime\n\ncontractruntime1779782283 search material for runtime contract validation.\n",
+          "source_anchor": {
+            "type": "text",
+            "page": null,
+            "paragraph": null,
+            "char_start": 0,
+            "char_end": 94
+          },
+          "rank": 0.0607927106320858,
+          "filters": {}
+        }
+      ]
+    },
+    {
+      "contract": "ChatSessionResponse",
+      "status": "PASS",
+      "http_status": 200,
+      "findings": [],
+      "sample": {
+        "id": "35e9e452-5085-4ca1-962f-6da6930dd669",
+        "workspace_id": "00000000-0000-0000-0000-000000000001",
+        "title": "Runtime Contract Chat",
+        "created_at": "2026-05-26T07:58:05.872384Z",
+        "updated_at": "2026-05-26T07:58:05.872384Z",
+        "message_count": 0,
+        "last_user_question_preview": null,
+        "messages": []
+      }
+    },
+    {
+      "contract": "DiagnosticsResponse",
+      "status": "PASS",
+      "http_status": 200,
+      "findings": [],
+      "sample": {
+        "system": {
+          "status": "ok",
+          "version": "0.1.0",
+          "environment": "local"
+        },
+        "database": {
+          "reachable": true,
+          "migration_head": "20260508_0014",
+          "current_revision": "20260508_0014",
+          "is_current": true
+        },
+        "counts": {
+          "documents": 1,
+          "versions": 1,
+          "chunks": 1,
+          "chat_sessions": 1,
+          "chat_messages": 0
+        },
+        "imports": {
+          "running_jobs": 0,
+          "failed_jobs_last_24h": 0,
+          "last_error_code": null
+        },
+        "search": {
+          "index_available": true,
+          "indexed_chunks": 1,
+          "stale_index_entries": 0
+        },
+        "auth": {
+          "auth_enabled": true,
+          "workspace_isolation_enabled": true
+        },
+        "correlation_id": "43c9ad47-2064-4274-a48f-183fbd02fbeb",
+        "operational_metrics": [
+          {
+            "key": "queue_degraded",
+            "label": "Queue degraded",
+            "state": "inactive",
+            "severity": "info",
+            "value": "Backlog 0 \u00b7 Dead-Letter 0 \u00b7 Retry 0.0/h",
+            "summary": "Queue-Aging-Report meldet keine Degradierung fuer den aktiven Workspace.",
+            "source": "queue_aging_report"
+          },
+          {
+            "key": "search_drift",
+            "label": "Drift erkannt",
+            "state": "inactive",
+            "severity": "info",
+            "value": "0",
+            "summary": "Kein Search-Drift im aktuellen Diagnostics-Snapshot erkannt.",
+            "source": "diagnostics.search.stale_index_entries"
+          },
+          {
+            "key": "backup_stale",
+            "label": "Backup veraltet",
+            "state": "active",
+            "severity": "critical",
+            "value": "14.8 Tage",
+            "summary": "Letzter Restore-/Backup-Nachweis ist 14.8 Tage alt und ueberschreitet die 7-Tage-Grenze.",
+            "source": "reports/restore_truth_report.md"
+          },
+          {
+            "key": "reindex_running",
+            "label": "Reindex aktiv",
+            "state": "inactive",
+            "severity": "info",
+            "value": "0",
+            "summary": "Kein aktiver Reindex-Job im Backend gefunden.",
+            "source": "background_jobs.search_index_rebuild"
+          },
+          {
+            "key": "restore_mode",
+            "label": "Restore aktiv",
+            "state": "inactive",
+            "severity": "info",
+            "value": "0",
+            "summary": "Kein aktiver Restore-Lauf im Backend markiert.",
+            "source": "reports/restore_runtime_status.json"
+          },
+          {
+            "key": "retrieval_regression",
+            "label": "Retrieval Regression erkannt",
+            "state": "inactive",
+            "severity": "info",
+            "value": "pass",
+            "summary": "Aktueller Retrieval-Benchmark liegt innerhalb der definierten Baseline.",
+            "source": "reports/m5_retrieval/latest.json"
+          }
+        ],
+        "drift_awareness": {
+          "concept": [
+            "Degradierte Betriebszustaende muessen sichtbar bleiben, auch wenn Fachdaten noch lesbar sind.",
+            "Fehlende oder veraltete Evidenz wird als Warnsignal gerendert und nie als gesund angenommen.",
+            "Der hoechste aktive Schweregrad steuert die Wahrnehmung; Warnungen duerfen nicht im Kartenraster verschwinden."
+          ],
+          "warning_model": {
+            "no_silent_degradation": true,
+            "no_fake_green": true,
+            "no_hidden_warnings": true,
+            "unknown_is_not_ok": true,
+            "highest_severity_wins": true
+          },
+          "indicators": [
+            {
+              "key": "search_drift",
+              "label": "Search Drift erkannt",
+              "state": "inactive",
+              "severity": "info",
+              "summary": "Kein Search-Drift im aktuellen Diagnostics-Snapshot erkannt.",
+              "source": "diagnostics.search.stale_index_entries"
+            },
+            {
+              "key": "queue_degraded",
+              "label": "Queue degraded",
+              "state": "inactive",
+              "severity": "info",
+              "summary": "Queue-Aging-Report meldet keine Degradierung fuer den aktiven Workspace.",
+              "source": "queue_aging_report"
+            },
+            {
+              "key": "restore_mode",
+              "label": "Restore aktiv",
+              "state": "inactive",
+              "severity": "info",
+              "summary": "Kein aktiver Restore-Lauf im Backend markiert.",
+              "source": "reports/restore_runtime_status.json"
+            },
+            {
+              "key": "reindex_running",
+              "label": "Reindex aktiv",
+              "state": "inactive",
+              "severity": "info",
+              "summary": "Kein aktiver Reindex-Job im Backend gefunden.",
+              "source": "background_jobs.search_index_rebuild"
+            },
+            {
+              "key": "retrieval_regression",
+              "label": "Retrieval Regression erkannt",
+              "state": "inactive",
+              "severity": "info",
+              "summary": "Aktueller Retrieval-Benchmark liegt innerhalb der definierten Baseline.",
+              "source": "reports/m5_retrieval/latest.json"
+            },
+            {
+              "key": "backup_stale",
+              "label": "Backup veraltet",
+              "state": "active",
+              "severity": "critical",
+              "summary": "Letzter Restore-/Backup-Nachweis ist 14.8 Tage alt und ueberschreitet die 7-Tage-Grenze.",
+              "source": "reports/restore_truth_report.md"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "contract": "ErrorResponse",
+      "status": "PASS",
+      "http_status": 401,
+      "findings": [],
+      "sample": {
+        "error": {
+          "code": "AUTH_REQUIRED",
+          "message": "Authentication required",
+          "details": {}
+        }
+      }
+    }
+  ],
+  "summary": {
+    "contracts_total": 8,
+    "contracts_passed": 8,
+    "contracts_failed": 0,
+    "deviations_total": 0,
+    "missing_fields": 0,
+    "obsolete_or_undocumented_fields": 0,
+    "enum_deviations": 0
+  },
+  "contract_deviations": [],
+  "fixlist": []
+}

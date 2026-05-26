@@ -15,7 +15,7 @@ from app.services.m5_cleanup import CleanupConfig, M5CleanupService
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.m5_cleanup]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.m5_cleanup, pytest.mark.m5_truth]
 
 NOW = datetime(2026, 5, 12, 10, 0, tzinfo=UTC)
 

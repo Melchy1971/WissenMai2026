@@ -29,7 +29,7 @@ from app.main import app
 from app.services.auth import hash_password, hash_token
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.auth_bootstrap]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.auth_bootstrap, pytest.mark.m4a_auth_truth]
 
 _NO_MEMBERSHIP_USER_ID = _uuid_with_prefix("f2000000", "auth-bootstrap", "no-membership-user")
 _NO_MEMBERSHIP_SESSION_ID = "truth-auth-bootstrap-no-membership-session"

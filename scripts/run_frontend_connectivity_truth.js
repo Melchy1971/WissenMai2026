@@ -16,8 +16,8 @@ const FRONTEND_BASE_URL = process.env.CONNECTIVITY_FRONTEND_BASE_URL
   || process.env.GUI_TRUTH_BASE_URL
   || 'http://localhost:5173';
 const API_BASE_URL = (process.env.VITE_API_BASE_URL || process.env.API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
-const CONNECTIVITY_LOGIN = process.env.CONNECTIVITY_LOGIN || process.env.TRUTH_LOGIN || process.env.WISSEN_DEV_LOGIN || 'default-user';
-const CONNECTIVITY_PASSWORD = process.env.CONNECTIVITY_PASSWORD || process.env.TRUTH_PASSWORD || process.env.WISSEN_DEV_PASSWORD || 'secret-password';
+const CONNECTIVITY_LOGIN = process.env.CONNECTIVITY_LOGIN || process.env.TRUTH_LOGIN || process.env.WISSEN_DEV_LOGIN || 'mdickscheit@gmail.com';
+const CONNECTIVITY_PASSWORD = process.env.CONNECTIVITY_PASSWORD || process.env.TRUTH_PASSWORD || process.env.WISSEN_DEV_PASSWORD || 'Alex..2026';
 const TIMEOUT_MS = Number(process.env.CONNECTIVITY_TIMEOUT_MS || 10000);
 
 function nowIso() {

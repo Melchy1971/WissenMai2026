@@ -21,7 +21,7 @@ from app.services.jobs.background_jobs import (
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4b_gate]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4b_upload_queue_truth]
 
 
 def test_m4b_retryable_job_is_not_claimed_before_backoff_expires(

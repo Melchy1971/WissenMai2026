@@ -12,7 +12,7 @@ from app.services.documents.lifecycle_service import DocumentLifecycleService
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4c_gate]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4c_lifecycle_retrieval_truth]
 
 
 def test_m4c_archive_excludes_document_from_search_restore_reactivates(

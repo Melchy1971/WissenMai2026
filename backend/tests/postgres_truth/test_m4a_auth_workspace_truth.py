@@ -12,7 +12,7 @@ from app.main import app
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4a_gate]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4a_auth_truth]
 
 
 def test_m4a_user_a_lists_only_documents_from_workspace_a(

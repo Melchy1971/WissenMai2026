@@ -37,8 +37,8 @@ _load_local_env()
 LOCAL_DEV_DATABASE_URL = "postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test"
 DEFAULT_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001"
 DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001"
-DEFAULT_LOGIN = os.environ.get("WISSEN_DEV_LOGIN", "default-user")
-DEFAULT_PASSWORD = os.environ.get("WISSEN_DEV_PASSWORD", "secret-password")
+DEFAULT_LOGIN = os.environ.get("WISSEN_DEV_LOGIN", "mdickscheit@gmail.com")
+DEFAULT_PASSWORD = os.environ.get("WISSEN_DEV_PASSWORD", "Alex..2026")
 
 
 def _database_url() -> str:

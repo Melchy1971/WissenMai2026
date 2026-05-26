@@ -19,15 +19,10 @@ def test_build_split_reports_emits_required_report_format_for_each_gate() -> Non
     timestamp = "2026-05-20T08:00:00+00:00"
     reports = split_reports.build_split_reports(
         collected_by_marker={
-            "frontend_truth": ["tests/test_contract.py::test_ok"],
             "m4_truth": ["tests/test_m4.py::test_ok", "tests/test_m4.py::test_fail"],
             "m5_truth": ["tests/test_m5.py::test_error"],
         },
         outcomes={
-            "tests/test_contract.py::test_ok": split_reports.TestOutcome(
-                status="passed",
-                nodeid="tests/test_contract.py::test_ok",
-            ),
             "tests/test_m4.py::test_ok": split_reports.TestOutcome(
                 status="passed",
                 nodeid="tests/test_m4.py::test_ok",
@@ -63,8 +58,6 @@ def test_build_split_reports_emits_required_report_format_for_each_gate() -> Non
             "timestamp",
         }
 
-    assert reports["frontend_truth"]["collected"] == 1
-    assert reports["frontend_truth"]["passed"] == 1
     assert reports["m4_truth"]["collected"] == 2
     assert reports["m4_truth"]["failed"] == 1
     assert reports["m4_truth"]["failed_tests"] == ["tests/test_m4.py::test_fail"]
@@ -119,3 +112,24 @@ def test_write_split_reports_creates_one_json_file_per_report_marker(tmp_path: P
     assert payload["marker"] == "m4_truth"
     assert payload["collected"] == 0
     assert payload["exit_code"] == 0
+
+
+def test_unmarked_truth_tests_make_split_reports_fail() -> None:
+    reports = split_reports.build_split_reports(
+        collected_by_marker={"m4_truth": ["tests/test_m4.py::test_ok"]},
+        outcomes={
+            "tests/test_m4.py::test_ok": split_reports.TestOutcome(
+                status="passed",
+                nodeid="tests/test_m4.py::test_ok",
+            ),
+        },
+        collect_errors=[],
+        unmarked_truth_tests=["tests/postgres_truth/test_unmarked.py::test_truth"],
+        ambiguous_truth_tests=[],
+        exit_code=1,
+        test_database_url_set=True,
+        timestamp="2026-05-20T08:00:00+00:00",
+    )
+
+    assert reports["m4_truth"]["errors"] == 1
+    assert reports["m4_truth"]["unmarked_truth_tests"] == ["tests/postgres_truth/test_unmarked.py::test_truth"]

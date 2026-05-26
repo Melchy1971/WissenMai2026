@@ -53,11 +53,17 @@ Lokaler Standard-Fallback fuer `DATABASE_URL`, falls nicht explizit gesetzt:
 postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test
 ```
 
-Beim lokalen Start wird die Datenbank automatisch migriert und mit einem Default-Owner vorbereitet:
+Beim lokalen Start wird die Datenbank automatisch migriert und mit einem Default-Owner vorbereitet. Harte Bootstrap-Invariante: Nach `scripts/seed_auth.py` muss ein Admin-Login ueber den normalen Auth-Service funktionieren; Legacy-Logins werden migriert oder deaktiviert.
 
 ```text
-Login: default-user
-Passwort: secret-password
+Login: mdickscheit@gmail.com
+Passwort: Alex..2026
+```
+
+Smoke-Test:
+
+```powershell
+pytest tests/test_seed_auth_bootstrap.py -q
 ```
 
 `GET /health` funktioniert ohne Datenbankkonfiguration. `GET /health/db` erwartet `DATABASE_URL`

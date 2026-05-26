@@ -28,7 +28,7 @@ from app.services.queue_aging_service import (
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.queue_aging]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.queue_aging, pytest.mark.m5_truth]
 
 _PAYLOAD = json.dumps({"filename": "truth-aging.txt", "mime_type": "text/plain", "temp_file_path": "/tmp/x"})
 

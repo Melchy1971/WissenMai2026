@@ -1,0 +1,13 @@
+{
+  "report_format_version": 1,
+  "marker": "m4a_auth_truth",
+  "timestamp": "2026-05-26T07:41:47.866545+00:00",
+  "collected": 32,
+  "passed": 31,
+  "failed": 0,
+  "errors": 1,
+  "skipped": 0,
+  "exit_code": 1,
+  "test_database_url_set": true,
+  "failed_tests": []
+}

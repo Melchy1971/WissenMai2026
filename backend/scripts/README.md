@@ -2,13 +2,16 @@
 
 ## Auth/Workspace Seed
 
-Das Script `seed_auth.py` legt einen initialen User, Workspace und Membership für die lokale Entwicklung an.
+Das Script `seed_auth.py` legt einen initialen User, Workspace und Membership fuer die lokale Entwicklung an.
 
-- Idempotent: Mehrfach ausführbar, keine Duplikate.
+Bootstrap-Invariante: Eine frisch migrierte lokale DB muss nach `seed_auth.py` einen funktionierenden Admin-Login besitzen. Der Login muss ueber denselben Auth-Service funktionieren wie `POST /api/v1/auth/login`.
+
+- Idempotent: mehrfach ausfuehrbar, keine Duplikate.
 - Passwort wird mit der Auth-Hashfunktion erzeugt.
-- Nach Ausführung ist ein Login mit den Seed-Daten garantiert möglich.
+- Legacy-Logins `default-user` und `mdickscheit@googlemail.com` werden auf den kanonischen Login migriert oder deaktiviert.
+- Nach Ausfuehrung validiert das Script die Bootstrap-Invariante und schreibt sie in `reports/seed_report.json`.
 
-### Ausführung
+### Ausfuehrung
 
 ```powershell
 cd backend
@@ -18,7 +21,7 @@ $env:DATABASE_URL = "postgresql+psycopg://Markus:Markus..2026@85.215.131.200:543
 
 ### Validierung
 
-Das Script gibt nach Ausführung die wichtigsten IDs und Rollen aus.
+Das Script gibt nach Ausfuehrung die wichtigsten IDs und Rollen aus. `bootstrap_invariant: PASS` ist Pflicht.
 
 Manuelle DB-Validierung:
 
@@ -32,7 +35,19 @@ WHERE u.login = 'mdickscheit@gmail.com';
 
 ### Smoke-Test
 
-Nach Seed sollte ein Login mit `mdickscheit@gmail.com` / `Alex..2026` funktionieren.
+Nach Seed muss ein Login mit den dokumentierten Default-Credentials funktionieren:
+
+```text
+Login: mdickscheit@gmail.com
+Passwort: Alex..2026
+```
+
+Automatischer Nachweis:
+
+```powershell
+cd backend
+pytest tests/test_seed_auth_bootstrap.py -q
+```
 
 ---
 

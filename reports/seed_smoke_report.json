@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-05-26T07:19:12.908Z",
+  "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026",
+  "result": "PASS",
+  "seed_stdout": "\r\nValidation:\r\nuser_id: 00000000-0000-0000-0000-000000000001\r\nworkspace_id: 00000000-0000-0000-0000-000000000001\r\nrole: admin\r\nis_active: True\r\nlogin: mdickscheit@gmail.com\r\nreport: H:\\WissenMai2026\\reports\\seed_report.json\r\n",
+  "seed_stderr": "",
+  "checks": [
+    {
+      "id": "seed_auth_runs_without_error",
+      "pass": true
+    },
+    {
+      "id": "users_contains_login",
+      "pass": true
+    },
+    {
+      "id": "is_active_true",
+      "pass": true
+    },
+    {
+      "id": "workspace_exists",
+      "pass": true
+    },
+    {
+      "id": "membership_role_admin",
+      "pass": true
+    }
+  ],
+  "state": {
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "login": "mdickscheit@gmail.com",
+      "is_active": true,
+      "is_default": true
+    },
+    "workspace": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "Default Workspace",
+      "is_default": true
+    },
+    "membership": {
+      "workspace_id": "00000000-0000-0000-0000-000000000001",
+      "user_id": "00000000-0000-0000-0000-000000000001",
+      "role": "admin"
+    }
+  }
+}

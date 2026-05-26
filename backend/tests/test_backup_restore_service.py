@@ -2,10 +2,15 @@ import json
 from pathlib import Path
 import sys
 
+import pytest
+
 from app import cli
 from app.services.backup_restore import BackupRestoreError, BackupRestoreService
 from app.observability.logging import metrics_registry
 from app.services.original_file_store import OriginalFileStore
+
+
+pytestmark = pytest.mark.m4e_backup_restore_truth
 
 
 def test_original_file_store_persists_source_file(tmp_path: Path) -> None:

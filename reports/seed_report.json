@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-20T11:31:10.961385Z",
+  "generated_at": "2026-05-26T08:01:28.331319Z",
   "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026",
   "status": "success",
   "seeded": {
@@ -10,14 +10,30 @@
     },
     "user": {
       "id": "00000000-0000-0000-0000-000000000001",
-      "login": "mdickscheit@googlemail.com",
-      "role": "owner"
+      "login": "mdickscheit@gmail.com",
+      "role": "admin"
     },
     "membership": {
       "workspace_id": "00000000-0000-0000-0000-000000000001",
       "user_id": "00000000-0000-0000-0000-000000000001",
-      "role": "owner"
+      "role": "admin"
     }
   },
-  "alembic": "head"
+  "credentials": {
+    "login": "mdickscheit@gmail.com"
+  },
+  "bootstrap_invariant": {
+    "id": "auth_seed_bootstrap_admin_login",
+    "status": "PASS",
+    "login": "mdickscheit@gmail.com",
+    "user_id": "00000000-0000-0000-0000-000000000001",
+    "workspace_id": "00000000-0000-0000-0000-000000000001",
+    "role": "admin",
+    "token_issued": true,
+    "legacy_logins": [
+      "default-user",
+      "mdickscheit@googlemail.com"
+    ]
+  },
+  "legacy_repairs": []
 }

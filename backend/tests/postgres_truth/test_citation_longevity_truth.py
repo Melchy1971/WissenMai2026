@@ -31,7 +31,7 @@ from app.services.documents.lifecycle_service import DocumentLifecycleService
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.citation_longevity]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.citation_longevity, pytest.mark.governance_truth]
 
 
 _ANCHOR = json.dumps({"type": "text", "page": None, "paragraph": None, "char_start": 0, "char_end": 100})

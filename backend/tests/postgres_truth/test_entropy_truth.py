@@ -56,7 +56,7 @@ from tests.postgres_truth.entropy_helpers import (
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.entropy]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.entropy, pytest.mark.m5_truth]
 
 
 # ── Orphan Growth ─────────────────────────────────────────────────────────────

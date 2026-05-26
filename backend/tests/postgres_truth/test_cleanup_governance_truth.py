@@ -24,7 +24,7 @@ from app.services.m5_cleanup import CleanupConfig
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = pytest.mark.cleanup_governance
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.cleanup_governance, pytest.mark.governance_truth]
 
 
 _CONTENT = "The quick brown fox jumps over the lazy dog for governance truth testing."

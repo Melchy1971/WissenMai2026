@@ -19,8 +19,6 @@ REPORTS_DIR = REPO_ROOT / "reports"
 DEFAULT_TEST_TARGET = REPO_ROOT / "backend" / "tests"
 
 REPORT_MARKERS = (
-    "frontend_truth",
-    "m3a_truth",
     "m4_truth",
     "m4a_auth_truth",
     "m4b_upload_queue_truth",
@@ -51,13 +49,23 @@ class TruthSplitPlugin:
     )
     outcomes: dict[str, TestOutcome] = field(default_factory=dict)
     collect_errors: list[str] = field(default_factory=list)
+    unmarked_truth_tests: list[str] = field(default_factory=list)
+    ambiguous_truth_tests: list[dict[str, Any]] = field(default_factory=list)
 
     def pytest_collection_finish(self, session: pytest.Session) -> None:
         for item in session.items:
             marker_names = {marker.name for marker in item.iter_markers()}
-            for marker in REPORT_MARKERS:
-                if marker in marker_names:
-                    self.collected_by_marker[marker].append(item.nodeid)
+            truth_markers = sorted(set(REPORT_MARKERS).intersection(marker_names))
+            is_truth_test = bool(truth_markers) or "postgres_truth" in marker_names or "postgres_truth/" in item.nodeid.replace("\\", "/")
+            if not is_truth_test:
+                continue
+            if not truth_markers:
+                self.unmarked_truth_tests.append(item.nodeid)
+                continue
+            if len(truth_markers) > 1:
+                self.ambiguous_truth_tests.append({"nodeid": item.nodeid, "markers": truth_markers})
+                continue
+            self.collected_by_marker[truth_markers[0]].append(item.nodeid)
 
     def pytest_runtest_logreport(self, report: pytest.TestReport) -> None:
         if report.when != "call":
@@ -84,11 +92,16 @@ def build_split_reports(
     collected_by_marker: dict[str, list[str]],
     outcomes: dict[str, TestOutcome],
     collect_errors: list[str],
+    unmarked_truth_tests: list[str] | None = None,
+    ambiguous_truth_tests: list[dict[str, Any]] | None = None,
     exit_code: int,
     test_database_url_set: bool,
     timestamp: str,
 ) -> dict[str, dict[str, Any]]:
     reports: dict[str, dict[str, Any]] = {}
+    unmarked_truth_tests = sorted(unmarked_truth_tests or [])
+    ambiguous_truth_tests = sorted(ambiguous_truth_tests or [], key=lambda item: item["nodeid"])
+    taxonomy_error_count = len(unmarked_truth_tests) + len(ambiguous_truth_tests)
 
     for marker in REPORT_MARKERS:
         test_ids = sorted(collected_by_marker.get(marker, []))
@@ -97,6 +110,8 @@ def build_split_reports(
         errors = sum(1 for status in statuses if status == "error")
         if collect_errors:
             errors += len(collect_errors)
+        if taxonomy_error_count:
+            errors += taxonomy_error_count
         if missing and exit_code != 0:
             errors += len(missing)
 
@@ -118,6 +133,8 @@ def build_split_reports(
             "exit_code": exit_code,
             "test_database_url_set": test_database_url_set,
             "failed_tests": failed_tests,
+            "unmarked_truth_tests": unmarked_truth_tests,
+            "ambiguous_truth_tests": ambiguous_truth_tests,
         }
 
     return reports
@@ -153,15 +170,19 @@ def generate_split_reports(pytest_args: list[str]) -> tuple[int, dict[str, dict[
         exit_code = int(pytest.main(pytest_args, plugins=[plugin]))
     duration = round(time.perf_counter() - start, 3)
     timestamp = datetime.now(UTC).isoformat()
+    taxonomy_errors = bool(plugin.unmarked_truth_tests or plugin.ambiguous_truth_tests)
+    report_exit_code = 1 if taxonomy_errors and exit_code == 0 else exit_code
     reports = build_split_reports(
         collected_by_marker=plugin.collected_by_marker,
         outcomes=plugin.outcomes,
         collect_errors=plugin.collect_errors,
-        exit_code=exit_code,
+        unmarked_truth_tests=plugin.unmarked_truth_tests,
+        ambiguous_truth_tests=plugin.ambiguous_truth_tests,
+        exit_code=report_exit_code,
         test_database_url_set=bool(os.getenv("TEST_DATABASE_URL")),
         timestamp=timestamp,
     )
-    return exit_code, reports, duration
+    return report_exit_code, reports, duration
 
 
 def _default_pytest_args() -> list[str]:

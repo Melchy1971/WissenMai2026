@@ -18,12 +18,6 @@ Call log:
 
 ```
 
-# Page snapshot
-
-```yaml
-- generic [ref=e2]: "{\"error\":{\"code\":\"AUTH_REQUIRED\",\"message\":\"Authentication required\",\"details\":{}}}"
-```
-
 # Test source
 
 ```ts

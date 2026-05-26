@@ -25,7 +25,7 @@ from app.main import app
 from app.services.auth import hash_password, hash_token
 from tests.postgres_truth.support import TruthIds
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.workspace_bootstrap]
+pytestmark = [pytest.mark.postgres_truth, pytest.mark.workspace_bootstrap, pytest.mark.m4a_auth_truth]
 
 _NO_WS_USER_ID = "f2000000-0000-0000-0000-wsboot001111"
 _NO_WS_SESSION_ID = "truth-workspace-bootstrap-no-ws-session"

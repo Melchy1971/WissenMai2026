@@ -88,7 +88,7 @@ def _recover_stale_jobs(database_url: str, *, worker_id: str) -> int:
         engine.dispose()
 
 
-@pytest.mark.m4b_gate
+@pytest.mark.m4b_upload_queue_truth
 def test_backend_process_kill_during_import_leaves_retryable_job_and_no_orphan_rows(
     postgres_truth_database_url: str,
     truth_ids: TruthIds,
@@ -148,7 +148,7 @@ def test_backend_process_kill_during_import_leaves_retryable_job_and_no_orphan_r
     assert matrix.duplicate_chunks_per_index == 0
 
 
-@pytest.mark.m4c_gate
+@pytest.mark.m4c_lifecycle_retrieval_truth
 def test_sql_crash_matrix_detects_no_stale_lifecycle_index_in_truth_workspace(
     postgres_truth_database_url: str,
     truth_ids: TruthIds,
@@ -201,7 +201,7 @@ def test_sql_crash_matrix_detects_no_stale_lifecycle_index_in_truth_workspace(
     assert matrix.stale_deleted_searchable_chunks == 0
 
 
-@pytest.mark.m4b_gate
+@pytest.mark.m4b_upload_queue_truth
 def test_backend_http_process_kill_during_upload_leaves_no_partial_db_rows(
     postgres_truth_database_url: str,
     truth_seed: dict[str, str],
@@ -251,7 +251,7 @@ def test_backend_http_process_kill_during_upload_leaves_no_partial_db_rows(
     assert matrix.orphan_chunks_without_version == 0
 
 
-@pytest.mark.m4b_gate
+@pytest.mark.m4b_upload_queue_truth
 def test_duplicate_import_worker_crash_recovery_avoids_duplicate_versions_and_chunks(
     postgres_truth_database_url: str,
     truth_ids: TruthIds,
@@ -303,7 +303,7 @@ def test_duplicate_import_worker_crash_recovery_avoids_duplicate_versions_and_ch
     assert matrix.orphan_chunks_without_document == 0
 
 
-@pytest.mark.m4c_gate
+@pytest.mark.m4c_lifecycle_retrieval_truth
 def test_reindex_worker_crash_recovery_leaves_retryable_job_without_lifecycle_drift(
     postgres_truth_database_url: str,
     truth_ids: TruthIds,

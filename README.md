@@ -81,11 +81,18 @@ postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test
 
 Wenn `DATABASE_URL` explizit gesetzt ist, hat dieser Wert Vorrang.
 
-Der Backend-Start fuehrt lokal automatisch `alembic upgrade head` aus und legt einen Default-Login an:
+Der Backend-Start fuehrt lokal automatisch `alembic upgrade head` aus und legt den Auth-Seed an. Harte Bootstrap-Invariante: Nach `backend/scripts/seed_auth.py` muss die lokale DB einen funktionierenden Admin-Login besitzen; Legacy-Logins werden migriert oder deaktiviert.
 
 ```text
-Login: default-user
-Passwort: secret-password
+Login: mdickscheit@gmail.com
+Passwort: Alex..2026
+```
+
+Smoke-Test der Invariante:
+
+```bash
+cd backend
+pytest tests/test_seed_auth_bootstrap.py -q
 ```
 
 Tests ausfuehren:
