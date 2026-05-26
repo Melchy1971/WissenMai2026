@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-26T09:36:10.120431Z",
+  "generated_at": "2026-05-26T11:36:44.287443Z",
   "database_url": "",
   "status": "success",
   "seeded": {
@@ -10,7 +10,7 @@
     },
     "user": {
       "id": "00000000-0000-0000-0000-000000000001",
-      "login": "mdickscheit@gmail.com",
+      "login": "admin@localhost",
       "role": "admin"
     },
     "membership": {
@@ -20,12 +20,12 @@
     }
   },
   "credentials": {
-    "login": "mdickscheit@gmail.com"
+    "login": "admin@localhost"
   },
   "bootstrap_invariant": {
     "id": "auth_seed_bootstrap_admin_login",
     "status": "PASS",
-    "login": "mdickscheit@gmail.com",
+    "login": "admin@localhost",
     "user_id": "00000000-0000-0000-0000-000000000001",
     "workspace_id": "00000000-0000-0000-0000-000000000001",
     "role": "admin",
