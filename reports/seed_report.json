@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-05-26T08:01:28.331319Z",
-  "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026",
+  "generated_at": "2026-05-26T09:36:10.120431Z",
+  "database_url": "",
   "status": "success",
   "seeded": {
     "workspace": {
@@ -32,7 +32,8 @@
     "token_issued": true,
     "legacy_logins": [
       "default-user",
-      "mdickscheit@googlemail.com"
+      "mdickscheit@googlemail.com",
+      "mdickscheit@gmail.com"
     ]
   },
   "legacy_repairs": []

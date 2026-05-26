@@ -293,6 +293,8 @@ def test_persistence_logs_chunking_and_indexing_events(monkeypatch, caplog) -> N
                 parser_version="1.0",
                 ocr_used=False,
             ),
+            source_filename="test.txt",
+            source_bytes=b"dummy",
         )
 
     assert persisted.chunk_count == 1
@@ -341,6 +343,8 @@ def test_duplicate_import_is_observable_without_logging_sensitive_content(monkey
                 parser_version="1.0",
                 ocr_used=False,
             ),
+            source_filename="test.txt",
+            source_bytes=b"dummy",
         )
 
     assert result.import_status == "duplicate"

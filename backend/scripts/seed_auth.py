@@ -262,20 +262,6 @@ def main():
         print("bootstrap_invariant: PASS")
         print(f"report: {REPORT_PATH}")
 
-if __name__ == "__main__":
-    main()
-            repaired=repaired,
-            invariant=invariant,
-        )
-
-        print("\nValidation:")
-        print(f"user_id: {user.id}")
-        print(f"workspace_id: {workspace.id}")
-        print(f"role: {membership.role}")
-        print(f"is_active: {user.is_active}")
-        print(f"login: {user.login}")
-        print("bootstrap_invariant: PASS")
-        print(f"report: {REPORT_PATH}")
 
 if __name__ == "__main__":
     main()

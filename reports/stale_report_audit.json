@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-05-26T09:10:00Z",
+  "stale_reports": [
+    {
+      "file": "m3a_final_gate_report.json",
+      "reason": "Frontend Truth und m3a_release_candidate blockieren, aktueller Status ist NO-GO. Timestamp älter als blockierender Report."
+    }
+  ],
+  "active_reports": [
+    "frontend_truth_report.json",
+    "m3a_release_candidate.json",
+    "masterplan_status.json"
+  ],
+  "rule": "Neuer Fail überschreibt alten Pass. Gate-Validator bewertet nach Timestamp. Stale PASS-Reports werden archiviert oder entfernt."
+}

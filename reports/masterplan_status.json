@@ -10,7 +10,8 @@
   "decisions": {
     "1_m3a_abgeschlossen": {
       "result": "NEIN",
-      "go_no_go": "NO-GO"
+      "go_no_go": "NO-GO",
+      "note": "Stale PASS-Report (m3a_final_gate_report.json) entfernt. Aktueller Blocker: frontend_truth_report.json, m3a_release_candidate.json."
     },
     "2_m4_backend_abgeschlossen": {
       "result": "NEIN",
@@ -37,7 +38,7 @@
       "blockers": [
         "frontend_truth_green"
       ],
-      "note": "Frontend Truth blocked: passed=5/100, failed=37, skipped=58. Contracts, Chaos, Login, Workspace: alle grün."
+      "note": "Frontend Truth blocked: passed=5/100, failed=37, skipped=58. Contracts, Chaos, Login, Workspace: alle grün. Stale PASS-Report entfernt."
     },
     "M4_Backend": {
       "abgeschlossen": false,

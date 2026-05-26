@@ -70,7 +70,7 @@ def test_get_document_detail_maps_repository_record_without_fastapi_or_database(
         )
     )
 
-    detail = service.get_document_detail("document-1")
+    detail = service.get_document_detail("document-1", workspace_id="workspace-1")
 
     assert detail.id == "document-1"
     assert detail.latest_version is not None
@@ -120,7 +120,7 @@ def test_get_document_detail_raises_conflict_for_document_without_version() -> N
     )
 
     with pytest.raises(DocumentStateConflictError, match="without a latest version"):
-        service.get_document_detail("document-1")
+        service.get_document_detail("document-1", workspace_id="workspace-1")
 
 
 def test_get_document_detail_returns_pending_document_without_version() -> None:
@@ -159,7 +159,7 @@ def test_get_document_detail_returns_pending_document_without_version() -> None:
         )
     )
 
-    detail = service.get_document_detail("document-1")
+    detail = service.get_document_detail("document-1", workspace_id="workspace-1")
 
     assert detail.import_status == "pending"
     assert detail.latest_version is None
@@ -204,7 +204,7 @@ def test_get_document_detail_raises_conflict_for_completed_version_without_chunk
     )
 
     with pytest.raises(DocumentStateConflictError, match="no chunks"):
-        service.get_document_detail("document-1")
+        service.get_document_detail("document-1", workspace_id="workspace-1")
 
 
 def test_get_documents_maps_stable_list_fields_without_fastapi_or_database() -> None:
@@ -245,4 +245,4 @@ def test_get_document_detail_raises_not_found_without_fastapi() -> None:
     service = DocumentReadService(FakeDocumentRepository())
 
     with pytest.raises(DocumentNotFoundError):
-        service.get_document_detail("missing")
+        service.get_document_detail("missing", workspace_id="workspace-1")

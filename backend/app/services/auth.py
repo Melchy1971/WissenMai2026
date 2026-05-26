@@ -221,32 +221,8 @@ class AuthService:
             return None
         if value.tzinfo is None:
             return value.replace(tzinfo=UTC)
-        return value.astimezone(UTC)        session_token_hash = hash_token(bearer_token)
-        auth_session = self._session.scalar(
-            select(AuthSession).where(AuthSession.token_hash == session_token_hash)
-        )
-        now = datetime.now(UTC)
-        expires_at = self._normalize_datetime(auth_session.expires_at) if auth_session is not None else None
-        if auth_session is None or auth_session.revoked_at is not None or expires_at is None or expires_at <= now:
-            raise AuthenticationError("Authentication required")
 
-        user = self._session.scalar(select(User).where(User.id == str(auth_session.user_id)))
-        if user is None or not user.is_active:
-            raise AuthenticationError("Authentication required")
-
-        memberships = list(
-            self._session.scalars(
-                select(WorkspaceMembership)
-                .where(WorkspaceMembership.user_id == str(user.id))
-                .order_by(WorkspaceMembership.workspace_id.asc())
-            )
-        )
-
-        auth_session.last_seen_at = now
-        self._session.add(auth_session)
-        self._session.commit()
-
-        return user, memberships
+        return value.astimezone(UTC)
 
     @staticmethod
     def _normalize_datetime(dt: datetime | None) -> datetime | None:
