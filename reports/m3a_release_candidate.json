@@ -102,5 +102,18 @@
     "frontend_truth_green": false,
     "contracts_green": true,
     "chaos_green": true
-  }
+  },
+  "name": "m3a_release_candidate",
+  "timestamp": "2026-05-26T08:11:36.043971Z",
+  "environment": null,
+  "database_url_set": false,
+  "test_database_url_set": false,
+  "collected": 5,
+  "passed": 4,
+  "failed": 1,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "gate": "m3a",
+  "known_limitations": []
 }

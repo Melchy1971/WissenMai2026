@@ -120,6 +120,8 @@ def build_split_reports(
             for test_id in test_ids
             if outcomes.get(test_id) is not None and outcomes[test_id].status == "failed"
         )
+        skipped = sum(1 for status in statuses if status == "skipped")
+        marker_exit_code = 1 if failed_tests or errors or skipped else 0
 
         reports[marker] = {
             "report_format_version": REPORT_FORMAT_VERSION,
@@ -129,8 +131,9 @@ def build_split_reports(
             "passed": sum(1 for status in statuses if status == "passed"),
             "failed": len(failed_tests),
             "errors": errors,
-            "skipped": sum(1 for status in statuses if status == "skipped"),
-            "exit_code": exit_code,
+            "skipped": skipped,
+            "exit_code": marker_exit_code,
+            "pytest_exit_code": exit_code,
             "test_database_url_set": test_database_url_set,
             "failed_tests": failed_tests,
             "unmarked_truth_tests": unmarked_truth_tests,

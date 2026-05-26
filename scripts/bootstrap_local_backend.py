@@ -37,8 +37,17 @@ _load_local_env()
 LOCAL_DEV_DATABASE_URL = "postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test"
 DEFAULT_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001"
 DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001"
-DEFAULT_LOGIN = os.environ.get("WISSEN_DEV_LOGIN", "mdickscheit@gmail.com")
-DEFAULT_PASSWORD = os.environ.get("WISSEN_DEV_PASSWORD", "Alex..2026")
+# Canonical: SEED_ADMIN_* › WISSEN_DEV_* (legacy) › built-in fallback.
+DEFAULT_LOGIN: str = (
+    os.environ.get("SEED_ADMIN_LOGIN")
+    or os.environ.get("WISSEN_DEV_LOGIN")
+    or "admin@localhost"
+)
+DEFAULT_PASSWORD: str = (
+    os.environ.get("SEED_ADMIN_PASSWORD")
+    or os.environ.get("WISSEN_DEV_PASSWORD")
+    or "change-me"
+)
 
 
 def _database_url() -> str:

@@ -1,0 +1,131 @@
+{
+  "report_format_version": 1,
+  "release_candidate": "M4 Backend",
+  "generated_at": "2026-05-26T08:28:56.846946+00:00",
+  "decision": "NO-GO",
+  "score_matrix": {
+    "m4a_auth_truth": {
+      "score_pct": 96.8,
+      "threshold_pct": 95.0,
+      "status": "FAIL"
+    },
+    "m4b_upload_queue": {
+      "score_pct": 100.0,
+      "threshold_pct": 90.0,
+      "status": "PASS"
+    },
+    "m4c_lifecycle": {
+      "score_pct": 100.0,
+      "threshold_pct": 90.0,
+      "status": "PASS"
+    },
+    "m4e_backup": {
+      "score_pct": 100.0,
+      "threshold_pct": null,
+      "status": "DECIDED_PASS"
+    }
+  },
+  "gates": {
+    "m4_truth": {
+      "status": "PASS",
+      "score_pct": 100.0,
+      "threshold_pct": null,
+      "collected": 9,
+      "passed": 9,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "timestamp": "2026-05-26T08:28:56.846946+00:00"
+    },
+    "m4a_auth_truth": {
+      "status": "FAIL",
+      "score_pct": 96.8,
+      "threshold_pct": 95.0,
+      "collected": 31,
+      "passed": 30,
+      "failed": 0,
+      "errors": 1,
+      "skipped": 0,
+      "exit_code": 1,
+      "timestamp": "2026-05-26T08:28:56.846946+00:00"
+    },
+    "m4b_upload_queue_truth": {
+      "status": "PASS",
+      "score_pct": 100.0,
+      "threshold_pct": 90.0,
+      "collected": 12,
+      "passed": 12,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "timestamp": "2026-05-26T08:28:56.846946+00:00"
+    },
+    "m4c_lifecycle_retrieval_truth": {
+      "status": "PASS",
+      "score_pct": 100.0,
+      "threshold_pct": 90.0,
+      "collected": 10,
+      "passed": 10,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "timestamp": "2026-05-26T08:28:56.846946+00:00"
+    },
+    "m4e_backup_restore_truth": {
+      "status": "DECIDED_PASS",
+      "score_pct": 100.0,
+      "threshold_pct": null,
+      "collected": 9,
+      "passed": 9,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "timestamp": "2026-05-26T08:28:56.846946+00:00"
+    }
+  },
+  "blockers": [
+    {
+      "gate": "m4a_auth_truth",
+      "severity": "critical",
+      "reason": "score=96.8%, threshold=95.0%, errors=1, failed=0"
+    },
+    {
+      "gate": "KL-M4-003",
+      "severity": "critical",
+      "reason": "PostgreSQL Truth enthält 1 unklassifizierten Setup-/Collect-Error in m4a_auth_truth."
+    }
+  ],
+  "known_limitations": {
+    "resolved": {
+      "KL-M4-001": "SUPERSEDED: Split-Reports 2026-05-26 zeigen M4-Marker-Tests korrekt. Alter central report obsolet.",
+      "KL-M4-002": "RESOLVED: m4b_upload_queue_truth 12/12 passed, 0 errors, exit_code 0.",
+      "KL-M4-004": "RESOLVED: Split-Reports für alle M4-Marker vorhanden (reports/<marker>_report.json)."
+    },
+    "open": {
+      "KL-M4-003": {
+        "id": "KL-M4-003",
+        "severity": "critical",
+        "status": "PARTIELL — 1 Setup-/Collect-Error verbleibt (m4a errors=1, down from 2).",
+        "text": "PostgreSQL Truth enthält 1 unklassifizierten Setup-/Collect-Error in m4a_auth_truth.",
+        "required_action": "m4a_auth_truth Error-Ursache isolieren und beseitigen. errors=0 ist Pflicht."
+      }
+    }
+  },
+  "notes": "m4a: Score 96.8% ≥ 95% — Threshold erreicht. Einziger Blocker: errors=1 (Setup-Error). Keine failed_tests. M4b vollständig grün. M4c vollständig grün. M4e Minimal-Pfad als DECIDED_PASS gesetzt (KL-NB-002).",
+  "name": "m4_backend_release_candidate",
+  "timestamp": "2026-05-26T08:28:56.846946+00:00",
+  "environment": null,
+  "database_url_set": false,
+  "test_database_url_set": true,
+  "collected": 4,
+  "passed": 3,
+  "failed": 1,
+  "errors": 1,
+  "skipped": 0,
+  "exit_code": 1,
+  "gate": "m4_rc"
+}

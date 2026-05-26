@@ -43,5 +43,19 @@
       "user_id": "00000000-0000-0000-0000-000000000001",
       "role": "admin"
     }
-  }
+  },
+  "name": "seed_smoke",
+  "timestamp": "2026-05-26T07:19:12.908Z",
+  "environment": null,
+  "database_url_set": true,
+  "test_database_url_set": false,
+  "collected": 5,
+  "passed": 5,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "gate": "m3a_preflight",
+  "blockers": [],
+  "known_limitations": []
 }

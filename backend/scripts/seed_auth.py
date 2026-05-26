@@ -17,15 +17,26 @@ from app.db.session import get_session
 from app.models.documents import User, Workspace, WorkspaceMembership
 from app.services.auth import AuthService, hash_password
 
-DEFAULT_USER_LOGIN = "mdickscheit@gmail.com"
-DEFAULT_USER_PASSWORD = "Alex..2026"
-USER_LOGIN = os.environ.get("WISSEN_DEV_LOGIN", DEFAULT_USER_LOGIN)
-USER_PASSWORD = os.environ.get("WISSEN_DEV_PASSWORD", DEFAULT_USER_PASSWORD)
+# Canonical env vars: SEED_ADMIN_* (primary) › WISSEN_DEV_* (legacy fallback) › built-in default.
+# Built-in defaults are last-resort only — set SEED_ADMIN_LOGIN in .env for real deployments.
+_FALLBACK_LOGIN = "admin@localhost"
+_FALLBACK_PASSWORD = "change-me"
+USER_LOGIN: str = (
+    os.environ.get("SEED_ADMIN_LOGIN")
+    or os.environ.get("WISSEN_DEV_LOGIN")
+    or _FALLBACK_LOGIN
+)
+USER_PASSWORD: str = (
+    os.environ.get("SEED_ADMIN_PASSWORD")
+    or os.environ.get("WISSEN_DEV_PASSWORD")
+    or _FALLBACK_PASSWORD
+)
 USER_DISPLAY_NAME = USER_LOGIN
-LEGACY_LOGINS = ("default-user", "mdickscheit@googlemail.com")
+# Logins that were used in the past and must be migrated/cleared.
+LEGACY_LOGINS = ("default-user", "mdickscheit@googlemail.com", "mdickscheit@gmail.com")
 DEFAULT_USER_ID = os.environ.get("DEFAULT_USER_ID", "00000000-0000-0000-0000-000000000001")
 DEFAULT_WORKSPACE_ID = os.environ.get("DEFAULT_WORKSPACE_ID", "00000000-0000-0000-0000-000000000001")
-WORKSPACE_NAME = "Default Workspace"
+WORKSPACE_NAME: str = os.environ.get("SEED_WORKSPACE_NAME", "Default Workspace")
 ROLE = "admin"
 REPORT_PATH = Path(__file__).resolve().parents[2] / "reports" / "seed_report.json"
 
@@ -238,6 +249,21 @@ def main():
             workspace=workspace,
             user=user,
             membership=membership,
+            repaired=repaired,
+            invariant=invariant,
+        )
+
+        print("\nValidation:")
+        print(f"user_id: {user.id}")
+        print(f"workspace_id: {workspace.id}")
+        print(f"role: {membership.role}")
+        print(f"is_active: {user.is_active}")
+        print(f"login: {user.login}")
+        print("bootstrap_invariant: PASS")
+        print(f"report: {REPORT_PATH}")
+
+if __name__ == "__main__":
+    main()
             repaired=repaired,
             invariant=invariant,
         )

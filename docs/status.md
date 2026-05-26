@@ -1,6 +1,63 @@
+
 # Projektstatus
 
-Stand: 2026-05-19
+Stand: 2026-05-26
+
+## Bootstrap- und Statusmatrix (Seed-/Runtime-Fix)
+
+### Bootstrap-Reihenfolge (dev_bootstrap.ps1)
+
+1. `.env` laden (inkl. Seed Credentials)
+2. DB-Verbindung prüfen
+3. Alembic-Migrationen (`upgrade head`)
+4. Auth-Seed (`backend/scripts/seed_auth.py`)
+5. Auth Bootstrap Guard (`scripts/check_auth_bootstrap.py`)
+6. `/health`-Smoke-Check (optional)
+7. Report schreiben
+
+### Seed Credentials ENV
+
+- `SEED_ADMIN_LOGIN` (Default: `admin@localhost`)
+- `SEED_ADMIN_PASSWORD` (Default: `change-me`)
+- `SEED_WORKSPACE_NAME` (Default: `Default Workspace`)
+
+> **Warnung (lokale Entwicklung):** `.env` enthält das Klartext-Passwort. Niemals `.env` committen! In produktiver Dokumentation keine Klartext-Credentials angeben.
+
+### Auth Bootstrap Guard
+
+Nach dem Seed prüft `scripts/check_auth_bootstrap.py` Login und Workspace-Isolation. Fehler führen zu Exit != 0 und Report in `reports/auth_bootstrap_guard.json`.
+
+### Runtime Connectivity Gate
+
+`scripts/validate_runtime_connectivity_gate.py` prüft 9 Kernchecks (DB, Alembic, Seed, Health, Login, Auth, Workspace, Frontend, API). Score >= 95 % = PASS (M3a grün), darunter = FAIL (blockiert M3a/M4).
+
+Letzter Run (2026-05-26): **9/9 = 100 % → PASS**
+
+## Aktueller Gate-Status (2026-05-26)
+
+| Gate | Status | Score | Entscheidung |
+|---|---|---|---|
+| Runtime Connectivity | PASS | 9/9 = 100 % | grün |
+| M3a Frontend Truth | PASS | 100/100 | abgeschlossen |
+| M4 Backend | NO-GO | 120/138, 16 failed, 2 errors | blockiert |
+| M4d Diagnostics | read-only | — | nur read-only freigegeben |
+| M5 Vorbereitung | erlaubt | — | Implementierung blockiert bis M4 grün |
+
+## M3a Status
+
+- Login, Workspace-Bootstrap, Contracts, GUI-Chaos: alle grün
+- Frontend Truth: Full-Suite PASS, Score 100/100
+- Nächster Schritt: Frontend-Truth-Failures analysieren und beheben (falls neue Reports rot)
+
+## M4 Backend Status
+
+- M4b (Upload/Queue): 100 % — PASS
+- M4c (Lifecycle/Search/Chat): 100 % — PASS
+- M4e (Backup/Restore): DECIDED_PASS (KL-NB-002)
+- M4a (Auth/Workspace): >= 95 % Schwelle, aber blockiert durch offene Fehler
+- Blocker: KL-M4-003 — 1 unklassifizierter Setup-/Collect-Error in m4a_auth_truth
+
+Weitere Details: siehe `docs/operations.md`, `docs/security.md`, aktuelle Reports.
 
 ## Paket-5-Abschlussstand
 

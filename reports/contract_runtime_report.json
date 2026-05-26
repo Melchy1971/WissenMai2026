@@ -199,7 +199,7 @@
             "label": "Queue degraded",
             "state": "inactive",
             "severity": "info",
-            "value": "Backlog 0 \u00b7 Dead-Letter 0 \u00b7 Retry 0.0/h",
+            "value": "Backlog 0 · Dead-Letter 0 · Retry 0.0/h",
             "summary": "Queue-Aging-Report meldet keine Degradierung fuer den aktiven Workspace.",
             "source": "queue_aging_report"
           },
@@ -339,5 +339,19 @@
     "enum_deviations": 0
   },
   "contract_deviations": [],
-  "fixlist": []
+  "fixlist": [],
+  "name": "contract_runtime",
+  "timestamp": "2026-05-26T07:58:07.210405+00:00",
+  "environment": null,
+  "database_url_set": true,
+  "test_database_url_set": true,
+  "collected": 8,
+  "passed": 8,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "gate": "m3a",
+  "blockers": [],
+  "known_limitations": []
 }

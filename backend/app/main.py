@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.documents import router as documents_router
@@ -8,7 +10,16 @@ from app.observability.logging import configure_structured_logging
 from app.observability.auth_middleware import AuthContextMiddleware
 from app.observability.middleware import CorrelationIdMiddleware
 
-app = FastAPI(title="Wissensbasis API", version="0.1.0")
+
+@asynccontextmanager
+async def _lifespan(application: FastAPI):  # noqa: ARG001
+    """Run preflight checks at startup. Fail-fast in production."""
+    from app.services.preflight import PreflightService
+    PreflightService().run_or_raise()
+    yield
+
+
+app = FastAPI(title="Wissensbasis API", version="0.1.0", lifespan=_lifespan)
 configure_structured_logging()
 app.add_middleware(CorrelationIdMiddleware)
 app.add_middleware(AuthContextMiddleware)

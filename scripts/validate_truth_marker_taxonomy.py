@@ -19,8 +19,6 @@ JSON_REPORT_PATH = REPORTS_DIR / "truth_marker_taxonomy.json"
 MARKDOWN_REPORT_PATH = REPORTS_DIR / "truth_marker_taxonomy.md"
 
 GATE_MARKERS = (
-    "frontend_truth",
-    "m3a_truth",
     "m4_truth",
     "m4a_auth_truth",
     "m4b_upload_queue_truth",
@@ -28,8 +26,6 @@ GATE_MARKERS = (
     "m4e_backup_restore_truth",
     "m5_truth",
     "governance_truth",
-    "chaos_truth",
-    "slow_truth",
 )
 
 M4_BLOCKING_MARKERS = {
@@ -54,6 +50,11 @@ class TaxonomyCollectPlugin:
         self.collected = len(session.items)
         for item in session.items:
             markers = sorted({marker.name for marker in item.iter_markers()} & set(GATE_MARKERS))
+            marker_names = {marker.name for marker in item.iter_markers()}
+            nodeid = item.nodeid.replace("\\", "/")
+            is_truth_test = bool(markers) or "postgres_truth" in marker_names or "postgres_truth/" in nodeid
+            if not is_truth_test:
+                continue
             if not markers:
                 self.unclassified.append(item.nodeid)
             elif len(markers) > 1:

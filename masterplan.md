@@ -1,4 +1,20 @@
+
 # Wissensbasis V1 - Masterplan
+
+## Aktualisierung 2026-05-26
+
+**Seed-/Runtime-Fix, M3a-Abschluss, M4/M5-Testboundary, Marker-Fixliste**
+
+- **Seed-/Runtime-Fix:** Bootstrap-, Seed- und Runtime-Flows wurden dokumentiert und im Code konsolidiert. Die Doku (README.md, docs/operations.md, docs/status.md, docs/frontend.md) ist synchronisiert.
+- **M3a-Abschluss:** M3a wurde finalisiert, GO-Entscheidung und Abschlussartefakte (reports/m3a_final_release.json, reports/m3a_final_release.md) erstellt. Frontend- und API-Truth-Reports sind grün.
+- **M4 Backend Truth:** Split-Reports für M4 (m4a_auth, m4b_upload_queue, m4c_lifecycle_retrieval, m4e_backup_restore) wurden generiert und analysiert. Subgate-Blocker und Fehler sind dokumentiert.
+- **M4/M5-Testboundary:** Testboundary-Validierung durchgeführt. Es wurde geprüft, dass keine M5-only-Tests in M4-Reports enthalten sind, keine M4-Gate-Kriterien in M5-Reports, Governance-Tests M4 nicht blockieren, M4-Fehler M5 blockieren und alle Tests korrekt markiert sind.
+- **test_boundary_report.json:** Neuer Report dokumentiert die Ergebnisse der Testboundary-Analyse und enthält eine Marker-Fixliste für falsch oder unvollständig markierte Tests.
+- **Marker-Fixliste:** Marker müssen für alle neuen Tests explizit gesetzt werden (pytest.mark.m4_truth, m5_truth, governance_truth etc.). M4b_upload_queue_truth-Report/Marker prüfen und ggf. nachmarkerieren.
+- **Offene Blocker:** M4 bleibt durch rote Backend-Truth-Reports blockiert, M5-Implementierung ist nicht freigegeben. Governance-Tests blockieren M4 nicht, M4-Fehler blockieren M5.
+
+**Siehe auch:** reports/test_boundary_report.json für Details zur Testboundary-Validierung und Marker-Fixliste.
+
 
 **Stand:** 2026-05-19  
 **Ground Truth:** Code und Migrationen sind verbindlich. Dokumentation beschreibt den Stand, entscheidet ihn aber nicht.  

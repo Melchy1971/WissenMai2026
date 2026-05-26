@@ -1,13 +1,14 @@
 {
   "report_format_version": 1,
   "marker": "m5_truth",
-  "timestamp": "2026-05-26T07:41:47.866545+00:00",
-  "collected": 37,
-  "passed": 29,
-  "failed": 8,
+  "timestamp": "2026-05-26T08:36:31.251449+00:00",
+  "collected": 44,
+  "passed": 35,
+  "failed": 9,
   "errors": 0,
   "skipped": 0,
   "exit_code": 1,
+  "pytest_exit_code": 1,
   "test_database_url_set": true,
   "failed_tests": [
     "tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_chunk_deletion_increases_citation_orphan_rate",
@@ -17,6 +18,9 @@
     "tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_purge_restores_clean_state",
     "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_dead_letter_accumulation_is_detected",
     "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_draining_jobs_reduces_backlog",
-    "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_retryable_jobs_accumulate_and_are_detected"
-  ]
+    "tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_retryable_jobs_accumulate_and_are_detected",
+    "tests/test_m5_entropy_audit.py::test_entropy_audit_builds_all_required_categories"
+  ],
+  "unmarked_truth_tests": [],
+  "ambiguous_truth_tests": []
 }

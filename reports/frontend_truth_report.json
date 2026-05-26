@@ -16,87 +16,87 @@
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  12 |   test('redirects unauthenticated request to login page', async ({ page }) => {\n  13 |     await page.goto('/documents');\n> 14 |     await expect(page."
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
+      "name": "02 Auth bootstrap â€” 01 no token > redirects to /login without token",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  21 |   test('redirects to /login without token', async ({ barePage }) => {\n  22 |     await barePage.goto('/documents');\n> 23 |     await expect(barePage."
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
+      "name": "02 Auth bootstrap â€” 01 no token > no workspace error shown on login page",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  43 |   test('no workspace error shown on login page', async ({ barePage }) => {\n  44 |     await barePage.goto('/documents');\n> 45 |     await expect(bare"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
+      "name": "02 Auth bootstrap â€” 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  69 |     );\n  70 |     await page.goto('/documents');\n> 71 |     await expect(page.getByRole('heading', { name: 'Dokumente', exa"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+      "name": "02 Auth bootstrap â€” 02 bootstrap resolves > bootstrap resolves to documents page",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+      "name": "02 Auth bootstrap â€” 02 bootstrap resolves > workspace id appears in page header after bootstrap",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+      "name": "02 Auth bootstrap â€” 02 bootstrap resolves > no error state after successful bootstrap",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
+      "name": "02 Auth bootstrap â€” 03 complete session > no bootstrap loading flash with complete session",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
+      "name": "02 Auth bootstrap â€” 03 complete session > app shell renders without error state",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
+      "name": "02 Auth bootstrap â€” 03 complete session > complete session does not call /auth/me",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  130 |     );\n  131 |     await page.goto('/documents');\n> 132 |     await expect(page.getByRole('heading', { name: 'Dokumente', "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
+      "name": "02 Auth bootstrap â€” 04 invalid token > shows session-expired error, does not redirect silently",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  153 |\n  154 |     // Should show auth error (session expired), NOT silently redirect or show blank page\n> 155 |     await expect(page.locator('.state-card--error')).toBeVisible({ tim"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
+      "name": "02 Auth bootstrap â€” 04 invalid token > invalid token error contains session-expired messaging",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  169 |     });\n  170 |     await page.goto('/documents');\n> 171 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                       "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
+      "name": "02 Auth bootstrap â€” 05 backend unreachable > shows API_UNREACHABLE error with retry button",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  200 |\n  201 |     await page.goto('/documents');\n> 202 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
+      "name": "02 Auth bootstrap â€” 05 backend unreachable > retry button re-triggers bootstrap",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  232 |\n  233 |     await page.goto('/documents');\n> 234 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
+      "name": "02 Auth bootstrap â€” 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.state-card--error') to be visible\u001b[22m\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
+      "name": "02 Auth bootstrap â€” 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.state-card--error') to be visible\u001b[22m\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
+      "name": "02 Auth bootstrap â€” 07 forbidden > shows error state on 403 from /auth/me",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  281 |\n  282 |     await page.goto('/documents');\n> 283 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
+      "name": "02 Auth bootstrap â€” 07 forbidden > 403 error does not show retry button",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  308 |\n  309 |     await page.goto('/documents');\n> 310 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login",
+      "name": "02 Auth bootstrap â€” 08 logout > logout clears session and redirects to login",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
+      "name": "02 Auth bootstrap â€” 08 logout > after logout, navigating to /documents redirects to login",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
+      "name": "02 Auth bootstrap â€” 08 logout > after logout, localStorage is cleared",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, a fresh login restores workspace ready state",
+      "name": "02 Auth bootstrap â€” 08 logout > after logout, a fresh login restores workspace ready state",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
     },
     {
@@ -160,7 +160,7 @@
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     }
   ],
-  "errors": [],
+  "errors": 0,
   "exit_code": 1,
   "playwright_exit_code": 1,
   "real_api": true,
@@ -177,87 +177,87 @@
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  12 |   test('redirects unauthenticated request to login page', async ({ page }) => {\n  13 |     await page.goto('/documents');\n> 14 |     await expect(page."
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
+      "name": "02 Auth bootstrap â€” 01 no token > redirects to /login without token",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  21 |   test('redirects to /login without token', async ({ barePage }) => {\n  22 |     await barePage.goto('/documents');\n> 23 |     await expect(barePage."
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
+      "name": "02 Auth bootstrap â€” 01 no token > no workspace error shown on login page",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  43 |   test('no workspace error shown on login page', async ({ barePage }) => {\n  44 |     await barePage.goto('/documents');\n> 45 |     await expect(bare"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
+      "name": "02 Auth bootstrap â€” 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  69 |     );\n  70 |     await page.goto('/documents');\n> 71 |     await expect(page.getByRole('heading', { name: 'Dokumente', exa"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+      "name": "02 Auth bootstrap â€” 02 bootstrap resolves > bootstrap resolves to documents page",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+      "name": "02 Auth bootstrap â€” 02 bootstrap resolves > workspace id appears in page header after bootstrap",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+      "name": "02 Auth bootstrap â€” 02 bootstrap resolves > no error state after successful bootstrap",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
+      "name": "02 Auth bootstrap â€” 03 complete session > no bootstrap loading flash with complete session",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
+      "name": "02 Auth bootstrap â€” 03 complete session > app shell renders without error state",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
+      "name": "02 Auth bootstrap â€” 03 complete session > complete session does not call /auth/me",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  130 |     );\n  131 |     await page.goto('/documents');\n> 132 |     await expect(page.getByRole('heading', { name: 'Dokumente', "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
+      "name": "02 Auth bootstrap â€” 04 invalid token > shows session-expired error, does not redirect silently",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  153 |\n  154 |     // Should show auth error (session expired), NOT silently redirect or show blank page\n> 155 |     await expect(page.locator('.state-card--error')).toBeVisible({ tim"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
+      "name": "02 Auth bootstrap â€” 04 invalid token > invalid token error contains session-expired messaging",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  169 |     });\n  170 |     await page.goto('/documents');\n> 171 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                       "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
+      "name": "02 Auth bootstrap â€” 05 backend unreachable > shows API_UNREACHABLE error with retry button",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  200 |\n  201 |     await page.goto('/documents');\n> 202 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
+      "name": "02 Auth bootstrap â€” 05 backend unreachable > retry button re-triggers bootstrap",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  232 |\n  233 |     await page.goto('/documents');\n> 234 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
+      "name": "02 Auth bootstrap â€” 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.state-card--error') to be visible\u001b[22m\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
+      "name": "02 Auth bootstrap â€” 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
       "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.state-card--error') to be visible\u001b[22m\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
+      "name": "02 Auth bootstrap â€” 07 forbidden > shows error state on 403 from /auth/me",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  281 |\n  282 |     await page.goto('/documents');\n> 283 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
+      "name": "02 Auth bootstrap â€” 07 forbidden > 403 error does not show retry button",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  308 |\n  309 |     await page.goto('/documents');\n> 310 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login",
+      "name": "02 Auth bootstrap â€” 08 logout > logout clears session and redirects to login",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
+      "name": "02 Auth bootstrap â€” 08 logout > after logout, navigating to /documents redirects to login",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
+      "name": "02 Auth bootstrap â€” 08 logout > after logout, localStorage is cleared",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
     },
     {
-      "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, a fresh login restores workspace ready state",
+      "name": "02 Auth bootstrap â€” 08 logout > after logout, a fresh login restores workspace ready state",
       "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
     },
     {
@@ -354,27 +354,27 @@
     "09 Diagnostics GUI > shows migration status card",
     "09 Diagnostics GUI > diagnostics page accessible via admin nav link",
     "09 Diagnostics GUI > non-admin workspace member receives FORBIDDEN for diagnostics",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id shown in document page header after bootstrap",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id shown in AppShell header after bootstrap",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id from bootstrap matches injected membership workspace",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 02 single workspace > single workspace shown as text, no dropdown switcher",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 02 single workspace > no workspace switcher visible for single-workspace user",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > workspace switcher select rendered for multi-workspace user",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > workspace switcher contains both workspace ids",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > initial active workspace is first injected workspace",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching workspace updates select value",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching workspace updates document page workspace label",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching to invalid workspace is rejected (select stays on valid workspace)",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > manipulated workspace id cannot load protected document controls",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 05 workspace switch reloads documents > switching workspace triggers documents reload",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 05 workspace switch reloads documents > documents page remains visible after workspace switch",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 06 state reset on switch > search result area is empty after workspace switch",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 06 state reset on switch > upload area is idle after workspace switch",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > switching workspace from chat page navigates back to /chat root",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > chat page shows workspace label after workspace switch",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership user sees WORKSPACE_NOT_CONFIGURED error",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership error is not session-expired",
-    "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership page does not show workspace switcher",
+    "10 Workspace bootstrap â€” 01 workspace from membership > workspace id shown in document page header after bootstrap",
+    "10 Workspace bootstrap â€” 01 workspace from membership > workspace id shown in AppShell header after bootstrap",
+    "10 Workspace bootstrap â€” 01 workspace from membership > workspace id from bootstrap matches injected membership workspace",
+    "10 Workspace bootstrap â€” 02 single workspace > single workspace shown as text, no dropdown switcher",
+    "10 Workspace bootstrap â€” 02 single workspace > no workspace switcher visible for single-workspace user",
+    "10 Workspace bootstrap â€” 03 multi-workspace switcher > workspace switcher select rendered for multi-workspace user",
+    "10 Workspace bootstrap â€” 03 multi-workspace switcher > workspace switcher contains both workspace ids",
+    "10 Workspace bootstrap â€” 03 multi-workspace switcher > initial active workspace is first injected workspace",
+    "10 Workspace bootstrap â€” 04 workspace switch header > switching workspace updates select value",
+    "10 Workspace bootstrap â€” 04 workspace switch header > switching workspace updates document page workspace label",
+    "10 Workspace bootstrap â€” 04 workspace switch header > switching to invalid workspace is rejected (select stays on valid workspace)",
+    "10 Workspace bootstrap â€” 04 workspace switch header > manipulated workspace id cannot load protected document controls",
+    "10 Workspace bootstrap â€” 05 workspace switch reloads documents > switching workspace triggers documents reload",
+    "10 Workspace bootstrap â€” 05 workspace switch reloads documents > documents page remains visible after workspace switch",
+    "10 Workspace bootstrap â€” 06 state reset on switch > search result area is empty after workspace switch",
+    "10 Workspace bootstrap â€” 06 state reset on switch > upload area is idle after workspace switch",
+    "10 Workspace bootstrap â€” 07 chat workspace reset > switching workspace from chat page navigates back to /chat root",
+    "10 Workspace bootstrap â€” 07 chat workspace reset > chat page shows workspace label after workspace switch",
+    "10 Workspace bootstrap â€” 08 no workspace membership > no-membership user sees WORKSPACE_NOT_CONFIGURED error",
+    "10 Workspace bootstrap â€” 08 no workspace membership > no-membership error is not session-expired",
+    "10 Workspace bootstrap â€” 08 no workspace membership > no-membership page does not show workspace switcher",
     "11 GUI state invariants > documents route does not render data controls without validated workspace",
     "11 GUI state invariants > API_UNREACHABLE on documents is not rendered as empty list",
     "11 GUI state invariants > FORBIDDEN bootstrap state has no retry action",
@@ -385,7 +385,19 @@
     "01 Login flow > renders login form with all required elements",
     "01 Login flow > shows error state on invalid credentials",
     "01 Login flow > successful login with truth credentials redirects to documents page",
-    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > root path also redirects to /login",
-    "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > zero /auth/me calls when no token present"
-  ]
+    "02 Auth bootstrap â€” 01 no token > root path also redirects to /login",
+    "02 Auth bootstrap â€” 01 no token > zero /auth/me calls when no token present"
+  ],
+  "name": "frontend_truth",
+  "environment": null,
+  "database_url_set": false,
+  "gate": "m3a",
+  "blockers": [
+    {
+      "gate": "frontend_truth",
+      "severity": "critical",
+      "reason": "37 failed flows; 58 skipped"
+    }
+  ],
+  "known_limitations": []
 }

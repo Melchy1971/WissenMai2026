@@ -1,13 +1,26 @@
 {
   "report_format_version": 1,
   "marker": "m4c_lifecycle_retrieval_truth",
-  "timestamp": "2026-05-26T07:41:47.866545+00:00",
-  "collected": 9,
-  "passed": 9,
-  "failed": 0,
-  "errors": 0,
+  "timestamp": "2026-05-26T08:36:31.251449+00:00",
+  "collected": 179,
+  "passed": 155,
+  "failed": 9,
+  "errors": 15,
   "skipped": 0,
   "exit_code": 1,
+  "pytest_exit_code": 1,
   "test_database_url_set": true,
-  "failed_tests": []
+  "failed_tests": [
+    "tests/test_documents_read_service.py::test_get_document_detail_maps_repository_record_without_fastapi_or_database",
+    "tests/test_documents_read_service.py::test_get_document_detail_raises_conflict_for_completed_version_without_chunks",
+    "tests/test_documents_read_service.py::test_get_document_detail_raises_conflict_for_document_without_version",
+    "tests/test_documents_read_service.py::test_get_document_detail_raises_not_found_without_fastapi",
+    "tests/test_documents_read_service.py::test_get_document_detail_returns_pending_document_without_version",
+    "tests/test_observability.py::test_chat_observability_logs_context_without_full_question",
+    "tests/test_observability.py::test_drift_check_is_observable",
+    "tests/test_observability.py::test_parser_failure_is_not_logged_as_completed",
+    "tests/test_observability.py::test_persistence_logs_chunking_and_indexing_events"
+  ],
+  "unmarked_truth_tests": [],
+  "ambiguous_truth_tests": []
 }

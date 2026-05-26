@@ -1,0 +1,344 @@
+{
+  "timestamp": "2026-05-26T08:36:46.177205+00:00",
+  "result": "FAIL",
+  "gates": {
+    "m3a_gate": {
+      "id": "m3a_gate",
+      "label": "M3a Gate",
+      "status": "FAIL",
+      "reports": [
+        "m3a_truth_report.json",
+        "frontend_truth_report.json"
+      ],
+      "dependencies": [],
+      "blockers": [
+        "m3a_truth_report.json: collected must be > 0, got 0",
+        "m3a_truth_report.json: exit_code must be 0, got 1",
+        "frontend_truth_report.json: passed (5) must equal collected (100)",
+        "frontend_truth_report.json: failed must be 0, got 37",
+        "frontend_truth_report.json: errors must be 0, got None",
+        "frontend_truth_report.json: skipped must be 0, got 58",
+        "frontend_truth_report.json: exit_code must be 0, got 1",
+        "frontend_truth_report.json: failed_tests must be empty"
+      ],
+      "report_summaries": {
+        "m3a_truth_report.json": {
+          "available": true,
+          "collected": 0,
+          "passed": 0,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 1,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T07:41:47.866545+00:00"
+        },
+        "frontend_truth_report.json": {
+          "available": true,
+          "collected": 100,
+          "passed": 5,
+          "failed": 37,
+          "errors": [],
+          "skipped": 58,
+          "exit_code": 1,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T07:55:18.789577+00:00"
+        }
+      }
+    },
+    "m4a_gate": {
+      "id": "m4a_gate",
+      "label": "M4a Gate",
+      "status": "FAIL",
+      "reports": [
+        "m4a_auth_truth_report.json"
+      ],
+      "dependencies": [],
+      "blockers": [
+        "m4a_auth_truth_report.json: passed (42) must equal collected (43)",
+        "m4a_auth_truth_report.json: errors must be 0, got 1",
+        "m4a_auth_truth_report.json: exit_code must be 0, got 1"
+      ],
+      "report_summaries": {
+        "m4a_auth_truth_report.json": {
+          "available": true,
+          "collected": 43,
+          "passed": 42,
+          "failed": 0,
+          "errors": 1,
+          "skipped": 0,
+          "exit_code": 1,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T08:36:31.251449+00:00"
+        }
+      }
+    },
+    "m4b_gate": {
+      "id": "m4b_gate",
+      "label": "M4b Gate",
+      "status": "FAIL",
+      "reports": [
+        "m4b_upload_queue_truth_report.json"
+      ],
+      "dependencies": [],
+      "blockers": [
+        "m4b_upload_queue_truth_report.json: passed (46) must equal collected (51)",
+        "m4b_upload_queue_truth_report.json: failed must be 0, got 5",
+        "m4b_upload_queue_truth_report.json: exit_code must be 0, got 1",
+        "m4b_upload_queue_truth_report.json: failed_tests must be empty"
+      ],
+      "report_summaries": {
+        "m4b_upload_queue_truth_report.json": {
+          "available": true,
+          "collected": 51,
+          "passed": 46,
+          "failed": 5,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 1,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T08:36:31.251449+00:00"
+        }
+      }
+    },
+    "m4c_gate": {
+      "id": "m4c_gate",
+      "label": "M4c Gate",
+      "status": "FAIL",
+      "reports": [
+        "m4c_lifecycle_retrieval_truth_report.json"
+      ],
+      "dependencies": [],
+      "blockers": [
+        "m4c_lifecycle_retrieval_truth_report.json: passed (155) must equal collected (179)",
+        "m4c_lifecycle_retrieval_truth_report.json: failed must be 0, got 9",
+        "m4c_lifecycle_retrieval_truth_report.json: errors must be 0, got 15",
+        "m4c_lifecycle_retrieval_truth_report.json: exit_code must be 0, got 1",
+        "m4c_lifecycle_retrieval_truth_report.json: failed_tests must be empty"
+      ],
+      "report_summaries": {
+        "m4c_lifecycle_retrieval_truth_report.json": {
+          "available": true,
+          "collected": 179,
+          "passed": 155,
+          "failed": 9,
+          "errors": 15,
+          "skipped": 0,
+          "exit_code": 1,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T08:36:31.251449+00:00"
+        }
+      }
+    },
+    "m4e_gate": {
+      "id": "m4e_gate",
+      "label": "M4e Gate",
+      "status": "PASS",
+      "reports": [
+        "m4e_backup_restore_truth_report.json"
+      ],
+      "dependencies": [],
+      "blockers": [],
+      "report_summaries": {
+        "m4e_backup_restore_truth_report.json": {
+          "available": true,
+          "collected": 9,
+          "passed": 9,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T08:36:31.251449+00:00"
+        }
+      }
+    },
+    "m4_crosscutting_gate": {
+      "id": "m4_crosscutting_gate",
+      "label": "M4 Cross-Cutting Gate",
+      "status": "PASS",
+      "reports": [
+        "m4_truth_report.json"
+      ],
+      "dependencies": [],
+      "blockers": [],
+      "report_summaries": {
+        "m4_truth_report.json": {
+          "available": true,
+          "collected": 9,
+          "passed": 9,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T08:36:31.251449+00:00"
+        }
+      }
+    },
+    "m4_overall_gate": {
+      "id": "m4_overall_gate",
+      "label": "M4 Gesamtgate",
+      "status": "BLOCKED",
+      "reports": [],
+      "dependencies": [
+        "m4_crosscutting_gate",
+        "m4a_gate",
+        "m4b_gate",
+        "m4c_gate",
+        "m4e_gate"
+      ],
+      "blockers": [
+        "dependency not passed: m4a_gate",
+        "dependency not passed: m4b_gate",
+        "dependency not passed: m4c_gate"
+      ],
+      "report_summaries": {}
+    },
+    "m5_start_gate": {
+      "id": "m5_start_gate",
+      "label": "M5 Startgate",
+      "status": "BLOCKED",
+      "reports": [],
+      "dependencies": [
+        "m4_overall_gate"
+      ],
+      "blockers": [
+        "dependency not passed: m4_overall_gate"
+      ],
+      "report_summaries": {}
+    },
+    "operational_governance_gate": {
+      "id": "operational_governance_gate",
+      "label": "Operational Governance Gate",
+      "status": "BLOCKED",
+      "reports": [
+        "governance_truth_report.json"
+      ],
+      "dependencies": [
+        "m5_start_gate"
+      ],
+      "blockers": [
+        "dependency not passed: m5_start_gate"
+      ],
+      "report_summaries": {
+        "governance_truth_report.json": {
+          "available": true,
+          "collected": 39,
+          "passed": 39,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T08:36:31.251449+00:00"
+        }
+      }
+    }
+  },
+  "dependency_graph": {
+    "nodes": [
+      {
+        "id": "m3a_gate",
+        "label": "M3a Gate"
+      },
+      {
+        "id": "m4a_gate",
+        "label": "M4a Gate"
+      },
+      {
+        "id": "m4b_gate",
+        "label": "M4b Gate"
+      },
+      {
+        "id": "m4c_gate",
+        "label": "M4c Gate"
+      },
+      {
+        "id": "m4e_gate",
+        "label": "M4e Gate"
+      },
+      {
+        "id": "m4_crosscutting_gate",
+        "label": "M4 Cross-Cutting Gate"
+      },
+      {
+        "id": "m4_overall_gate",
+        "label": "M4 Gesamtgate"
+      },
+      {
+        "id": "m5_start_gate",
+        "label": "M5 Startgate"
+      },
+      {
+        "id": "operational_governance_gate",
+        "label": "Operational Governance Gate"
+      }
+    ],
+    "edges": [
+      {
+        "from": "m4_crosscutting_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4a_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4b_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4c_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4e_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4_overall_gate",
+        "to": "m5_start_gate"
+      },
+      {
+        "from": "m5_start_gate",
+        "to": "operational_governance_gate"
+      }
+    ]
+  },
+  "evaluation_rules": {
+    "m3a_gate": [
+      "m3a_truth_report.json",
+      "frontend_truth_report.json"
+    ],
+    "m4a_gate": [
+      "m4a_auth_truth_report.json"
+    ],
+    "m4b_gate": [
+      "m4b_upload_queue_truth_report.json"
+    ],
+    "m4c_gate": [
+      "m4c_lifecycle_retrieval_truth_report.json"
+    ],
+    "m4e_gate": [
+      "m4e_backup_restore_truth_report.json"
+    ],
+    "m4_crosscutting_gate": [
+      "m4_truth_report.json"
+    ],
+    "m4_overall_gate": [
+      "m4_crosscutting_gate",
+      "m4a_gate",
+      "m4b_gate",
+      "m4c_gate",
+      "m4e_gate"
+    ],
+    "m5_start_gate": [
+      "m4_overall_gate"
+    ],
+    "operational_governance_gate": [
+      "m5_start_gate",
+      "governance_truth_report.json"
+    ]
+  }
+}

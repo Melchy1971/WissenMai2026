@@ -163,5 +163,19 @@
     "me_error": null,
     "active_workspace_id": "00000000-0000-0000-0000-000000000001"
   },
-  "remaining_errors": []
+  "remaining_errors": [],
+  "name": "auth_bootstrap_guard",
+  "timestamp": "2026-05-26T08:01:25.539041Z",
+  "environment": null,
+  "database_url_set": true,
+  "test_database_url_set": false,
+  "collected": 11,
+  "passed": 11,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "gate": "m3a_preflight",
+  "blockers": [],
+  "known_limitations": []
 }

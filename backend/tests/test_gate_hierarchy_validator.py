@@ -40,6 +40,7 @@ def _write_all_green_reports(report_dir: Path) -> None:
     marker_by_report = {
         "frontend_truth_report.json": "frontend_truth",
         "m3a_truth_report.json": "m3a_truth",
+        "m4_truth_report.json": "m4_truth",
         "m4a_auth_truth_report.json": "m4a_auth_truth",
         "m4b_upload_queue_truth_report.json": "m4b_upload_queue_truth",
         "m4c_lifecycle_retrieval_truth_report.json": "m4c_lifecycle_retrieval_truth",
@@ -64,7 +65,7 @@ def test_gate_hierarchy_passes_when_all_required_split_reports_are_green(tmp_pat
         "frontend_truth_report.json",
     ]
     assert result["gates"]["m4_overall_gate"]["dependencies"] == [
-        "m3a_gate",
+        "m4_crosscutting_gate",
         "m4a_gate",
         "m4b_gate",
         "m4c_gate",
@@ -121,3 +122,4 @@ def test_dependency_graph_contains_expected_edges() -> None:
     assert {"from": "m4_overall_gate", "to": "m5_start_gate"} in graph["edges"]
     assert {"from": "m5_start_gate", "to": "operational_governance_gate"} in graph["edges"]
     assert {"from": "m4a_gate", "to": "m4_overall_gate"} in graph["edges"]
+    assert {"from": "m4_crosscutting_gate", "to": "m4_overall_gate"} in graph["edges"]

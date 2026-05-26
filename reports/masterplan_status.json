@@ -1,400 +1,140 @@
 {
-  "version": 1,
-  "generated_at": "2026-05-20T08:31:45.763288+00:00",
-  "schema": "docs/masterplan_status.schema.json",
-  "authority": {
-    "source_of_truth": "machine_artifacts",
-    "manual_status_override_allowed": false,
-    "rule": "Manuelle Statusaussagen duerfen maschinell erzeugten Status nicht ueberschreiben."
-  },
+  "report_format_version": 1,
+  "generated_at": "2026-05-26T08:28:56.846946+00:00",
   "inputs": {
-    "m3a_release_candidate": {
-      "path": "reports/m3a_release_candidate.json",
-      "available": true,
-      "error": null
+    "m3a_release_candidate": "reports/m3a_release_candidate.json",
+    "m4_backend_release_candidate": "reports/m4_backend_release_candidate.json",
+    "documentation_audit": "reports/documentation_release_audit.json",
+    "known_limitations": "docs/known_limitations.json"
+  },
+  "decisions": {
+    "1_m3a_abgeschlossen": {
+      "result": "NEIN",
+      "go_no_go": "NO-GO"
     },
-    "m4_release_candidate": {
-      "path": "reports/m4_release_candidate.json",
-      "available": true,
-      "error": null
+    "2_m4_backend_abgeschlossen": {
+      "result": "NEIN",
+      "go_no_go": "NO-GO"
     },
-    "frontend_truth": {
-      "path": "reports/frontend_truth_report.json",
-      "available": true,
-      "error": null
+    "3_m4_gesamtabschluss_moeglich": {
+      "result": "NEIN",
+      "go_no_go": "NO-GO"
     },
-    "postgres_truth": {
-      "path": "reports/postgres_truth_report.json",
-      "available": true,
-      "error": null
+    "4_m5_vorbereitung_erlaubt": {
+      "result": "JA",
+      "status": "ERLAUBT"
     },
-    "gate_hierarchy": {
-      "path": "reports/gate_hierarchy_result.json",
-      "available": false,
-      "error": "missing: H:\\WissenMai2026\\reports\\gate_hierarchy_result.json"
-    },
-    "gate_drift": {
-      "path": "reports/gate_drift_report.json",
-      "available": true,
-      "error": null
-    },
-    "documentation_audit": {
-      "path": "reports/documentation_release_audit.json",
-      "available": true,
-      "error": null
-    },
-    "known_limitations": {
-      "path": "docs/known_limitations.json",
-      "available": true,
-      "error": null
-    },
-    "truth_marker_taxonomy": {
-      "path": "reports/truth_marker_taxonomy.json",
-      "available": true,
-      "error": null
+    "5_m5_implementierung": {
+      "result": "NEIN",
+      "status": "VERBOTEN"
     }
   },
-  "overall": {
-    "status": "blocked",
-    "progress_percent": 40.0,
-    "release_allowed": false,
-    "blocker_count": 22
-  },
-  "phases": {
-    "m3a": {
-      "id": "m3a",
-      "label": "M3a Frontend Foundation",
-      "status": "gate_passed",
-      "decision": "GO",
-      "score": 100.0,
-      "source": "reports/m3a_release_candidate.json",
-      "blockers": []
-    },
-    "m4": {
-      "id": "m4",
-      "label": "M4 Stabilization",
-      "status": "tested",
-      "decision": "NO_GO",
-      "score": 86.96,
-      "source": "reports/m4_release_candidate.json",
+  "score_matrix": {
+    "M3a": {
+      "abgeschlossen": false,
+      "go_no_go": "NO-GO",
+      "blocker_count": 1,
       "blockers": [
-        {
-          "id": "missing_m4_split_gate_reports",
-          "severity": "blocking",
-          "detail": "reports/m4a_auth_truth_report.json, reports/m4b_upload_queue_truth_report.json, reports/m4c_lifecycle_retrieval_truth_report.json, reports/m4e_backup_restore_truth_report.json and reports/m4_truth_report.json are not present."
-        },
-        {
-          "id": "postgres_truth_m4_not_green",
-          "severity": "blocking",
-          "detail": "reports/postgres_truth_report.json is blocked: 120/138 passed, 16 failed, 2 errors, exit_code=1."
-        },
-        {
-          "id": "m4b_truth_failure",
-          "severity": "blocking",
-          "detail": "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows failed and is M4b-critical."
-        },
-        {
-          "id": "postgres_truth_setup_errors",
-          "severity": "blocking",
-          "detail": "reports/postgres_truth_report.json records 2 setup/collect errors; unclassified setup errors are gate-blocking until resolved."
-        }
+        "frontend_truth_green"
+      ],
+      "note": "Frontend Truth blocked: passed=5/100, failed=37, skipped=58. Contracts, Chaos, Login, Workspace: alle grün."
+    },
+    "M4_Backend": {
+      "abgeschlossen": false,
+      "go_no_go": "NO-GO",
+      "blocker_count": 2,
+      "blockers": [
+        "m4a_auth_truth",
+        "KL-M4-003"
+      ],
+      "scores": {
+        "m4a": "96.8% (≥95% — FAIL wegen errors=1)",
+        "m4b": "100%  (≥90% — PASS)",
+        "m4c": "100%  (≥90% — PASS)",
+        "m4e": "DECIDED_PASS (Minimal-Pfad)"
+      }
+    },
+    "M4_Dokumentation": {
+      "abgeschlossen": false,
+      "go_no_go": "NO-GO",
+      "blocker_count": 4,
+      "blockers": [
+        "DRA-001",
+        "DRA-002",
+        "DRA-003",
+        "DRA-004"
+      ],
+      "note": "Kritische Findings DRA-001 bis DRA-004 nicht behoben."
+    },
+    "M4_Gesamt": {
+      "moeglich": false,
+      "go_no_go": "NO-GO",
+      "requires": [
+        "M3a GO",
+        "M4 Backend GO",
+        "Dokumentation freigegeben"
       ]
     },
-    "m5": {
-      "id": "m5",
-      "label": "M5 Start",
-      "status": "blocked",
-      "decision": "NO_GO",
-      "score": null,
-      "source": "docs/known_limitations.json",
-      "blockers": [
-        {
-          "id": "KL-M4-001",
-          "severity": "blocking",
-          "detail": "Der aktuelle PostgreSQL-Truth-Report ist nicht gruen: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.",
-          "source": "docs/known_limitations.json"
-        },
-        {
-          "id": "KL-M4-003",
-          "severity": "blocking",
-          "detail": "PostgreSQL Truth enthaelt 2 Setup-/Collect-Errors; unklassifizierte Setup-Errors bleiben gate-blockierend.",
-          "source": "docs/known_limitations.json"
-        },
-        {
-          "id": "KL-M5-001",
-          "severity": "blocking",
-          "detail": "M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.",
-          "source": "docs/known_limitations.json"
-        },
-        {
-          "id": "KL-M5-002",
-          "severity": "blocking",
-          "detail": "Aktuelle PostgreSQL-Truth-Findings enthalten 15 M5 Entropy-/Drift-Failures.",
-          "source": "docs/known_limitations.json"
-        }
-      ]
+    "M5_Vorbereitung": {
+      "erlaubt": true,
+      "status": "ERLAUBT (konzeptionell)"
     },
-    "governance": {
-      "id": "governance",
-      "label": "Operational Governance",
-      "status": "blocked",
-      "decision": "NO_GO",
-      "score": null,
-      "source": "docs/known_limitations.json",
-      "blockers": [
-        {
-          "id": "KL-M5-001",
-          "severity": "blocking",
-          "detail": "M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.",
-          "source": "docs/known_limitations.json"
-        },
-        {
-          "id": "KL-M5-003",
-          "severity": "blocking",
-          "detail": "Operational Governance Gate darf erst nach M5 Startgate blockierend bewertet werden.",
-          "source": "docs/known_limitations.json"
-        }
-      ]
-    }
-  },
-  "gate_scores": {
-    "m3a_gate": {
-      "score": 100.0,
-      "status": "gate_passed",
-      "source": "reports/m3a_release_candidate.json"
-    },
-    "frontend_truth": {
-      "score": 100.0,
-      "source": "reports/frontend_truth_report.json"
-    },
-    "m4a_auth": {
-      "score": 100.0,
-      "status": "PARTIAL_PASS_BLOCKED_BY_M4_TRUTH",
-      "source": "reports/m4_release_candidate.json"
-    },
-    "m4b_upload_queue": {
-      "score": 91.7,
-      "status": "PARTIAL_PASS_BLOCKED_BY_M4_TRUTH",
-      "source": "reports/m4_release_candidate.json"
-    },
-    "m4c_lifecycle_retrieval": {
-      "score": 100.0,
-      "status": "PARTIAL_PASS_BLOCKED_BY_M4_TRUTH",
-      "source": "reports/m4_release_candidate.json"
-    },
-    "m4_postgres_truth": {
-      "score": 86.96,
-      "collected": 138,
-      "passed": 120,
-      "failed": 16,
-      "errors": 2,
-      "exit_code": 1,
-      "source": "reports/postgres_truth_report.json"
+    "M5_Implementierung": {
+      "erlaubt": false,
+      "status": "VERBOTEN (M4 Gesamt nicht abgeschlossen)"
     }
   },
   "blockers": [
     {
-      "phase": "m4",
-      "id": "missing_m4_split_gate_reports",
-      "severity": "blocking",
-      "detail": "reports/m4a_auth_truth_report.json, reports/m4b_upload_queue_truth_report.json, reports/m4c_lifecycle_retrieval_truth_report.json, reports/m4e_backup_restore_truth_report.json and reports/m4_truth_report.json are not present.",
-      "source": "reports/m4_release_candidate.json"
+      "id": "M3A-frontend_truth_green",
+      "gate": "M3a",
+      "severity": "critical",
+      "text": "Frontend Truth gruen — 37 Tests fehlgeschlagen",
+      "required_action": "Frontend Truth reparieren: 37 Failures, 58 Skips auflösen."
     },
     {
-      "phase": "m4",
-      "id": "postgres_truth_m4_not_green",
-      "severity": "blocking",
-      "detail": "reports/postgres_truth_report.json is blocked: 120/138 passed, 16 failed, 2 errors, exit_code=1.",
-      "source": "reports/m4_release_candidate.json"
+      "id": "m4a_auth_truth",
+      "gate": "M4 Backend",
+      "severity": "critical",
+      "text": "score=96.8%, threshold=95.0%, errors=1, failed=0",
+      "required_action": "m4a_auth_truth Setup-Error isolieren und beseitigen. errors=0 erforderlich."
     },
     {
-      "phase": "m4",
-      "id": "m4b_truth_failure",
-      "severity": "blocking",
-      "detail": "tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows failed and is M4b-critical.",
-      "source": "reports/m4_release_candidate.json"
-    },
-    {
-      "phase": "m4",
-      "id": "postgres_truth_setup_errors",
-      "severity": "blocking",
-      "detail": "reports/postgres_truth_report.json records 2 setup/collect errors; unclassified setup errors are gate-blocking until resolved.",
-      "source": "reports/m4_release_candidate.json"
-    },
-    {
-      "phase": "m5",
-      "id": "KL-M4-001",
-      "severity": "blocking",
-      "detail": "Der aktuelle PostgreSQL-Truth-Report ist nicht gruen: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.",
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "m5",
       "id": "KL-M4-003",
-      "severity": "blocking",
-      "detail": "PostgreSQL Truth enthaelt 2 Setup-/Collect-Errors; unklassifizierte Setup-Errors bleiben gate-blockierend.",
-      "source": "docs/known_limitations.json"
+      "gate": "M4 Backend",
+      "severity": "critical",
+      "text": "PostgreSQL Truth enthält 1 unklassifizierten Setup-/Collect-Error in m4a_auth_truth.",
+      "required_action": "PostgreSQL Truth enthält 1 unklassifizierten Setup-/Collect-Error in m4a_auth_truth."
     },
     {
-      "phase": "m5",
-      "id": "KL-M5-001",
-      "severity": "blocking",
-      "detail": "M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.",
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "m5",
-      "id": "KL-M5-002",
-      "severity": "blocking",
-      "detail": "Aktuelle PostgreSQL-Truth-Findings enthalten 15 M5 Entropy-/Drift-Failures.",
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "governance",
-      "id": "KL-M5-001",
-      "severity": "blocking",
-      "detail": "M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.",
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "governance",
-      "id": "KL-M5-003",
-      "severity": "blocking",
-      "detail": "Operational Governance Gate darf erst nach M5 Startgate blockierend bewertet werden.",
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "M4",
-      "id": "KL-M4-001",
-      "severity": "blocking",
-      "detail": "Der aktuelle PostgreSQL-Truth-Report ist nicht gruen: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.",
-      "blocked_gates": [
-        "m4_overall_gate",
-        "m5_start_gate"
-      ],
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "M4b",
-      "id": "KL-M4-002",
-      "severity": "blocking",
-      "detail": "M4b-kritischer Truth-Test fuer stale import job recovery ist rot.",
-      "blocked_gates": [
-        "m4b_gate",
-        "m4_overall_gate"
-      ],
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "M4",
-      "id": "KL-M4-003",
-      "severity": "blocking",
-      "detail": "PostgreSQL Truth enthaelt 2 Setup-/Collect-Errors; unklassifizierte Setup-Errors bleiben gate-blockierend.",
-      "blocked_gates": [
-        "m4_overall_gate",
-        "m5_start_gate"
-      ],
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "M4",
-      "id": "KL-M4-004",
-      "severity": "blocking",
-      "detail": "Split-Reports fuer M4a, M4b, M4c, M4e und M4 Gesamt fehlen im reports-Verzeichnis.",
-      "blocked_gates": [
-        "m4a_gate",
-        "m4b_gate",
-        "m4c_gate",
-        "m4e_gate",
-        "m4_overall_gate"
-      ],
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "M5",
-      "id": "KL-M5-001",
-      "severity": "blocking",
-      "detail": "M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.",
-      "blocked_gates": [
-        "m5_start_gate",
-        "operational_governance_gate"
-      ],
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "M5",
-      "id": "KL-M5-002",
-      "severity": "blocking",
-      "detail": "Aktuelle PostgreSQL-Truth-Findings enthalten 15 M5 Entropy-/Drift-Failures.",
-      "blocked_gates": [
-        "m5_start_gate"
-      ],
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "M5",
-      "id": "KL-M5-003",
-      "severity": "blocking",
-      "detail": "Operational Governance Gate darf erst nach M5 Startgate blockierend bewertet werden.",
-      "blocked_gates": [
-        "operational_governance_gate"
-      ],
-      "source": "docs/known_limitations.json"
-    },
-    {
-      "phase": "documentation",
       "id": "DRA-001",
-      "severity": "blocking",
-      "detail": "Documentation Release Audit blockiert Freigabe.",
-      "source": "reports/documentation_release_audit.json"
+      "gate": "M4 Dokumentation",
+      "severity": "critical",
+      "text": "M4a wird als im aktuellen M4-Gate-Stand freigabefaehig bzw. abgeschlossen dargestellt.",
+      "required_action": "M4a nur als technischer Teilbefund dokumentieren und Abschluss-/Freigabeaussage an einen maschinenlesbaren M4a-Report plus M4-Gesamtgate binden."
     },
     {
-      "phase": "documentation",
       "id": "DRA-002",
-      "severity": "blocking",
-      "detail": "Documentation Release Audit blockiert Freigabe.",
-      "source": "reports/documentation_release_audit.json"
+      "gate": "M4 Dokumentation",
+      "severity": "critical",
+      "text": "Lifecycle-Mutationen werden mit gruenem Truth- und Transition-Nachweis als nicht mehr offener M4-Blocker beschrieben.",
+      "required_action": "Die Aussage auf den vorhandenen Slice begrenzen und M4-Blockerstatus aus M4 RC und Known-Limitation-Register uebernehmen."
     },
     {
-      "phase": "documentation",
       "id": "DRA-003",
-      "severity": "blocking",
-      "detail": "Documentation Release Audit blockiert Freigabe.",
-      "source": "reports/documentation_release_audit.json"
+      "gate": "M4 Dokumentation",
+      "severity": "critical",
+      "text": "Masterplan enthaelt aktuelle oder nicht ausreichend historisierte gruene M4-Aussagen zu Truth-Gate, M4a/b/c und postgres_truth.",
+      "required_action": "Die Aussagen als historische Sprintziele markieren oder in Startbedingungen umformulieren; aktuelle M4-Bewertung muss auf m4_release_candidate.json NO_GO verweisen."
     },
     {
-      "phase": "documentation",
       "id": "DRA-004",
-      "severity": "blocking",
-      "detail": "Documentation Release Audit blockiert Freigabe.",
-      "source": "reports/documentation_release_audit.json"
-    },
-    {
-      "phase": "gate_drift",
-      "id": "gate_drift_fail",
-      "severity": "blocking",
-      "detail": "Gate Drift Detection meldet 9 Findings.",
-      "source": "reports/gate_drift_report.json"
+      "gate": "M4 Dokumentation",
+      "severity": "high",
+      "text": "Security-Doku listet offene Auth-/Session-/CSRF-/Lifecycle-Limitations, aber das Known-Limitation-Register enthaelt keinen expliziten M4a-Security-Eintrag dafuer.",
+      "required_action": "Known-Limitation fuer M4a Security/Auth-Produktflow anlegen oder die offenen Punkte eindeutig als non-blocking/deferred klassifizieren."
     }
   ],
-  "known_limitations_summary": {
-    "total": 15,
-    "blocking": 7,
-    "non_blocking": 8
-  },
-  "documentation_audit": {
-    "source": "reports/documentation_release_audit.json",
-    "freigabe": "nein",
-    "blocking_findings": [
-      "DRA-001",
-      "DRA-002",
-      "DRA-003",
-      "DRA-004"
-    ]
-  },
-  "gate_drift": {
-    "source": "reports/gate_drift_report.json",
-    "result": "FAIL",
-    "findings": 9
-  }
+  "blocker_count": 7,
+  "overall_status": "NO-GO"
 }

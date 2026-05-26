@@ -2,49 +2,57 @@
 
 Stand: 2026-05-07
 
-## M4a Auth- und Workspace-Konsistenz
 
-Der dokumentierte Zielzustand fuer M4a ist ein serverseitig erzwungener Benutzer- und Workspace-Kontext. Der technische Kern dieses Zielzustands ist im aktuellen Gate-Stand fuer M4 freigabefaehig nachgewiesen.
+## Seed-/Auth-Bootstrap & Sicherheitsmodell (Stand 2026-05-26)
 
-Nachweisbar implementiert:
+### Seed-Flow & Credentials
 
-- einheitliches API-Fehlerformat
+Alle Seed-Skripte und Bootstrap-Prozesse lesen konsistent:
+
+- `SEED_ADMIN_LOGIN` (Default: `admin@localhost`)
+- `SEED_ADMIN_PASSWORD` (Default: `change-me`)
+- `SEED_WORKSPACE_NAME` (Default: `Default Workspace`)
+
+> **Warnung (lokale Entwicklung):** `.env` enthält das Klartext-Passwort. Niemals `.env` committen! In produktiver Dokumentation keine Klartext-Credentials angeben.
+
+### Auth Bootstrap Guard
+
+Nach dem Seed prüft `scripts/check_auth_bootstrap.py` Login und Workspace-Isolation. Fehler führen zu Exit != 0 und Report in `reports/auth_bootstrap_guard.json`.
+
+### Auth- und Workspace-Konsistenz
+
+Der dokumentierte Zielzustand für M4a ist ein serverseitig erzwungener Benutzer- und Workspace-Kontext. Im aktuellen Gate-Stand für M4 nachweisbar:
+
+- Einheitliches API-Fehlerformat
 - Fehlercodes `AUTH_REQUIRED`, `ADMIN_REQUIRED`, `WORKSPACE_REQUIRED`
 - `POST /api/v1/auth/login` und `GET /api/v1/auth/me`
-- Auth-Middleware mit Sessionpruefung und Workspace-Membership-Pruefung fuer geschuetzte Endpunkte
-- Admin-Schutz fuer `GET /api/v1/admin/diagnostics` ueber AuthContext + Workspace-Membership/Rolle
-- blockierter Admin-Schutz fuer `POST /api/v1/admin/search-index/rebuild`, der fuer M4d read-only `501 ADMIN_ACTION_NOT_IMPLEMENTED` liefert
-- serverseitiger Auth-Kontext fuer `POST /documents/import`
-- Workspace-Filter in Dokument-, Search- und Chat-Vertraegen
+- Auth-Middleware mit Sessionprüfung und Workspace-Membership-Prüfung für geschützte Endpunkte
+- Admin-Schutz für `GET /api/v1/admin/diagnostics` über AuthContext + Workspace-Membership/Rolle
+- Blockierter Admin-Schutz für `POST /api/v1/admin/search-index/rebuild` (M4d read-only, liefert `501 ADMIN_ACTION_NOT_IMPLEMENTED`)
+- Serverseitiger Auth-Kontext für `POST /documents/import`
+- Workspace-Filter in Dokument-, Search- und Chat-Verträgen
 
 Nicht nachweisbar implementiert:
 
 - `POST /auth/logout`
-- vollstaendiger Cookie-Session- oder JWT-Produktflow fuer das Frontend
-- durchgaengiger Login-/Logout-/Route-Guard-Flow im Frontend
-- CSRF-Schutz fuer mutierende Cookie-basierte Requests
+- Vollständiger Cookie-Session- oder JWT-Produktflow für das Frontend
+- Durchgängiger Login-/Logout-/Route-Guard-Flow im Frontend
+- CSRF-Schutz für mutierende Cookie-basierte Requests
 
-## Auth-Modell im aktuellen Stand
-
-- Regulare Benutzer-Authentifizierung und Workspace-Memberships sind fuer Fachendpunkte im Code nachweisbar.
-- Read-only Diagnostics nutzt denselben serverseitigen Auth-Kontext und verlangt eine Workspace-Rolle `owner` oder `admin`.
-- Der Admin-Rebuild ist fuer M4d read-only nicht freigegeben.
-- Ein gesendeter `x-admin-token`-Header ist kein Autorisierungsmechanismus mehr und gilt nur noch als Legacy-Eingabe ohne Rechtewirkung.
-
-## M4d Read-only Diagnostics Sicherheitsgrenzen
+### Read-only Diagnostics Scope (M4d)
 
 `GET /api/v1/admin/diagnostics` ist ein read-only Admin-Endpunkt.
 
 Erzwungen:
 
 - AuthContext erforderlich
-- aktiver Workspace erforderlich
+- Aktiver Workspace erforderlich
 - Workspace-Membership mit Rolle `owner` oder `admin` erforderlich
-- fremder Workspace wird abgewiesen
+- Fremder Workspace wird abgewiesen
 
 Fehlercodes:
 
-- `401 UNAUTHORIZED` ohne gueltige Authentifizierung
+- `401 UNAUTHORIZED` ohne gültige Authentifizierung
 - `403 FORBIDDEN` ohne Admin-/Owner-Rolle oder bei fremdem Workspace
 - `500 DIAGNOSTICS_FAILED` bei Diagnosefehlern mit redigierten Details
 
@@ -59,7 +67,7 @@ Nicht ausgegeben:
 - Tokens
 - Header-Werte
 - Connection-Strings
-- lokale Dateipfade
+- Lokale Dateipfade
 
 Nicht freigegeben:
 
@@ -71,12 +79,12 @@ Nicht freigegeben:
 - Workspace-Mutation
 - Dokumentreparatur
 
-M4d ist damit nur read-only vorbereitet. Vollstaendige M4d-Admin-Aktionen bleiben blockiert, bis M4a, M4b und M4c gruen sind.
+M4d ist damit nur read-only vorbereitet. Vollständige M4d-Admin-Aktionen bleiben blockiert, bis M4a, M4b und M4c grün sind.
 
-## Workspace-Isolation im aktuellen Stand
+### Workspace-Isolation
 
 - Dokumente, Chat-Sessions und Search arbeiten fachlich mit `workspace_id`.
-- Geschuetzte Backend-Endpunkte pruefen den AuthContext ueber die Middleware gegen Workspace-Membership.
+- Geschützte Backend-Endpunkte prüfen den AuthContext über die Middleware gegen Workspace-Membership.
 - Dokument-Read-, Search-, Chat-, Upload-, Jobs- und Diagnostics-Pfade leiten den Workspace serverseitig aus dem AuthContext ab.
 - Dokument-Lifecycle-Mutationen sind im aktuellen Wahrheitsstand nicht mehr als offener M4-Gate-Blocker zu dokumentieren; massgeblich ist der gruene Truth- und Transition-Nachweis.
 - Offene Produkt- oder Ausbaupunkte ausserhalb des aktuellen M4-Minimalscopes bleiben Weiterentwicklung und aendern den erreichten Freigabestand nicht.

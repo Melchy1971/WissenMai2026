@@ -145,5 +145,19 @@
       }
     ]
   },
-  "remaining_errors": []
+  "remaining_errors": [],
+  "name": "runtime_connectivity",
+  "timestamp": "2026-05-26T07:25:31.148Z",
+  "environment": null,
+  "database_url_set": true,
+  "test_database_url_set": false,
+  "collected": 8,
+  "passed": 8,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "gate": "m3a_preflight",
+  "blockers": [],
+  "known_limitations": []
 }

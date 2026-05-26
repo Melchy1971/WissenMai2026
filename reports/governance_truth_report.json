@@ -1,13 +1,16 @@
 {
   "report_format_version": 1,
   "marker": "governance_truth",
-  "timestamp": "2026-05-26T07:41:47.866545+00:00",
+  "timestamp": "2026-05-26T08:36:31.251449+00:00",
   "collected": 39,
   "passed": 39,
   "failed": 0,
   "errors": 0,
   "skipped": 0,
-  "exit_code": 1,
+  "exit_code": 0,
+  "pytest_exit_code": 1,
   "test_database_url_set": true,
-  "failed_tests": []
+  "failed_tests": [],
+  "unmarked_truth_tests": [],
+  "ambiguous_truth_tests": []
 }

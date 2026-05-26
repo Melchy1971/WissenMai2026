@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-05-26T09:00:00Z",
+  "m4_reports": [
+    "m4_truth_report.json",
+    "m4a_auth_truth_report.json",
+    "m4b_upload_queue_truth_report.json",
+    "m4c_lifecycle_retrieval_truth_report.json",
+    "m4e_backup_restore_truth_report.json"
+  ],
+  "m5_reports": [
+    "m5_truth_report.json"
+  ],
+  "checks": {
+    "m4_contains_no_m5_only": true,
+    "m5_contains_no_m4_gate": true,
+    "governance_tests_do_not_block_m4": true,
+    "m4_failures_block_m5": true,
+    "unmarked_tests": false
+  },
+  "details": {
+    "m4b_upload_queue_truth_report": "Report leer oder unvollständig, Marker prüfen!",
+    "m4c_lifecycle_retrieval_truth_report": "Keine M5-only Tests enthalten, alle Marker korrekt.",
+    "m5_truth_report": "Alle M5-Tests korrekt markeriert, keine M4-Gate-Kriterien enthalten."
+  },
+  "marker_fixlist": [
+    "m4b_upload_queue_truth: Report/Marker prüfen und ggf. Tests nachmarkerieren.",
+    "Alle neuen Tests: pytest.mark.m4_truth, m5_truth, governance_truth etc. immer explizit setzen."
+  ]
+}

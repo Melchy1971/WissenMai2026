@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from hashlib import pbkdf2_hmac, sha256
@@ -10,6 +11,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.documents import AuthSession, User, WorkspaceMembership
+
+logger = logging.getLogger("app.services.auth")
 
 
 PBKDF2_ITERATIONS = 600_000
@@ -62,10 +65,49 @@ class AuthService:
     def login(self, *, login: str, password: str) -> tuple[str, AuthSession, User, list[WorkspaceMembership]]:
         normalized_login = login.strip()
         if not normalized_login or not password.strip():
+            logger.warning(
+                "auth.login_failed",
+                extra={"event": "auth.login_failed", "reason": "empty_credentials"},
+            )
             raise AuthenticationError("Invalid credentials")
 
-        user = self._session.scalar(select(User).where(User.login == normalized_login))
-        if user is None or not user.is_active or not verify_password(password, user.password_hash):
+        user: User | None = None
+        try:
+            user = self._session.scalar(select(User).where(User.login == normalized_login))
+        except Exception:
+            logger.exception(
+                "auth.login_failed",
+                extra={"event": "auth.login_failed", "reason": "db_error"},
+            )
+            raise AuthenticationError("Invalid credentials")
+
+        if user is None:
+            logger.warning(
+                "auth.login_failed",
+                extra={"event": "auth.login_failed", "reason": "login_not_found"},
+            )
+            raise AuthenticationError("Invalid credentials")
+
+        if not user.is_active:
+            logger.warning(
+                "auth.login_failed",
+                extra={
+                    "event": "auth.login_failed",
+                    "reason": "user_inactive",
+                    "user_id": str(user.id),
+                },
+            )
+            raise AuthenticationError("Invalid credentials")
+
+        if not verify_password(password, user.password_hash):
+            logger.warning(
+                "auth.login_failed",
+                extra={
+                    "event": "auth.login_failed",
+                    "reason": "password_mismatch",
+                    "user_id": str(user.id),
+                },
+            )
             raise AuthenticationError("Invalid credentials")
 
         memberships = list(
@@ -179,4 +221,38 @@ class AuthService:
             return None
         if value.tzinfo is None:
             return value.replace(tzinfo=UTC)
-        return value.astimezone(UTC)
+        return value.astimezone(UTC)        session_token_hash = hash_token(bearer_token)
+        auth_session = self._session.scalar(
+            select(AuthSession).where(AuthSession.token_hash == session_token_hash)
+        )
+        now = datetime.now(UTC)
+        expires_at = self._normalize_datetime(auth_session.expires_at) if auth_session is not None else None
+        if auth_session is None or auth_session.revoked_at is not None or expires_at is None or expires_at <= now:
+            raise AuthenticationError("Authentication required")
+
+        user = self._session.scalar(select(User).where(User.id == str(auth_session.user_id)))
+        if user is None or not user.is_active:
+            raise AuthenticationError("Authentication required")
+
+        memberships = list(
+            self._session.scalars(
+                select(WorkspaceMembership)
+                .where(WorkspaceMembership.user_id == str(user.id))
+                .order_by(WorkspaceMembership.workspace_id.asc())
+            )
+        )
+
+        auth_session.last_seen_at = now
+        self._session.add(auth_session)
+        self._session.commit()
+
+        return user, memberships
+
+    @staticmethod
+    def _normalize_datetime(dt: datetime | None) -> datetime | None:
+        """Ensure datetime is timezone-aware (UTC) for consistent comparison."""
+        if dt is None:
+            return None
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=UTC)
+        return dt

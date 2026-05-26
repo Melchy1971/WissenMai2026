@@ -43,41 +43,78 @@ Kurzstand am 2026-05-07:
 - M4d ist nur read-only freigegeben.
 - M5 bleibt blockiert.
 
-## Backend-Setup
-
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-```
-
-Benötigte Umgebungsvariablen fuer den vollstaendigen Backend-Betrieb:
-
-- `APP_ENV`: Laufzeitumgebung, lokal standardmaessig `local`.
-- `DATABASE_URL`: PostgreSQL-Verbindungsstring fuer Remote-DB, z. B. `postgresql+psycopg://user:password@host:5432/dbname`.
-- `TEST_DATABASE_URL`: PostgreSQL-Verbindungsstring fuer echte Integrationstests mit `@pytest.mark.postgres` und `@pytest.mark.postgres_truth`.
-- `DEFAULT_WORKSPACE_ID`: vorbereitete Workspace-ID fuer V1 Single-User.
-- `DEFAULT_USER_ID`: vorbereitete User-ID fuer V1 Single-User.
-
-`/health` funktioniert auch ohne `DATABASE_URL`. `/health/db` und Alembic benoetigen eine
 erreichbare PostgreSQL-Datenbank.
 
-Backend starten:
+## Backend-Setup & Bootstrap (Stand 2026-05-26)
 
-```bash
+### Bootstrap-Reihenfolge (empfohlen)
+
+1. `.env` laden (inkl. Seed Credentials, siehe unten)
+2. DB-Verbindung prüfen
+3. Alembic-Migrationen (`upgrade head`)
+4. Auth-Seed (`backend/scripts/seed_auth.py`)
+5. Auth Bootstrap Guard (`scripts/check_auth_bootstrap.py`)
+6. `/health`-Smoke-Check (optional)
+7. Report schreiben
+
+Automatisiert per:
+
+```powershell
+.\scripts\dev_bootstrap.ps1
+```
+
+Optionale Flags: `-SkipSeed`, `-SkipSmoke`, `-DryRun` (siehe docs/operations.md)
+
+### Benötigte Umgebungsvariablen
+
+- `APP_ENV`: Laufzeitumgebung, lokal standardmäßig `local`.
+- `DATABASE_URL`: PostgreSQL-Verbindungsstring für Remote-DB, z. B. `postgresql+psycopg://user:password@host:5432/dbname`.
+- `TEST_DATABASE_URL`: PostgreSQL-Verbindungsstring für Integrationstests.
+- `DEFAULT_WORKSPACE_ID`, `DEFAULT_USER_ID`: vorbereitete IDs für V1 Single-User.
+- **Seed Credentials:**
+	- `SEED_ADMIN_LOGIN` (Default: `admin@localhost`)
+	- `SEED_ADMIN_PASSWORD` (Default: `change-me`)
+	- `SEED_WORKSPACE_NAME` (Default: `Default Workspace`)
+
+> **Warnung (lokale Entwicklung):** `.env` enthält das Klartext-Passwort. Niemals `.env` committen! In produktiver Dokumentation keine Klartext-Credentials angeben.
+
+Alle Seed-Skripte lesen diese ENV-Variablen. Legacy-Keys werden als Fallback akzeptiert, aber nicht mehr gesetzt.
+
+### Backend starten (manuell)
+
+```powershell
 Set-Location H:\WissenMai2026
 .\scripts\dev-db.ps1
 .\scripts\dev-backend.ps1
 ```
 
-Der Dev-Start verwendet lokal standardmaessig:
+### Auth Bootstrap Guard
 
-```text
-postgresql+psycopg://testuser:testpass@127.0.0.1:5433/wissen_test
+Nach dem Seed prüft `scripts/check_auth_bootstrap.py` Login und Workspace-Isolation. Fehler führen zu Exit != 0 und Report in `reports/auth_bootstrap_guard.json`.
+
+Einzeln ausführen:
+
+```powershell
+python scripts/check_auth_bootstrap.py --no-start-api
 ```
+
+### Runtime Connectivity Gate
+
+`scripts/validate_runtime_connectivity_gate.py` prüft 9 Kernchecks (DB, Alembic, Seed, Health, Login, Auth, Workspace, Frontend, API). Score >= 95 % = PASS (M3a grün), darunter = FAIL (blockiert M3a/M4).
+
+```powershell
+python scripts/validate_runtime_connectivity_gate.py
+```
+
+Letzter Run (2026-05-26): **9/9 = 100 % → PASS**
+
+### Statusmatrix (M3a/M4)
+
+- M3a Frontend Foundation: abgeschlossen, Score 100 % (siehe aktuelle Reports).
+- M4 Backend: blockiert, da PostgreSQL Truth Report rot ist (16 failed, 2 errors).
+- M4d Diagnostics: nur read-only freigegeben, keine mutierenden Admin-Aktionen.
+
+Weitere Details: siehe `docs/status.md`, `docs/operations.md`, `docs/security.md`.
 
 Wenn `DATABASE_URL` explizit gesetzt ist, hat dieser Wert Vorrang.
 

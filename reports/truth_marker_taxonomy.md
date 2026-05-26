@@ -1,13 +1,11 @@
 # Truth-Test Marker Taxonomie
 
 - Result: `PASS`
-- Collected: `485`
-- Generated: `2026-05-20T09:05:46.233708+00:00`
+- Collected: `488`
+- Generated: `2026-05-26T08:36:50.828766+00:00`
 
 ## Marker
 
-- `frontend_truth`
-- `m3a_truth`
 - `m4_truth`
 - `m4a_auth_truth`
 - `m4b_upload_queue_truth`
@@ -15,8 +13,6 @@
 - `m4e_backup_restore_truth`
 - `m5_truth`
 - `governance_truth`
-- `chaos_truth`
-- `slow_truth`
 
 ## Blocking-Regeln
 
@@ -27,107 +23,18 @@
 
 ## Testklassifikation
 
-### `frontend_truth` (17)
-- `tests/test_api_unreachable_recovery_contract.py::test_api_unreachable_recovery_defines_required_topics`
-- `tests/test_api_unreachable_recovery_contract.py::test_retry_strategy_is_bounded_and_does_not_retry_non_retryable_errors`
-- `tests/test_api_unreachable_recovery_contract.py::test_runtime_state_machine_forbids_corrupt_recovery_paths`
-- `tests/test_api_unreachable_recovery_contract.py::test_current_implementation_gaps_are_explicit_not_green_claims`
-- `tests/test_frontend_backend_contracts.py::test_auth_me_and_workspace_membership_contract`
-- `tests/test_frontend_backend_contracts.py::test_document_list_and_detail_contract`
-- `tests/test_frontend_backend_contracts.py::test_upload_job_contract`
-- `tests/test_frontend_backend_contracts.py::test_search_response_contract`
-- `tests/test_frontend_backend_contracts.py::test_chat_session_and_message_contract`
-- `tests/test_frontend_backend_contracts.py::test_diagnostics_response_contract`
-- `tests/test_frontend_backend_contracts.py::test_error_response_contract`
-- `tests/test_frontend_backend_contracts.py::test_job_result_schemas`
-- `tests/test_frontend_connectivity_truth_runner.py::test_connectivity_truth_runner_contains_required_checks_and_no_mocking`
-- `tests/test_frontend_connectivity_truth_runner.py::test_connectivity_truth_runner_is_valid_javascript`
-- `tests/test_frontend_runtime_connectivity_gate.py::test_runtime_connectivity_gate_passes_at_100_score`
-- `tests/test_frontend_runtime_connectivity_gate.py::test_runtime_connectivity_gate_blocks_m3a_below_90_score`
-- `tests/test_frontend_runtime_connectivity_gate.py::test_missing_truth_check_is_blocking`
-
-### `m3a_truth` (76)
-- `tests/integration/test_migrations.py::test_alembic_configuration_is_loadable`
-- `tests/integration/test_migrations.py::test_alembic_revisions_are_unique`
-- `tests/integration/test_migrations.py::test_migrations_upgrade_downgrade_on_test_database`
-- `tests/integration/test_migrations.py::test_chunk_search_vector_migration_creates_generated_column_and_gin_index`
-- `tests/test_gate_drift_detector.py::test_gate_drift_passes_for_current_reports_matching_baseline`
-- `tests/test_gate_drift_detector.py::test_gate_drift_fails_when_report_contains_fewer_tests_than_baseline`
-- `tests/test_gate_drift_detector.py::test_gate_drift_fails_for_unclassified_tests_and_marker_regression`
-- `tests/test_gate_drift_detector.py::test_gate_drift_fails_when_score_rises_despite_new_failures`
-- `tests/test_gate_drift_detector.py::test_gate_drift_detects_documentation_references_to_stale_reports`
-- `tests/test_gate_hierarchy_validator.py::test_gate_hierarchy_passes_when_all_required_split_reports_are_green`
-- `tests/test_gate_hierarchy_validator.py::test_m4_overall_and_m5_are_blocked_by_failed_m4_subgate`
-- `tests/test_gate_hierarchy_validator.py::test_governance_failure_does_not_block_before_m5_start`
-- `tests/test_gate_hierarchy_validator.py::test_dependency_graph_contains_expected_edges`
-- `tests/test_governance_boundary.py::test_m5_and_governance_truth_do_not_block_m4`
-- `tests/test_governance_boundary.py::test_m4_truth_can_block_m5`
-- `tests/test_governance_boundary.py::test_frontend_truth_blocks_m4_only_with_gui_dependency`
-- `tests/test_governance_boundary.py::test_all_gate_markers_have_boundary_classification`
-- `tests/test_governance_stable_development_mode.py::test_governance_stable_mode_contains_all_required_principles`
-- `tests/test_governance_stable_development_mode.py::test_manual_status_cannot_override_machine_artifacts`
-- `tests/test_governance_stable_development_mode.py::test_no_go_behavior_prevents_feature_driven_fallback`
-- `tests/test_governance_stable_development_mode.py::test_blocked_mode_allows_only_governance_safe_work`
-- `tests/test_health.py::test_app_is_importable`
-- `tests/test_health.py::test_health_returns_ok`
-- `tests/test_health.py::test_database_health_reports_missing_configuration`
-- `tests/test_masterplan_status_engine.py::test_masterplan_status_is_derived_from_artifacts_and_blocks_on_m4`
-- `tests/test_masterplan_status_engine.py::test_status_section_contains_generated_markers_and_blockers`
-- `tests/test_masterplan_status_engine.py::test_documentation_audit_and_gate_drift_are_blocking_inputs`
-- `tests/test_release_candidate_model.py::test_release_candidate_status_order_is_complete_and_terminal_only_at_released`
-- `tests/test_release_candidate_model.py::test_implemented_gate_passed_and_released_rules_are_blocking`
-- `tests/test_release_candidate_model.py::test_m4_release_candidates_have_no_m5_or_governance_dependencies`
-- `tests/test_release_candidate_model.py::test_masterplan_mapping_covers_every_rc_status`
-- `tests/test_truth_split_report_generator.py::test_build_split_reports_emits_required_report_format_for_each_gate`
-- `tests/test_truth_split_report_generator.py::test_split_reports_do_not_leak_other_gate_failures`
-- `tests/test_truth_split_report_generator.py::test_write_split_reports_creates_one_json_file_per_report_marker`
-- `tests/unit/test_chunking_service.py::test_chunking_uses_headings_and_heading_paths`
-- `tests/unit/test_chunking_service.py::test_chunking_splits_long_paragraphs_on_paragraph_boundaries`
-- `tests/unit/test_chunking_service.py::test_chunking_keeps_markdown_table_together`
-- `tests/unit/test_chunking_service.py::test_chunking_keeps_code_block_together`
-- `tests/unit/test_chunking_service.py::test_chunking_rejects_empty_content`
-- `tests/unit/test_chunking_service.py::test_chunking_produces_unique_anchors_for_duplicate_headings`
-- `tests/unit/test_chunking_service.py::test_chunking_is_deterministic_and_hashes_content`
-- `tests/unit/test_chunking_service.py::test_chunking_adds_normalized_text_source_anchor`
-- `tests/unit/test_chunking_service.py::test_chunking_maps_pdf_page_source_anchor`
-- `tests/unit/test_doc_parser.py::test_doc_parser_raises_when_converter_not_available`
-- `tests/unit/test_doc_parser.py::test_doc_parser_raises_on_conversion_failure`
-- `tests/unit/test_doc_parser.py::test_doc_parser_raises_when_output_file_missing`
-- `tests/unit/test_doc_parser.py::test_doc_parser_temp_dir_is_deleted_after_conversion_error`
-- `tests/unit/test_docx_parser.py::test_docx_parser_extracts_simple_paragraphs`
-- `tests/unit/test_docx_parser.py::test_docx_parser_converts_table_to_markdown_table`
-- `tests/unit/test_docx_parser.py::test_docx_parser_converts_headings_to_markdown_headings`
-- `tests/unit/test_docx_parser.py::test_docx_parser_rejects_empty_docx`
-- `tests/unit/test_docx_parser.py::test_docx_parser_rejects_corrupted_docx`
-- `tests/unit/test_markdown_normalizer.py::test_normalizer_preserves_markdown_tables`
-- `tests/unit/test_markdown_normalizer.py::test_normalizer_preserves_code_block_content`
-- `tests/unit/test_markdown_normalizer.py::test_normalizer_preserves_headings_and_lists`
-- `tests/unit/test_markdown_normalizer.py::test_normalizer_converts_windows_line_endings`
-- `tests/unit/test_markdown_normalizer.py::test_normalizer_collapses_multiple_blank_lines_and_adds_final_newline`
-- `tests/unit/test_markdown_normalizer.py::test_normalizer_rejects_empty_content`
-- `tests/unit/test_markdown_normalizer.py::test_normalizer_hash_is_stable_for_equivalent_input`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_extracts_text_from_single_page`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_includes_page_markers_for_each_page`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_page_markers_appear_before_page_text`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_sets_ocr_required_when_text_is_sparse`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_does_not_set_ocr_required_for_sufficient_text`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_sets_ocr_required_when_all_pages_are_blank`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_includes_page_markers_even_for_empty_pages`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_rejects_corrupted_pdf`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_rejects_pdf_with_no_pages`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_records_required_metadata`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_survives_page_extraction_failure`
-- `tests/unit/test_pdf_parser.py::test_pdf_parser_blank_page_pdf_sets_ocr_required`
-- `tests/unit/test_text_markdown_parsers.py::test_txt_parser_extracts_markdown_compatible_text`
-- `tests/unit/test_text_markdown_parsers.py::test_markdown_parser_preserves_tables_unchanged`
-- `tests/unit/test_text_markdown_parsers.py::test_empty_txt_file_fails_controlled`
-- `tests/unit/test_text_markdown_parsers.py::test_parser_preserves_special_characters`
-- `tests/unit/test_text_markdown_parsers.py::test_parser_uses_controlled_encoding_fallback`
-
-### `m4_truth` (1)
+### `m4_truth` (9)
 - `tests/postgres_truth/test_m4_truth_flows.py::test_truth_cleanup_starts_without_stale_state`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_lifecycle_and_workspace_isolation_are_truth_checked`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_cleanup_starts_without_stale_state`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_advisory_lock_document_import_scope_blocks_concurrent_session`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_lifecycle_lock_blocks_concurrent_session`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_reindex_lock_blocks_concurrent_session`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_lifecycle_and_reindex_locks_are_independent`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_dead_letter_replay_blocks_concurrent_session`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_job_claim_and_replay_locks_are_independent`
 
-### `m4a_auth_truth` (42)
+### `m4a_auth_truth` (43)
 - `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_valid_token_returns_full_session`
 - `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_active_workspace_id_matches_first_membership`
 - `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_invalid_token_returns_401`
@@ -136,7 +43,6 @@
 - `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_user_without_membership_gets_null_workspace`
 - `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthLoginLogoutContract::test_login_produces_workspace_matching_auth_me`
 - `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthLoginLogoutContract::test_logout_revokes_session`
-- `tests/postgres_truth/test_m4_truth_flows.py::test_lifecycle_and_workspace_isolation_are_truth_checked`
 - `tests/postgres_truth/test_m4_truth_flows.py::test_auth_workspace_truth_blocks_foreign_workspace_and_non_admin_diagnostics`
 - `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_user_a_lists_only_documents_from_workspace_a`
 - `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_user_a_cannot_import_into_workspace_b`
@@ -170,8 +76,10 @@
 - `tests/test_m4a_auth_core.py::test_auth_me_returns_bootstrap_session_state`
 - `tests/test_m4a_auth_core.py::test_auth_me_requires_valid_session_token`
 - `tests/test_m4a_auth_core.py::test_auth_logout_revokes_current_session`
+- `tests/test_seed_auth_bootstrap.py::test_seed_auth_creates_idempotent_bootstrap_admin_login`
+- `tests/test_seed_auth_bootstrap.py::test_seed_auth_migrates_legacy_login_to_canonical_admin`
 
-### `m4b_upload_queue_truth` (50)
+### `m4b_upload_queue_truth` (51)
 - `tests/integration/test_documents_import.py::test_parallel_duplicate_imports_create_single_document`
 - `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_backend_process_kill_during_import_leaves_retryable_job_and_no_orphan_rows`
 - `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_backend_http_process_kill_during_upload_leaves_no_partial_db_rows`
@@ -184,6 +92,7 @@
 - `tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_file_too_large_returns_413_and_no_job_created`
 - `tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_ocr_required_error_marks_job_as_failed_not_retryable`
 - `tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_parser_failure_marks_job_as_failed_not_retryable`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_two_workers_claiming_same_job_only_one_succeeds`
 - `tests/test_background_job_queue.py::test_claim_job_is_deterministic_and_allows_only_one_worker`
 - `tests/test_background_job_queue.py::test_recover_stale_running_job_marks_it_retryable`
 - `tests/test_background_job_queue.py::test_recover_stale_running_job_emits_recovery_observability`
@@ -223,7 +132,7 @@
 - `tests/test_observability.py::test_upload_logs_structured_context_without_document_content`
 - `tests/test_observability.py::test_duplicate_import_is_observable_without_logging_sensitive_content`
 
-### `m4c_lifecycle_retrieval_truth` (178)
+### `m4c_lifecycle_retrieval_truth` (179)
 - `tests/integration/test_m3b_search.py::test_search_returns_at_least_one_hit`
 - `tests/integration/test_m3b_search.py::test_search_result_has_required_fields`
 - `tests/integration/test_m3b_search.py::test_search_ranking_order_is_deterministic`
@@ -248,6 +157,7 @@
 - `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_chat_citations_use_missing_instead_of_unknown`
 - `tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_archive_excludes_document_from_search_restore_reactivates`
 - `tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_historical_citations_reflect_live_source_status`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_source_status_live_lookup_reflects_lifecycle_transitions`
 - `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_requires_authentication`
 - `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_requires_admin_role`
 - `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_rejects_foreign_workspace`
@@ -500,39 +410,6 @@
 - `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_auto_generates_correlation_id`
 - `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_api_endpoint_returns_report`
 - `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_api_endpoint_rejects_constraint_violation`
-
-### `chaos_truth` (22)
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_cleanup_starts_without_stale_state`
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_advisory_lock_document_import_scope_blocks_concurrent_session`
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_lifecycle_lock_blocks_concurrent_session`
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_reindex_lock_blocks_concurrent_session`
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_lifecycle_and_reindex_locks_are_independent`
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_two_workers_claiming_same_job_only_one_succeeds`
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_dead_letter_replay_blocks_concurrent_session`
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_job_claim_and_replay_locks_are_independent`
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_source_status_live_lookup_reflects_lifecycle_transitions`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_archive_during_reindex_phase2_stale_searchable_chunk`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_archive_between_reindex_phases_produces_stale_index`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_delete_during_search_returns_stale_chunks`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_restore_during_reindex_overwrites_searchability`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_reindex_parallel_to_upload_new_chunks_miss_phase1`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_reindex_parallel_to_chunking_chunks_inserted_between_phases`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_inspect_drift_detects_stale_archived_chunks`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_inspect_drift_detects_stale_deleted_chunks`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_inspect_drift_detects_invalid_lifecycle_status`
-- `tests/test_lifecycle_reindex_chaos.py::test_chaos_inspect_drift_clean_state_after_reindex`
-- `tests/test_workspace_leakage_chaos.py::test_workspace_leakage_chaos_parallel_uploads_search_and_chat_remain_isolated`
-- `tests/test_workspace_leakage_chaos.py::test_workspace_leakage_chaos_reindex_during_search_stays_workspace_scoped`
-- `tests/test_workspace_leakage_chaos.py::test_workspace_leakage_chaos_retry_jobs_and_queue_recovery_preserve_workspace_boundaries`
-
-### `slow_truth` (7)
-- `tests/test_m5_longrun_simulation.py::test_longrun_simulation_passes_default_weekly_model`
-- `tests/test_m5_longrun_simulation.py::test_longrun_stop_criteria_detect_backlog_regression`
-- `tests/test_m5_longrun_simulation.py::test_longrun_writes_versioned_reports`
-- `tests/test_m5_retrieval_benchmark.py::test_retrieval_benchmark_meets_baseline_thresholds`
-- `tests/test_m5_retrieval_benchmark.py::test_retrieval_metric_helpers_handle_missing_relevant_chunks`
-- `tests/test_m5_retrieval_benchmark.py::test_retrieval_benchmark_writes_versioned_reports`
-- `tests/test_m5_retrieval_benchmark.py::test_retrieval_regression_detection_flags_baseline_drop`
 
 ## Unklassifizierte Tests
 - keine

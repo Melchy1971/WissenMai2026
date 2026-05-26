@@ -17,8 +17,17 @@ from urllib.request import Request, urlopen
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND_DIR = ROOT / "backend"
 REPORT_PATH = ROOT / "reports" / "auth_bootstrap_guard.json"
-DEFAULT_LOGIN = "mdickscheit@gmail.com"
-DEFAULT_PASSWORD = "Alex..2026"
+# Canonical env vars: SEED_ADMIN_* (primary) › WISSEN_DEV_* (legacy fallback) › last-resort built-in.
+DEFAULT_LOGIN: str = (
+    os.environ.get("SEED_ADMIN_LOGIN")
+    or os.environ.get("WISSEN_DEV_LOGIN")
+    or "admin@localhost"
+)
+DEFAULT_PASSWORD: str = (
+    os.environ.get("SEED_ADMIN_PASSWORD")
+    or os.environ.get("WISSEN_DEV_PASSWORD")
+    or "change-me"
+)
 DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001"
 DEFAULT_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001"
 DEFAULT_ROLE = "admin"
@@ -396,6 +405,18 @@ def main() -> int:
         report["result"] = "PASS" if not failed else "FAIL"
         write_report(report)
         return 0 if not failed else 1
+    finally:
+        if api_process is not None:
+            api_process.terminate()
+            try:
+                api_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                api_process.kill()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+failed else 1
     finally:
         if api_process is not None:
             api_process.terminate()

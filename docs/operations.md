@@ -1,6 +1,163 @@
 # Operations
 
-Stand: 2026-05-07
+Stand: 2026-05-26
+
+
+## Lokaler Bootstrap (Reihenfolge, Stand 2026-05-26)
+
+Ein einziger Befehl prüft alle Voraussetzungen und schreibt einen Report:
+
+```powershell
+.\scripts\dev_bootstrap.ps1
+```
+
+Was passiert (Reihenfolge):
+
+1. `.env` laden — inkl. `DATABASE_URL`, `SEED_ADMIN_LOGIN`, `SEED_ADMIN_PASSWORD`, `SEED_WORKSPACE_NAME` (siehe unten)
+2. DB-Verbindung prüfen (Psycopg, Timeout 5 s)
+3. `alembic upgrade head` — Schema auf aktuellen Stand bringen
+4. `backend/scripts/seed_auth.py` — Admin-User und Workspace anlegen/aktualisieren
+5. `scripts/check_auth_bootstrap.py --no-start-api` — Login + Workspace-Isolation prüfen (DB-only, kein API-Start)
+6. `/health` Smoke-Check auf Port 8001 (wenn Backend läuft)
+7. `reports/dev_bootstrap_report.json` schreiben
+
+Bei Fehler in einem Schritt: klare Meldung, Exit != 0, kein Silent Continue.
+
+Optionale Flags:
+
+```powershell
+.\scripts\dev_bootstrap.ps1 -SkipSeed    # Seed überspringen (wenn DB bereits befüllt)
+.\scripts\dev_bootstrap.ps1 -SkipSmoke   # /health-Check überspringen (kein Backend nötig)
+.\scripts\dev_bootstrap.ps1 -DryRun      # Nur ENV laden und anzeigen, nichts ausführen
+```
+
+## Seed Credentials (Single Source of Truth)
+
+Alle Seed-Skripte lesen dieselben ENV-Variablen. Reihenfolge der Auflösung:
+
+```
+SEED_ADMIN_LOGIN  ›  WISSEN_DEV_LOGIN (Legacy)  ›  admin@localhost
+SEED_ADMIN_PASSWORD  ›  WISSEN_DEV_PASSWORD (Legacy)  ›  change-me
+SEED_WORKSPACE_NAME  ›  "Default Workspace"
+```
+
+> **Warnung (Lokale Entwicklung):** `.env` enthält das Klartext-Passwort. Niemals `.env` committen! In produktiver Dokumentation keine Klartext-Credentials angeben.
+
+Betroffene Skripte:
+
+- `backend/scripts/seed_auth.py`
+- `scripts/check_auth_bootstrap.py`
+- `scripts/bootstrap_local_backend.py`
+- `scripts/dev_bootstrap.ps1`
+
+## Auth Bootstrap Guard
+
+`scripts/check_auth_bootstrap.py` prüft nach dem Seed ob Login und Workspace-Isolation korrekt funktionieren. Bei Fehler: Exit != 0, Report in `reports/auth_bootstrap_guard.json`.
+
+Einzeln ausführen:
+
+```powershell
+python scripts/check_auth_bootstrap.py --no-start-api
+```
+
+## Runtime Connectivity Gate
+
+`scripts/validate_runtime_connectivity_gate.py` berechnet einen Score aus dem letzten `runtime_connectivity_report.json`:
+
+- 9 Checks: DB, Alembic, Seed, `/health`, Login, `/auth/me`, Workspace-Bootstrap, Frontend, kein `API_UNREACHABLE`
+- Score >= 95 % → PASS → M3a grün
+- Score < 95 % → FAIL → blockiert M3a und M4
+
+```powershell
+python scripts/validate_runtime_connectivity_gate.py
+```
+
+Letzter Run (2026-05-26): **9/9 = 100 % → PASS**
+
+## Seed Credentials (Single Source of Truth)
+
+Alle Seed-Skripte lesen dieselben ENV-Variablen. Reihenfolge der Auflösung:
+
+```
+SEED_ADMIN_LOGIN  ›  WISSEN_DEV_LOGIN (Legacy)  ›  admin@localhost
+SEED_ADMIN_PASSWORD  ›  WISSEN_DEV_PASSWORD (Legacy)  ›  change-me
+SEED_WORKSPACE_NAME  ›  "Default Workspace"
+```
+
+> **Warnung (Lokale Entwicklung):** `.env` enthält das Klartext-Passwort.
+> `.env` darf nie committed werden (`.gitignore`).
+> In Produktionsdokumentation werden keine Credentials im Klartext angegeben.
+
+Betroffene Skripte:
+
+- `backend/scripts/seed_auth.py`
+- `scripts/check_auth_bootstrap.py`
+- `scripts/bootstrap_local_backend.py`
+- `scripts/dev_bootstrap.ps1`
+
+## Auth Bootstrap Guard
+
+`scripts/check_auth_bootstrap.py` prüft nach dem Seed ob Login und Workspace-Isolation korrekt funktionieren.
+Bei Fehler: Exit != 0, Report in `reports/auth_bootstrap_guard.json`.
+
+Einzeln ausführen:
+
+```powershell
+python scripts/check_auth_bootstrap.py --no-start-api
+```
+
+## Runtime Connectivity Gate
+
+`scripts/validate_runtime_connectivity_gate.py` berechnet einen Score aus dem letzten `runtime_connectivity_report.json`:
+
+- 9 Checks: DB, Alembic, Seed, `/health`, Login, `/auth/me`, Workspace-Bootstrap, Frontend, kein `API_UNREACHABLE`
+- Score >= 95 % → PASS → M3a grün
+- Score < 95 % → FAIL → blockiert M3a und M4
+
+```powershell
+python scripts/validate_runtime_connectivity_gate.py
+```
+
+Letzter Run (2026-05-26): **9/9 = 100 % → PASS**
+
+## Backend Start Guard (PreflightService)
+
+Der Backend-Prozess führt beim Start automatisch Preflight-Checks aus:
+
+1. `DATABASE_URL` gesetzt
+2. DB erreichbar
+3. Alembic-Schema aktuell
+4. Pflichttabellen vorhanden (`users`, `workspaces`, …)
+5. Seed-User vorhanden (Warnung, kein Fehler)
+6. App-Config vollständig
+
+Modus:
+- `APP_ENV=production`: immer fail-fast (Exception → Prozess startet nicht)
+- Development default: nur warnen, kein fail
+- Development mit `PREFLIGHT_FAIL_FAST=true`: fail-fast wie Production
+
+Endpunkt für manuelle Prüfung: `GET /health/preflight`
+— HTTP 200 wenn alle Checks pass/warn, HTTP 503 wenn mindestens ein check fail.
+
+## Auth Login Diagnostics (intern)
+
+Die API-Response bei fehlgeschlagenem Login bleibt immer:
+
+```json
+{"error": "AUTH_INVALID_CREDENTIALS"}
+```
+
+Intern wird im Log strukturiert unterschieden:
+
+| reason | Bedeutung |
+|---|---|
+| `login_not_found` | Kein User mit diesem Login |
+| `user_inactive` | User existiert, ist aber deaktiviert |
+| `password_mismatch` | User existiert und ist aktiv, Passwort falsch |
+| `empty_credentials` | Login oder Passwort leer |
+| `db_error` | Datenbankfehler während der Abfrage |
+
+> Logs enthalten niemals Passwörter. `user_id` wird nur bei `user_inactive` und `password_mismatch` geloggt (User muss existieren, damit ID bekannt ist).
 
 ## M5 Dokumentationsrahmen
 

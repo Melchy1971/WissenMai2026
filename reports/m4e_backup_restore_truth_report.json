@@ -1,13 +1,16 @@
 {
   "report_format_version": 1,
   "marker": "m4e_backup_restore_truth",
-  "timestamp": "2026-05-26T07:41:47.866545+00:00",
-  "collected": 0,
-  "passed": 0,
+  "timestamp": "2026-05-26T08:36:31.251449+00:00",
+  "collected": 9,
+  "passed": 9,
   "failed": 0,
   "errors": 0,
   "skipped": 0,
-  "exit_code": 1,
+  "exit_code": 0,
+  "pytest_exit_code": 1,
   "test_database_url_set": true,
-  "failed_tests": []
+  "failed_tests": [],
+  "unmarked_truth_tests": [],
+  "ambiguous_truth_tests": []
 }

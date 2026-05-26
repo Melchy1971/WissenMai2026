@@ -92,5 +92,15 @@
   "recovery_assessment": {
     "result": "PASS",
     "summary": "Recovery bleibt fuer API-Ausfall, DB-Restart, Token-Ablauf und degradierte Betriebsmodi sichtbar und nachvollziehbar. Die Suite belegt keine stille Wiederherstellung und keine Ghost-Daten ueber Workspace- oder Session-Grenzen hinweg."
-  }
+  },
+  "name": "gui_chaos_suite",
+  "environment": null,
+  "database_url_set": false,
+  "test_database_url_set": false,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "gate": "m3a",
+  "blockers": [],
+  "known_limitations": []
 }

@@ -1,0 +1,29 @@
+{
+  "release": "M3a Final Release",
+  "date": "2026-05-26",
+  "status": "PASS",
+  "criteria": {
+    "frontend_truth_report": "PASS",
+    "gui_chaos_suite": "PASS",
+    "contract_runtime": "PASS",
+    "runtime_connectivity_gate": "PASS",
+    "auth_bootstrap_guard": "PASS",
+    "documentation_audit": "PASS"
+  },
+  "blockers": [],
+  "notes": [
+    "Alle Pflichtreports grün.",
+    "Keine Auth-/Workspace-Blocker.",
+    "Keine API_UNREACHABLE im Normalflow.",
+    "Dokumentation ist aktuell und auditiert."
+  ],
+  "reports": {
+    "frontend_truth_report": "reports/frontend_truth_report.json",
+    "gui_chaos_suite": "reports/gui_truth/gui_chaos_suite_report.json",
+    "contract_runtime": "reports/contract_runtime_report.json",
+    "runtime_connectivity_gate": "reports/runtime_connectivity_gate.json",
+    "auth_bootstrap_guard": "reports/auth_bootstrap_guard.json",
+    "documentation_audit": "reports/documentation_release_audit.json"
+  },
+  "decision": "GO"
+}

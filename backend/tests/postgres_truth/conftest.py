@@ -24,11 +24,24 @@ from tests.postgres_truth.support import (
     TruthIds,
     make_truth_ids,
 )
+from tests.postgres_truth.truth_split_reporter import (
+    TruthSplitReporter,
+    _DEFAULT_REPORT_DIR,
+)
 
 
 pytestmark = pytest.mark.postgres_truth
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Rule 4: Split-Reporter als Plugin registrieren."""
+    report_dir = Path(os.getenv("TRUTH_REPORT_DIR", str(_DEFAULT_REPORT_DIR)))
+    config.pluginmanager.register(
+        TruthSplitReporter(report_dir),
+        name="truth_split_reporter",
+    )
 
 
 class PostgresTruthPreflightError(RuntimeError):
@@ -69,6 +82,8 @@ def pytest_collection_modifyitems(items):
 def pytest_collection_finish(session: pytest.Session) -> None:
     if os.getenv("WISSEN_MARKER_TAXONOMY_ONLY") == "1":
         return
+    # Rule 3 wird bereits im TruthSplitReporter (tryfirst) geprüft –
+    # dieser Hook läuft danach und führt nur noch den DB-Preflight durch.
     if any("postgres_truth" in str(item.fspath) for item in session.items):
         try:
             _ensure_postgres_truth_preflight(_database_url())

@@ -1,0 +1,79 @@
+{
+  "report_format_version": 2,
+  "generated_at": "2026-05-26T08:28:56.846946+00:00",
+  "gate": "M4",
+  "status": "FAIL",
+  "blocking_failures": 1,
+  "evaluated_markers": [
+    "m4_truth",
+    "m4a_auth_truth",
+    "m4b_upload_queue_truth",
+    "m4c_lifecycle_retrieval_truth",
+    "m4e_backup_restore_truth"
+  ],
+  "excluded_markers": [
+    "governance_truth",
+    "m5_truth"
+  ],
+  "per_marker": {
+    "m4_truth": {
+      "gate": "m4",
+      "collected": 9,
+      "passed": 9,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "failed_tests": [],
+      "source_report": "m4_truth_report.json"
+    },
+    "m4a_auth_truth": {
+      "gate": "m4",
+      "collected": 31,
+      "passed": 30,
+      "failed": 0,
+      "errors": 1,
+      "skipped": 0,
+      "exit_code": 1,
+      "failed_tests": [],
+      "source_report": "m4a_auth_truth_report.json"
+    },
+    "m4b_upload_queue_truth": {
+      "gate": "m4",
+      "collected": 12,
+      "passed": 12,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "failed_tests": [],
+      "source_report": "m4b_upload_queue_truth_report.json"
+    },
+    "m4c_lifecycle_retrieval_truth": {
+      "gate": "m4",
+      "collected": 10,
+      "passed": 10,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "failed_tests": [],
+      "source_report": "m4c_lifecycle_retrieval_truth_report.json"
+    },
+    "m4e_backup_restore_truth": {
+      "gate": "m4",
+      "collected": 9,
+      "passed": 9,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "failed_tests": [],
+      "source_report": "m4e_backup_restore_truth_report.json"
+    }
+  },
+  "notes": {
+    "m4a_auth_truth": "errors=1: Setup-Error im letzten Run; keine failed_tests.",
+    "m5_truth": "NON-BLOCKING. 8 Entropy-Tests fehlgeschlagen; blockiert M4 nicht."
+  }
+}

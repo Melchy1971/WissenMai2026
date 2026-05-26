@@ -1,0 +1,28 @@
+Truth Marker Split Report  2026-05-26T08-28-56
+======================================================================
+
+M4-GATE  (blockierend)
+----------------------------------------------------------------------
+  m4_truth                                   PASS      collected=  9  passed=  9  failed=0  errors=0
+  m4a_auth_truth                             FAIL      collected= 31  passed= 30  failed=0  errors=1
+  m4b_upload_queue_truth                     PASS      collected= 12  passed= 12  failed=0  errors=0
+  m4c_lifecycle_retrieval_truth              PASS      collected= 10  passed= 10  failed=0  errors=0
+  m4e_backup_restore_truth                   PASS      collected=  9  passed=  9  failed=0  errors=0
+
+NON-BLOCKING  (informational)
+----------------------------------------------------------------------
+  governance_truth                           PASS      collected= 39  passed= 39  failed=0  errors=0
+  m5_truth                                   FAIL      collected= 37  passed= 29  failed=8  errors=0
+    FAIL  tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_chunk_deletion_increases_citation_orphan_rate
+    FAIL  tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_citation_orphan_rate_tracks_deletion_scale
+    FAIL  tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_entropy_simulation_detects_chaos_and_verifies_recovery
+    ... and 5 more
+
+======================================================================
+M4-GATE STATUS  : FAIL
+Blocking failures: 1
+
+Rule 1: M4-Gate bewertet nur M4-Marker.
+Rule 2: m5_truth, governance_truth blockieren M4 nicht.
+Rule 3: Tests ohne Gate-Marker brechen Collection ab.
+Rule 4: Report automatisch nach jedem Truth-Run erzeugt.

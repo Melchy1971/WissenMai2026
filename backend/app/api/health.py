@@ -22,3 +22,22 @@ def database_health() -> dict[str, str]:
         raise ServiceUnavailableApiError(message="Database connection check failed") from exc
 
     return {"status": "ok"}
+
+
+@router.get("/health/preflight")
+def preflight_health() -> dict:
+    """
+    Führt alle Preflight-Checks durch und gibt das Ergebnis zurück.
+    HTTP 200 wenn alle Checks bestanden (pass oder warn).
+    HTTP 503 bei mindestens einem fail.
+    """
+    from app.services.preflight import PreflightService
+
+    result = PreflightService().run()
+    payload = result.as_dict()
+    payload["env"] = settings.app_env
+
+    if not result.passed:
+        raise ServiceUnavailableApiError(message="Preflight checks failed", detail=payload)
+
+    return payload

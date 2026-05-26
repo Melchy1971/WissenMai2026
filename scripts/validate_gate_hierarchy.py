@@ -49,9 +49,14 @@ GATE_SPECS: tuple[GateSpec, ...] = (
         reports=("m4e_backup_restore_truth_report.json",),
     ),
     GateSpec(
+        id="m4_crosscutting_gate",
+        label="M4 Cross-Cutting Gate",
+        reports=("m4_truth_report.json",),
+    ),
+    GateSpec(
         id="m4_overall_gate",
         label="M4 Gesamtgate",
-        dependencies=("m3a_gate", "m4a_gate", "m4b_gate", "m4c_gate", "m4e_gate"),
+        dependencies=("m4_crosscutting_gate", "m4a_gate", "m4b_gate", "m4c_gate", "m4e_gate"),
     ),
     GateSpec(
         id="m5_start_gate",
@@ -202,7 +207,8 @@ def evaluate_gate_hierarchy(report_dir: Path = REPORTS_DIR, *, timestamp: str | 
             "m4b_gate": ["m4b_upload_queue_truth_report.json"],
             "m4c_gate": ["m4c_lifecycle_retrieval_truth_report.json"],
             "m4e_gate": ["m4e_backup_restore_truth_report.json"],
-            "m4_overall_gate": ["m3a_gate", "m4a_gate", "m4b_gate", "m4c_gate", "m4e_gate"],
+            "m4_crosscutting_gate": ["m4_truth_report.json"],
+            "m4_overall_gate": ["m4_crosscutting_gate", "m4a_gate", "m4b_gate", "m4c_gate", "m4e_gate"],
             "m5_start_gate": ["m4_overall_gate"],
             "operational_governance_gate": ["m5_start_gate", "governance_truth_report.json"],
         },
