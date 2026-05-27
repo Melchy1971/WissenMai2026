@@ -85,6 +85,8 @@ class DocumentImportPersistenceService:
         source_filename: str,
         source_bytes: bytes,
     ) -> PersistedImportDocument:
+        from psycopg.errors import UniqueViolation
+        import psycopg
         with advisory_lock_on_connection(
             connection,
             scope_name="document_import",
@@ -94,18 +96,25 @@ class DocumentImportPersistenceService:
             if existing is not None:
                 log_event("import_duplicate_detected", workspace_id=workspace_id, status="completed")
                 return existing
-
-            return self._insert_document(
-                connection,
-                workspace_id=workspace_id,
-                owner_user_id=owner_user_id,
-                title=title,
-                mime_type=mime_type,
-                content_hash=content_hash,
-                document=document,
-                source_filename=source_filename,
-                source_bytes=source_bytes,
-            )
+            try:
+                return self._insert_document(
+                    connection,
+                    workspace_id=workspace_id,
+                    owner_user_id=owner_user_id,
+                    title=title,
+                    mime_type=mime_type,
+                    content_hash=content_hash,
+                    document=document,
+                    source_filename=source_filename,
+                    source_bytes=source_bytes,
+                )
+            except (psycopg.errors.UniqueViolation, psycopg.IntegrityError):
+                # Parallel insert: fetch existing and return as duplicate
+                log_event("import_duplicate_integrityerror", workspace_id=workspace_id, status="completed")
+                existing = self._fetch_existing(connection, workspace_id=workspace_id, content_hash=content_hash)
+                if existing is not None:
+                    return existing
+                raise
 
     def _insert_document(
         self,

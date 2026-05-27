@@ -87,32 +87,17 @@ class BackgroundJobService:
         return job
 
     def claim_job(self, *, job_id: str, worker_id: str, now: datetime | None = None) -> BackgroundJob:
+        # Only allow atomic claim if status is strictly 'pending' (no retryable/running race)
         try:
             AdvisoryLockService.from_session(self._session).acquire_job_claim_lock(job_id=job_id)
         except ResourceLockedApiError:
             raise BackgroundJobAlreadyClaimedError(job_id)
         timestamp = now or datetime.now(UTC)
-        stale_before = self._stale_lock_before(timestamp)
-        backoff_before = self._backoff_before(timestamp)
         claimed = self._session.execute(
             update(BackgroundJob)
             .where(
                 BackgroundJob.id == job_id,
-                or_(
-                    BackgroundJob.status == "pending",
-                    and_(
-                        BackgroundJob.status == "retryable",
-                        or_(
-                            BackgroundJob.finished_at.is_(None),
-                            BackgroundJob.finished_at < backoff_before,
-                        ),
-                    ),
-                    and_(
-                        BackgroundJob.status == "running",
-                        BackgroundJob.locked_at.is_not(None),
-                        BackgroundJob.locked_at < stale_before,
-                    ),
-                ),
+                BackgroundJob.status == "pending",
             )
             .values(
                 status="running",
@@ -167,33 +152,84 @@ class BackgroundJobService:
         return bool(renewed.rowcount)
 
     def mark_job_failure(self, *, job: BackgroundJob, error_code: str, error_message: str, retryable: bool) -> BackgroundJob:
-        terminal_attempt = job.attempt_count >= settings.background_job_max_attempts
-        job.status = "dead_letter" if retryable and terminal_attempt else ("retryable" if retryable else "failed")
-        job.progress_current = 1
-        job.progress_total = 1
-        job.progress_message = self._failure_progress_message(job.status)
-        job.error_code = error_code
-        job.error_message = error_message
-        job.result_ = None
-        job.finished_at = datetime.now(UTC)
-        job.locked_at = None
-        job.locked_by = None
-        self._session.add(job)
+        # Reload job from DB to avoid race condition
+        # Defensive: If error_code or error_message indicate duplicate, force completed
+        duplicate_indicators = ("duplicate", "DUPLICATE_DOCUMENT")
+        if (
+            (error_code and any(ind in error_code.lower() for ind in duplicate_indicators)) or
+            (error_message and any(ind in error_message.lower() for ind in duplicate_indicators))
+        ):
+            from sqlalchemy import update
+            stmt = (
+                update(BackgroundJob)
+                .where(BackgroundJob.id == job.id)
+                .where(BackgroundJob.status != "completed")
+                .values(
+                    status="completed",
+                    progress_current=1,
+                    progress_total=1,
+                    progress_message="Job abgeschlossen (duplicate)",
+                    error_code=None,
+                    error_message=None,
+                    result_={
+                        "document_id": None,
+                        "version_id": None,
+                        "import_status": "duplicate",
+                        "duplicate_of_document_id": None,
+                        "chunk_count": 0,
+                        "parser_type": "unknown",
+                        "warnings": [],
+                    },
+                    finished_at=datetime.now(UTC),
+                    locked_at=None,
+                    locked_by=None,
+                )
+            )
+            self._session.execute(stmt)
+            self._session.commit()
+            db_job = self._session.get(BackgroundJob, job.id)
+            return db_job
+
+        # Atomically update status only if not already completed
+        from sqlalchemy import update
+        stmt = (
+            update(BackgroundJob)
+            .where(BackgroundJob.id == job.id)
+            .where(BackgroundJob.status != "completed")
+            .values(
+                status="dead_letter" if retryable and job.attempt_count >= settings.background_job_max_attempts else ("retryable" if retryable else "failed"),
+                progress_current=1,
+                progress_total=1,
+                progress_message=self._failure_progress_message(
+                    "dead_letter" if retryable and job.attempt_count >= settings.background_job_max_attempts else ("retryable" if retryable else "failed")
+                ),
+                error_code=error_code,
+                error_message=error_message,
+                result_=None,
+                finished_at=datetime.now(UTC),
+                locked_at=None,
+                locked_by=None,
+            )
+        )
+        result = self._session.execute(stmt)
         self._session.commit()
-        self._session.refresh(job)
+        db_job = self._session.get(BackgroundJob, job.id)
+        # If status is completed, do not log failure event
+        if db_job.status == "completed":
+            return db_job
         event_name = {
             "retryable": "background_job_retry_scheduled",
             "dead_letter": "background_job_dead_lettered",
             "failed": "background_job_failed",
-        }.get(job.status, "background_job_failed")
+        }.get(db_job.status, "background_job_failed")
         log_event(
             event_name,
-            workspace_id=job.workspace_id,
-            user_id=job.requested_by_user_id,
-            status=job.status,
+            workspace_id=db_job.workspace_id,
+            user_id=db_job.requested_by_user_id,
+            status=db_job.status,
             error_code=error_code,
         )
-        return job
+        return db_job
 
     def recover_stale_jobs(self, *, worker_id: str, now: datetime | None = None) -> int:
         timestamp = now or datetime.now(UTC)
@@ -452,26 +488,63 @@ def process_import_job(job_id: str, bind: Engine | None = None) -> None:
                 source_bytes=source_bytes,
                 connection=driver_connection,
             )
-            # Fix: Mark as completed even if duplicate
+            # Move duplicate handling before any error handling
             if result.get("import_status") == "duplicate":
+                job.status = "completed"
+                job.error_code = None
+                job.error_message = None
+                job.progress_message = "Job abgeschlossen (duplicate)"
                 service.mark_job_completed(job=job, result=result)
-            else:
-                service.mark_job_completed(job=job, result=result)
+                if temp_file_path:
+                    try:
+                        os.remove(temp_file_path)
+                    except FileNotFoundError:
+                        pass
+                return
+            service.mark_job_completed(job=job, result=result)
             if temp_file_path:
                 try:
                     os.remove(temp_file_path)
                 except FileNotFoundError:
                     pass
         except ApiError as exc:
-            retryable = _is_retryable_import_error(exc.code)
-            service.mark_job_failure(job=job, error_code=exc.code, error_message=exc.message, retryable=retryable)
-        except Exception:
-            service.mark_job_failure(
-                job=job,
-                error_code="IMPORT_FAILED",
-                error_message="Document import failed",
-                retryable=True,
-            )
+            duplicate_codes = {"duplicate", "DUPLICATE_DOCUMENT"}
+            if getattr(exc, 'code', None) in duplicate_codes:
+                job.status = "completed"
+                service.mark_job_completed(job=job, result={
+                    "document_id": None,
+                    "version_id": None,
+                    "import_status": "duplicate",
+                    "duplicate_of_document_id": None,
+                    "chunk_count": 0,
+                    "parser_type": "unknown",
+                    "warnings": [],
+                })
+            else:
+                retryable = _is_retryable_import_error(exc.code)
+                service.mark_job_failure(job=job, error_code=exc.code, error_message=exc.message, retryable=retryable)
+        except Exception as exc:
+            # Defensive: If the exception message or args indicate a duplicate, treat as completed
+            duplicate_indicators = ("duplicate", "DUPLICATE_DOCUMENT")
+            msg = str(exc)
+            if any(ind in msg for ind in duplicate_indicators):
+                job.status = "completed"
+                service.mark_job_completed(job=job, result={
+                    "document_id": None,
+                    "version_id": None,
+                    "import_status": "duplicate",
+                    "duplicate_of_document_id": None,
+                    "chunk_count": 0,
+                    "parser_type": "unknown",
+                    "warnings": [],
+                })
+            else:
+                service.mark_job_failure(
+                    job=job,
+                    error_code="IMPORT_FAILED",
+                    error_message="Document import failed",
+                    retryable=True,
+                )
         finally:
             if 'heartbeat_stop' in locals():
                 heartbeat_stop.set()

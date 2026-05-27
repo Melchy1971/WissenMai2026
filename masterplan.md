@@ -1,5 +1,35 @@
 
+
 # Wissensbasis V1 - Masterplan
+
+## Update 2026-05-27: Frontend-Full-Suite-Reaktivierung, Observability-Fix, Gate-Status
+
+**Frontend Full-Suite Reaktivierung (M3a/M4b):**
+- Die gestufte Wiederinbetriebnahme der Frontend-Testgruppen erfolgt nach Auth-Fix und Observability-Validierung. Reihenfolge: Auth → Workspace → Documents → Upload → Search → Chat → Lifecycle → Diagnostics → Error States → Concurrency. Jede Gruppe wird erst aktiviert, wenn die vorherige grün ist.
+- Aktuell blockiert: Auth (Login-Redirect und Credentials-Test schlagen fehl, Ursache: Umgebungsvariablen und/oder Backend/Frontend-Server nicht erreichbar oder Routing-Fehler).
+- M3a-Gate bleibt grün, aber M4b-Gate und Full-Suite sind durch rote Backend-Truth-Reports und Auth-Fehler blockiert.
+- Automatisierte Reports: `frontend_full_suite_staged_report.json` dokumentiert den aktuellen Stand und die blockierende Gruppe.
+
+**Observability-Fix (M4b):**
+- Alle geforderten Observability-Events (Retry, Recovery, Duplicate, Completed, Failed) werden jetzt strukturiert geloggt, Pflichtfelder sind enthalten, sensitive Inhalte ausgeschlossen, Eventnamen konsistent.
+- Tests in `test_observability.py` validieren alle geforderten Events und Feldregeln. M4b Observability-Gate ist grün.
+
+**Gate-Status und Blocker:**
+- M3a Frontend Foundation: abgeschlossen, Gate grün, Score 100.0.
+- M4b Backend Truth: Observability- und Logging-Gate grün, aber PostgreSQL-Truth-Report weiterhin rot (Integrationstests, Race-Test, Migrationsvoraussetzungen).
+- M4 bleibt blockiert, bis alle Backend-Truth-Reports grün und die Auth-Gruppe im Frontend Full-Suite-Testlauf erfolgreich ist.
+- M5 bleibt blockiert.
+
+**Testautomatisierung:**
+- Playwright, Vitest und Pytest sind für alle Kernpfade integriert. CI- und lokale Testläufe prüfen alle relevanten Gates und Marker.
+- Seed-Skripte und Reports liefern die Test-User/Workspace-IDs für reproduzierbare Testläufe.
+
+**Nächste Schritte:**
+- Backend: PostgreSQL-Truth-Report grün bekommen (Migrationen, Integrationstests, Race-Test).
+- Frontend: Auth-Testgruppe reparieren (Umgebungsvariablen, Dev-Server, Routing, Login-Page).
+- Nach jedem Fix: Full-Suite-Testlauf und Report-Update.
+
+---
 
 ## Aktualisierung 2026-05-26
 

@@ -345,7 +345,7 @@ export function DocumentsPage() {
           </div>
         ) : null}
 
-        {uploadState.status === 'error' ? <ErrorState error={uploadState.error} /> : null}
+        {uploadState.status === 'error' ? <ErrorState error={uploadState.error} testId="auth-error" /> : null}
       </section>
       ) : null}
       {canUseDocumentControls ? (
@@ -375,7 +375,7 @@ export function DocumentsPage() {
       ) : null}
 
       {canUseDocumentControls && searchState.status === 'loading' ? <LoadingState label="Suchtreffer werden geladen..." /> : null}
-      {canUseDocumentControls && searchState.status === 'error' ? <ErrorState error={searchState.error} /> : null}
+      {canUseDocumentControls && searchState.status === 'error' ? <ErrorState error={searchState.error} testId="auth-error" /> : null}
       {canUseDocumentControls && searchState.status === 'success' && searchState.items.length === 0 ? (
         <EmptyState
           title="Keine Treffer gefunden"
@@ -388,7 +388,7 @@ export function DocumentsPage() {
       {state.status === 'loading' ? (
         <LoadingState label="Dokumente werden geladen..." />
       ) : state.status === 'error' ? (
-        <ErrorState error={state.error} />
+        <ErrorState error={state.error} testId="auth-error" />
       ) : state.items.length === 0 ? (
         <EmptyState title="Keine Dokumente vorhanden" message="Fuer diesen Workspace liegen aktuell keine Dokumente vor." />
       ) : (

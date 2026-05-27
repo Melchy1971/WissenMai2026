@@ -155,7 +155,13 @@
       "Bash(python -m pytest backend/tests/test_gate_hierarchy_validator.py -v)",
       "Bash(python -m pytest backend/tests/ -v --ignore=backend/tests/postgres_truth -x -q)",
       "Bash(python scripts/generate_masterplan_status_v2.py)",
-      "Bash(python -m pytest backend/tests/test_gate_hierarchy_validator.py -q)"
+      "Bash(python -m pytest backend/tests/test_gate_hierarchy_validator.py -q)",
+      "Bash(cd /d h:\\\\WissenMai2026\\\\backend)",
+      "Bash(.venv\\\\Scripts\\\\uvicorn.exe app.main:app --host 127.0.0.1 --port 8001 --reload)",
+      "PowerShell(Start-Process -FilePath \"h:\\\\WissenMai2026\\\\backend\\\\.venv\\\\Scripts\\\\uvicorn.exe\" -ArgumentList \"app.main:app\", \"--host\", \"127.0.0.1\", \"--port\", \"8001\", \"--reload\" -WorkingDirectory \"h:\\\\WissenMai2026\\\\backend\" -WindowStyle Normal)",
+      "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c\", \"npm run dev -- --host 127.0.0.1 --port 5174\" -WorkingDirectory \"h:\\\\WissenMai2026\\\\frontend\" -WindowStyle Normal)",
+      "PowerShell(Start-Sleep -Seconds 5; try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8001/health\" -TimeoutSec 5 -UseBasicParsing; \"Backend: $\\($r.StatusCode\\)\" } catch { \"Backend: NICHT ERREICHBAR - $\\($_.Exception.Message\\)\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:5174\" -TimeoutSec 5 -UseBasicParsing; \"Frontend: $\\($r.StatusCode\\)\" } catch { \"Frontend: NICHT ERREICHBAR - $\\($_.Exception.Message\\)\" })"
     ]
   },
   "hooks": {

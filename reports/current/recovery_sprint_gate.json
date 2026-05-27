@@ -1,0 +1,31 @@
+{
+  "report_schema_version": 1,
+  "report_name": "recovery_sprint_gate",
+  "timestamp": "2026-05-27T12:00:00Z",
+  "environment": "local",
+  "criteria": {
+    "minimal_slice": "PASS",
+    "auth_group_full_suite": "FAIL",
+    "m4a_auth": "PASS",
+    "m4b_upload_queue": "FAIL",
+    "m4c_lifecycle_retrieval": "PASS",
+    "m4e_backup_restore": "PASS",
+    "preflight": "FAIL"
+  },
+  "details": {
+    "frontend_truth_minimal_report": "PASS",
+    "frontend_full_suite_staged_report": "FAIL",
+    "m4a_auth_truth": "PASS",
+    "m4b_upload_queue_truth": "FAIL",
+    "m4c_lifecycle_retrieval_truth": "PASS",
+    "m4e_backup_restore_truth": "PASS",
+    "report_truth_preflight": "FAIL"
+  },
+  "blockers": [
+    "Full-Suite Auth-Gruppe nicht stabil (22/27 Tests fehlgeschlagen)",
+    "M4b Upload Queue hat 5 Fehler",
+    "Preflight-Check fehlgeschlagen: Frontend nicht erreichbar"
+  ],
+  "go_nogo": "NO-GO",
+  "decision": "Full-Suite-Reaktivierung nicht freigegeben. Auth-Gruppe und M4b müssen stabilisiert werden."
+}

@@ -72,7 +72,7 @@ export function AppShell() {
           ) : null}
         </div>
       </header>
-      <main className="shell__content">
+      <main className="shell__content" data-testid="workspace-ready">
         <Outlet />
       </main>
     </div>

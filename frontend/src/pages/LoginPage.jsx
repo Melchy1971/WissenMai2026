@@ -148,7 +148,7 @@ export function LoginPage() {
         </form>
       </section>
 
-      {state.status === 'error' ? <ErrorState error={state.error} /> : null}
+      {state.status === 'error' ? <ErrorState error={state.error} testId="auth-error" /> : null}
     </section>
   );
 }

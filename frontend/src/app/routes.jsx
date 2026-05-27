@@ -30,6 +30,7 @@ function ProtectedRoute() {
     return (
       <ErrorState
         error={mappedError}
+        testId="auth-error"
         actionLabel={bootstrapError.code === 'API_UNREACHABLE' || bootstrapError.code === 'TIMEOUT' ? 'Erneut versuchen' : ''}
         onAction={bootstrapError.code === 'API_UNREACHABLE' || bootstrapError.code === 'TIMEOUT' ? retryBootstrap : null}
       />
@@ -45,6 +46,7 @@ function ProtectedRoute() {
           details: {},
           status: 403,
         })}
+        testId="auth-error"
       />
     );
   }

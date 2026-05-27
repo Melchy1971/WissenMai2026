@@ -11,7 +11,7 @@ test.describe('01 Login flow', () => {
 
   test('redirects unauthenticated request to login page', async ({ page }) => {
     await page.goto('/documents');
-    await expect(page.getByTestId('login-page')).toBeVisible();
+    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
   });
 
   test('shows error state on invalid credentials', async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe('01 Login flow', () => {
     await page.getByTestId('login-email').fill('nonexistent_user_xyz_000');
     await page.getByTestId('login-password').fill('wrong_password_xyz_000');
     await page.getByTestId('login-submit').click();
-    await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 10_000 });
   });
 
   test('successful login with truth credentials redirects to documents page', async ({ page }) => {

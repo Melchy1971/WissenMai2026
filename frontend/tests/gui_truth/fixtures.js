@@ -32,8 +32,8 @@ async function waitForProtectedDocumentsReady(page) {
     undefined,
     { timeout: 15_000 },
   );
-  await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });
-  await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });
+  await page.waitForSelector('[data-testid="app-shell"]', { state: 'visible', timeout: 15_000 });
+  await page.waitForSelector('[data-testid="documents-page"]', { state: 'visible', timeout: 15_000 });
 }
 
 async function waitForProtectedErrorReady(page) {
@@ -43,7 +43,7 @@ async function waitForProtectedErrorReady(page) {
     undefined,
     { timeout: 15_000 },
   );
-  await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });
+  await page.waitForSelector('[data-testid="auth-error"]', { state: 'visible', timeout: 15_000 });
 }
 
 export const test = base.extend({

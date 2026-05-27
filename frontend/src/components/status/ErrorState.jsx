@@ -1,8 +1,9 @@
-export function ErrorState({ error, actionLabel = '', onAction = null }) {
+export function ErrorState({ error, actionLabel = '', onAction = null, testId = null }) {
   const visibleAction = actionLabel || error.allowedAction || '';
   return (
     <section
       className="state-card state-card--error"
+      {...(testId ? { 'data-testid': testId } : {})}
       data-error-code={error.code}
       data-technical-code={error.technicalCode || error.classification || error.code}
       data-retry={error.retry ? 'true' : 'false'}

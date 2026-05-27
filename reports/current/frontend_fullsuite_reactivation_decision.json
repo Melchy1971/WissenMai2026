@@ -14,14 +14,24 @@
       "result": "PASS",
       "passed": 6,
       "collected": 6
-    },
-    "frontend_failure_clusters.json": {
-      "result": "INFO",
-      "top_clusters": [
-        {
-          "cluster": "Auth Failure",
-          "count": 23
-        },
+    {
+      "go_nogo": "NO-GO",
+      "reason": "Full-Suite-Reaktivierung nicht freigegeben. Auth-Gruppe und M4b müssen stabilisiert werden.",
+      "criteria": {
+        "minimal_slice": "PASS",
+        "auth_group_full_suite": "FAIL",
+        "m4a_auth": "PASS",
+        "m4b_upload_queue": "FAIL",
+        "m4c_lifecycle_retrieval": "PASS",
+        "m4e_backup_restore": "PASS",
+        "preflight": "FAIL"
+      },
+      "blockers": [
+        "Full-Suite Auth-Gruppe nicht stabil (22/27 Tests fehlgeschlagen)",
+        "M4b Upload Queue hat 5 Fehler",
+        "Preflight-Check fehlgeschlagen: Frontend nicht erreichbar"
+      ]
+    }
         {
           "cluster": "Workspace Failure",
           "count": 14

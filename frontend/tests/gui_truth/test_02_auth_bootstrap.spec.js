@@ -20,13 +20,13 @@ import { expect, test } from './fixtures.js';
 test.describe('02 Auth bootstrap — 01 no token', () => {
   test('redirects to /login without token', async ({ barePage }) => {
     await barePage.goto('/documents');
-    await expect(barePage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+    await expect(barePage.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
     await expect(barePage).toHaveURL(/\/login/);
   });
 
   test('root path also redirects to /login', async ({ barePage }) => {
     await barePage.goto('/');
-    await expect(barePage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+    await expect(barePage.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
   });
 
   test('zero /auth/me calls when no token present', async ({ barePage }) => {
@@ -42,9 +42,9 @@ test.describe('02 Auth bootstrap — 01 no token', () => {
 
   test('no workspace error shown on login page', async ({ barePage }) => {
     await barePage.goto('/documents');
-    await expect(barePage.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+    await expect(barePage.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
     // No WORKSPACE_NOT_CONFIGURED or similar error should appear on the login page
-    await expect(barePage.locator('.state-card--error')).not.toBeVisible();
+    await expect(barePage.getByTestId('auth-error')).not.toBeVisible();
   });
 });
 
@@ -68,25 +68,25 @@ test.describe('02 Auth bootstrap — 02 bootstrap resolves', () => {
       { token },
     );
     await page.goto('/documents');
-    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
 
     expect(authMeCalls.length).toBe(1);
   });
 
   test('bootstrap resolves to documents page', async ({ partialAuthPage }) => {
-    await expect(partialAuthPage.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(partialAuthPage.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
     await expect(partialAuthPage).not.toHaveURL(/\/login/);
   });
 
   test('workspace id appears in page header after bootstrap', async ({ partialAuthPage }) => {
     const workspaceId = process.env.TRUTH_WORKSPACE_ID;
-    await expect(partialAuthPage.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(partialAuthPage.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
     await expect(partialAuthPage.getByText(`Workspace: ${workspaceId}`)).toBeVisible();
   });
 
   test('no error state after successful bootstrap', async ({ partialAuthPage }) => {
-    await expect(partialAuthPage.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
-    await expect(partialAuthPage.locator('.state-card--error')).not.toBeVisible();
+    await expect(partialAuthPage.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
+    await expect(partialAuthPage.getByTestId('auth-error')).not.toBeVisible();
   });
 });
 
@@ -95,12 +95,12 @@ test.describe('02 Auth bootstrap — 03 complete session', () => {
   test('no bootstrap loading flash with complete session', async ({ authedPage }) => {
     // The loading text only appears if bootstrap is still pending
     await expect(authedPage.getByText('Authentifizierung wird initialisiert...')).not.toBeVisible();
-    await expect(authedPage.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible();
+    await expect(authedPage.getByTestId('documents-page')).toBeVisible();
   });
 
   test('app shell renders without error state', async ({ authedPage }) => {
-    await expect(authedPage.locator('.shell')).toBeVisible();
-    await expect(authedPage.locator('.state-card--error')).not.toBeVisible();
+    await expect(authedPage.getByTestId('app-shell')).toBeVisible();
+    await expect(authedPage.getByTestId('auth-error')).not.toBeVisible();
   });
 
   test('complete session does not call /auth/me', async ({ page }) => {
@@ -129,7 +129,7 @@ test.describe('02 Auth bootstrap — 03 complete session', () => {
       { t: token, ws: workspaceId, uid: userId },
     );
     await page.goto('/documents');
-    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 10_000 });
     await page.waitForTimeout(500);
 
     expect(authMeCalls).toHaveLength(0);
@@ -152,7 +152,7 @@ test.describe('02 Auth bootstrap — 04 invalid token', () => {
     await page.goto('/documents');
 
     // Should show auth error (session expired), NOT silently redirect or show blank page
-    await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
     await expect(page).not.toHaveURL(/\/login/);
   });
 
@@ -168,9 +168,9 @@ test.describe('02 Auth bootstrap — 04 invalid token', () => {
       window.localStorage.setItem('wissen.authToken', 'invalid-bootstrap-token-xyz-001');
     });
     await page.goto('/documents');
-    await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
 
-    const errorText = await page.locator('.state-card--error').textContent();
+    const errorText = await page.getByTestId('auth-error').textContent();
     expect(errorText).toBeTruthy();
     await expect(page.getByText('Fehlercode: AUTH_REQUIRED')).toBeVisible();
   });
@@ -199,7 +199,7 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
     });
 
     await page.goto('/documents');
-    await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
 
     // Retry button must be visible for transient errors
     await expect(page.getByRole('button', { name: 'Erneut versuchen' })).toBeVisible();
@@ -231,26 +231,26 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
     });
 
     await page.goto('/documents');
-    await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
 
     // Unblock and click retry
     blocked = false;
     await page.getByRole('button', { name: 'Erneut versuchen' }).click();
     await expect.poll(() => authMeCalls.length, { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
-    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
   });
 });
 
 // ─── Scenario 06: No workspace membership ────────────────────────────────────
 test.describe('02 Auth bootstrap — 06 no workspace membership', () => {
   test('shows workspace-not-configured error for user with no memberships', async ({ noMembershipPage }) => {
-    await expect(noMembershipPage.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });
+    await expect(noMembershipPage.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
   });
 
   test('no-membership error is not AUTH_SESSION_EXPIRED', async ({ noMembershipPage }) => {
-    await expect(noMembershipPage.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });
+    await expect(noMembershipPage.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
     // User IS authenticated (valid token) — should NOT see "Session abgelaufen"
-    const errorText = await noMembershipPage.locator('.state-card--error').textContent();
+    const errorText = await noMembershipPage.getByTestId('auth-error').textContent();
     expect(errorText).not.toContain('Session abgelaufen');
   });
 });
@@ -280,7 +280,7 @@ test.describe('02 Auth bootstrap — 07 forbidden', () => {
     );
 
     await page.goto('/documents');
-    await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
     await expect(page).not.toHaveURL(/\/login/);
   });
 
@@ -307,7 +307,7 @@ test.describe('02 Auth bootstrap — 07 forbidden', () => {
     );
 
     await page.goto('/documents');
-    await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByRole('button', { name: 'Erneut versuchen' })).not.toBeVisible();
   });
 });
@@ -331,30 +331,30 @@ async function loginForLogoutScenario(page) {
     window.localStorage.setItem('wissen.workspaceId', state.active_workspace_id);
   }, authState);
   await page.goto('/documents');
-  await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
 }
 
 test.describe('02 Auth bootstrap — 08 logout', () => {
   test('logout clears session and redirects to login', async ({ page }) => {
     await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
     await expect(page).toHaveURL(/\/login/);
   });
 
   test('after logout, navigating to /documents redirects to login', async ({ page }) => {
     await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
 
     await page.goto('/documents');
-    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
   });
 
   test('after logout, localStorage is cleared', async ({ page }) => {
     await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
 
     const stored = await page.evaluate(() => window.localStorage.getItem('wissen.authToken'));
     expect(stored).toBeNull();
@@ -365,13 +365,13 @@ test.describe('02 Auth bootstrap — 08 logout', () => {
 
     await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(page.getByRole('heading', { name: 'Anmeldung' })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
 
-    await page.getByLabel('Login').fill(process.env.TRUTH_LOGIN);
-    await page.getByLabel('Passwort').fill(process.env.TRUTH_PASSWORD);
-    await page.getByRole('button', { name: 'Anmelden' }).click();
+    await page.getByTestId('login-email').fill(process.env.TRUTH_LOGIN);
+    await page.getByTestId('login-password').fill(process.env.TRUTH_PASSWORD);
+    await page.getByTestId('login-submit').click();
 
-    await expect(page.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(`Workspace: ${workspaceId}`)).toBeVisible();
   });
 });

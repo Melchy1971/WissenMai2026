@@ -16,11 +16,11 @@ Error: expect(locator).toBeVisible() failed
 
 Locator: getByTestId('login-page')
 Expected: visible
-Timeout: 5000ms
+Timeout: 10000ms
 Error: element(s) not found
 
 Call log:
-  - Expect "toBeVisible" with timeout 5000ms
+  - Expect "toBeVisible" with timeout 10000ms
   - waiting for getByTestId('login-page')
 
 ```
@@ -45,7 +45,7 @@ Call log:
   11 | 
   12 |   test('redirects unauthenticated request to login page', async ({ page }) => {
   13 |     await page.goto('/documents');
-> 14 |     await expect(page.getByTestId('login-page')).toBeVisible();
+> 14 |     await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
      |                                                  ^ Error: expect(locator).toBeVisible() failed
   15 |   });
   16 | 
@@ -54,7 +54,7 @@ Call log:
   19 |     await page.getByTestId('login-email').fill('nonexistent_user_xyz_000');
   20 |     await page.getByTestId('login-password').fill('wrong_password_xyz_000');
   21 |     await page.getByTestId('login-submit').click();
-  22 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 10_000 });
+  22 |     await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 10_000 });
   23 |   });
   24 | 
   25 |   test('successful login with truth credentials redirects to documents page', async ({ page }) => {

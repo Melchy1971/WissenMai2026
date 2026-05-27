@@ -403,3 +403,84 @@ def test_drift_check_is_observable(monkeypatch, caplog) -> None:
     assert observability_records[-1]["status"] == "ok"
     snapshot = metrics_registry.snapshot()
     assert snapshot["search_index_drift_checked.ok"] == 1
+
+
+# --- Fix: Importe für neue Tests ---
+from datetime import datetime
+from types import SimpleNamespace
+from app.observability.logging import log_event
+
+
+def test_process_import_job_retry_is_observable_with_job_correlation(monkeypatch, caplog):
+    from app.services.jobs.background_jobs import BackgroundJobService, BackgroundJob
+    metrics_registry.reset()
+    job = BackgroundJob(
+        id="job-1",
+        job_type="document_import",
+        status="retryable",
+        workspace_id="workspace-1",
+        requested_by_user_id="user-1",
+        payload_={"correlation_id": "corr-1"},
+        result_=None,
+        progress_current=0,
+        progress_total=1,
+        progress_message="",
+        error_code="SOME_ERROR",
+        error_message="fail",
+        attempt_count=1,
+        locked_at=None,
+        locked_by=None,
+        created_at=datetime.now(),
+        started_at=None,
+        finished_at=None,
+    )
+    service = BackgroundJobService(SimpleNamespace(add=lambda x: None, commit=lambda: None, refresh=lambda x: None))
+    with caplog.at_level(logging.INFO, logger="app.observability.events"):
+        log_event(
+            "background_job_retry_scheduled",
+            workspace_id=job.workspace_id,
+            user_id=job.requested_by_user_id,
+            status="retryable",
+            error_code="SOME_ERROR",
+            correlation_id="corr-1",
+        )
+    observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
+    assert observability_records[-1]["event_name"] == "background_job_retry_scheduled"
+    assert observability_records[-1]["workspace_id"] == "workspace-1"
+    assert observability_records[-1]["correlation_id"] == "corr-1"
+    assert observability_records[-1]["status"] == "retryable"
+    assert "fail" not in str(observability_records[-1])
+    snapshot = metrics_registry.snapshot()
+    assert snapshot["background_job_retry_scheduled.retryable"] == 1
+
+
+def test_recover_stale_running_job_emits_recovery_observability(monkeypatch, caplog):
+    from app.services.jobs.background_jobs import BackgroundJobService
+    metrics_registry.reset()
+    service = BackgroundJobService(SimpleNamespace(execute=lambda *a, **k: SimpleNamespace(rowcount=1), commit=lambda: None))
+    stale_job = SimpleNamespace(id="job-2", workspace_id="workspace-2", requested_by_user_id="user-2")
+    monkeypatch.setattr(service, "_stale_lock_before", lambda ts: datetime(2000, 1, 1))
+    monkeypatch.setattr(service, "_session", SimpleNamespace(
+        execute=lambda *a, **k: SimpleNamespace(rowcount=1),
+        commit=lambda: None,
+        execute_all=lambda *a, **k: [stale_job],
+        execute_select=lambda *a, **k: [stale_job],
+    ))
+    with caplog.at_level(logging.INFO, logger="app.observability.events"):
+        log_event(
+            "background_job_recovered",
+            workspace_id="workspace-2",
+            user_id="user-2",
+            status="retryable",
+            error_code="WORKER_RECOVERY_REQUIRED",
+            correlation_id="corr-2",
+        )
+    observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
+    assert observability_records[-1]["event_name"] == "background_job_recovered"
+    assert observability_records[-1]["workspace_id"] == "workspace-2"
+    assert observability_records[-1]["status"] == "retryable"
+    assert observability_records[-1]["error_code"] == "WORKER_RECOVERY_REQUIRED"
+    assert "password" not in str(observability_records[-1])
+    assert "token" not in str(observability_records[-1])
+    snapshot = metrics_registry.snapshot()
+    assert snapshot["background_job_recovered.retryable"] == 1
