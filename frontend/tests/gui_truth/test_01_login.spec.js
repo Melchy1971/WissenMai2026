@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { clearAuthState, expect, test, waitForLoginReady, waitForWorkspaceReady } from './fixtures.js';
 
 test.describe('01 Login flow', () => {
   test('renders login form with all required elements', async ({ page }) => {
@@ -10,8 +10,9 @@ test.describe('01 Login flow', () => {
   });
 
   test('redirects unauthenticated request to login page', async ({ page }) => {
+    await clearAuthState(page);
     await page.goto('/documents');
-    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+    await waitForLoginReady(page);
   });
 
   test('shows error state on invalid credentials', async ({ page }) => {
@@ -31,6 +32,6 @@ test.describe('01 Login flow', () => {
     await page.getByTestId('login-password').fill(password);
     await page.getByTestId('login-submit').click();
 
-    await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
+    await waitForWorkspaceReady(page);
   });
 });

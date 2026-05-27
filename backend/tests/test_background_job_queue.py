@@ -9,7 +9,7 @@ import pytest
 from app.core.config import settings
 from app.core.errors import ParserFailedApiError
 from app.models.documents import BackgroundJob
-from app.observability.logging import metrics_registry
+from app.observability.logging import event_logger, metrics_registry
 from app.services.jobs.background_jobs import (
     BackgroundJobAlreadyClaimedError,
     BackgroundJobService,
@@ -204,6 +204,9 @@ def test_process_import_job_retry_is_observable_with_job_correlation(db_session,
 
         monkeypatch.setattr("app.services.jobs.background_jobs.ImportExecutor", CrashingImportExecutor)
 
+        event_logger.disabled = False
+        event_logger.propagate = True
+        caplog.clear()
         with caplog.at_level("INFO", logger="app.observability.events"):
             process_import_job(job.id, db_session.connection())
 

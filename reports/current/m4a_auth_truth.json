@@ -1,26 +1,32 @@
 {
-    "report_schema_version":  1,
-    "report_name":  "m4a_auth_truth",
-    "gate":  "m4a",
-    "status":  "PASS",
-    "timestamp":  "2026-05-27T07:36:04.6432941Z",
-    "environment":  "local",
-    "report_type":  "truth",
-    "collected":  43,
-    "passed":  43,
-    "failed":  0,
-    "errors":  0,
-    "skipped":  0,
-    "exit_code":  0,
-    "blockers":  [
-
-                 ],
-    "source_command":  "cd backend; $env:DATABASE_URL=$env:TEST_DATABASE_URL=\"postgresql+psycopg://Markus:Markus..2026@85.215.131.200:5432/wissen2026\"; pytest -m m4a_auth_truth -vv",
-    "generated_by":  "gate_validator",
-    "commit_hash":  "d328983c",
-    "selected":  43,
-    "deselected":  477,
-    "duration_seconds":  54.74,
-    "result":  "43 passed, 477 deselected",
-    "minimal_reproducer":  "pytest tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_no_membership_user_gets_null_active_workspace -vv"
+  "report_format_version": 1,
+  "marker": "m4a_auth_truth",
+  "timestamp": "2026-05-27T13:19:20.787853+00:00",
+  "collected": 0,
+  "passed": 0,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "pytest_exit_code": 0,
+  "test_database_url_set": true,
+  "failed_tests": [],
+  "unmarked_truth_tests": [],
+  "ambiguous_truth_tests": [],
+  "report_schema_version": 1,
+  "report_name": "m4a_auth_truth",
+  "gate": "m4a",
+  "status": "FAIL",
+  "environment": "local",
+  "report_type": "truth",
+  "blockers": [
+    {
+      "gate": "m4a",
+      "severity": "critical",
+      "reason": "0 collected, 0 failed, 0 errors, 0 skipped"
+    }
+  ],
+  "source_command": "python scripts/generate_truth_split_reports.py -- -m m4a_auth_truth",
+  "generated_by": "gate_validator",
+  "commit_hash": "e210afd24"
 }

@@ -87,17 +87,26 @@ class BackgroundJobService:
         return job
 
     def claim_job(self, *, job_id: str, worker_id: str, now: datetime | None = None) -> BackgroundJob:
-        # Only allow atomic claim if status is strictly 'pending' (no retryable/running race)
         try:
             AdvisoryLockService.from_session(self._session).acquire_job_claim_lock(job_id=job_id)
         except ResourceLockedApiError:
             raise BackgroundJobAlreadyClaimedError(job_id)
         timestamp = now or datetime.now(UTC)
+        retry_backoff_before = self._backoff_before(timestamp)
         claimed = self._session.execute(
             update(BackgroundJob)
             .where(
                 BackgroundJob.id == job_id,
-                BackgroundJob.status == "pending",
+                or_(
+                    BackgroundJob.status == "pending",
+                    and_(
+                        BackgroundJob.status == "retryable",
+                        or_(
+                            BackgroundJob.finished_at.is_(None),
+                            BackgroundJob.finished_at < retry_backoff_before,
+                        ),
+                    ),
+                ),
             )
             .values(
                 status="running",
@@ -133,7 +142,13 @@ class BackgroundJobService:
         self._session.add(job)
         self._session.commit()
         self._session.refresh(job)
-        log_event("background_job_completed", workspace_id=job.workspace_id, user_id=job.requested_by_user_id, status="completed")
+        log_event(
+            "background_job_completed",
+            workspace_id=job.workspace_id,
+            user_id=job.requested_by_user_id,
+            job_id=job.id,
+            status="completed",
+        )
         return job
 
     def renew_job_lock(self, *, job_id: str, worker_id: str, now: datetime | None = None) -> bool:
@@ -226,6 +241,8 @@ class BackgroundJobService:
             event_name,
             workspace_id=db_job.workspace_id,
             user_id=db_job.requested_by_user_id,
+            job_id=db_job.id,
+            event_type="import_retry" if event_name == "background_job_retry_scheduled" else event_name,
             status=db_job.status,
             error_code=error_code,
         )
@@ -270,6 +287,8 @@ class BackgroundJobService:
                 "background_job_recovered",
                 workspace_id=stale_job.workspace_id,
                 user_id=stale_job.requested_by_user_id,
+                job_id=stale_job.id,
+                event_type="stale_job_recovered",
                 status="retryable",
                 error_code="WORKER_RECOVERY_REQUIRED",
             )
@@ -337,6 +356,7 @@ class BackgroundJobService:
             "background_job_replayed",
             workspace_id=job.workspace_id,
             user_id=replayed_by_user_id,
+            job_id=job.id,
             status="pending",
         )
         return job

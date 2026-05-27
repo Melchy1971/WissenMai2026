@@ -95,16 +95,23 @@ def log_event(
     *,
     workspace_id: str | None = None,
     user_id: str | None = None,
+    job_id: str | None = None,
+    event_type: str | None = None,
+    severity: str | None = None,
     duration_ms: int | None = None,
     status: str,
     error_code: str | None = None,
     correlation_id: str | None = None,
 ) -> None:
     current = get_observability_context()
+    normalized_severity = severity or _severity_from_status(status)
     payload = {
         "event_name": event_name,
+        "event_type": event_type or _event_type_from_name(event_name),
+        "severity": normalized_severity,
         "workspace_id": workspace_id if workspace_id is not None else current.workspace_id,
         "user_id": user_id if user_id is not None else current.user_id,
+        "job_id": job_id,
         "duration_ms": duration_ms,
         "status": status,
         "error_code": error_code,
@@ -119,6 +126,9 @@ def log_import_event(
     *,
     document_id: str | None,
     workspace_id: str | None,
+    job_id: str | None = None,
+    event_type: str | None = None,
+    severity: str | None = None,
     duration_ms: int | None,
     parser_type: str,
     chunk_count: int,
@@ -129,7 +139,10 @@ def log_import_event(
     current = get_observability_context()
     payload = ImportObservabilityEvent(
         event_name=event_name,
+        event_type=event_type or _event_type_from_name(event_name),
+        severity=severity or _severity_from_status(status),
         document_id=document_id,
+        job_id=job_id,
         workspace_id=workspace_id if workspace_id is not None else current.workspace_id,
         duration_ms=duration_ms,
         parser_type=parser_type,
@@ -140,3 +153,22 @@ def log_import_event(
     ).model_dump()
     metrics_registry.record(event_name=event_name, status=status)
     event_logger.info("observability_event", extra={"observability": payload})
+
+
+def _severity_from_status(status: str | None) -> str:
+    normalized = (status or "").lower()
+    if normalized in {"failed", "dead_letter", "error"}:
+        return "error"
+    if normalized in {"retryable", "warning"}:
+        return "warning"
+    return "info"
+
+
+def _event_type_from_name(event_name: str) -> str:
+    aliases = {
+        "background_job_recovered": "stale_job_recovered",
+        "background_job_retry_scheduled": "import_retry",
+        "import_duplicate_detected": "duplicate_import_detected",
+        "import_duplicate_integrityerror": "duplicate_import_detected",
+    }
+    return aliases.get(event_name, event_name)

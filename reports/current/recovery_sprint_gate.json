@@ -1,31 +1,167 @@
 {
-  "report_schema_version": 1,
+  "report_schema_version": 2,
+  "schema_name": "recovery_sprint_gate_v2",
   "report_name": "recovery_sprint_gate",
-  "timestamp": "2026-05-27T12:00:00Z",
+  "gate": "frontend_full_suite_reactivation",
+  "status": "FAIL",
+  "timestamp": "2026-05-27T12:50:07.140002Z",
   "environment": "local",
-  "criteria": {
-    "minimal_slice": "PASS",
-    "auth_group_full_suite": "FAIL",
-    "m4a_auth": "PASS",
-    "m4b_upload_queue": "FAIL",
-    "m4c_lifecycle_retrieval": "PASS",
-    "m4e_backup_restore": "PASS",
-    "preflight": "FAIL"
+  "report_type": "gate",
+  "inputs": {
+    "frontend_truth_minimal_report": "reports/current/frontend_truth_minimal_report.json",
+    "frontend_full_suite_staged_report": "reports/current/frontend_full_suite_staged_report.json",
+    "m4a_auth_truth": "reports/current/m4a_auth_truth.json",
+    "m4b_upload_queue_truth": "reports/current/m4b_upload_queue_truth.json",
+    "m4c_lifecycle_retrieval_truth": "reports/current/m4c_lifecycle_retrieval_truth.json",
+    "m4e_backup_restore_truth": "reports/current/m4e_backup_restore_truth.json",
+    "report_truth_preflight": "reports/current/report_truth_preflight.json"
   },
-  "details": {
-    "frontend_truth_minimal_report": "PASS",
-    "frontend_full_suite_staged_report": "FAIL",
-    "m4a_auth_truth": "PASS",
-    "m4b_upload_queue_truth": "FAIL",
-    "m4c_lifecycle_retrieval_truth": "PASS",
-    "m4e_backup_restore_truth": "PASS",
-    "report_truth_preflight": "FAIL"
-  },
-  "blockers": [
-    "Full-Suite Auth-Gruppe nicht stabil (22/27 Tests fehlgeschlagen)",
-    "M4b Upload Queue hat 5 Fehler",
-    "Preflight-Check fehlgeschlagen: Frontend nicht erreichbar"
+  "criteria": [
+    {
+      "id": "minimal_slice_green",
+      "label": "Minimal Slice gruen",
+      "passed": true,
+      "status": "PASS",
+      "evidence": {
+        "path": "reports/current/frontend_truth_minimal_report.json",
+        "status": "PASS",
+        "error": null,
+        "passed": 6,
+        "collected": 6,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "id": "auth_group_full_suite_stable_enough",
+      "label": "Auth-Gruppe Full-Suite stabil genug",
+      "passed": false,
+      "status": "FAIL",
+      "evidence": {
+        "path": "reports/current/frontend_full_suite_staged_report.json",
+        "staged_status": "FAIL",
+        "stopped_at": "Auth",
+        "auth_group_status": "FAIL",
+        "auth_group_passed": 5,
+        "auth_group_collected": 27,
+        "auth_group_failed": 22,
+        "auth_group_errors": 0,
+        "auth_group_skipped": 0
+      }
+    },
+    {
+      "id": "m4a_green",
+      "label": "M4a gruen",
+      "passed": true,
+      "status": "PASS",
+      "evidence": {
+        "path": "reports/current/m4a_auth_truth.json",
+        "status": "PASS",
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "id": "m4b_still_blocked",
+      "label": "M4b noch blockiert",
+      "passed": true,
+      "status": "PASS",
+      "evidence": {
+        "path": "reports/current/m4b_upload_queue_truth.json",
+        "status": "FAIL",
+        "failed": 5,
+        "errors": 0,
+        "skipped": 0,
+        "failed_tests": [
+          "tests/integration/test_documents_import.py::test_parallel_duplicate_imports_create_single_document",
+          "tests/test_background_job_queue.py::test_process_import_job_retry_is_observable_with_job_correlation",
+          "tests/test_background_job_queue.py::test_recover_stale_running_job_emits_recovery_observability",
+          "tests/test_observability.py::test_duplicate_import_is_observable_without_logging_sensitive_content",
+          "tests/test_observability.py::test_upload_logs_structured_context_without_document_content"
+        ]
+      }
+    },
+    {
+      "id": "m4c_green",
+      "label": "M4c gruen",
+      "passed": true,
+      "status": "PASS",
+      "evidence": {
+        "path": "reports/current/m4c_lifecycle_retrieval_truth.json",
+        "status": "PASS",
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "id": "m4e_green",
+      "label": "M4e gruen",
+      "passed": true,
+      "status": "PASS",
+      "evidence": {
+        "path": "reports/current/m4e_backup_restore_truth.json",
+        "status": "PASS",
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "id": "reports_valid",
+      "label": "Reports valide",
+      "passed": false,
+      "status": "FAIL",
+      "evidence": {
+        "path": "reports/current/report_truth_preflight.json",
+        "status": "BLOCKED",
+        "error": "missing",
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
   ],
-  "go_nogo": "NO-GO",
-  "decision": "Full-Suite-Reaktivierung nicht freigegeben. Auth-Gruppe und M4b müssen stabilisiert werden."
+  "summary": {
+    "minimal_slice_green": true,
+    "auth_group_full_suite_stable_enough": false,
+    "m4a_green": true,
+    "m4b_still_blocked": true,
+    "m4c_green": true,
+    "m4e_green": true,
+    "reports_valid": false
+  },
+  "collected": 7,
+  "passed": 5,
+  "failed": 2,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "blockers": [
+    {
+      "criterion": "auth_group_full_suite_stable_enough",
+      "severity": "critical",
+      "reason": "Auth-Gruppe Full-Suite stabil genug"
+    },
+    {
+      "criterion": "m4b_still_blocked",
+      "severity": "critical",
+      "reason": "M4b ist noch blockiert"
+    },
+    {
+      "criterion": "reports_valid",
+      "severity": "critical",
+      "reason": "Reports valide"
+    }
+  ],
+  "decision": {
+    "full_suite_reactivation": "NO-GO",
+    "go_no_go": "NO-GO",
+    "reason": "Full-Suite-Reaktivierung blockiert: Auth-Gruppe, M4b und/oder Report-Preflight sind nicht gruen."
+  },
+  "source_command": "aggregate reports/current recovery sprint inputs",
+  "generated_by": "gate_validator",
+  "commit_hash": "e210afd24"
 }

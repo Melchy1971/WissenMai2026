@@ -2,7 +2,7 @@
   "report_schema_version": 2,
   "report_name": "masterplan_status",
   "generated_by": "masterplan_status_engine_v2",
-  "generated_at": "2026-05-27T09:09:52.387998+00:00",
+  "generated_at": "2026-05-27T12:43:54.704301+00:00",
   "authority": {
     "source_of_truth": "machine_artifacts",
     "manual_status_override_allowed": false,
@@ -71,35 +71,35 @@
       "source": "reports/current/m3a_frontend_truth.json",
       "blockers": [
         {
-          "id": "gate_m3a_7189",
+          "id": "gate_m3a_7248",
           "type": "gate_failure",
           "severity": "blocking",
           "detail": "m3a_frontend_truth.json: passed (5) must equal collected (100)",
           "source": "gate:m3a_gate"
         },
         {
-          "id": "gate_m3a_4cde",
+          "id": "gate_m3a_c75b",
           "type": "gate_failure",
           "severity": "blocking",
           "detail": "m3a_frontend_truth.json: failed must be 0, got 37",
           "source": "gate:m3a_gate"
         },
         {
-          "id": "gate_m3a_b7b6",
+          "id": "gate_m3a_9708",
           "type": "gate_failure",
           "severity": "blocking",
           "detail": "m3a_frontend_truth.json: skipped must be 0, got 58",
           "source": "gate:m3a_gate"
         },
         {
-          "id": "gate_m3a_76f4",
+          "id": "gate_m3a_e40f",
           "type": "gate_failure",
           "severity": "blocking",
           "detail": "m3a_frontend_truth.json: exit_code must be 0, got 1",
           "source": "gate:m3a_gate"
         },
         {
-          "id": "gate_m3a_0fd9",
+          "id": "gate_m3a_6aec",
           "type": "gate_failure",
           "severity": "blocking",
           "detail": "m3a_frontend_truth.json: failed_tests must be empty",
@@ -130,14 +130,14 @@
       "source": "reports/current/gate_hierarchy",
       "blockers": [
         {
-          "id": "gate_m4_16ea",
+          "id": "gate_m4_7547",
           "type": "gate_failure",
           "severity": "blocking",
           "detail": "dependency not passed: m4_crosscutting_gate",
           "source": "gate:m4_overall_gate"
         },
         {
-          "id": "gate_m4_ac0e",
+          "id": "gate_m4_e969",
           "type": "gate_failure",
           "severity": "blocking",
           "detail": "dependency not passed: m4b_gate",
@@ -156,7 +156,7 @@
       "source": "reports/current/gate_hierarchy",
       "blockers": [
         {
-          "id": "gate_m5_26a9",
+          "id": "gate_m5_956c",
           "type": "gate_failure",
           "severity": "blocking",
           "detail": "dependency not passed: m4_overall_gate",
@@ -175,7 +175,7 @@
       "source": "reports/current/gate_hierarchy",
       "blockers": [
         {
-          "id": "gate_governance_6567",
+          "id": "gate_governance_f21a",
           "type": "gate_failure",
           "severity": "blocking",
           "detail": "dependency not passed: m5_start_gate",
@@ -227,7 +227,10 @@
       "m4_crosscutting_gate": {
         "status": "FAIL",
         "blockers": [
-          "missing report: H:\\WissenMai2026\\reports\\current\\m4_truth_report.json"
+          "m4_truth_report.json: passed (94) must equal collected (99)",
+          "m4_truth_report.json: failed must be 0, got 5",
+          "m4_truth_report.json: exit_code must be 0, got 1",
+          "m4_truth_report.json: failed_tests must be empty"
         ]
       },
       "m4_overall_gate": {
@@ -357,6 +360,6 @@
       "source": "docs/known_limitations.json"
     }
   ],
-  "timestamp": "2026-05-27T09:09:52.387998+00:00",
+  "timestamp": "2026-05-27T12:43:54.704301+00:00",
   "exit_code": 1
 }

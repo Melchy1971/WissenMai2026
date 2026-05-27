@@ -3,7 +3,7 @@
   "report_name": "frontend_full_suite_activation_plan",
   "gate": "m3a",
   "status": "INFO",
-  "timestamp": "2026-05-27T07:24:48.776373+00:00",
+  "timestamp": "2026-05-27T13:03:04.909560+00:00",
   "environment": "local",
   "report_type": "informational",
   "collected": 10,
@@ -15,7 +15,7 @@
   "blockers": [],
   "source_command": "python scripts/run_frontend_full_suite_staged.py",
   "generated_by": "gate_validator",
-  "commit_hash": "d328983c",
+  "commit_hash": "e210afd24",
   "rule": "Nur naechste Gruppe aktivieren, wenn vorherige Gruppe gruen ist.",
   "groups": [
     {

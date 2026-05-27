@@ -3,7 +3,7 @@
   "report_name": "frontend_truth_group_diagnostics",
   "gate": "m3a",
   "status": "BLOCKED",
-  "timestamp": "2026-05-27T07:30:51.315020+00:00",
+  "timestamp": "2026-05-27T13:04:45.075147+00:00",
   "environment": "local",
   "report_type": "truth",
   "collected": 1,
@@ -16,12 +16,12 @@
     {
       "gate": "m3a",
       "severity": "critical",
-      "reason": "Previous group failed: Auth"
+      "reason": "Previous group failed: Upload"
     }
   ],
   "source_command": "python scripts/run_frontend_full_suite_staged.py --group diagnostics",
   "generated_by": "gate_validator",
-  "commit_hash": "d328983c",
+  "commit_hash": "e210afd24",
   "group": "Diagnostics",
   "slug": "diagnostics",
   "rank": 8,
@@ -29,5 +29,5 @@
     "test_09_diagnostics.spec.js"
   ],
   "activation_status": "blocked",
-  "blocked_by": "Auth"
+  "blocked_by": "Upload"
 }

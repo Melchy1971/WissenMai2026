@@ -1,7 +1,7 @@
 <!-- BEGIN GENERATED MASTERPLAN STATUS v2 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-05-27T09:09:52.387998+00:00`
+Stand: `2026-05-27T12:43:54.704301+00:00`
 Engine: `masterplan_status_engine_v2`
 
 Gesamtstatus: `BLOCKED`
@@ -29,7 +29,7 @@ Blocker: `8`
 | `m4b_gate` | `FAIL` | m4b_upload_queue_truth.json: passed (46) must equal collected (51); m4b_upload_q |
 | `m4c_gate` | `PASS` | - |
 | `m4e_gate` | `PASS` | - |
-| `m4_crosscutting_gate` | `FAIL` | missing report: reports\current\m4_truth_report.json |
+| `m4_crosscutting_gate` | `FAIL` | m4_truth_report.json: passed (94) must equal collected (99); m4_truth_report.jso |
 | `m4_overall_gate` | `BLOCKED` | dependency not passed: m4_crosscutting_gate; dependency not passed: m4b_gate |
 | `m5_start_gate` | `BLOCKED` | dependency not passed: m4_overall_gate |
 | `operational_governance_gate` | `BLOCKED` | dependency not passed: m5_start_gate |

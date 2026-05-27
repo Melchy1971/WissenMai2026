@@ -83,6 +83,7 @@ def advisory_lock_on_connection(
     *,
     scope_name: str,
     resource_key: str,
+    wait: bool = False,
 ) -> Generator[None, None, None]:
     """
     Acquire a transaction-scoped advisory lock on a raw psycopg connection.
@@ -96,9 +97,13 @@ def advisory_lock_on_connection(
     scope_id = _SCOPE_IDS[scope_name]
     resource_id = _stable_int32(resource_key)
     with connection.cursor() as cursor:
-        cursor.execute("SELECT pg_try_advisory_xact_lock(%s, %s)", (scope_id, resource_id))
-        row = cursor.fetchone()
-        acquired = row[0] if row else False
+        if wait:
+            cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", (scope_id, resource_id))
+            acquired = True
+        else:
+            cursor.execute("SELECT pg_try_advisory_xact_lock(%s, %s)", (scope_id, resource_id))
+            row = cursor.fetchone()
+            acquired = row[0] if row else False
     if not acquired:
         raise ResourceLockedApiError(
             message=f"Resource is currently locked: {scope_name}",

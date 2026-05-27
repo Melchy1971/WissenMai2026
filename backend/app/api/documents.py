@@ -287,15 +287,6 @@ async def import_document(
             error_code="FILE_TOO_LARGE",
         )
         raise
-    log_import_event(
-        "upload_received",
-        document_id=None,
-        workspace_id=auth_context.workspace_id,
-        duration_ms=int((perf_counter() - start_time) * 1000),
-        parser_type=parser_type_from_mime_type(mime_type),
-        chunk_count=0,
-        status="received",
-    )
     temp_file_path = BackgroundJobService.create_temp_upload_file(filename=filename, source_bytes=source_bytes)
     job = job_service.enqueue_import_job(
         workspace_id=auth_context.workspace_id,
@@ -304,6 +295,16 @@ async def import_document(
         mime_type=mime_type,
         temp_file_path=temp_file_path,
         correlation_id=get_observability_context().correlation_id,
+    )
+    log_import_event(
+        "upload_received",
+        document_id=None,
+        job_id=job.id,
+        workspace_id=auth_context.workspace_id,
+        duration_ms=int((perf_counter() - start_time) * 1000),
+        parser_type=parser_type_from_mime_type(mime_type),
+        chunk_count=0,
+        status="received",
     )
     background_tasks.add_task(process_import_job, job.id, job_service._session.get_bind())
     return job_service.to_response(job)

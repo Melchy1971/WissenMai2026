@@ -1,0 +1,136 @@
+{
+  "report_schema_version": 2,
+  "schema_name": "truth_gate_aggregate_v2",
+  "report_name": "m4_truth_report",
+  "gate": "m4_crosscutting_gate",
+  "status": "FAIL",
+  "timestamp": "2026-05-27T12:50:06.981963Z",
+  "environment": "local",
+  "report_type": "truth_aggregate",
+  "rules": {
+    "pass_requires_all_part_reports_pass": true,
+    "fail_when_failed_errors_skipped_gt_zero": true,
+    "missing_part_report_status": "BLOCKED",
+    "m5_governance_excluded_from_m4": true
+  },
+  "inputs": [
+    "reports/current/m4a_auth_truth.json",
+    "reports/current/m4b_upload_queue_truth.json",
+    "reports/current/m4c_lifecycle_retrieval_truth.json",
+    "reports/current/m4e_backup_restore_truth.json"
+  ],
+  "components": [
+    {
+      "name": "m4a_auth_truth.json",
+      "gate": "m4a",
+      "path": "reports/current/m4a_auth_truth.json",
+      "status": "PASS",
+      "available": true,
+      "timestamp": "2026-05-27T07:36:04.6432941Z",
+      "collected": 43,
+      "passed": 43,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "failed_tests": [],
+      "blockers": []
+    },
+    {
+      "name": "m4b_upload_queue_truth.json",
+      "gate": "m4b",
+      "path": "reports/current/m4b_upload_queue_truth.json",
+      "status": "FAIL",
+      "available": true,
+      "timestamp": "2026-05-27T08:07:30.935715+00:00",
+      "collected": 51,
+      "passed": 46,
+      "failed": 5,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 1,
+      "failed_tests": [
+        "tests/integration/test_documents_import.py::test_parallel_duplicate_imports_create_single_document",
+        "tests/test_background_job_queue.py::test_process_import_job_retry_is_observable_with_job_correlation",
+        "tests/test_background_job_queue.py::test_recover_stale_running_job_emits_recovery_observability",
+        "tests/test_observability.py::test_duplicate_import_is_observable_without_logging_sensitive_content",
+        "tests/test_observability.py::test_upload_logs_structured_context_without_document_content"
+      ],
+      "blockers": [
+        {
+          "gate": "m4b",
+          "severity": "critical",
+          "reason": "51 collected, 5 failed, 0 errors, 0 skipped"
+        }
+      ]
+    },
+    {
+      "name": "m4c_lifecycle_retrieval_truth.json",
+      "gate": "m4c",
+      "path": "reports/current/m4c_lifecycle_retrieval_truth.json",
+      "status": "PASS",
+      "available": true,
+      "timestamp": "2026-05-27T08:21:47.734857+00:00",
+      "collected": 2,
+      "passed": 2,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "failed_tests": [],
+      "blockers": []
+    },
+    {
+      "name": "m4e_backup_restore_truth.json",
+      "gate": "m4e",
+      "path": "reports/current/m4e_backup_restore_truth.json",
+      "status": "PASS",
+      "available": true,
+      "timestamp": "2026-05-27T00:00:00Z",
+      "collected": 3,
+      "passed": 3,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "exit_code": 0,
+      "failed_tests": [],
+      "blockers": []
+    }
+  ],
+  "collected": 99,
+  "passed": 94,
+  "failed": 5,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "failed_tests": [
+    "tests/integration/test_documents_import.py::test_parallel_duplicate_imports_create_single_document",
+    "tests/test_background_job_queue.py::test_process_import_job_retry_is_observable_with_job_correlation",
+    "tests/test_background_job_queue.py::test_recover_stale_running_job_emits_recovery_observability",
+    "tests/test_observability.py::test_duplicate_import_is_observable_without_logging_sensitive_content",
+    "tests/test_observability.py::test_upload_logs_structured_context_without_document_content"
+  ],
+  "blockers": [
+    {
+      "gate": "m4b",
+      "severity": "critical",
+      "reason": "m4b_upload_queue_truth.json ist FAIL: failed=5, errors=0, skipped=0"
+    }
+  ],
+  "decision": {
+    "gate_passed": false,
+    "blocked": false,
+    "go_no_go": "NO-GO"
+  },
+  "gate_impact": {
+    "m4_crosscutting_gate": "FAIL",
+    "central_report_missing": false,
+    "impact": "m4_crosscutting_gate is no longer blocked by missing central report; current status follows aggregated part reports.",
+    "blocking_components": [
+      "m4b_upload_queue_truth.json"
+    ]
+  },
+  "source_command": "aggregate reports/current/m4*_truth.json",
+  "generated_by": "gate_validator",
+  "commit_hash": "e210afd24"
+}

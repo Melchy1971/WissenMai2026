@@ -1,13 +1,13 @@
 {
   "report_format_version": 1,
   "marker": "m4c_lifecycle_retrieval_truth",
-  "timestamp": "2026-05-27T08:21:47.734857+00:00",
-  "collected": 2,
-  "passed": 2,
+  "timestamp": "2026-05-27T13:19:20.787853+00:00",
+  "collected": 0,
+  "passed": 0,
   "failed": 0,
   "errors": 0,
   "skipped": 0,
-  "exit_code": 0,
+  "exit_code": 1,
   "pytest_exit_code": 0,
   "test_database_url_set": true,
   "failed_tests": [],
@@ -16,11 +16,17 @@
   "report_schema_version": 1,
   "report_name": "m4c_lifecycle_retrieval_truth",
   "gate": "m4c",
-  "status": "PASS",
+  "status": "FAIL",
   "environment": "local",
   "report_type": "truth",
-  "blockers": [],
+  "blockers": [
+    {
+      "gate": "m4c",
+      "severity": "critical",
+      "reason": "0 collected, 0 failed, 0 errors, 0 skipped"
+    }
+  ],
   "source_command": "python scripts/generate_truth_split_reports.py -- -m m4c_lifecycle_retrieval_truth",
   "generated_by": "gate_validator",
-  "commit_hash": "d328983c"
+  "commit_hash": "e210afd24"
 }

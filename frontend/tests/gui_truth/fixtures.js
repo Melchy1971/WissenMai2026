@@ -1,4 +1,4 @@
-import { test as base } from '@playwright/test';
+import { expect, test as base } from '@playwright/test';
 
 const KEYS = {
   authState: 'wissen.authState',
@@ -6,18 +6,33 @@ const KEYS = {
   workspaceId: 'wissen.workspaceId',
 };
 
-async function injectAuthState(page, state) {
+const SELECTORS = {
+  authError: '[data-testid="auth-error"]',
+  appShell: '[data-testid="app-shell"]',
+  documentList: '[data-testid="document-list"]',
+  loginPage: '[data-testid="login-page"]',
+  workspaceReady: '[data-testid="workspace-ready"]',
+};
+
+export async function injectAuthState(page, state) {
+  if (page.url() === 'about:blank') {
+    await page.goto('/login');
+  }
   await page.evaluate(
     ({ keys, s }) => {
+      window.localStorage.clear();
       window.localStorage.setItem(keys.authState, JSON.stringify(s));
       if (s.token) window.localStorage.setItem(keys.authToken, s.token);
       if (s.active_workspace_id) window.localStorage.setItem(keys.workspaceId, s.active_workspace_id);
     },
     { keys: KEYS, s: state },
-  );
+  ).catch(() => {});
 }
 
-async function clearAuthState(page) {
+export async function clearAuthState(page) {
+  if (page.url() === 'about:blank') {
+    await page.goto('/login');
+  }
   await page.evaluate((keys) => {
     window.localStorage.removeItem(keys.authState);
     window.localStorage.removeItem(keys.authToken);
@@ -25,25 +40,70 @@ async function clearAuthState(page) {
   }, KEYS);
 }
 
-async function waitForProtectedDocumentsReady(page) {
-  await page.waitForLoadState('domcontentloaded');
-  await page.waitForFunction(
-    () => !document.body.textContent?.includes('Authentifizierung wird initialisiert...'),
-    undefined,
-    { timeout: 15_000 },
-  );
-  await page.waitForSelector('[data-testid="app-shell"]', { state: 'visible', timeout: 15_000 });
-  await page.waitForSelector('[data-testid="documents-page"]', { state: 'visible', timeout: 15_000 });
+async function failFastIfTerminal(page, phase) {
+  const state = await page.evaluate((selectors) => {
+    const authError = document.querySelector(selectors.authError);
+    const bodyText = document.body?.innerText || document.body?.textContent || '';
+    return {
+      authErrorText: authError?.textContent || '',
+      bodyText,
+      hasAppShell: Boolean(document.querySelector(selectors.appShell)),
+      hasLoginPage: Boolean(document.querySelector(selectors.loginPage)),
+      hasWorkspaceReady: Boolean(document.querySelector(selectors.workspaceReady)),
+    };
+  }, SELECTORS).catch(() => null);
+
+  if (!state) return;
+  const text = `${state.authErrorText}\n${state.bodyText}`;
+  if (/API_UNREACHABLE|Backend nicht erreichbar|Failed to fetch|NetworkError/i.test(text)) {
+    throw new Error(`${phase}: API unreachable`);
+  }
+  if (/AUTH_INVALID_CREDENTIALS|Login fehlgeschlagen|Ungueltige|Ungültige/i.test(text)) {
+    throw new Error(`${phase}: Login fehlgeschlagen`);
+  }
+  if (/WORKSPACE_NOT_CONFIGURED|WORKSPACE_REQUIRED|Kein aktiver Workspace|Workspace fehlt/i.test(text)) {
+    throw new Error(`${phase}: Workspace fehlt`);
+  }
+  if (state.authErrorText) {
+    throw new Error(`${phase}: ${state.authErrorText.trim()}`);
+  }
 }
 
-async function waitForProtectedErrorReady(page) {
+export async function waitForLoginReady(page) {
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForSelector(`${SELECTORS.loginPage}, ${SELECTORS.authError}, ${SELECTORS.appShell}`, {
+    state: 'attached',
+    timeout: 15_000,
+  });
+  await failFastIfTerminal(page, 'login-page');
+  await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+}
+
+export async function waitForWorkspaceReady(page) {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForFunction(
     () => !document.body.textContent?.includes('Authentifizierung wird initialisiert...'),
     undefined,
     { timeout: 15_000 },
   );
-  await page.waitForSelector('[data-testid="auth-error"]', { state: 'visible', timeout: 15_000 });
+  await page.waitForSelector(`${SELECTORS.appShell}, ${SELECTORS.authError}, ${SELECTORS.loginPage}`, {
+    state: 'attached',
+    timeout: 15_000,
+  });
+  await failFastIfTerminal(page, 'workspace-ready');
+  await expect(page.getByTestId('app-shell')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('workspace-ready')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('document-list')).toBeVisible({ timeout: 15_000 });
+}
+
+export async function waitForProtectedErrorReady(page) {
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForFunction(
+    () => !document.body.textContent?.includes('Authentifizierung wird initialisiert...'),
+    undefined,
+    { timeout: 15_000 },
+  );
+  await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
 }
 
 export const test = base.extend({
@@ -57,7 +117,6 @@ export const test = base.extend({
     const userId = process.env.TRUTH_USER_ID;
     const login = process.env.TRUTH_LOGIN || 'gui_truth_user';
 
-    await page.goto('/');
     await injectAuthState(page, {
       token,
       user: { id: userId, login, display_name: 'GUI Truth User' },
@@ -65,7 +124,7 @@ export const test = base.extend({
       active_workspace_id: workspaceId,
     });
     await page.goto('/documents');
-    await waitForProtectedDocumentsReady(page);
+    await waitForWorkspaceReady(page);
     await use(page);
   },
 
@@ -76,7 +135,6 @@ export const test = base.extend({
   partialAuthPage: async ({ page }, use) => {
     const token = process.env.TRUTH_TOKEN;
 
-    await page.goto('/');
     await injectAuthState(page, {
       token,
       user: null,
@@ -84,7 +142,7 @@ export const test = base.extend({
       active_workspace_id: '',
     });
     await page.goto('/documents');
-    await waitForProtectedDocumentsReady(page);
+    await waitForWorkspaceReady(page);
     await use(page);
   },
 
@@ -97,7 +155,6 @@ export const test = base.extend({
     const workspaceId = process.env.TRUTH_MULTI_WS_WORKSPACE_ID;
     const workspace2Id = process.env.TRUTH_MULTI_WS_WORKSPACE_2_ID;
 
-    await page.goto('/');
     await injectAuthState(page, {
       token,
       user: { id: 'multi-ws-user', login: 'gui-truth-multi-ws', display_name: 'GUI Truth Multi WS' },
@@ -108,7 +165,7 @@ export const test = base.extend({
       active_workspace_id: workspaceId,
     });
     await page.goto('/documents');
-    await waitForProtectedDocumentsReady(page);
+    await waitForWorkspaceReady(page);
     await use(page);
   },
 
@@ -119,7 +176,6 @@ export const test = base.extend({
   noMembershipPage: async ({ page }, use) => {
     const token = process.env.TRUTH_NO_MEMBERSHIP_TOKEN;
 
-    await page.goto('/');
     await injectAuthState(page, {
       token,
       user: null,
@@ -136,7 +192,6 @@ export const test = base.extend({
    * AuthContext sees no token → no bootstrap, straight to /login.
    */
   barePage: async ({ page }, use) => {
-    await page.goto('/');
     await clearAuthState(page);
     await use(page);
   },

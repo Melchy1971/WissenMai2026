@@ -3,12 +3,12 @@
   "report_name": "frontend_full_suite_staged",
   "gate": "m3a",
   "status": "FAIL",
-  "timestamp": "2026-05-27T07:30:52.057165+00:00",
+  "timestamp": "2026-05-27T13:04:45.938099+00:00",
   "environment": "local",
   "report_type": "truth",
-  "collected": 36,
-  "passed": 5,
-  "failed": 31,
+  "collected": 74,
+  "passed": 65,
+  "failed": 9,
   "errors": 0,
   "skipped": 0,
   "exit_code": 1,
@@ -16,115 +16,253 @@
     {
       "gate": "m3a",
       "severity": "critical",
-      "reason": "Staged full suite stopped at Auth"
+      "reason": "Staged full suite stopped at Upload"
     }
   ],
   "source_command": "python scripts/run_frontend_full_suite_staged.py",
   "generated_by": "gate_validator",
-  "commit_hash": "d328983c",
+  "commit_hash": "e210afd24",
   "activation_rule": "Nur naechste Gruppe aktivieren, wenn vorherige Gruppe gruen ist.",
-  "stopped_at": "Auth",
+  "stopped_at": "Upload",
   "groups": [
     {
-      "timestamp": "2026-05-27T07:30:50.692536+00:00",
-      "generated_at": "2026-05-27T07:30:50.692547+00:00",
+      "timestamp": "2026-05-27T13:03:53.840624+00:00",
+      "generated_at": "2026-05-27T13:03:53.840633+00:00",
       "collected": 27,
-      "passed": 5,
-      "failed": 22,
+      "passed": 27,
+      "failed": 0,
       "skipped": 0,
       "browser": "chromium",
       "api_base_url": "http://127.0.0.1:8013",
       "test_database_url_set": true,
-      "duration": 347.72,
-      "duration_seconds": 347.72,
+      "duration": 29.01,
+      "duration_seconds": 29.01,
+      "failed_flows": [],
+      "errors": 0,
+      "error_details": [],
+      "exit_code": 0,
+      "playwright_exit_code": 0,
+      "real_api": true,
+      "mock_only": false,
+      "api_database_health": {
+        "url": "http://127.0.0.1:8013/health/db",
+        "ok": true,
+        "status_code": 200,
+        "status": "ok"
+      },
+      "failed_tests": [],
+      "skipped_tests": [],
+      "passed_tests": [
+        "01 Login flow > renders login form with all required elements",
+        "01 Login flow > redirects unauthenticated request to login page",
+        "01 Login flow > shows error state on invalid credentials",
+        "01 Login flow > successful login with truth credentials redirects to documents page",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > root path also redirects to /login",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > zero /auth/me calls when no token present",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
+        "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, a fresh login restores workspace ready state"
+      ],
+      "name": "frontend_truth_group_auth",
+      "environment": "local",
+      "database_url_set": true,
+      "gate": "m3a",
+      "blockers": [],
+      "known_limitations": [],
+      "report_schema_version": 1,
+      "report_name": "frontend_truth_group_auth",
+      "status": "PASS",
+      "report_type": "truth",
+      "source_command": "python scripts/run_frontend_full_suite_staged.py --group auth",
+      "generated_by": "gate_validator",
+      "commit_hash": "e210afd24",
+      "group": "Auth",
+      "slug": "auth",
+      "rank": 1,
+      "specs": [
+        "test_01_login.spec.js",
+        "test_02_auth_bootstrap.spec.js"
+      ],
+      "activation_status": "active"
+    },
+    {
+      "timestamp": "2026-05-27T13:04:17.340572+00:00",
+      "generated_at": "2026-05-27T13:04:17.340582+00:00",
+      "collected": 26,
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0,
+      "browser": "chromium",
+      "api_base_url": "http://127.0.0.1:8013",
+      "test_database_url_set": true,
+      "duration": 23.37,
+      "duration_seconds": 23.37,
+      "failed_flows": [],
+      "errors": 0,
+      "error_details": [],
+      "exit_code": 0,
+      "playwright_exit_code": 0,
+      "real_api": true,
+      "mock_only": false,
+      "api_database_health": {
+        "url": "http://127.0.0.1:8013/health/db",
+        "ok": true,
+        "status_code": 200,
+        "status": "ok"
+      },
+      "failed_tests": [],
+      "skipped_tests": [],
+      "passed_tests": [
+        "03 Workspace loading > shows active workspace id in documents page header",
+        "03 Workspace loading > shows active workspace id in app shell session area",
+        "03 Workspace loading > shows navigation links in shell header",
+        "03 Workspace loading > shows logout button when authenticated",
+        "03 Workspace loading > does not show workspace missing warning when workspace is configured",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id shown in document page header after bootstrap",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id shown in AppShell header after bootstrap",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 01 workspace from membership > workspace id from bootstrap matches injected membership workspace",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 02 single workspace > single workspace shown as text, no dropdown switcher",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 02 single workspace > no workspace switcher visible for single-workspace user",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > workspace switcher select rendered for multi-workspace user",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > workspace switcher contains both workspace ids",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 03 multi-workspace switcher > initial active workspace is first injected workspace",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching workspace updates select value",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching workspace updates document page workspace label",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > switching to invalid workspace is rejected (select stays on valid workspace)",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 04 workspace switch header > manipulated workspace id cannot load protected document controls",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 05 workspace switch reloads documents > switching workspace triggers documents reload",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 05 workspace switch reloads documents > documents page remains visible after workspace switch",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 06 state reset on switch > search result area is empty after workspace switch",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 06 state reset on switch > upload area is idle after workspace switch",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > switching workspace from chat page navigates back to /chat root",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 07 chat workspace reset > chat page shows workspace label after workspace switch",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership user sees WORKSPACE_NOT_CONFIGURED error",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership error is not session-expired",
+        "10 Workspace bootstrap \u00e2\u20ac\u201d 08 no workspace membership > no-membership page does not show workspace switcher"
+      ],
+      "name": "frontend_truth_group_workspace",
+      "environment": "local",
+      "database_url_set": true,
+      "gate": "m3a",
+      "blockers": [],
+      "known_limitations": [],
+      "report_schema_version": 1,
+      "report_name": "frontend_truth_group_workspace",
+      "status": "PASS",
+      "report_type": "truth",
+      "source_command": "python scripts/run_frontend_full_suite_staged.py --group workspace",
+      "generated_by": "gate_validator",
+      "commit_hash": "e210afd24",
+      "group": "Workspace",
+      "slug": "workspace",
+      "rank": 2,
+      "specs": [
+        "test_03_workspace_loading.spec.js",
+        "test_10_workspace_bootstrap.spec.js"
+      ],
+      "activation_status": "active"
+    },
+    {
+      "timestamp": "2026-05-27T13:04:29.849111+00:00",
+      "generated_at": "2026-05-27T13:04:29.849119+00:00",
+      "collected": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "browser": "chromium",
+      "api_base_url": "http://127.0.0.1:8013",
+      "test_database_url_set": true,
+      "duration": 12.38,
+      "duration_seconds": 12.38,
+      "failed_flows": [],
+      "errors": 0,
+      "error_details": [],
+      "exit_code": 0,
+      "playwright_exit_code": 0,
+      "real_api": true,
+      "mock_only": false,
+      "api_database_health": {
+        "url": "http://127.0.0.1:8013/health/db",
+        "ok": true,
+        "status_code": 200,
+        "status": "ok"
+      },
+      "failed_tests": [],
+      "skipped_tests": [],
+      "passed_tests": [
+        "04 Dokumentliste > shows documents page heading",
+        "04 Dokumentliste > shows empty state for workspace with no documents",
+        "04 Dokumentliste > loads the seeded active document in the list",
+        "04 Dokumentliste > opens document detail with versions and chunk preview",
+        "04 Dokumentliste > unknown document detail is an error state, not an empty list",
+        "04 Dokumentliste > empty document list is distinct from an API error",
+        "04 Dokumentliste > shows lifecycle filter section",
+        "04 Dokumentliste > shows upload section",
+        "04 Dokumentliste > shows search section"
+      ],
+      "name": "frontend_truth_group_documents",
+      "environment": "local",
+      "database_url_set": true,
+      "gate": "m3a",
+      "blockers": [],
+      "known_limitations": [],
+      "report_schema_version": 1,
+      "report_name": "frontend_truth_group_documents",
+      "status": "PASS",
+      "report_type": "truth",
+      "source_command": "python scripts/run_frontend_full_suite_staged.py --group documents",
+      "generated_by": "gate_validator",
+      "commit_hash": "e210afd24",
+      "group": "Documents",
+      "slug": "documents",
+      "rank": 3,
+      "specs": [
+        "test_04_documents.spec.js"
+      ],
+      "activation_status": "active"
+    },
+    {
+      "timestamp": "2026-05-27T13:04:44.514636+00:00",
+      "generated_at": "2026-05-27T13:04:44.514657+00:00",
+      "collected": 6,
+      "passed": 3,
+      "failed": 3,
+      "skipped": 0,
+      "browser": "chromium",
+      "api_base_url": "http://127.0.0.1:8013",
+      "test_database_url_set": true,
+      "duration": 14.55,
+      "duration_seconds": 14.55,
       "failed_flows": [
         {
-          "name": "01 Login flow > redirects unauthenticated request to login page",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('login-page')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('login-page')\u001b[22m\n\n\n  12 |   test('redirects unauthenticated request to login page', async ({ page }) => {\n  13 |     await page.goto('/documents');\n> 14 |     await expect(page.getByTestId('login-page')).toBeVisib"
+          "name": "05 Upload flow > shows upload form elements",
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('button[type=\"submit\"]')\nExpected: visible\nError: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 500"
         },
         {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  21 |   test('redirects to /login without token', async ({ barePage }) => {\n  22 |     await barePage.goto('/documents');\n> 23 |     await expect(barePage."
+          "name": "05 Upload flow > shows error when submitting without a file",
+          "error": "Error: locator.click: Error: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - waiting for locator('button[type=\"submit\"]')\u001b[22m\n\n\n  43 |\n  44 |   test('shows error when submitting without a file', async ({ authedPage }) => {\n> 45 |     await au"
         },
         {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  43 |   test('no workspace error shown on login page', async ({ barePage }) => {\n  44 |     await barePage.goto('/documents');\n> 45 |     await expect(bare"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  69 |     );\n  70 |     await page.goto('/documents');\n> 71 |     await expect(page.getByRole('heading', { name: 'Dokumente', exa"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  130 |     );\n  131 |     await page.goto('/documents');\n> 132 |     await expect(page.getByRole('heading', { name: 'Dokumente', "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  153 |\n  154 |     // Should show auth error (session expired), NOT silently redirect or show blank page\n> 155 |     await expect(page.locator('.state-card--error')).toBeVisible({ tim"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  169 |     });\n  170 |     await page.goto('/documents');\n> 171 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                       "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  200 |\n  201 |     await page.goto('/documents');\n> 202 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  232 |\n  233 |     await page.goto('/documents');\n> 234 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.state-card--error') to be visible\u001b[22m\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.state-card--error') to be visible\u001b[22m\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  281 |\n  282 |     await page.goto('/documents');\n> 283 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  308 |\n  309 |     await page.goto('/documents');\n> 310 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, a fresh login restores workspace ready state",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
+          "name": "05 Upload flow > uploads a text file and completes the import job",
+          "error": "Error: locator.click: Error: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - waiting for locator('button[type=\"submit\"]')\u001b[22m\n\n\n  56 |     });\n  57 |\n> 58 |     await authedPage.locator('button[type=\"submit\"]').click();\n     |                "
         }
       ],
       "errors": 0,
@@ -141,103 +279,25 @@
       },
       "failed_tests": [
         {
-          "name": "01 Login flow > redirects unauthenticated request to login page",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('login-page')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('login-page')\u001b[22m\n\n\n  12 |   test('redirects unauthenticated request to login page', async ({ page }) => {\n  13 |     await page.goto('/documents');\n> 14 |     await expect(page.getByTestId('login-page')).toBeVisib"
+          "name": "05 Upload flow > shows upload form elements",
+          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('button[type=\"submit\"]')\nExpected: visible\nError: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 500"
         },
         {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  21 |   test('redirects to /login without token', async ({ barePage }) => {\n  22 |     await barePage.goto('/documents');\n> 23 |     await expect(barePage."
+          "name": "05 Upload flow > shows error when submitting without a file",
+          "error": "Error: locator.click: Error: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - waiting for locator('button[type=\"submit\"]')\u001b[22m\n\n\n  43 |\n  44 |   test('shows error when submitting without a file', async ({ authedPage }) => {\n> 45 |     await au"
         },
         {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Anmeldung' })\u001b[22m\n\n\n  43 |   test('no workspace error shown on login page', async ({ barePage }) => {\n  44 |     await barePage.goto('/documents');\n> 45 |     await expect(bare"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  69 |     );\n  70 |     await page.goto('/documents');\n> 71 |     await expect(page.getByRole('heading', { name: 'Dokumente', exa"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.shell') to be visible\u001b[22m\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  130 |     );\n  131 |     await page.goto('/documents');\n> 132 |     await expect(page.getByRole('heading', { name: 'Dokumente', "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  153 |\n  154 |     // Should show auth error (session expired), NOT silently redirect or show blank page\n> 155 |     await expect(page.locator('.state-card--error')).toBeVisible({ tim"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  169 |     });\n  170 |     await page.goto('/documents');\n> 171 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                       "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  200 |\n  201 |     await page.goto('/documents');\n> 202 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  232 |\n  233 |     await page.goto('/documents');\n> 234 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.state-card--error') to be visible\u001b[22m\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
-          "error": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.state-card--error') to be visible\u001b[22m\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  281 |\n  282 |     await page.goto('/documents');\n> 283 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.state-card--error')\u001b[22m\n\n\n  308 |\n  309 |     await page.goto('/documents');\n> 310 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               "
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
-        },
-        {
-          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, a fresh login restores workspace ready state",
-          "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\u001b[22m\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume"
+          "name": "05 Upload flow > uploads a text file and completes the import job",
+          "error": "Error: locator.click: Error: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - waiting for locator('button[type=\"submit\"]')\u001b[22m\n\n\n  56 |     });\n  57 |\n> 58 |     await authedPage.locator('button[type=\"submit\"]').click();\n     |                "
         }
       ],
       "skipped_tests": [],
       "passed_tests": [
-        "01 Login flow > renders login form with all required elements",
-        "01 Login flow > shows error state on invalid credentials",
-        "01 Login flow > successful login with truth credentials redirects to documents page",
-        "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > root path also redirects to /login",
-        "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > zero /auth/me calls when no token present"
+        "05 Upload flow > polls job status and surfaces parser failure",
+        "05 Upload flow > polls job status and surfaces OCR_REQUIRED",
+        "05 Upload flow > surfaces FILE_TOO_LARGE without creating a successful import"
       ],
-      "name": "frontend_truth_group_auth",
+      "name": "frontend_truth_group_upload",
       "environment": "local",
       "database_url_set": true,
       "gate": "m3a",
@@ -245,132 +305,31 @@
         {
           "gate": "m3a",
           "severity": "critical",
-          "reason": "22 failed, 0 errors, 0 skipped"
+          "reason": "3 failed, 0 errors, 0 skipped"
         }
       ],
       "known_limitations": [],
       "report_schema_version": 1,
-      "report_name": "frontend_truth_group_auth",
+      "report_name": "frontend_truth_group_upload",
       "status": "FAIL",
       "report_type": "truth",
-      "source_command": "python scripts/run_frontend_full_suite_staged.py --group auth",
-      "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
-      "group": "Auth",
-      "slug": "auth",
-      "rank": 1,
-      "specs": [
-        "test_01_login.spec.js",
-        "test_02_auth_bootstrap.spec.js"
-      ],
-      "activation_status": "active"
-    },
-    {
-      "report_schema_version": 1,
-      "report_name": "frontend_truth_group_workspace",
-      "gate": "m3a",
-      "status": "BLOCKED",
-      "timestamp": "2026-05-27T07:30:50.785876+00:00",
-      "environment": "local",
-      "report_type": "truth",
-      "collected": 1,
-      "passed": 0,
-      "failed": 1,
-      "errors": 0,
-      "skipped": 0,
-      "exit_code": 1,
-      "blockers": [
-        {
-          "gate": "m3a",
-          "severity": "critical",
-          "reason": "Previous group failed: Auth"
-        }
-      ],
-      "source_command": "python scripts/run_frontend_full_suite_staged.py --group workspace",
-      "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
-      "group": "Workspace",
-      "slug": "workspace",
-      "rank": 2,
-      "specs": [
-        "test_03_workspace_loading.spec.js",
-        "test_10_workspace_bootstrap.spec.js"
-      ],
-      "activation_status": "blocked",
-      "blocked_by": "Auth"
-    },
-    {
-      "report_schema_version": 1,
-      "report_name": "frontend_truth_group_documents",
-      "gate": "m3a",
-      "status": "BLOCKED",
-      "timestamp": "2026-05-27T07:30:50.875615+00:00",
-      "environment": "local",
-      "report_type": "truth",
-      "collected": 1,
-      "passed": 0,
-      "failed": 1,
-      "errors": 0,
-      "skipped": 0,
-      "exit_code": 1,
-      "blockers": [
-        {
-          "gate": "m3a",
-          "severity": "critical",
-          "reason": "Previous group failed: Auth"
-        }
-      ],
-      "source_command": "python scripts/run_frontend_full_suite_staged.py --group documents",
-      "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
-      "group": "Documents",
-      "slug": "documents",
-      "rank": 3,
-      "specs": [
-        "test_04_documents.spec.js"
-      ],
-      "activation_status": "blocked",
-      "blocked_by": "Auth"
-    },
-    {
-      "report_schema_version": 1,
-      "report_name": "frontend_truth_group_upload",
-      "gate": "m3a",
-      "status": "BLOCKED",
-      "timestamp": "2026-05-27T07:30:50.966667+00:00",
-      "environment": "local",
-      "report_type": "truth",
-      "collected": 1,
-      "passed": 0,
-      "failed": 1,
-      "errors": 0,
-      "skipped": 0,
-      "exit_code": 1,
-      "blockers": [
-        {
-          "gate": "m3a",
-          "severity": "critical",
-          "reason": "Previous group failed: Auth"
-        }
-      ],
       "source_command": "python scripts/run_frontend_full_suite_staged.py --group upload",
       "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
+      "commit_hash": "e210afd24",
       "group": "Upload",
       "slug": "upload",
       "rank": 4,
       "specs": [
         "test_05_upload.spec.js"
       ],
-      "activation_status": "blocked",
-      "blocked_by": "Auth"
+      "activation_status": "active"
     },
     {
       "report_schema_version": 1,
       "report_name": "frontend_truth_group_search",
       "gate": "m3a",
       "status": "BLOCKED",
-      "timestamp": "2026-05-27T07:30:51.052088+00:00",
+      "timestamp": "2026-05-27T13:04:44.660663+00:00",
       "environment": "local",
       "report_type": "truth",
       "collected": 1,
@@ -383,12 +342,12 @@
         {
           "gate": "m3a",
           "severity": "critical",
-          "reason": "Previous group failed: Auth"
+          "reason": "Previous group failed: Upload"
         }
       ],
       "source_command": "python scripts/run_frontend_full_suite_staged.py --group search",
       "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
+      "commit_hash": "e210afd24",
       "group": "Search",
       "slug": "search",
       "rank": 5,
@@ -396,14 +355,14 @@
         "test_06_search.spec.js"
       ],
       "activation_status": "blocked",
-      "blocked_by": "Auth"
+      "blocked_by": "Upload"
     },
     {
       "report_schema_version": 1,
       "report_name": "frontend_truth_group_chat",
       "gate": "m3a",
       "status": "BLOCKED",
-      "timestamp": "2026-05-27T07:30:51.137537+00:00",
+      "timestamp": "2026-05-27T13:04:44.785680+00:00",
       "environment": "local",
       "report_type": "truth",
       "collected": 1,
@@ -416,12 +375,12 @@
         {
           "gate": "m3a",
           "severity": "critical",
-          "reason": "Previous group failed: Auth"
+          "reason": "Previous group failed: Upload"
         }
       ],
       "source_command": "python scripts/run_frontend_full_suite_staged.py --group chat",
       "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
+      "commit_hash": "e210afd24",
       "group": "Chat",
       "slug": "chat",
       "rank": 6,
@@ -429,14 +388,14 @@
         "test_07_chat.spec.js"
       ],
       "activation_status": "blocked",
-      "blocked_by": "Auth"
+      "blocked_by": "Upload"
     },
     {
       "report_schema_version": 1,
       "report_name": "frontend_truth_group_lifecycle",
       "gate": "m3a",
       "status": "BLOCKED",
-      "timestamp": "2026-05-27T07:30:51.226733+00:00",
+      "timestamp": "2026-05-27T13:04:44.934675+00:00",
       "environment": "local",
       "report_type": "truth",
       "collected": 1,
@@ -449,12 +408,12 @@
         {
           "gate": "m3a",
           "severity": "critical",
-          "reason": "Previous group failed: Auth"
+          "reason": "Previous group failed: Upload"
         }
       ],
       "source_command": "python scripts/run_frontend_full_suite_staged.py --group lifecycle",
       "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
+      "commit_hash": "e210afd24",
       "group": "Lifecycle",
       "slug": "lifecycle",
       "rank": 7,
@@ -462,14 +421,14 @@
         "test_08_lifecycle.spec.js"
       ],
       "activation_status": "blocked",
-      "blocked_by": "Auth"
+      "blocked_by": "Upload"
     },
     {
       "report_schema_version": 1,
       "report_name": "frontend_truth_group_diagnostics",
       "gate": "m3a",
       "status": "BLOCKED",
-      "timestamp": "2026-05-27T07:30:51.315020+00:00",
+      "timestamp": "2026-05-27T13:04:45.075147+00:00",
       "environment": "local",
       "report_type": "truth",
       "collected": 1,
@@ -482,12 +441,12 @@
         {
           "gate": "m3a",
           "severity": "critical",
-          "reason": "Previous group failed: Auth"
+          "reason": "Previous group failed: Upload"
         }
       ],
       "source_command": "python scripts/run_frontend_full_suite_staged.py --group diagnostics",
       "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
+      "commit_hash": "e210afd24",
       "group": "Diagnostics",
       "slug": "diagnostics",
       "rank": 8,
@@ -495,14 +454,14 @@
         "test_09_diagnostics.spec.js"
       ],
       "activation_status": "blocked",
-      "blocked_by": "Auth"
+      "blocked_by": "Upload"
     },
     {
       "report_schema_version": 1,
       "report_name": "frontend_truth_group_error_states",
       "gate": "m3a",
       "status": "BLOCKED",
-      "timestamp": "2026-05-27T07:30:51.424641+00:00",
+      "timestamp": "2026-05-27T13:04:45.209752+00:00",
       "environment": "local",
       "report_type": "truth",
       "collected": 1,
@@ -515,12 +474,12 @@
         {
           "gate": "m3a",
           "severity": "critical",
-          "reason": "Previous group failed: Auth"
+          "reason": "Previous group failed: Upload"
         }
       ],
       "source_command": "python scripts/run_frontend_full_suite_staged.py --group error_states",
       "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
+      "commit_hash": "e210afd24",
       "group": "Error States",
       "slug": "error_states",
       "rank": 9,
@@ -528,14 +487,14 @@
         "test_11_state_invariants.spec.js"
       ],
       "activation_status": "blocked",
-      "blocked_by": "Auth"
+      "blocked_by": "Upload"
     },
     {
       "report_schema_version": 1,
       "report_name": "frontend_truth_group_concurrency",
       "gate": "m3a",
       "status": "BLOCKED",
-      "timestamp": "2026-05-27T07:30:51.519952+00:00",
+      "timestamp": "2026-05-27T13:04:45.363868+00:00",
       "environment": "local",
       "report_type": "truth",
       "collected": 1,
@@ -548,12 +507,12 @@
         {
           "gate": "m3a",
           "severity": "critical",
-          "reason": "Previous group failed: Auth"
+          "reason": "Previous group failed: Upload"
         }
       ],
       "source_command": "python scripts/run_frontend_full_suite_staged.py --group concurrency",
       "generated_by": "gate_validator",
-      "commit_hash": "d328983c",
+      "commit_hash": "e210afd24",
       "group": "Concurrency",
       "slug": "concurrency",
       "rank": 10,
@@ -561,8 +520,8 @@
         "test_12_concurrency.spec.js"
       ],
       "activation_status": "blocked",
-      "blocked_by": "Auth"
+      "blocked_by": "Upload"
     }
   ],
-  "duration_seconds": 359.19
+  "duration_seconds": 96.96
 }

@@ -14,19 +14,19 @@
  *   07  403 from /auth/me → AUTH_FORBIDDEN error shown
  *   08  Logout → session cleared → redirected to /login
  */
-import { expect, test } from './fixtures.js';
+import { expect, injectAuthState, test, waitForLoginReady, waitForWorkspaceReady } from './fixtures.js';
 
 // ─── Scenario 01: No token ────────────────────────────────────────────────────
 test.describe('02 Auth bootstrap — 01 no token', () => {
   test('redirects to /login without token', async ({ barePage }) => {
     await barePage.goto('/documents');
-    await expect(barePage.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+    await waitForLoginReady(barePage);
     await expect(barePage).toHaveURL(/\/login/);
   });
 
   test('root path also redirects to /login', async ({ barePage }) => {
     await barePage.goto('/');
-    await expect(barePage.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+    await waitForLoginReady(barePage);
   });
 
   test('zero /auth/me calls when no token present', async ({ barePage }) => {
@@ -42,7 +42,7 @@ test.describe('02 Auth bootstrap — 01 no token', () => {
 
   test('no workspace error shown on login page', async ({ barePage }) => {
     await barePage.goto('/documents');
-    await expect(barePage.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+    await waitForLoginReady(barePage);
     // No WORKSPACE_NOT_CONFIGURED or similar error should appear on the login page
     await expect(barePage.getByTestId('auth-error')).not.toBeVisible();
   });
@@ -57,35 +57,26 @@ test.describe('02 Auth bootstrap — 02 bootstrap resolves', () => {
     });
 
     const token = process.env.TRUTH_TOKEN;
-    await page.goto('/');
-    await page.evaluate(
-      ({ token: t }) => {
-        window.localStorage.setItem('wissen.authState', JSON.stringify({
-          token: t, user: null, memberships: [], active_workspace_id: '',
-        }));
-        window.localStorage.setItem('wissen.authToken', t);
-      },
-      { token },
-    );
+    await injectAuthState(page, { token, user: null, memberships: [], active_workspace_id: '' });
     await page.goto('/documents');
-    await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
+    await waitForWorkspaceReady(page);
 
     expect(authMeCalls.length).toBe(1);
   });
 
   test('bootstrap resolves to documents page', async ({ partialAuthPage }) => {
-    await expect(partialAuthPage.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
+    await expect(partialAuthPage.getByTestId('document-list')).toBeVisible({ timeout: 15_000 });
     await expect(partialAuthPage).not.toHaveURL(/\/login/);
   });
 
   test('workspace id appears in page header after bootstrap', async ({ partialAuthPage }) => {
     const workspaceId = process.env.TRUTH_WORKSPACE_ID;
-    await expect(partialAuthPage.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
+    await expect(partialAuthPage.getByTestId('workspace-ready')).toBeVisible({ timeout: 15_000 });
     await expect(partialAuthPage.getByText(`Workspace: ${workspaceId}`)).toBeVisible();
   });
 
   test('no error state after successful bootstrap', async ({ partialAuthPage }) => {
-    await expect(partialAuthPage.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
+    await expect(partialAuthPage.getByTestId('document-list')).toBeVisible({ timeout: 15_000 });
     await expect(partialAuthPage.getByTestId('auth-error')).not.toBeVisible();
   });
 });
@@ -95,7 +86,7 @@ test.describe('02 Auth bootstrap — 03 complete session', () => {
   test('no bootstrap loading flash with complete session', async ({ authedPage }) => {
     // The loading text only appears if bootstrap is still pending
     await expect(authedPage.getByText('Authentifizierung wird initialisiert...')).not.toBeVisible();
-    await expect(authedPage.getByTestId('documents-page')).toBeVisible();
+    await expect(authedPage.getByTestId('document-list')).toBeVisible();
   });
 
   test('app shell renders without error state', async ({ authedPage }) => {
@@ -113,23 +104,14 @@ test.describe('02 Auth bootstrap — 03 complete session', () => {
       if (req.url().includes('/auth/me')) authMeCalls.push(req.url());
     });
 
-    await page.goto('/');
-    await page.evaluate(
-      ({ t, ws, uid }) => {
-        const state = {
-          token: t,
-          user: { id: uid, login: 'gui_truth_user', display_name: 'GUI Truth User' },
-          memberships: [{ workspace_id: ws, role: 'owner' }],
-          active_workspace_id: ws,
-        };
-        window.localStorage.setItem('wissen.authState', JSON.stringify(state));
-        window.localStorage.setItem('wissen.authToken', t);
-        window.localStorage.setItem('wissen.workspaceId', ws);
-      },
-      { t: token, ws: workspaceId, uid: userId },
-    );
+    await injectAuthState(page, {
+      token,
+      user: { id: userId, login: 'gui_truth_user', display_name: 'GUI Truth User' },
+      memberships: [{ workspace_id: workspaceId, role: 'owner' }],
+      active_workspace_id: workspaceId,
+    });
     await page.goto('/documents');
-    await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 10_000 });
+    await waitForWorkspaceReady(page);
     await page.waitForTimeout(500);
 
     expect(authMeCalls).toHaveLength(0);
@@ -139,15 +121,11 @@ test.describe('02 Auth bootstrap — 03 complete session', () => {
 // ─── Scenario 04: Invalid token ──────────────────────────────────────────────
 test.describe('02 Auth bootstrap — 04 invalid token', () => {
   test('shows session-expired error, does not redirect silently', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.localStorage.setItem('wissen.authState', JSON.stringify({
-        token: 'this-token-is-definitely-invalid-xyz-000',
-        user: null,
-        memberships: [],
-        active_workspace_id: '',
-      }));
-      window.localStorage.setItem('wissen.authToken', 'this-token-is-definitely-invalid-xyz-000');
+    await injectAuthState(page, {
+      token: 'this-token-is-definitely-invalid-xyz-000',
+      user: null,
+      memberships: [],
+      active_workspace_id: '',
     });
     await page.goto('/documents');
 
@@ -157,15 +135,11 @@ test.describe('02 Auth bootstrap — 04 invalid token', () => {
   });
 
   test('invalid token error contains session-expired messaging', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => {
-      window.localStorage.setItem('wissen.authState', JSON.stringify({
-        token: 'invalid-bootstrap-token-xyz-001',
-        user: null,
-        memberships: [],
-        active_workspace_id: '',
-      }));
-      window.localStorage.setItem('wissen.authToken', 'invalid-bootstrap-token-xyz-001');
+    await injectAuthState(page, {
+      token: 'invalid-bootstrap-token-xyz-001',
+      user: null,
+      memberships: [],
+      active_workspace_id: '',
     });
     await page.goto('/documents');
     await expect(page.getByTestId('auth-error')).toBeVisible({ timeout: 15_000 });
@@ -181,16 +155,7 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
   test('shows API_UNREACHABLE error with retry button', async ({ page }) => {
     const token = process.env.TRUTH_TOKEN;
 
-    await page.goto('/');
-    await page.evaluate(
-      ({ t }) => {
-        window.localStorage.setItem('wissen.authState', JSON.stringify({
-          token: t, user: null, memberships: [], active_workspace_id: '',
-        }));
-        window.localStorage.setItem('wissen.authToken', t);
-      },
-      { t: token },
-    );
+    await injectAuthState(page, { token, user: null, memberships: [], active_workspace_id: '' });
 
     // Intercept GET /auth/me and abort to simulate network failure while keeping CORS preflight recoverable.
     await page.route('**/auth/me', (route) => {
@@ -209,16 +174,7 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
     const token = process.env.TRUTH_TOKEN;
     const authMeCalls = [];
 
-    await page.goto('/');
-    await page.evaluate(
-      ({ t }) => {
-        window.localStorage.setItem('wissen.authState', JSON.stringify({
-          token: t, user: null, memberships: [], active_workspace_id: '',
-        }));
-        window.localStorage.setItem('wissen.authToken', t);
-      },
-      { t: token },
-    );
+    await injectAuthState(page, { token, user: null, memberships: [], active_workspace_id: '' });
 
     page.on('request', (req) => {
       if (req.url().includes('/auth/me')) authMeCalls.push(req.url());
@@ -237,7 +193,7 @@ test.describe('02 Auth bootstrap — 05 backend unreachable', () => {
     blocked = false;
     await page.getByRole('button', { name: 'Erneut versuchen' }).click();
     await expect.poll(() => authMeCalls.length, { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
-    await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
+    await waitForWorkspaceReady(page);
   });
 });
 
@@ -260,16 +216,7 @@ test.describe('02 Auth bootstrap — 07 forbidden', () => {
   test('shows error state on 403 from /auth/me', async ({ page }) => {
     const token = process.env.TRUTH_TOKEN;
 
-    await page.goto('/');
-    await page.evaluate(
-      ({ t }) => {
-        window.localStorage.setItem('wissen.authState', JSON.stringify({
-          token: t, user: null, memberships: [], active_workspace_id: '',
-        }));
-        window.localStorage.setItem('wissen.authToken', t);
-      },
-      { t: token },
-    );
+    await injectAuthState(page, { token, user: null, memberships: [], active_workspace_id: '' });
 
     await page.route('**/auth/me', (route) =>
       route.fulfill({
@@ -287,16 +234,7 @@ test.describe('02 Auth bootstrap — 07 forbidden', () => {
   test('403 error does not show retry button', async ({ page }) => {
     const token = process.env.TRUTH_TOKEN;
 
-    await page.goto('/');
-    await page.evaluate(
-      ({ t }) => {
-        window.localStorage.setItem('wissen.authState', JSON.stringify({
-          token: t, user: null, memberships: [], active_workspace_id: '',
-        }));
-        window.localStorage.setItem('wissen.authToken', t);
-      },
-      { t: token },
-    );
+    await injectAuthState(page, { token, user: null, memberships: [], active_workspace_id: '' });
 
     await page.route('**/auth/me', (route) =>
       route.fulfill({
@@ -324,37 +262,32 @@ async function loginForLogoutScenario(page) {
   expect(response.ok()).toBeTruthy();
   const authState = await response.json();
 
-  await page.goto('/');
-  await page.evaluate((state) => {
-    window.localStorage.setItem('wissen.authState', JSON.stringify(state));
-    window.localStorage.setItem('wissen.authToken', state.token);
-    window.localStorage.setItem('wissen.workspaceId', state.active_workspace_id);
-  }, authState);
+  await injectAuthState(page, authState);
   await page.goto('/documents');
-  await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
+  await waitForWorkspaceReady(page);
 }
 
 test.describe('02 Auth bootstrap — 08 logout', () => {
   test('logout clears session and redirects to login', async ({ page }) => {
     await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+    await waitForLoginReady(page);
     await expect(page).toHaveURL(/\/login/);
   });
 
   test('after logout, navigating to /documents redirects to login', async ({ page }) => {
     await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+    await waitForLoginReady(page);
 
     await page.goto('/documents');
-    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+    await waitForLoginReady(page);
   });
 
   test('after logout, localStorage is cleared', async ({ page }) => {
     await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+    await waitForLoginReady(page);
 
     const stored = await page.evaluate(() => window.localStorage.getItem('wissen.authToken'));
     expect(stored).toBeNull();
@@ -365,13 +298,13 @@ test.describe('02 Auth bootstrap — 08 logout', () => {
 
     await loginForLogoutScenario(page);
     await page.getByRole('button', { name: 'Abmelden' }).click({ force: true });
-    await expect(page.getByTestId('login-page')).toBeVisible({ timeout: 10_000 });
+    await waitForLoginReady(page);
 
     await page.getByTestId('login-email').fill(process.env.TRUTH_LOGIN);
     await page.getByTestId('login-password').fill(process.env.TRUTH_PASSWORD);
     await page.getByTestId('login-submit').click();
 
-    await expect(page.getByTestId('documents-page')).toBeVisible({ timeout: 15_000 });
+    await waitForWorkspaceReady(page);
     await expect(page.getByText(`Workspace: ${workspaceId}`)).toBeVisible();
   });
 });

@@ -222,21 +222,18 @@ def test_backend_http_process_kill_during_upload_leaves_no_partial_db_rows(
         deadline = time.time() + 15
         client_error = None
         with httpx.Client(timeout=5.0) as client:
-            request_started = False
             while time.time() < deadline and not signal_file.exists():
-                if not request_started:
-                    request_started = True
-                    try:
-                        client.post(
-                            f"http://127.0.0.1:{port}/documents/import",
-                            headers={
-                                "Authorization": f"Bearer {truth_seed['token']}",
-                                "X-Workspace-Id": truth_seed["workspace_id"],
-                            },
-                            files={"file": ("truth-http-crash.txt", b"# Truth\n\nHTTP upload crash\n", "text/plain")},
-                        )
-                    except Exception as exc:  # pragma: no cover - expected once process is killed
-                        client_error = exc
+                try:
+                    client.post(
+                        f"http://127.0.0.1:{port}/documents/import",
+                        headers={
+                            "Authorization": f"Bearer {truth_seed['token']}",
+                            "X-Workspace-Id": truth_seed["workspace_id"],
+                        },
+                        files={"file": ("truth-http-crash.txt", b"# Truth\n\nHTTP upload crash\n", "text/plain")},
+                    )
+                except Exception as exc:  # pragma: no cover - expected once process is killed
+                    client_error = exc
                 time.sleep(0.1)
             assert signal_file.exists(), "server did not reach upload crash point in time"
         assert client_error is None or isinstance(client_error, Exception)

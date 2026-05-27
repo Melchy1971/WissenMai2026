@@ -3,7 +3,7 @@
   "report_name": "frontend_truth_group_error_states",
   "gate": "m3a",
   "status": "BLOCKED",
-  "timestamp": "2026-05-27T07:30:51.424641+00:00",
+  "timestamp": "2026-05-27T13:04:45.209752+00:00",
   "environment": "local",
   "report_type": "truth",
   "collected": 1,
@@ -16,12 +16,12 @@
     {
       "gate": "m3a",
       "severity": "critical",
-      "reason": "Previous group failed: Auth"
+      "reason": "Previous group failed: Upload"
     }
   ],
   "source_command": "python scripts/run_frontend_full_suite_staged.py --group error_states",
   "generated_by": "gate_validator",
-  "commit_hash": "d328983c",
+  "commit_hash": "e210afd24",
   "group": "Error States",
   "slug": "error_states",
   "rank": 9,
@@ -29,5 +29,5 @@
     "test_11_state_invariants.spec.js"
   ],
   "activation_status": "blocked",
-  "blocked_by": "Auth"
+  "blocked_by": "Upload"
 }

@@ -21,7 +21,10 @@ class ImportObservabilityEvent(BaseModel):
     model_config = ConfigDict(strict=True)
 
     event_name: ImportEventName
+    event_type: str
+    severity: str
     document_id: str | None
+    job_id: str | None
     workspace_id: str | None
     duration_ms: int | None
     parser_type: str

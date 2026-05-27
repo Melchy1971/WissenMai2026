@@ -1,4 +1,5 @@
 import logging
+import json
 from contextlib import contextmanager
 from types import SimpleNamespace
 
@@ -121,7 +122,10 @@ def test_upload_logs_structured_context_without_document_content(monkeypatch, ca
     for record in import_records:
         assert set(record) == {
             "event_name",
+            "event_type",
+            "severity",
             "document_id",
+            "job_id",
             "workspace_id",
             "duration_ms",
             "parser_type",
@@ -132,9 +136,15 @@ def test_upload_logs_structured_context_without_document_content(monkeypatch, ca
         }
         assert record["workspace_id"] == "00000000-0000-0000-0000-000000000001"
         assert record["correlation_id"] == "upload-corr-1"
+        assert record["event_type"]
+        assert record["severity"] in {"info", "warning", "error"}
+        json.dumps(record, sort_keys=True)
     background_job_record = next(record for record in observability_records if record["event_name"] == "background_job_completed")
     assert background_job_record["workspace_id"] == "00000000-0000-0000-0000-000000000001"
     assert background_job_record["correlation_id"] == "upload-corr-1"
+    assert background_job_record["job_id"]
+    assert background_job_record["event_type"] == "background_job_completed"
+    assert background_job_record["severity"] == "info"
     assert observability_records[0]["parser_type"] == "txt-parser"
     assert observability_records[0]["chunk_count"] == 0
     assert import_records[-1]["document_id"] == "doc-1"
@@ -350,8 +360,10 @@ def test_duplicate_import_is_observable_without_logging_sensitive_content(monkey
     assert result.import_status == "duplicate"
     observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
     assert observability_records[-1]["event_name"] == "import_duplicate_detected"
+    assert observability_records[-1]["event_type"] == "duplicate_import_detected"
     assert observability_records[-1]["workspace_id"] == "workspace-1"
     assert observability_records[-1]["status"] == "completed"
+    assert observability_records[-1]["severity"] == "info"
     assert "Top secret" not in caplog.text
     assert "Secret Contract" not in caplog.text
     snapshot = metrics_registry.snapshot()
@@ -446,9 +458,11 @@ def test_process_import_job_retry_is_observable_with_job_correlation(monkeypatch
         )
     observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
     assert observability_records[-1]["event_name"] == "background_job_retry_scheduled"
+    assert observability_records[-1]["event_type"] == "import_retry"
     assert observability_records[-1]["workspace_id"] == "workspace-1"
     assert observability_records[-1]["correlation_id"] == "corr-1"
     assert observability_records[-1]["status"] == "retryable"
+    assert observability_records[-1]["severity"] == "warning"
     assert "fail" not in str(observability_records[-1])
     snapshot = metrics_registry.snapshot()
     assert snapshot["background_job_retry_scheduled.retryable"] == 1
@@ -477,9 +491,11 @@ def test_recover_stale_running_job_emits_recovery_observability(monkeypatch, cap
         )
     observability_records = [record.observability for record in caplog.records if hasattr(record, "observability")]
     assert observability_records[-1]["event_name"] == "background_job_recovered"
+    assert observability_records[-1]["event_type"] == "stale_job_recovered"
     assert observability_records[-1]["workspace_id"] == "workspace-2"
     assert observability_records[-1]["status"] == "retryable"
     assert observability_records[-1]["error_code"] == "WORKER_RECOVERY_REQUIRED"
+    assert observability_records[-1]["severity"] == "warning"
     assert "password" not in str(observability_records[-1])
     assert "token" not in str(observability_records[-1])
     snapshot = metrics_registry.snapshot()

@@ -1,33 +1,85 @@
 {
-  "report_schema_version": 1,
-  "report_name": "frontend_truth_group_upload",
-  "gate": "m3a",
-  "status": "BLOCKED",
-  "timestamp": "2026-05-27T07:30:50.966667+00:00",
-  "environment": "local",
-  "report_type": "truth",
-  "collected": 1,
-  "passed": 0,
-  "failed": 1,
-  "errors": 0,
+  "timestamp": "2026-05-27T13:04:44.514636+00:00",
+  "generated_at": "2026-05-27T13:04:44.514657+00:00",
+  "collected": 6,
+  "passed": 3,
+  "failed": 3,
   "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8013",
+  "test_database_url_set": true,
+  "duration": 14.55,
+  "duration_seconds": 14.55,
+  "failed_flows": [
+    {
+      "name": "05 Upload flow > shows upload form elements",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('button[type=\"submit\"]')\nExpected: visible\nError: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 500"
+    },
+    {
+      "name": "05 Upload flow > shows error when submitting without a file",
+      "error": "Error: locator.click: Error: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - waiting for locator('button[type=\"submit\"]')\u001b[22m\n\n\n  43 |\n  44 |   test('shows error when submitting without a file', async ({ authedPage }) => {\n> 45 |     await au"
+    },
+    {
+      "name": "05 Upload flow > uploads a text file and completes the import job",
+      "error": "Error: locator.click: Error: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - waiting for locator('button[type=\"submit\"]')\u001b[22m\n\n\n  56 |     });\n  57 |\n> 58 |     await authedPage.locator('button[type=\"submit\"]').click();\n     |                "
+    }
+  ],
+  "errors": 0,
+  "error_details": [],
   "exit_code": 1,
+  "playwright_exit_code": 1,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8013/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [
+    {
+      "name": "05 Upload flow > shows upload form elements",
+      "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('button[type=\"submit\"]')\nExpected: visible\nError: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 500"
+    },
+    {
+      "name": "05 Upload flow > shows error when submitting without a file",
+      "error": "Error: locator.click: Error: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - waiting for locator('button[type=\"submit\"]')\u001b[22m\n\n\n  43 |\n  44 |   test('shows error when submitting without a file', async ({ authedPage }) => {\n> 45 |     await au"
+    },
+    {
+      "name": "05 Upload flow > uploads a text file and completes the import job",
+      "error": "Error: locator.click: Error: strict mode violation: locator('button[type=\"submit\"]') resolved to 2 elements:\n    1) <button type=\"submit\">Dokument importieren</button> aka getByRole('button', { name: 'Dokument importieren' })\n    2) <button type=\"submit\">Suchen</button> aka getByRole('button', { name: 'Suchen' })\n\nCall log:\n\u001b[2m  - waiting for locator('button[type=\"submit\"]')\u001b[22m\n\n\n  56 |     });\n  57 |\n> 58 |     await authedPage.locator('button[type=\"submit\"]').click();\n     |                "
+    }
+  ],
+  "skipped_tests": [],
+  "passed_tests": [
+    "05 Upload flow > polls job status and surfaces parser failure",
+    "05 Upload flow > polls job status and surfaces OCR_REQUIRED",
+    "05 Upload flow > surfaces FILE_TOO_LARGE without creating a successful import"
+  ],
+  "name": "frontend_truth_group_upload",
+  "environment": "local",
+  "database_url_set": true,
+  "gate": "m3a",
   "blockers": [
     {
       "gate": "m3a",
       "severity": "critical",
-      "reason": "Previous group failed: Auth"
+      "reason": "3 failed, 0 errors, 0 skipped"
     }
   ],
+  "known_limitations": [],
+  "report_schema_version": 1,
+  "report_name": "frontend_truth_group_upload",
+  "status": "FAIL",
+  "report_type": "truth",
   "source_command": "python scripts/run_frontend_full_suite_staged.py --group upload",
   "generated_by": "gate_validator",
-  "commit_hash": "d328983c",
+  "commit_hash": "e210afd24",
   "group": "Upload",
   "slug": "upload",
   "rank": 4,
   "specs": [
     "test_05_upload.spec.js"
   ],
-  "activation_status": "blocked",
-  "blocked_by": "Auth"
+  "activation_status": "active"
 }
