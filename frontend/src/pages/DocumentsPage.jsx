@@ -232,7 +232,7 @@ export function DocumentsPage() {
   const canUseDocumentControls = state.status !== 'error';
 
   return (
-    <section className="page-stack">
+    <section className="page-stack" data-testid="documents-page">
       <div className="page-header">
         <div>
           <p className="panel__eyebrow">Dokumentuebersicht</p>
@@ -241,7 +241,7 @@ export function DocumentsPage() {
         <p className="page-header__meta">Workspace: {workspaceId || 'nicht konfiguriert'}</p>
       </div>
       {canUseDocumentControls ? (
-      <section className="panel">
+      <section className="panel" data-testid="upload-panel">
         <div className="panel__header search-bar__header">
           <div>
             <p className="panel__eyebrow">Lifecycle</p>
@@ -264,7 +264,7 @@ export function DocumentsPage() {
       </section>
       ) : null}
       {canUseDocumentControls ? (
-      <section className="panel">
+      <section className="panel" data-testid="search-page">
         <div className="panel__header search-bar__header">
           <div>
             <p className="panel__eyebrow">Import</p>
@@ -392,7 +392,9 @@ export function DocumentsPage() {
       ) : state.items.length === 0 ? (
         <EmptyState title="Keine Dokumente vorhanden" message="Fuer diesen Workspace liegen aktuell keine Dokumente vor." />
       ) : (
-        <DocumentTable items={state.items} />
+        <div data-testid="document-list">
+          <DocumentTable items={state.items} />
+        </div>
       )}
     </section>
   );

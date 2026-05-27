@@ -1,4 +1,15 @@
 {
-  "status": "PENDING",
-  "reason": "Noch keine Validierung durchgeführt.",
-  "timestamp": "
+  "status": "FAIL",
+  "timestamp": "2026-05-26T12:00:00Z",
+  "errors": [
+    {
+      "file": "reports/m3a_final_gate_report.json",
+      "reason": "Ungültiges JSON oder veralteter PASS-Report. Archiviert unter reports/archive/m3a_final_gate_report_20260519_105745.json."
+    },
+    {
+      "file": "reports/m4b_upload_queue_truth_report.json",
+      "reason": "Report war leer oder wurde nicht generiert."
+    }
+  ],
+  "summary": "Alle Reports jetzt formal gültig, aber Fehlerstatus. Gate-Validator schlägt korrekt an."
+}

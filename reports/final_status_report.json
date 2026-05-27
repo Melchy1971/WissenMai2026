@@ -1,0 +1,18 @@
+{
+  "M3a_abgeschlossen": false,
+  "M4_Backend_abgeschlossen": true,
+  "M4_Gesamtabschluss_moeglich": false,
+  "M5_Vorbereitung_erlaubt": false,
+  "M5_Implementierung_NoGo": true,
+  "details": {
+    "preflight": "nicht gefunden",
+    "frontend_truth": "5/100 Tests bestanden, 37 failed, 58 skipped",
+    "m3a_release_candidate": "nicht gefunden",
+    "m4a": "PASS",
+    "m4b": "PASS",
+    "m4c": "PASS",
+    "m4e": "PASS",
+    "masterplan_status": "blocked"
+  },
+  "go_no_go": "NO-GO"
+}

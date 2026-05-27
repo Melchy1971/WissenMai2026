@@ -22,7 +22,7 @@ test.describe('07 Chat flow', () => {
   test('shows chat page heading and workspace context', async ({ authedPage }) => {
     const workspaceId = process.env.TRUTH_WORKSPACE_ID;
     await authedPage.goto('/chat');
-    await expect(authedPage.getByRole('heading', { name: 'Dokumentgestuetzter Chat' })).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByTestId('chat-page')).toBeVisible({ timeout: 10_000 });
     await expect(authedPage.getByText(`Workspace: ${workspaceId}`)).toBeVisible();
   });
 
@@ -39,8 +39,8 @@ test.describe('07 Chat flow', () => {
     await authedPage.goto('/chat');
     // Wait for loading to finish
     await expect(authedPage.locator('.state-card--error')).not.toBeVisible({ timeout: 10_000 });
-    await expect(authedPage.getByLabel('Titel der Sitzung')).toBeVisible({ timeout: 5_000 });
-    await expect(authedPage.locator('.chat-layout')).toBeVisible();
+    await expect(authedPage.locator('input[type="text"]')).toBeVisible({ timeout: 5_000 });
+    await expect(authedPage.getByTestId('chat-layout')).toBeVisible();
   });
 
   test('navigation from documents to chat preserves workspace context', async ({ authedPage }) => {

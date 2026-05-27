@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-05-19T10:57:45.4813616+02:00",
+  "gate": "M3a Final Gate",
+  "gate_result": "PASS",
+  "score": 100.0,
+  "score_threshold": 90.0,
+  "decision": "M3a abgeschlossen",
+  "m4_total_completion": [
+    {
+      "id": "documentation_updated",
+      "passed": true,
+      "evidence": "masterplan.md, docs/status.md, docs/frontend.md, docs/m3a-gate-policy.md and docs/operational-truth-governance.md reference the green M3a evidence and separate M4/M5 blockers"
+    }
+  ],
+  "blockers": [],
+  "warnings": [
+    "M4 Gesamtabschluss bleibt No-Go, bis M4 Backend Truth gruen ist.",
+    "reports/postgres_truth_report.json bleibt rot, ist aber keine M3a-Gate-Regel."
+  ]
+}

@@ -77,22 +77,29 @@ def _truth_score(report: dict[str, Any] | None) -> float | None:
 
 
 def _load_artifacts(report_dir: Path, docs_dir: Path) -> dict[str, Any]:
+    # Prefer reports/current/<gate>.json, fallback to legacy reports/
+    current_dir = report_dir / "current"
     paths = {
-        "m3a_release_candidate": report_dir / "m3a_release_candidate.json",
-        "m4_release_candidate": report_dir / "m4_release_candidate.json",
-        "frontend_truth": report_dir / "frontend_truth_report.json",
-        "postgres_truth": report_dir / "postgres_truth_report.json",
-        "gate_hierarchy": report_dir / "gate_hierarchy_result.json",
-        "gate_drift": report_dir / "gate_drift_report.json",
-        "documentation_audit": report_dir / "documentation_release_audit.json",
-        "known_limitations": docs_dir / "known_limitations.json",
-        "truth_marker_taxonomy": report_dir / "truth_marker_taxonomy.json",
+        "m3a_release_candidate": (current_dir / "m3a_release_candidate.json", report_dir / "m3a_release_candidate.json"),
+        "m4_release_candidate": (current_dir / "m4_release_candidate.json", report_dir / "m4_release_candidate.json"),
+        "frontend_truth": (current_dir / "frontend_truth_report.json", report_dir / "frontend_truth_report.json"),
+        "postgres_truth": (current_dir / "postgres_truth_report.json", report_dir / "postgres_truth_report.json"),
+        "gate_hierarchy": (current_dir / "gate_hierarchy_result.json", report_dir / "gate_hierarchy_result.json"),
+        "gate_drift": (current_dir / "gate_drift_report.json", report_dir / "gate_drift_report.json"),
+        "documentation_audit": (current_dir / "documentation_release_audit.json", report_dir / "documentation_release_audit.json"),
+        "known_limitations": (docs_dir / "known_limitations.json", docs_dir / "known_limitations.json"),
+        "truth_marker_taxonomy": (current_dir / "truth_marker_taxonomy.json", report_dir / "truth_marker_taxonomy.json"),
     }
     artifacts: dict[str, Any] = {}
-    for key, path in paths.items():
-        payload, error = _load_json(path)
+    for key, (current_path, legacy_path) in paths.items():
+        if current_path.exists():
+            payload, error = _load_json(current_path)
+            path_used = current_path
+        else:
+            payload, error = _load_json(legacy_path)
+            path_used = legacy_path
         artifacts[key] = {
-            "path": _rel(path),
+            "path": _rel(path_used),
             "available": payload is not None,
             "payload": payload,
             "error": error,

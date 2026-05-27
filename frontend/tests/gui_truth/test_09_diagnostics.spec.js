@@ -3,7 +3,7 @@ import { expect, test } from './fixtures.js';
 test.describe('09 Diagnostics GUI', () => {
   test('shows admin diagnostics page heading', async ({ authedPage }) => {
     await authedPage.goto('/admin/diagnostics');
-    await expect(authedPage.getByRole('heading', { name: 'Systemdiagnose' })).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByTestId('diagnostics-page')).toBeVisible({ timeout: 10_000 });
   });
 
   test('shows system status card', async ({ authedPage }) => {
@@ -36,7 +36,7 @@ test.describe('09 Diagnostics GUI', () => {
   test('diagnostics page accessible via admin nav link', async ({ authedPage }) => {
     await authedPage.getByRole('link', { name: 'Admin' }).click();
     await expect(authedPage).toHaveURL(/\/admin\/diagnostics/);
-    await expect(authedPage.locator('.shell')).toBeVisible();
+    await expect(authedPage.getByTestId('app-shell')).toBeVisible();
   });
 
   test('non-admin workspace member receives FORBIDDEN for diagnostics', async ({ multiWorkspacePage }) => {

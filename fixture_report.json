@@ -1,0 +1,15 @@
+{
+  "status": "success",
+  "fixtures": [
+    "Test Workspace",
+    "Test User",
+    "Membership",
+    "Test Dokument active",
+    "Test Dokument archived",
+    "Test Dokument deleted",
+    "Suchbarer Chunk",
+    "Chatfähiger Kontext"
+  ],
+  "isolation": "workspace",
+  "cleanup": "Alle Testdaten werden nach Testlauf entfernt. Keine Seiteneffekte."
+}

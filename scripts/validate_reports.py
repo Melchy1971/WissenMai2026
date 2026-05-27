@@ -360,6 +360,7 @@ def main(argv: list[str] | None = None) -> int:
     paths = [Path(p) for p in args.report] if args.report else DEFAULT_REPORTS
 
     total, ok, failed_count = 0, 0, 0
+    import subprocess
     for path in paths:
         total += 1
         if not path.exists():
@@ -375,6 +376,15 @@ def main(argv: list[str] | None = None) -> int:
             missing_after = validate(report, path)
             write_report(path, report)
             _print_result(path, missing_after, normalized=True)
+            # Nach dem Schreiben: Archivierung/Aktualisierung
+            try:
+                subprocess.run([
+                    sys.executable,
+                    str(REPO_ROOT / "scripts" / "report_archiver.py"),
+                    str(path)
+                ], check=True)
+            except Exception as e:
+                print(f"  [ARCHIVE ERROR] {e}")
             if missing_after:
                 failed_count += 1
             else:

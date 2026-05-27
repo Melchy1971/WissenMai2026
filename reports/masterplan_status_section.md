@@ -1,10 +1,10 @@
 <!-- BEGIN GENERATED MASTERPLAN STATUS -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-05-20T08:31:45.763288+00:00`
+Stand: `2026-05-26T12:19:07.849356+00:00`
 
 Gesamtstatus: `blocked`
-Gesamtfortschritt: `40.0%`
+Gesamtfortschritt: `17.5%`
 Freigabe: `nein`
 
 > Dieser Abschnitt ist maschinell aus Artefakten generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
@@ -13,8 +13,8 @@ Freigabe: `nein`
 
 | Phase | Status | Entscheidung | Score | Quelle |
 |---|---|---|---|---|
-| M3a Frontend Foundation | `gate_passed` | `GO` | 100.0 | `reports/m3a_release_candidate.json` |
-| M4 Stabilization | `tested` | `NO_GO` | 86.96 | `reports/m4_release_candidate.json` |
+| M3a Frontend Foundation | `draft` | `UNKNOWN` | - | `reports/m3a_release_candidate.json` |
+| M4 Stabilization | `tested` | `NO_GO` | 93.48 | `reports/m4_release_candidate.json` |
 | M5 Start | `blocked` | `NO_GO` | - | `docs/known_limitations.json` |
 | Operational Governance | `blocked` | `NO_GO` | - | `docs/known_limitations.json` |
 
@@ -22,15 +22,16 @@ Freigabe: `nein`
 
 | Gate | Score | Status | Quelle |
 |---|---:|---|---|
-| `m3a_gate` | 100.0 | `gate_passed` | `reports/m3a_release_candidate.json` |
-| `frontend_truth` | 100.0 | `-` | `reports/frontend_truth_report.json` |
+| `m3a_gate` | - | `draft` | `reports/m3a_release_candidate.json` |
+| `frontend_truth` | 5.0 | `-` | `reports/frontend_truth_report.json` |
 | `m4a_auth` | 100.0 | `PARTIAL_PASS_BLOCKED_BY_M4_TRUTH` | `reports/m4_release_candidate.json` |
 | `m4b_upload_queue` | 91.7 | `PARTIAL_PASS_BLOCKED_BY_M4_TRUTH` | `reports/m4_release_candidate.json` |
 | `m4c_lifecycle_retrieval` | 100.0 | `PARTIAL_PASS_BLOCKED_BY_M4_TRUTH` | `reports/m4_release_candidate.json` |
-| `m4_postgres_truth` | 86.96 | `-` | `reports/postgres_truth_report.json` |
+| `m4_postgres_truth` | 93.48 | `-` | `reports/postgres_truth_report.json` |
 
 ### Blocker
 
+- `frontend_truth_green` (m3a, None): None Quelle: `reports/m3a_release_candidate.json`
 - `missing_m4_split_gate_reports` (m4, blocking): reports/m4a_auth_truth_report.json, reports/m4b_upload_queue_truth_report.json, reports/m4c_lifecycle_retrieval_truth_report.json, reports/m4e_backup_restore_truth_report.json and reports/m4_truth_report.json are not present. Quelle: `reports/m4_release_candidate.json`
 - `postgres_truth_m4_not_green` (m4, blocking): reports/postgres_truth_report.json is blocked: 120/138 passed, 16 failed, 2 errors, exit_code=1. Quelle: `reports/m4_release_candidate.json`
 - `m4b_truth_failure` (m4, blocking): tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows failed and is M4b-critical. Quelle: `reports/m4_release_candidate.json`

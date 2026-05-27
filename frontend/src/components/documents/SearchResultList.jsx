@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export function SearchResultList({ items, query }) {
   return (
-    <section className="panel">
+    <section className="panel" data-testid="search-result-list">
       <div className="panel__header search-results__header">
         <div>
           <p className="panel__eyebrow">Suche</p>

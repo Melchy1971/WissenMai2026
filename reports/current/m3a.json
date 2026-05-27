@@ -1,0 +1,13 @@
+{
+  "report_format_version": 1,
+  "marker": "m3a_truth",
+  "timestamp": "2026-05-27T00:00:00Z",
+  "collected": 0,
+  "passed": 0,
+  "failed": 0,
+  "errors": 1,
+  "skipped": 0,
+  "exit_code": 1,
+  "test_database_url_set": true,
+  "failed_tests": ["test_missing"]
+}

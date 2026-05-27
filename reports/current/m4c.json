@@ -1,0 +1,13 @@
+{
+  "report_format_version": 1,
+  "marker": "m4c_lifecycle_retrieval_truth",
+  "timestamp": "2026-05-27T00:00:00Z",
+  "collected": 5,
+  "passed": 5,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "test_database_url_set": true,
+  "failed_tests": []
+}

@@ -30,7 +30,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="shell">
+    <div className="shell" data-testid="app-shell">
       <header className="shell__header">
         <div className="shell__brand">
           <TelekomLogo />

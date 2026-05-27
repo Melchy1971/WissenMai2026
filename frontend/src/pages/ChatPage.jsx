@@ -216,7 +216,7 @@ export function ChatPage() {
   }
 
   return (
-    <section className="page-stack">
+    <section className="page-stack" data-testid="chat-page">
       <div className="page-header">
         <div>
           <p className="panel__eyebrow">M3c Chat</p>
@@ -225,7 +225,7 @@ export function ChatPage() {
         <p className="page-header__meta">Workspace: {workspaceId || 'nicht konfiguriert'}</p>
       </div>
 
-      <div className="chat-layout">
+      <div className="chat-layout" data-testid="chat-layout">
         <ChatSessionList items={sessionsState.items} activeSessionId={activeSessionId || null} />
 
         <section className="page-stack">

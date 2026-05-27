@@ -99,7 +99,7 @@ export function LoginPage() {
   }
 
   return (
-    <section className="page-stack auth-page">
+    <section className="page-stack auth-page" data-testid="login-page">
       <div className="page-header">
         <div>
           <p className="panel__eyebrow">M4a Auth</p>
@@ -118,14 +118,30 @@ export function LoginPage() {
         <form className="search-bar auth-form" onSubmit={handleSubmit}>
           <label className="search-bar__field">
             <span className="search-bar__label">Login</span>
-            <input type="text" value={loginInput} onChange={(event) => setLoginInput(event.target.value)} autoComplete="username" />
+            <input
+              type="text"
+              value={loginInput}
+              onChange={(event) => setLoginInput(event.target.value)}
+              autoComplete="username"
+              data-testid="login-email"
+            />
           </label>
           <label className="search-bar__field">
             <span className="search-bar__label">Passwort</span>
-            <input type="password" value={passwordInput} onChange={(event) => setPasswordInput(event.target.value)} autoComplete="current-password" />
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(event) => setPasswordInput(event.target.value)}
+              autoComplete="current-password"
+              data-testid="login-password"
+            />
           </label>
           <div className="search-bar__actions">
-            <button type="submit" disabled={state.status === 'loading'}>
+            <button
+              type="submit"
+              disabled={state.status === 'loading'}
+              data-testid="login-submit"
+            >
               {state.status === 'loading' ? 'Anmeldung laeuft...' : 'Anmelden'}
             </button>
           </div>

@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-05-26T12:30:00Z",
+  "invalid_reports": [
+    {
+      "file": "m3a_truth_report.json",
+      "reasons": [
+        "Pflichtfeld 'name' fehlt",
+        "Pflichtfeld 'gate' fehlt",
+        "Pflichtfeld 'blockers' fehlt",
+        "collected = 0",
+        "exit_code = 1"
+      ]
+    },
+    {
+      "file": "frontend_truth_report.json",
+      "reasons": [
+        "Pflichtfeld 'name' fehlt",
+        "Pflichtfeld 'gate' fehlt",
+        "Pflichtfeld 'blockers' fehlt",
+        "failed = 37",
+        "skipped = 58",
+        "exit_code = 1"
+      ]
+    },
+    {
+      "file": "m4b_upload_queue_truth_report.json",
+      "reasons": [
+        "Pflichtfeld 'name' fehlt",
+        "Pflichtfeld 'gate' fehlt",
+        "Pflichtfeld 'blockers' fehlt",
+        "collected = 0",
+        "errors = 1",
+        "exit_code = 1"
+      ]
+    },
+    {
+      "file": "m4c_lifecycle_retrieval_truth_report.json",
+      "reasons": [
+        "Pflichtfeld 'name' fehlt",
+        "Pflichtfeld 'gate' fehlt",
+        "Pflichtfeld 'blockers' fehlt",
+        "errors = 15",
+        "exit_code = 1"
+      ]
+    },
+    {
+      "file": "postgres_truth_report.json",
+      "reasons": [
+        "Pflichtfeld 'name' fehlt",
+        "Pflichtfeld 'gate' fehlt",
+        "Pflichtfeld 'blockers' fehlt",
+        "errors = 1",
+        "exit_code = 1"
+      ]
+    }
+  ],
+  "gate_blocker": true
+}

@@ -254,7 +254,7 @@ export function AdminDiagnosticsPage() {
   }, [isWorkspaceAdmin, isAuthReady]);
 
   return (
-    <section className="page-stack">
+    <section className="page-stack" data-testid="diagnostics-page">
       <div className="page-header">
         <div>
           <p className="panel__eyebrow">M4d Diagnostics</p>

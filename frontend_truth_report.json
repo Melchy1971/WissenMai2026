@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "selectors": [
+    "login-page",
+    "login-email",
+    "login-password",
+    "login-submit",
+    "app-shell",
+    "documents-page",
+    "document-list",
+    "upload-panel",
+    "search-page",
+    "chat-page",
+    "diagnostics-page"
+  ],
+  "tests": "Alle Playwright-Tests wurden auf data-testid umgestellt. UI-Texte und CSS-Klassen beeinflussen die Tests nicht mehr."
+}

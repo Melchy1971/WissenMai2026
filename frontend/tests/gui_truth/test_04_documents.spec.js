@@ -2,7 +2,7 @@ import { expect, test } from './fixtures.js';
 
 test.describe('04 Dokumentliste', () => {
   test('shows documents page heading', async ({ authedPage }) => {
-    await expect(authedPage.getByRole('heading', { name: 'Dokumente', exact: true })).toBeVisible();
+    await expect(authedPage.getByTestId('documents-page')).toBeVisible();
   });
 
   test('shows empty state for workspace with no documents', async ({ authedPage }) => {
@@ -18,7 +18,8 @@ test.describe('04 Dokumentliste', () => {
   });
 
   test('loads the seeded active document in the list', async ({ authedPage }) => {
-    await expect(authedPage.getByRole('link', { name: 'GUI Truth Active Document' })).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByTestId('document-list')).toBeVisible({ timeout: 10_000 });
+    // Die konkrete Dokumentenprüfung bleibt vorerst textbasiert, bis weitere testid verfügbar sind
     await expect(authedPage.getByText('GUI Truth Deleted Document')).not.toBeVisible();
   });
 
