@@ -10,8 +10,11 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
-DEFAULT_OUTPUT_JSON = REPORTS_DIR / "gate_hierarchy_result.json"
-DEFAULT_OUTPUT_MD = REPORTS_DIR / "gate_hierarchy_result.md"
+CURRENT_DIR = REPORTS_DIR / "current"
+DEFAULT_OUTPUT_JSON = CURRENT_DIR / "gate_hierarchy_result.json"
+DEFAULT_OUTPUT_MD = CURRENT_DIR / "gate_hierarchy_result.md"
+
+REGRESSION_THRESHOLD = 0.20
 
 
 @dataclass(frozen=True)
@@ -26,27 +29,27 @@ GATE_SPECS: tuple[GateSpec, ...] = (
     GateSpec(
         id="m3a_gate",
         label="M3a Gate",
-        reports=("m3a_truth_report.json", "frontend_truth_report.json"),
+        reports=("m3a_frontend_truth.json",),
     ),
     GateSpec(
         id="m4a_gate",
         label="M4a Gate",
-        reports=("m4a_auth_truth_report.json",),
+        reports=("m4a_auth_truth.json",),
     ),
     GateSpec(
         id="m4b_gate",
         label="M4b Gate",
-        reports=("m4b_upload_queue_truth_report.json",),
+        reports=("m4b_upload_queue_truth.json",),
     ),
     GateSpec(
         id="m4c_gate",
         label="M4c Gate",
-        reports=("m4c_lifecycle_retrieval_truth_report.json",),
+        reports=("m4c_lifecycle_retrieval_truth.json",),
     ),
     GateSpec(
         id="m4e_gate",
         label="M4e Gate",
-        reports=("m4e_backup_restore_truth_report.json",),
+        reports=("m4e_backup_restore_truth.json",),
     ),
     GateSpec(
         id="m4_crosscutting_gate",
@@ -87,9 +90,9 @@ def _load_report(path: Path) -> tuple[dict[str, Any] | None, str | None]:
     if not path.exists():
         return None, f"missing report: {path}"
     try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        return None, f"invalid JSON report {path}: {exc}"
+        payload = json.loads(path.read_text(encoding="utf-8", errors="replace"))
+    except (json.JSONDecodeError, OSError) as exc:
+        return None, f"invalid report {path}: {exc}"
     if not isinstance(payload, dict):
         return None, f"report root must be object: {path}"
     return payload, None
@@ -101,7 +104,37 @@ def _as_int(value: Any) -> int | None:
     return value if isinstance(value, int) else None
 
 
-def _report_blockers(report_name: str, report: dict[str, Any] | None, load_error: str | None) -> list[str]:
+def _regression_blocker(
+    report_name: str,
+    report: dict[str, Any] | None,
+    baseline_collected: int | None,
+) -> str | None:
+    if report is None or baseline_collected is None or baseline_collected <= 0:
+        return None
+    current = report.get("collected")
+    if isinstance(current, bool) or not isinstance(current, int):
+        return None
+    drop = baseline_collected - current
+    if drop <= 0:
+        return None
+    drop_fraction = drop / baseline_collected
+    if drop_fraction <= REGRESSION_THRESHOLD:
+        return None
+    if report.get("scope_change_reason") and report.get("approval"):
+        return None
+    return (
+        f"{report_name}: collected regression — dropped from {baseline_collected} to {current} "
+        f"({drop_fraction:.0%} > {int(REGRESSION_THRESHOLD * 100)}% threshold); "
+        "add scope_change_reason and approval fields to override"
+    )
+
+
+def _report_blockers(
+    report_name: str,
+    report: dict[str, Any] | None,
+    load_error: str | None,
+    baseline_collected: int | None = None,
+) -> list[str]:
     if load_error or report is None:
         return [load_error or f"{report_name} unavailable"]
 
@@ -129,6 +162,9 @@ def _report_blockers(report_name: str, report: dict[str, Any] | None, load_error
     failed_tests = report.get("failed_tests")
     if failed_tests not in ([], None):
         blockers.append(f"{report_name}: failed_tests must be empty")
+    regression = _regression_blocker(report_name, report, baseline_collected)
+    if regression:
+        blockers.append(regression)
     return blockers
 
 
@@ -148,7 +184,12 @@ def _report_summary(report: dict[str, Any] | None, load_error: str | None) -> di
     }
 
 
-def evaluate_gate_hierarchy(report_dir: Path = REPORTS_DIR, *, timestamp: str | None = None) -> dict[str, Any]:
+def evaluate_gate_hierarchy(
+    report_dir: Path = CURRENT_DIR,
+    *,
+    timestamp: str | None = None,
+    baseline: dict[str, int] | None = None,
+) -> dict[str, Any]:
     timestamp = timestamp or datetime.now(UTC).isoformat()
     reports: dict[str, tuple[dict[str, Any] | None, str | None]] = {}
     for spec in GATE_SPECS:
@@ -169,7 +210,8 @@ def evaluate_gate_hierarchy(report_dir: Path = REPORTS_DIR, *, timestamp: str | 
         if not dependency_blockers:
             for report_name in spec.reports:
                 report, load_error = reports[report_name]
-                blockers.extend(_report_blockers(report_name, report, load_error))
+                baseline_collected = baseline.get(report_name) if baseline else None
+                blockers.extend(_report_blockers(report_name, report, load_error, baseline_collected))
                 report_summaries[report_name] = _report_summary(report, load_error)
         else:
             for report_name in spec.reports:
@@ -195,18 +237,36 @@ def evaluate_gate_hierarchy(report_dir: Path = REPORTS_DIR, *, timestamp: str | 
         }
 
     return {
+        "report_schema_version": 1,
+        "report_name": "gate_hierarchy_result",
+        "generated_by": "gate_validator",
         "timestamp": timestamp,
+        "environment": "local",
         "result": "PASS"
         if all(result["status"] == "PASS" for result in gate_results.values())
         else "FAIL",
+        "status": "PASS" if all(result["status"] == "PASS" for result in gate_results.values()) else "FAIL",
+        "gate": "gate_hierarchy",
+        "collected": len(gate_results),
+        "passed": sum(1 for result in gate_results.values() if result["status"] == "PASS"),
+        "failed": sum(1 for result in gate_results.values() if result["status"] == "FAIL"),
+        "errors": 0,
+        "skipped": sum(1 for result in gate_results.values() if result["status"] == "BLOCKED"),
+        "exit_code": 0 if all(result["status"] == "PASS" for result in gate_results.values()) else 1,
+        "blockers": [
+            {"gate": gate_id, "severity": "critical", "reason": "; ".join(result["blockers"])}
+            for gate_id, result in gate_results.items()
+            if result["status"] != "PASS"
+        ],
+        "source_command": "python scripts/validate_gate_hierarchy.py",
         "gates": gate_results,
         "dependency_graph": dependency_graph(),
         "evaluation_rules": {
-            "m3a_gate": ["m3a_truth_report.json", "frontend_truth_report.json"],
-            "m4a_gate": ["m4a_auth_truth_report.json"],
-            "m4b_gate": ["m4b_upload_queue_truth_report.json"],
-            "m4c_gate": ["m4c_lifecycle_retrieval_truth_report.json"],
-            "m4e_gate": ["m4e_backup_restore_truth_report.json"],
+            "m3a_gate": ["m3a_frontend_truth.json"],
+            "m4a_gate": ["m4a_auth_truth.json"],
+            "m4b_gate": ["m4b_upload_queue_truth.json"],
+            "m4c_gate": ["m4c_lifecycle_retrieval_truth.json"],
+            "m4e_gate": ["m4e_backup_restore_truth.json"],
             "m4_crosscutting_gate": ["m4_truth_report.json"],
             "m4_overall_gate": ["m4_crosscutting_gate", "m4a_gate", "m4b_gate", "m4c_gate", "m4e_gate"],
             "m5_start_gate": ["m4_overall_gate"],
@@ -247,7 +307,7 @@ def write_result(payload: dict[str, Any], json_path: Path, md_path: Path) -> Non
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate the truth gate hierarchy from split reports.")
-    parser.add_argument("--report-dir", type=Path, default=REPORTS_DIR)
+    parser.add_argument("--report-dir", type=Path, default=CURRENT_DIR)
     parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)
     parser.add_argument("--output-md", type=Path, default=DEFAULT_OUTPUT_MD)
     args = parser.parse_args(argv)

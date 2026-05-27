@@ -148,7 +148,7 @@ def test_backend_process_kill_during_import_leaves_retryable_job_and_no_orphan_r
     assert matrix.duplicate_chunks_per_index == 0
 
 
-@pytest.mark.m4c_lifecycle_retrieval_truth
+@pytest.mark.governance_truth
 def test_sql_crash_matrix_detects_no_stale_lifecycle_index_in_truth_workspace(
     postgres_truth_database_url: str,
     truth_ids: TruthIds,
@@ -303,7 +303,7 @@ def test_duplicate_import_worker_crash_recovery_avoids_duplicate_versions_and_ch
     assert matrix.orphan_chunks_without_document == 0
 
 
-@pytest.mark.m4c_lifecycle_retrieval_truth
+@pytest.mark.governance_truth
 def test_reindex_worker_crash_recovery_leaves_retryable_job_without_lifecycle_drift(
     postgres_truth_database_url: str,
     truth_ids: TruthIds,

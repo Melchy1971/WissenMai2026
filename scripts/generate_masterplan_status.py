@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 from datetime import UTC, datetime
@@ -9,9 +9,10 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
+CURRENT_DIR = REPORTS_DIR / "current"
 DOCS_DIR = REPO_ROOT / "docs"
 
-DEFAULT_OUTPUT_JSON = REPORTS_DIR / "masterplan_status.json"
+DEFAULT_OUTPUT_JSON = CURRENT_DIR / "masterplan_status.json"
 DEFAULT_OUTPUT_SECTION = REPORTS_DIR / "masterplan_status_section.md"
 DEFAULT_SCHEMA = DOCS_DIR / "masterplan_status.schema.json"
 
@@ -77,27 +78,28 @@ def _truth_score(report: dict[str, Any] | None) -> float | None:
 
 
 def _load_artifacts(report_dir: Path, docs_dir: Path) -> dict[str, Any]:
-    # Prefer reports/current/<gate>.json, fallback to legacy reports/
     current_dir = report_dir / "current"
     paths = {
-        "m3a_release_candidate": (current_dir / "m3a_release_candidate.json", report_dir / "m3a_release_candidate.json"),
-        "m4_release_candidate": (current_dir / "m4_release_candidate.json", report_dir / "m4_release_candidate.json"),
-        "frontend_truth": (current_dir / "frontend_truth_report.json", report_dir / "frontend_truth_report.json"),
-        "postgres_truth": (current_dir / "postgres_truth_report.json", report_dir / "postgres_truth_report.json"),
-        "gate_hierarchy": (current_dir / "gate_hierarchy_result.json", report_dir / "gate_hierarchy_result.json"),
-        "gate_drift": (current_dir / "gate_drift_report.json", report_dir / "gate_drift_report.json"),
-        "documentation_audit": (current_dir / "documentation_release_audit.json", report_dir / "documentation_release_audit.json"),
+        "m3a_release_candidate": (current_dir / "m3a_release_candidate.json",),
+        "m4_release_candidate": (current_dir / "m4a_auth_truth.json",),
+        "frontend_truth": (current_dir / "m3a_frontend_truth.json",),
+        "postgres_truth": (current_dir / "m4a_auth_truth.json",),
+        "gate_hierarchy": (current_dir / "gate_hierarchy_result.json",),
+        "gate_drift": (current_dir / "gate_drift_report.json",),
+        "documentation_audit": (current_dir / "documentation_release_audit.json",),
         "known_limitations": (docs_dir / "known_limitations.json", docs_dir / "known_limitations.json"),
-        "truth_marker_taxonomy": (current_dir / "truth_marker_taxonomy.json", report_dir / "truth_marker_taxonomy.json"),
+        "truth_marker_taxonomy": (current_dir / "truth_marker_taxonomy.json",),
     }
     artifacts: dict[str, Any] = {}
-    for key, (current_path, legacy_path) in paths.items():
-        if current_path.exists():
-            payload, error = _load_json(current_path)
-            path_used = current_path
-        else:
-            payload, error = _load_json(legacy_path)
-            path_used = legacy_path
+    for key, candidate_paths in paths.items():
+        path_used = candidate_paths[0]
+        payload = None
+        error = None
+        for candidate_path in candidate_paths:
+            payload, error = _load_json(candidate_path)
+            path_used = candidate_path
+            if payload is not None:
+                break
         artifacts[key] = {
             "path": _rel(path_used),
             "available": payload is not None,
@@ -282,7 +284,7 @@ def _blockers(artifacts: dict[str, Any], phases: dict[str, dict[str, Any]]) -> l
                     "id": finding_id,
                     "severity": "blocking",
                     "detail": "Documentation Release Audit blockiert Freigabe.",
-                    "source": "reports/documentation_release_audit.json",
+                    "source": "reports/current/documentation_release_audit.json",
                 }
             )
 
@@ -294,7 +296,7 @@ def _blockers(artifacts: dict[str, Any], phases: dict[str, dict[str, Any]]) -> l
                 "id": "gate_drift_fail",
                 "severity": "blocking",
                 "detail": f"Gate Drift Detection meldet {len(drift.get('findings', []))} Findings.",
-                "source": "reports/gate_drift_report.json",
+                "source": "reports/current/gate_drift_report.json",
             }
         )
     return blockers
@@ -448,3 +450,5 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+

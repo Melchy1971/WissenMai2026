@@ -151,7 +151,7 @@ def test_lifecycle_and_workspace_isolation_are_truth_checked(
     assert truth_session.execute(text("select lifecycle_status from documents where id = :id"), {"id": ids.doc_other_ws}).scalar_one() == "active"
 
 
-@pytest.mark.m4c_lifecycle_retrieval_truth
+@pytest.mark.governance_truth
 def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(
     truth_client: TestClient,
     truth_ids: TruthIds,
@@ -203,7 +203,7 @@ def test_search_chat_retrieval_and_reindex_use_real_postgresql_state(
     assert truth_session.execute(text("select is_searchable from document_chunks where id = :id"), {"id": ids.chunk_active}).scalar_one() is True
 
 
-@pytest.mark.m4c_lifecycle_retrieval_truth
+@pytest.mark.governance_truth
 def test_search_index_drift_endpoint_reports_real_postgresql_drift(
     truth_client: TestClient,
     truth_ids: TruthIds,
@@ -328,7 +328,7 @@ def test_search_index_drift_endpoint_reports_real_postgresql_drift(
     assert "reindexing the workspace" in payload["repair_recommendation"]
 
 
-@pytest.mark.m4c_lifecycle_retrieval_truth
+@pytest.mark.governance_truth
 def test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchors(
     truth_client: TestClient,
     truth_ids: TruthIds,
@@ -480,7 +480,7 @@ def test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows(
     assert job_row.error_code is None
 
 
-@pytest.mark.m4c_lifecycle_retrieval_truth
+@pytest.mark.governance_truth
 def test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_retryable(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],
@@ -534,7 +534,7 @@ def test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_r
     assert truth_session.execute(text("select lifecycle_status from documents where id = :id"), {"id": ids.doc_archived}).scalar_one() == "archived"
 
 
-@pytest.mark.m4c_lifecycle_retrieval_truth
+@pytest.mark.governance_truth
 def test_postgres_truth_chat_citations_use_missing_instead_of_unknown(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],

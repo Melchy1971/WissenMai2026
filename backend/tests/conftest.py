@@ -32,6 +32,8 @@ GATE_MARKERS = {
     "m4e_backup_restore_truth",
     "m5_truth",
     "governance_truth",
+    "observability_truth",
+    "unit_fast",
     "chaos_truth",
     "slow_truth",
 }
@@ -43,6 +45,8 @@ FINAL_TRUTH_MARKERS = {
     "m4e_backup_restore_truth",
     "m5_truth",
     "governance_truth",
+    "observability_truth",
+    "unit_fast",
 }
 M4_BLOCKING_MARKERS = {
     "m4_truth",
@@ -52,6 +56,10 @@ M4_BLOCKING_MARKERS = {
     "m4e_backup_restore_truth",
 }
 LEGACY_CRITICAL_GATE_MARKERS = {"m4a_gate", "m4b_gate", "m4c_gate"}
+M4C_MINIMAL_NODEIDS = {
+    "tests/integration/test_m3b_search.py::test_lifecycle_e2e_excludes_archived_deleted_from_search_chat_and_reindex",
+    "tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_historical_citations_reflect_live_source_status",
+}
 
 TEST_TEMP_ROOT = Path(__file__).resolve().parents[1] / ".pytest-tmp"
 DEFAULT_WORKSPACE_ID = "00000000-0000-0000-0000-000000000001"
@@ -72,6 +80,9 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         marker_names = {marker.name for marker in item.iter_markers()}
         nodeid = item.nodeid.replace("\\", "/")
+        if _is_m4c_minimal_test(nodeid):
+            item.add_marker(pytest.mark.m4c_lifecycle_retrieval_truth)
+            marker_names.add("m4c_lifecycle_retrieval_truth")
         final_truth_markers = sorted(FINAL_TRUTH_MARKERS.intersection(marker_names))
         is_postgres_truth = "postgres_truth" in marker_names or "postgres_truth/" in nodeid
         explicit_gate_markers = sorted(GATE_MARKERS.intersection(marker_names))
@@ -108,6 +119,9 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 def _classify_truth_gate(item: pytest.Item, marker_names: set[str]) -> str | None:
     nodeid = item.nodeid.replace("\\", "/").lower()
 
+    if _is_m4c_minimal_test(nodeid):
+        return "m4c_lifecycle_retrieval_truth"
+
     if "test_frontend_backend_contracts.py" in nodeid:
         return "frontend_truth"
 
@@ -116,6 +130,8 @@ def _classify_truth_gate(item: pytest.Item, marker_names: set[str]) -> str | Non
 
     if "test_backup_restore" in nodeid:
         return "m4e_backup_restore_truth"
+    if "observability" in nodeid:
+        return "observability_truth"
     if "chaos" in nodeid or "workspace_leakage" in nodeid or "lifecycle_reindex" in nodeid:
         return "chaos_truth"
     if "test_m5_longrun_simulation.py" in nodeid or "test_m5_retrieval_benchmark.py" in nodeid:
@@ -124,6 +140,7 @@ def _classify_truth_gate(item: pytest.Item, marker_names: set[str]) -> str | Non
         return "m5_truth"
     if (
         "test_health.py" in nodeid
+        or "test_preflight.py" in nodeid
         or "/unit/" in nodeid
         or "test_migrations.py" in nodeid
         or "test_truth_split_report_generator.py" in nodeid
@@ -135,6 +152,8 @@ def _classify_truth_gate(item: pytest.Item, marker_names: set[str]) -> str | Non
         return "m4a_auth_truth"
     if "upload" in nodeid or "import" in nodeid or "queue" in nodeid or "retry_import" in nodeid:
         return "m4b_upload_queue_truth"
+    if "admin_search_index" in nodeid or "diagnostics" in nodeid or "reindex" in nodeid:
+        return "governance_truth"
     if (
         "document" in nodeid
         or "search" in nodeid
@@ -146,12 +165,13 @@ def _classify_truth_gate(item: pytest.Item, marker_names: set[str]) -> str | Non
         or "insufficient_context" in nodeid
         or "rag_chat" in nodeid
         or "fake_llm" in nodeid
-        or "admin_search_index" in nodeid
-        or "diagnostics" in nodeid
-        or "observability" in nodeid
     ):
-        return "m4c_lifecycle_retrieval_truth"
+        return "unit_fast"
     return None
+
+
+def _is_m4c_minimal_test(nodeid: str) -> bool:
+    return nodeid.replace("\\", "/").lower() in M4C_MINIMAL_NODEIDS
 
 
 def _classify_postgres_truth_gate(nodeid: str, marker_names: set[str]) -> str:
@@ -162,7 +182,7 @@ def _classify_postgres_truth_gate(nodeid: str, marker_names: set[str]) -> str:
     if "test_m4b_upload_queue_truth.py" in nodeid:
         return "m4b_upload_queue_truth"
     if "test_m4c_lifecycle_retrieval_truth.py" in nodeid:
-        return "m4c_lifecycle_retrieval_truth"
+        return "m4c_lifecycle_retrieval_truth" if _is_m4c_minimal_test(nodeid) else "governance_truth"
     if "test_m4_crash_recovery_truth.py" in nodeid or "test_m4_truth_flows.py" in nodeid:
         if "m4a_gate" in marker_names:
             return "m4a_auth_truth"

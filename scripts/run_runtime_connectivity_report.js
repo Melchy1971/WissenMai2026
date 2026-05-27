@@ -8,8 +8,9 @@ const { chromium } = require('../frontend/node_modules/@playwright/test');
 
 const ROOT = path.resolve(__dirname, '..');
 const REPORTS_DIR = path.join(ROOT, 'reports');
-const JSON_REPORT = path.join(REPORTS_DIR, 'runtime_connectivity_report.json');
-const MD_REPORT = path.join(REPORTS_DIR, 'runtime_connectivity_report.md');
+const CURRENT_DIR = path.join(REPORTS_DIR, 'current');
+const JSON_REPORT = path.join(CURRENT_DIR, 'runtime_connectivity_report.json');
+const MD_REPORT = path.join(CURRENT_DIR, 'runtime_connectivity_report.md');
 const PYTHON = path.join(ROOT, 'backend', '.venv', 'Scripts', 'python.exe');
 const LOGIN = 'mdickscheit@gmail.com';
 const PASSWORD = 'Alex..2026';
@@ -205,7 +206,7 @@ function renderMarkdown(report) {
 }
 
 async function main() {
-  fs.mkdirSync(REPORTS_DIR, { recursive: true });
+  fs.mkdirSync(CURRENT_DIR, { recursive: true });
   const env = loadEnv();
   const remainingErrors = [];
   const databaseUrlSet = Boolean(env.DATABASE_URL && env.DATABASE_URL.trim());
@@ -286,7 +287,7 @@ async function main() {
 }
 
 main().catch((error) => {
-  fs.mkdirSync(REPORTS_DIR, { recursive: true });
+  fs.mkdirSync(CURRENT_DIR, { recursive: true });
   const report = { generated_at: nowIso(), result: 'FAIL', fatal_error: error.stack || error.message, remaining_errors: [error.message] };
   fs.writeFileSync(JSON_REPORT, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   fs.writeFileSync(MD_REPORT, renderMarkdown({ ...report, database_url: '', api_base_url: API_BASE_URL, frontend_base_url: FRONTEND_BASE_URL, checks: [], alembic: { heads: [], current: [] } }), 'utf8');

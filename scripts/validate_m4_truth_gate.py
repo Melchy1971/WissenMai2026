@@ -7,7 +7,13 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-REPORT_PATH = REPO_ROOT / "reports" / "postgres_truth_report.json"
+CURRENT_DIR = REPO_ROOT / "reports" / "current"
+REPORT_PATHS: dict[str, Path] = {
+    "m4a_auth_truth": CURRENT_DIR / "m4a_auth_truth.json",
+    "m4b_upload_queue_truth": CURRENT_DIR / "m4b_upload_queue_truth.json",
+    "m4c_lifecycle_retrieval_truth": CURRENT_DIR / "m4c_lifecycle_retrieval_truth.json",
+    "m4e_backup_restore_truth": CURRENT_DIR / "m4e_backup_restore_truth.json",
+}
 
 GATE_THRESHOLDS: dict[str, float] = {
     "m4_truth": 90.0,
@@ -246,6 +252,32 @@ def _validate(report: dict[str, Any]) -> list[str]:
     return failures
 
 
+def _report_blockers(report_name: str, report: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    collected = report.get("collected")
+    passed = report.get("passed")
+    failed = report.get("failed")
+    errors = report.get("errors")
+    skipped = report.get("skipped")
+    exit_code = report.get("exit_code")
+
+    if not isinstance(collected, int) or collected <= 0:
+        failures.append(f"{report_name}: collected must be > 0, got {collected!r}")
+    if passed != collected:
+        failures.append(f"{report_name}: passed ({passed!r}) must equal collected ({collected!r})")
+    if failed != 0:
+        failures.append(f"{report_name}: failed must be 0, got {failed!r}")
+    if errors != 0:
+        failures.append(f"{report_name}: errors must be 0, got {errors!r}")
+    if skipped != 0:
+        failures.append(f"{report_name}: skipped must be 0, got {skipped!r}")
+    if exit_code != 0:
+        failures.append(f"{report_name}: exit_code must be 0, got {exit_code!r}")
+    if report.get("failed_tests") not in ([], None):
+        failures.append(f"{report_name}: failed_tests must be empty")
+    return failures
+
+
 def _print_summary(report: dict[str, Any]) -> None:
     gate_scores: dict[str, Any] = report.get("gate_scores") or {}
     rc_open: list[str] = report.get("rc_blockers_open") or []
@@ -286,15 +318,29 @@ def _print_summary(report: dict[str, Any]) -> None:
 
 
 def main() -> int:
-    try:
-        report = _load_report(REPORT_PATH)
-    except ValueError as exc:
-        print("M4 Stabilization Gate = FAIL")
-        print(f"- {exc}")
-        return 1
+    reports: dict[str, dict[str, Any]] = {}
+    failures: list[str] = []
+    for gate, path in REPORT_PATHS.items():
+        try:
+            report = _load_report(path)
+        except ValueError as exc:
+            failures.append(str(exc))
+            continue
+        reports[gate] = report
+        failures.extend(_report_blockers(path.name, report))
 
-    failures = _validate(report)
-    _print_summary(report)
+    print("M4 Stabilization Gate Reports:")
+    for gate, path in REPORT_PATHS.items():
+        report = reports.get(gate)
+        if report is None:
+            print(f"  - {gate}: MISSING ({path})")
+        else:
+            print(
+                f"  - {gate}: collected={report.get('collected')} "
+                f"passed={report.get('passed')} failed={report.get('failed')} "
+                f"errors={report.get('errors')} skipped={report.get('skipped')} "
+                f"exit_code={report.get('exit_code')}"
+            )
 
     if failures:
         print()

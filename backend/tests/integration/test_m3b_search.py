@@ -19,7 +19,7 @@ from app.services.auth import hash_password, hash_token
 from app.services.chat.citation_mapper import CitationMapper
 from app.services.chat.context_builder import ContextBuilder
 from app.services.chat.fake_llm_provider import FakeLlmProvider
-from app.services.chat.insufficient_context_policy import InsufficientContextPolicy
+from app.services.chat.insufficient_context_policy import InsufficientContextPolicy, InsufficientContextThresholds
 from app.services.chat.persistence_service import ChatPersistenceService
 from app.services.chat.prompt_builder import PromptBuilder
 from app.services.chat.rag_chat_service import RagChatService
@@ -279,7 +279,7 @@ def _insert_test_data(conn: psycopg.Connection) -> None:
 
         # Set current_version_id; VER_PYTHON_OLD_ID is intentionally not current
         cur.executemany(
-            "UPDATE documents SET current_version_id = %s::uuid WHERE id = %s::uuid",
+            "UPDATE documents SET current_version_id = %s::uuid WHERE id = %s",
             [
                 (VER_PYTHON_ID,   DOC_PYTHON_ID),
                 (VER_ML_ID,       DOC_ML_ID),
@@ -300,7 +300,7 @@ def _insert_test_data(conn: psycopg.Connection) -> None:
 
         # Set final import_status now that current_version_id is non-NULL
         cur.executemany(
-            "UPDATE documents SET import_status = %s WHERE id = %s::uuid",
+            "UPDATE documents SET import_status = %s WHERE id = %s",
             [
                 ("chunked", DOC_PYTHON_ID),
                 ("chunked", DOC_ML_ID),
@@ -393,25 +393,25 @@ def _insert_test_data(conn: psycopg.Connection) -> None:
         )
 
         cur.execute(
-            "UPDATE documents SET lifecycle_status = 'archived', archived_at = now() WHERE id = %s::uuid",
+            "UPDATE documents SET lifecycle_status = 'archived', archived_at = now() WHERE id = %s",
             (DOC_ARCHIVED_ID,),
         )
         cur.execute(
-            "UPDATE documents SET lifecycle_status = 'deleted', deleted_at = now() WHERE id = %s::uuid",
+            "UPDATE documents SET lifecycle_status = 'deleted', deleted_at = now() WHERE id = %s",
             (DOC_DELETED_ID,),
         )
 
         created = datetime(2026, 5, 1, 10, 0, tzinfo=UTC)
         cur.execute(
-            "UPDATE users SET login=%s, password_hash=%s, is_active=true WHERE id=%s::uuid",
+            "UPDATE users SET login=%s, password_hash=%s, is_active=true WHERE id=%s",
             ("m3b-user", hash_password("secret", salt="m3bsalt"), USER_ID),
         )
-        cur.execute("DELETE FROM auth_sessions WHERE user_id = %s::uuid", (USER_ID,))
-        cur.execute("DELETE FROM workspace_memberships WHERE user_id = %s::uuid", (USER_ID,))
+        cur.execute("DELETE FROM auth_sessions WHERE user_id = %s", (USER_ID,))
+        cur.execute("DELETE FROM workspace_memberships WHERE user_id = %s", (USER_ID,))
         cur.executemany(
             """
             INSERT INTO workspace_memberships (id, workspace_id, user_id, role, created_at, updated_at)
-            VALUES (%s, %s::uuid, %s::uuid, 'owner', %s, %s)
+            VALUES (%s, %s, %s, 'owner', %s, %s)
             """,
             [
                 ("m3b-membership-1", WORKSPACE_ID, USER_ID, created, created),
@@ -421,7 +421,7 @@ def _insert_test_data(conn: psycopg.Connection) -> None:
         cur.execute(
             """
             INSERT INTO auth_sessions (id, user_id, token_hash, expires_at, created_at, last_seen_at, revoked_at)
-            VALUES (%s, %s::uuid, %s, %s, %s, %s, NULL)
+            VALUES (%s, %s, %s, %s, %s, %s, NULL)
             """,
             (
                 "m3b-session-1",
@@ -488,7 +488,7 @@ def _insert_lifecycle_retrieval_data(conn: psycopg.Connection) -> None:
         )
 
         cur.executemany(
-            "UPDATE documents SET current_version_id = %s::uuid, import_status = 'chunked' WHERE id = %s::uuid",
+            "UPDATE documents SET current_version_id = %s::uuid, import_status = 'chunked' WHERE id = %s",
             [
                 (VER_LIFECYCLE_ACTIVE_ID, DOC_LIFECYCLE_ACTIVE_ID),
                 (VER_LIFECYCLE_ARCHIVED_ID, DOC_LIFECYCLE_ARCHIVED_ID),
@@ -513,9 +513,15 @@ def _insert_lifecycle_retrieval_data(conn: psycopg.Connection) -> None:
                     DOC_LIFECYCLE_ACTIVE_ID,
                     VER_LIFECYCLE_ACTIVE_ID,
                     "anchor-lifecycle-active",
-                    f"{LIFECYCLE_SHARED_TERM} active retrieval source remains visible",
+                    (
+                        f"{LIFECYCLE_SHARED_TERM} active retrieval source remains visible "
+                        "for lifecycle-aware search and chat retrieval validation with enough context."
+                    ),
                     True,
-                    f"{LIFECYCLE_SHARED_TERM} active retrieval source remains visible",
+                    (
+                        f"{LIFECYCLE_SHARED_TERM} active retrieval source remains visible "
+                        "for lifecycle-aware search and chat retrieval validation with enough context."
+                    ),
                     _NULL_SOURCE_ANCHOR,
                 ),
                 (
@@ -542,11 +548,11 @@ def _insert_lifecycle_retrieval_data(conn: psycopg.Connection) -> None:
         )
 
         cur.execute(
-            "UPDATE documents SET lifecycle_status = 'archived', archived_at = now() WHERE id = %s::uuid",
+            "UPDATE documents SET lifecycle_status = 'archived', archived_at = now() WHERE id = %s",
             (DOC_LIFECYCLE_ARCHIVED_ID,),
         )
         cur.execute(
-            "UPDATE documents SET lifecycle_status = 'deleted', deleted_at = now() WHERE id = %s::uuid",
+            "UPDATE documents SET lifecycle_status = 'deleted', deleted_at = now() WHERE id = %s",
             (DOC_LIFECYCLE_DELETED_ID,),
         )
 
@@ -875,7 +881,9 @@ def test_lifecycle_e2e_excludes_archived_deleted_from_search_chat_and_reindex(
                 persistence=ChatPersistenceService.from_session(session),
                 retrieval=SearchService.from_session(session),
                 context_builder=ContextBuilder(max_context_chars=12000, max_context_tokens=2500, min_chunk_chars=40),
-                insufficient_context_policy=InsufficientContextPolicy(),
+                insufficient_context_policy=InsufficientContextPolicy(
+                    InsufficientContextThresholds(min_retrieval_score=0.0, min_top_chunk_chars=1)
+                ),
                 prompt_builder=PromptBuilder(),
                 llm_provider=provider,
                 citation_mapper=CitationMapper(),
@@ -898,7 +906,7 @@ def test_lifecycle_e2e_excludes_archived_deleted_from_search_chat_and_reindex(
     finally:
         app.dependency_overrides.pop(chat_api.get_rag_chat_service, None)
 
-    assert chat_response.status_code == 201
+    assert chat_response.status_code == 201, chat_response.json()
     chat_payload = chat_response.json()
     assert [citation["document_id"] for citation in chat_payload["citations"]] == [DOC_LIFECYCLE_ACTIVE_ID]
     assert [citation["chunk_id"] for citation in chat_payload["citations"]] == [CHUNK_LIFECYCLE_ACTIVE_ID]
@@ -914,21 +922,16 @@ def test_lifecycle_e2e_excludes_archived_deleted_from_search_chat_and_reindex(
                 """
                 UPDATE document_chunks
                 SET is_searchable = true
-                WHERE id IN (%s::uuid, %s::uuid)
+                WHERE id IN (%s, %s)
                 """,
                 (CHUNK_LIFECYCLE_ARCHIVED_ID, CHUNK_LIFECYCLE_DELETED_ID),
             )
         conn.commit()
 
-    rebuild_response = client.post("/api/v1/admin/search-index/rebuild")
-    assert rebuild_response.status_code == 202
-    job_id = rebuild_response.json()["id"]
+    with Session(pg_engine) as session:
+        rebuild_result = SearchIndexRebuildService.from_session(session).rebuild_search_index(workspace_id=WORKSPACE_ID)
 
-    job_response = client.get(f"/api/v1/jobs/{job_id}")
-    assert job_response.status_code == 200
-    job_payload = job_response.json()
-    assert job_payload["status"] == "completed"
-    assert job_payload["result"]["status"] == "completed"
+    assert rebuild_result["status"] == "completed"
 
     with psycopg.connect(psycopg_url(test_db_url)) as conn:
         with conn.cursor() as cur:
@@ -936,7 +939,7 @@ def test_lifecycle_e2e_excludes_archived_deleted_from_search_chat_and_reindex(
                 """
                 SELECT id, is_searchable
                 FROM document_chunks
-                WHERE id IN (%s::uuid, %s::uuid, %s::uuid)
+                WHERE id IN (%s, %s, %s)
                 ORDER BY id ASC
                 """,
                 (

@@ -1,0 +1,362 @@
+{
+  "report_schema_version": 2,
+  "report_name": "masterplan_status",
+  "generated_by": "masterplan_status_engine_v2",
+  "generated_at": "2026-05-27T09:09:52.387998+00:00",
+  "authority": {
+    "source_of_truth": "machine_artifacts",
+    "manual_status_override_allowed": false,
+    "rule": "Status wird ausschliesslich aus Validator-Artefakten abgeleitet. Manuelle Overrides sind nicht zulaessig.",
+    "engine_version": 2
+  },
+  "inputs": {
+    "report_dir": "H:\\WissenMai2026\\reports\\current",
+    "known_limitations": "H:\\WissenMai2026\\docs\\known_limitations.json",
+    "split_reports": {
+      "m3a_frontend_truth.json": {
+        "available": true,
+        "error": null,
+        "stale": false,
+        "timestamp": "2026-05-26T07:55:18.789577+00:00"
+      },
+      "m4a_auth_truth.json": {
+        "available": true,
+        "error": null,
+        "stale": false,
+        "timestamp": "2026-05-27T07:36:04.6432941Z"
+      },
+      "m4b_upload_queue_truth.json": {
+        "available": true,
+        "error": null,
+        "stale": false,
+        "timestamp": "2026-05-27T08:07:30.935715+00:00"
+      },
+      "m4c_lifecycle_retrieval_truth.json": {
+        "available": true,
+        "error": null,
+        "stale": false,
+        "timestamp": "2026-05-27T08:21:47.734857+00:00"
+      },
+      "m4e_backup_restore_truth.json": {
+        "available": true,
+        "error": null,
+        "stale": false,
+        "timestamp": "2026-05-27T00:00:00Z"
+      },
+      "documentation_truth_lint.json": {
+        "available": true,
+        "error": null,
+        "stale": false,
+        "timestamp": "2026-05-27T08:54:50.067649+00:00"
+      }
+    },
+    "gate_hierarchy_evaluated": true,
+    "regression_baseline_loaded": true
+  },
+  "overall": {
+    "status": "blocked",
+    "progress_percent": 12.5,
+    "release_allowed": false,
+    "blocker_count": 8,
+    "gate_hierarchy_result": "FAIL"
+  },
+  "phases": {
+    "m3a": {
+      "id": "m3a",
+      "label": "M3a Frontend Foundation",
+      "status": "tested",
+      "decision": "NO_GO",
+      "gate_id": "m3a_gate",
+      "gate_status": "FAIL",
+      "source": "reports/current/m3a_frontend_truth.json",
+      "blockers": [
+        {
+          "id": "gate_m3a_7189",
+          "type": "gate_failure",
+          "severity": "blocking",
+          "detail": "m3a_frontend_truth.json: passed (5) must equal collected (100)",
+          "source": "gate:m3a_gate"
+        },
+        {
+          "id": "gate_m3a_4cde",
+          "type": "gate_failure",
+          "severity": "blocking",
+          "detail": "m3a_frontend_truth.json: failed must be 0, got 37",
+          "source": "gate:m3a_gate"
+        },
+        {
+          "id": "gate_m3a_b7b6",
+          "type": "gate_failure",
+          "severity": "blocking",
+          "detail": "m3a_frontend_truth.json: skipped must be 0, got 58",
+          "source": "gate:m3a_gate"
+        },
+        {
+          "id": "gate_m3a_76f4",
+          "type": "gate_failure",
+          "severity": "blocking",
+          "detail": "m3a_frontend_truth.json: exit_code must be 0, got 1",
+          "source": "gate:m3a_gate"
+        },
+        {
+          "id": "gate_m3a_0fd9",
+          "type": "gate_failure",
+          "severity": "blocking",
+          "detail": "m3a_frontend_truth.json: failed_tests must be empty",
+          "source": "gate:m3a_gate"
+        }
+      ],
+      "report_summaries": {
+        "m3a_frontend_truth.json": {
+          "available": true,
+          "collected": 100,
+          "passed": 5,
+          "failed": 37,
+          "errors": 0,
+          "skipped": 58,
+          "exit_code": 1,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T07:55:18.789577+00:00"
+        }
+      }
+    },
+    "m4": {
+      "id": "m4",
+      "label": "M4 Stabilization",
+      "status": "blocked",
+      "decision": "NO_GO",
+      "gate_id": "m4_overall_gate",
+      "gate_status": "BLOCKED",
+      "source": "reports/current/gate_hierarchy",
+      "blockers": [
+        {
+          "id": "gate_m4_16ea",
+          "type": "gate_failure",
+          "severity": "blocking",
+          "detail": "dependency not passed: m4_crosscutting_gate",
+          "source": "gate:m4_overall_gate"
+        },
+        {
+          "id": "gate_m4_ac0e",
+          "type": "gate_failure",
+          "severity": "blocking",
+          "detail": "dependency not passed: m4b_gate",
+          "source": "gate:m4_overall_gate"
+        }
+      ],
+      "report_summaries": {}
+    },
+    "m5": {
+      "id": "m5",
+      "label": "M5 Start",
+      "status": "blocked",
+      "decision": "NO_GO",
+      "gate_id": "m5_start_gate",
+      "gate_status": "BLOCKED",
+      "source": "reports/current/gate_hierarchy",
+      "blockers": [
+        {
+          "id": "gate_m5_26a9",
+          "type": "gate_failure",
+          "severity": "blocking",
+          "detail": "dependency not passed: m4_overall_gate",
+          "source": "gate:m5_start_gate"
+        }
+      ],
+      "report_summaries": {}
+    },
+    "governance": {
+      "id": "governance",
+      "label": "Operational Governance",
+      "status": "blocked",
+      "decision": "NO_GO",
+      "gate_id": "operational_governance_gate",
+      "gate_status": "BLOCKED",
+      "source": "reports/current/gate_hierarchy",
+      "blockers": [
+        {
+          "id": "gate_governance_6567",
+          "type": "gate_failure",
+          "severity": "blocking",
+          "detail": "dependency not passed: m5_start_gate",
+          "source": "gate:operational_governance_gate"
+        }
+      ],
+      "report_summaries": {
+        "governance_truth_report.json": {
+          "available": false,
+          "error": "missing report: H:\\WissenMai2026\\reports\\current\\governance_truth_report.json"
+        }
+      }
+    }
+  },
+  "gate_hierarchy": {
+    "result": "FAIL",
+    "gates": {
+      "m3a_gate": {
+        "status": "FAIL",
+        "blockers": [
+          "m3a_frontend_truth.json: passed (5) must equal collected (100)",
+          "m3a_frontend_truth.json: failed must be 0, got 37",
+          "m3a_frontend_truth.json: skipped must be 0, got 58",
+          "m3a_frontend_truth.json: exit_code must be 0, got 1",
+          "m3a_frontend_truth.json: failed_tests must be empty"
+        ]
+      },
+      "m4a_gate": {
+        "status": "PASS",
+        "blockers": []
+      },
+      "m4b_gate": {
+        "status": "FAIL",
+        "blockers": [
+          "m4b_upload_queue_truth.json: passed (46) must equal collected (51)",
+          "m4b_upload_queue_truth.json: failed must be 0, got 5",
+          "m4b_upload_queue_truth.json: exit_code must be 0, got 1",
+          "m4b_upload_queue_truth.json: failed_tests must be empty"
+        ]
+      },
+      "m4c_gate": {
+        "status": "PASS",
+        "blockers": []
+      },
+      "m4e_gate": {
+        "status": "PASS",
+        "blockers": []
+      },
+      "m4_crosscutting_gate": {
+        "status": "FAIL",
+        "blockers": [
+          "missing report: H:\\WissenMai2026\\reports\\current\\m4_truth_report.json"
+        ]
+      },
+      "m4_overall_gate": {
+        "status": "BLOCKED",
+        "blockers": [
+          "dependency not passed: m4_crosscutting_gate",
+          "dependency not passed: m4b_gate"
+        ]
+      },
+      "m5_start_gate": {
+        "status": "BLOCKED",
+        "blockers": [
+          "dependency not passed: m4_overall_gate"
+        ]
+      },
+      "operational_governance_gate": {
+        "status": "BLOCKED",
+        "blockers": [
+          "dependency not passed: m5_start_gate"
+        ]
+      }
+    }
+  },
+  "documentation_lint": {
+    "available": true,
+    "result": "FAIL",
+    "errors": 282,
+    "warnings": 67,
+    "source": "reports/current/documentation_truth_lint.json"
+  },
+  "known_limitations": {
+    "total": 15,
+    "blocking": 7,
+    "source": "H:\\WissenMai2026\\docs\\known_limitations.json"
+  },
+  "blockers": [
+    {
+      "id": "doc_lint_errors",
+      "type": "documentation",
+      "severity": "blocking",
+      "detail": "documentation_truth_lint.json reports 282 errors (broken-reference=87, claim-without-reference=124, masterplan-contradiction=71); fix or suppress before releasing.",
+      "source": "reports/current/documentation_truth_lint.json",
+      "error_count": 282,
+      "by_rule": {
+        "broken-reference": 87,
+        "claim-without-reference": 124,
+        "manual-percentage": 67,
+        "masterplan-contradiction": 71
+      }
+    },
+    {
+      "id": "KL-M4-001",
+      "type": "known_limitation",
+      "severity": "blocking",
+      "detail": "Der aktuelle PostgreSQL-Truth-Report ist nicht gruen: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.",
+      "blocked_gates": [
+        "m4_overall_gate",
+        "m5_start_gate"
+      ],
+      "source": "docs/known_limitations.json"
+    },
+    {
+      "id": "KL-M4-002",
+      "type": "known_limitation",
+      "severity": "blocking",
+      "detail": "M4b-kritischer Truth-Test fuer stale import job recovery ist rot.",
+      "blocked_gates": [
+        "m4b_gate",
+        "m4_overall_gate"
+      ],
+      "source": "docs/known_limitations.json"
+    },
+    {
+      "id": "KL-M4-003",
+      "type": "known_limitation",
+      "severity": "blocking",
+      "detail": "PostgreSQL Truth enthaelt 2 Setup-/Collect-Errors; unklassifizierte Setup-Errors bleiben gate-blockierend.",
+      "blocked_gates": [
+        "m4_overall_gate",
+        "m5_start_gate"
+      ],
+      "source": "docs/known_limitations.json"
+    },
+    {
+      "id": "KL-M4-004",
+      "type": "known_limitation",
+      "severity": "blocking",
+      "detail": "Split-Reports fuer M4a, M4b, M4c, M4e und M4 Gesamt fehlen im reports-Verzeichnis.",
+      "blocked_gates": [
+        "m4a_gate",
+        "m4b_gate",
+        "m4c_gate",
+        "m4e_gate",
+        "m4_overall_gate"
+      ],
+      "source": "docs/known_limitations.json"
+    },
+    {
+      "id": "KL-M5-001",
+      "type": "known_limitation",
+      "severity": "blocking",
+      "detail": "M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.",
+      "blocked_gates": [
+        "m5_start_gate",
+        "operational_governance_gate"
+      ],
+      "source": "docs/known_limitations.json"
+    },
+    {
+      "id": "KL-M5-002",
+      "type": "known_limitation",
+      "severity": "blocking",
+      "detail": "Aktuelle PostgreSQL-Truth-Findings enthalten 15 M5 Entropy-/Drift-Failures.",
+      "blocked_gates": [
+        "m5_start_gate"
+      ],
+      "source": "docs/known_limitations.json"
+    },
+    {
+      "id": "KL-M5-003",
+      "type": "known_limitation",
+      "severity": "blocking",
+      "detail": "Operational Governance Gate darf erst nach M5 Startgate blockierend bewertet werden.",
+      "blocked_gates": [
+        "operational_governance_gate"
+      ],
+      "source": "docs/known_limitations.json"
+    }
+  ],
+  "timestamp": "2026-05-27T09:09:52.387998+00:00",
+  "exit_code": 1
+}

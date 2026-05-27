@@ -1,0 +1,44 @@
+{
+  "timestamp": "20260527T070839Z",
+  "canonical_reports": {
+    "m3a_frontend_truth": {
+      "path": "reports/current/m3a_frontend_truth.json",
+      "source": "reports/current/m3a_frontend_truth.json"
+    },
+    "m3a_release_candidate": {
+      "path": "reports/current/m3a_release_candidate.json",
+      "source": "reports/current/m3a_release_candidate.json"
+    },
+    "m4a_auth_truth": {
+      "path": "reports/current/m4a_auth_truth.json",
+      "source": "reports/current/m4a_auth_truth.json"
+    },
+    "m4b_upload_queue_truth": {
+      "path": "reports/current/m4b_upload_queue_truth.json",
+      "source": "reports/current/m4b_upload_queue_truth.json"
+    },
+    "m4c_lifecycle_retrieval_truth": {
+      "path": "reports/current/m4c_lifecycle_retrieval_truth.json",
+      "source": "reports/current/m4c_lifecycle_retrieval_truth.json"
+    },
+    "m4e_backup_restore_truth": {
+      "path": "reports/current/m4e_backup_restore_truth.json",
+      "source": "reports/current/m4e_backup_restore_truth.json"
+    },
+    "masterplan_status": {
+      "path": "reports/current/masterplan_status.json",
+      "source": "reports/current/masterplan_status.json"
+    }
+  },
+  "archived": [
+    {
+      "reason": "previous_archive_log",
+      "gate": "migration_log",
+      "from": "reports/archive/report_migration_log.json",
+      "to": "reports/archive/migration_log/20260527T070839Z_report_migration_log.json"
+    }
+  ],
+  "missing_sources": [],
+  "current_dir": "reports/current",
+  "archive_dir": "reports/archive"
+}

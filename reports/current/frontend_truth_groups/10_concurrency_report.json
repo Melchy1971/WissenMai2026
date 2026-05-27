@@ -1,0 +1,33 @@
+{
+  "report_schema_version": 1,
+  "report_name": "frontend_truth_group_concurrency",
+  "gate": "m3a",
+  "status": "BLOCKED",
+  "timestamp": "2026-05-27T07:30:51.519952+00:00",
+  "environment": "local",
+  "report_type": "truth",
+  "collected": 1,
+  "passed": 0,
+  "failed": 1,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "blockers": [
+    {
+      "gate": "m3a",
+      "severity": "critical",
+      "reason": "Previous group failed: Auth"
+    }
+  ],
+  "source_command": "python scripts/run_frontend_full_suite_staged.py --group concurrency",
+  "generated_by": "gate_validator",
+  "commit_hash": "d328983c",
+  "group": "Concurrency",
+  "slug": "concurrency",
+  "rank": 10,
+  "specs": [
+    "test_12_concurrency.spec.js"
+  ],
+  "activation_status": "blocked",
+  "blocked_by": "Auth"
+}

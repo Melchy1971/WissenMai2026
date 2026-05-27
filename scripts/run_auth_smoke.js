@@ -8,8 +8,9 @@ const { chromium } = require('../frontend/node_modules/@playwright/test');
 
 const ROOT = path.resolve(__dirname, '..');
 const REPORTS_DIR = path.join(ROOT, 'reports');
-const SEED_REPORT = path.join(REPORTS_DIR, 'seed_smoke_report.json');
-const AUTH_REPORT = path.join(REPORTS_DIR, 'auth_smoke_report.json');
+const CURRENT_DIR = path.join(REPORTS_DIR, 'current');
+const SEED_REPORT = path.join(CURRENT_DIR, 'seed_smoke_report.json');
+const AUTH_REPORT = path.join(CURRENT_DIR, 'auth_smoke_report.json');
 const PYTHON = path.join(ROOT, 'backend', '.venv', 'Scripts', 'python.exe');
 const LOGIN = 'mdickscheit@gmail.com';
 const PASSWORD = 'Alex..2026';
@@ -164,7 +165,7 @@ async function runBrowserProbe() {
 }
 
 async function main() {
-  fs.mkdirSync(REPORTS_DIR, { recursive: true });
+  fs.mkdirSync(CURRENT_DIR, { recursive: true });
   const env = loadEnv();
   const errors = [];
 
@@ -247,7 +248,7 @@ async function main() {
 }
 
 main().catch((error) => {
-  fs.mkdirSync(REPORTS_DIR, { recursive: true });
+  fs.mkdirSync(CURRENT_DIR, { recursive: true });
   fs.writeFileSync(AUTH_REPORT, `${JSON.stringify({ generated_at: nowIso(), result: 'FAIL', fatal_error: error.stack || error.message }, null, 2)}\n`, 'utf8');
   console.error(error);
   process.exit(1);

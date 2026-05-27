@@ -1,0 +1,64 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m4c_marker_mapping",
+  "gate": "m4c",
+  "status": "INFO",
+  "timestamp": "2026-05-27T08:19:59.0210907Z",
+  "environment": "local",
+  "report_type": "informational",
+  "collected": 1,
+  "passed": 1,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "blockers": [],
+  "source_command": "pytest --collect-only -q -m m4c_lifecycle_retrieval_truth",
+  "generated_by": "gate_validator",
+  "marker_policy": {
+    "m4c_lifecycle_retrieval_truth": {
+      "scope": "minimal lifecycle retrieval gate",
+      "tests": [
+        {
+          "nodeid": "tests/integration/test_m3b_search.py::test_lifecycle_e2e_excludes_archived_deleted_from_search_chat_and_reindex",
+          "requirements": [
+            "active document appears in Search",
+            "archived document does not appear in Search",
+            "deleted document does not appear in Search",
+            "active document appears in Chat Retrieval",
+            "archived/deleted documents do not appear in Chat Retrieval",
+            "reindex respects lifecycle"
+          ]
+        },
+        {
+          "nodeid": "tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_historical_citations_reflect_live_source_status",
+          "requirements": [
+            "historical citation source_status is correct"
+          ]
+        }
+      ]
+    },
+    "unit_fast": {
+      "scope": "fast unit/component coverage outside M4c gate",
+      "examples": [
+        "document/search/chat unit tests",
+        "context_builder/prompt_builder/citation_mapper unit tests",
+        "non-truth API behavior tests"
+      ]
+    },
+    "observability_truth": {
+      "scope": "observability and structured logging truth outside M4c gate",
+      "examples": [
+        "log redaction",
+        "structured context",
+        "correlation observability"
+      ]
+    },
+    "m5_truth": {
+      "scope": "M5 retrieval benchmark, longrun, entropy and cleanup truth"
+    },
+    "governance_truth": {
+      "scope": "diagnostics, admin, reindex governance, chaos and broader PostgreSQL governance checks outside M4c gate"
+    }
+  }
+}

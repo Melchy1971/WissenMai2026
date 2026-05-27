@@ -23,11 +23,11 @@ from sqlalchemy.engine import Connection
 
 from app.main import app
 from app.services.auth import hash_password, hash_token
-from tests.postgres_truth.support import TruthIds
+from tests.postgres_truth.support import TruthIds, _uuid_with_prefix
 
 pytestmark = [pytest.mark.postgres_truth, pytest.mark.workspace_bootstrap, pytest.mark.m4a_auth_truth]
 
-_NO_WS_USER_ID = "f2000000-0000-0000-0000-wsboot001111"
+_NO_WS_USER_ID = _uuid_with_prefix("f2000000", "workspace-bootstrap", "no-workspace-user")
 _NO_WS_SESSION_ID = "truth-workspace-bootstrap-no-ws-session"
 _NO_WS_TOKEN = "truth-workspace-bootstrap-no-ws-token-fixed"
 

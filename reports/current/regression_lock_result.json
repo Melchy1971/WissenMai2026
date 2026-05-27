@@ -1,0 +1,37 @@
+{
+  "report_schema_version": 1,
+  "report_name": "regression_lock_result",
+  "generated_by": "gate_regression_lock",
+  "timestamp": "2026-05-27T08:32:33.631035+00:00",
+  "result": "PASS",
+  "status": "PASS",
+  "checks": [
+    {
+      "report": "m3a_frontend_truth.json",
+      "status": "PASS",
+      "reason": null
+    },
+    {
+      "report": "m4a_auth_truth.json",
+      "status": "PASS",
+      "reason": null
+    },
+    {
+      "report": "m4b_upload_queue_truth.json",
+      "status": "PASS",
+      "reason": null
+    },
+    {
+      "report": "m4c_lifecycle_retrieval_truth.json",
+      "status": "PASS",
+      "reason": null
+    },
+    {
+      "report": "m4e_backup_restore_truth.json",
+      "status": "PASS",
+      "reason": null
+    }
+  ],
+  "blockers": [],
+  "baseline_source": "H:\\WissenMai2026\\reports\\regression_lock_baseline.json"
+}

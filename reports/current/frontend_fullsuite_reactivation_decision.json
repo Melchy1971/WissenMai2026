@@ -1,0 +1,150 @@
+{
+  "report_schema_version": 1,
+  "report_name": "frontend_fullsuite_reactivation_decision",
+  "generated_by": "reactivation_gate",
+  "timestamp": "2026-05-27T09:21:54.405230+00:00",
+  "gate": "m3a",
+  "result": "BLOCKED",
+  "status": "BLOCKED",
+  "decision": 1,
+  "decision_label": "Full-Suite bleibt blockiert",
+  "exit_code": 1,
+  "inputs": {
+    "frontend_truth_minimal_report.json": {
+      "result": "PASS",
+      "passed": 6,
+      "collected": 6
+    },
+    "frontend_failure_clusters.json": {
+      "result": "INFO",
+      "top_clusters": [
+        {
+          "cluster": "Auth Failure",
+          "count": 23
+        },
+        {
+          "cluster": "Workspace Failure",
+          "count": 14
+        }
+      ]
+    },
+    "frontend_full_suite_staged_report.json": {
+      "result": "FAIL",
+      "passed": 5,
+      "collected": 36,
+      "stopped_at": "Auth",
+      "auth_group": {
+        "collected": 27,
+        "passed": 5,
+        "failed": 22
+      }
+    },
+    "frontend_full_suite_activation_plan.json": {
+      "result": "INFO",
+      "next_group": null,
+      "activation_rule": "Nur naechste Gruppe aktivieren, wenn vorherige Gruppe gruen ist."
+    },
+    "report_truth_preflight.json": {
+      "result": "MISSING",
+      "blocking": true
+    },
+    "recovery_sprint_gate.json": {
+      "result": "MISSING",
+      "blocking": true
+    }
+  },
+  "blocking_conditions": [
+    {
+      "id": "auth_group_not_green",
+      "severity": "critical",
+      "detail": "Auth-Gruppe hat 22/27 Failures (81%). Aktivierungsregel fordert gruen vor naechster Gruppe.",
+      "evidence": "staged_report.groups[0]: passed=5, failed=22, collected=27"
+    },
+    {
+      "id": "preflight_report_missing",
+      "severity": "critical",
+      "detail": "report_truth_preflight.json fehlt. Pflichtinput nicht erfuellt.",
+      "evidence": "File not found in reports/current/"
+    },
+    {
+      "id": "recovery_sprint_gate_missing",
+      "severity": "critical",
+      "detail": "recovery_sprint_gate.json fehlt. Sprint-Abschluss nicht verifiziert.",
+      "evidence": "File not found in reports/current/"
+    },
+    {
+      "id": "selector_contract_broken",
+      "severity": "blocking",
+      "detail": "Vier Selector-Kontrakte im Auth-Test nicht erfuellt.",
+      "broken_selectors": [
+        "getByTestId(\"login-page\") — data-testid nicht im Komponent implementiert",
+        "locator(\".state-card--error\") — Fehlerkomponent rendert nicht fuer 4 Fehlerfaelle",
+        "getByRole(\"heading\", { name: \"Dokumente\" }) — AppShell laedt nach Login nicht",
+        "page.waitForSelector(\".shell\") — Timeout 15s, AppShell nicht bereit"
+      ]
+    }
+  ],
+  "positive_signals": [
+    {
+      "id": "minimal_vertical_slice_pass",
+      "detail": "Minimaler Vertical Slice: 6/6 PASS. Core-Flow (Login, Workspace, Dokumentliste, Logout) funktioniert.",
+      "evidence": "frontend_truth_minimal_report.json: passed=6, exit_code=0"
+    },
+    {
+      "id": "auth_core_functional",
+      "detail": "Kern-Auth funktioniert: Login-Formular, Fehlerzustand bei falschen Credentials, Redirect nach Login — alle gruen.",
+      "evidence": "auth_group: 5/27 passing = Login-Form, Error-on-invalid, Success-redirect, no-token-redirect, zero-auth-me-calls"
+    },
+    {
+      "id": "no_infra_failures",
+      "detail": "Keine Setup-Failures, keine Console-Errors, keine Network-Errors im Cluster-Report.",
+      "evidence": "frontend_failure_clusters.json: Setup Failure=0, API Failure=0"
+    }
+  ],
+  "criteria_for_option_2": {
+    "label": "Bedingungen fuer schrittweise Reaktivierung (Option 2)",
+    "required": [
+      "Auth-Gruppe: >= 90% (d.h. min. 25/27 tests gruen)",
+      "report_truth_preflight.json generiert mit result=PASS",
+      "recovery_sprint_gate.json generiert mit result=PASS",
+      "Alle 4 Selector-Kontrakte in Frontend implementiert"
+    ]
+  },
+  "next_test_group": {
+    "group": "Auth",
+    "rank": 1,
+    "specs": [
+      "test_01_login.spec.js",
+      "test_02_auth_bootstrap.spec.js"
+    ],
+    "current_result": {
+      "passed": 5,
+      "failed": 22,
+      "collected": 27
+    },
+    "target": "27/27 (100%) oder min. 25/27 (93%)",
+    "required_fixes": [
+      {
+        "selector": "getByTestId(\"login-page\")",
+        "fix": "data-testid=\"login-page\" zum Login-Komponent hinzufuegen",
+        "affected_tests": 1
+      },
+      {
+        "selector": "locator(\".state-card--error\")",
+        "fix": ".state-card--error CSS-Klasse in Fehlerkomponent hinzufuegen oder StateCard-Implementierung pruefen",
+        "affected_tests": "~8 (error state scenarios)"
+      },
+      {
+        "selector": "getByRole(\"heading\", { name: \"Dokumente\" })",
+        "fix": "AppShell/Documents-Heading nach erfolgreicher Auth verifizieren — moeglicherweise Bootstrap-Race-Condition",
+        "affected_tests": "~6 (bootstrap resolves group)"
+      },
+      {
+        "selector": "page.waitForSelector(\".shell\")",
+        "fix": ".shell CSS-Klasse auf AppShell-Komponent pruefen — Timeout deutet auf Bootstrap-Haenger nach Login",
+        "affected_tests": "~10 (workspace + documents group)"
+      }
+    ]
+  },
+  "decision_summary": "BLOCKIERT. Auth-Gruppe 5/27 (18%). Zwei Pflicht-Reports (preflight, sprint-gate) fehlen. Vier Selector-Kontrakte fehlen im Frontend. Erst nach Auth-Fix und Preflight-Lauf kann Reaktivierung erwogen werden."
+}

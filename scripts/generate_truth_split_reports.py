@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 import time
 from typing import Any
@@ -16,6 +17,7 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
+CURRENT_DIR = REPORTS_DIR / "current"
 DEFAULT_TEST_TARGET = REPO_ROOT / "backend" / "tests"
 
 REPORT_MARKERS = (
@@ -26,14 +28,33 @@ REPORT_MARKERS = (
     "m4e_backup_restore_truth",
     "m5_truth",
     "governance_truth",
+    "observability_truth",
+    "unit_fast",
 )
 
 REPORT_PATHS = {
-    marker: REPORTS_DIR / f"{marker}_report.json"
-    for marker in REPORT_MARKERS
+    "m3a_truth": CURRENT_DIR / "m3a_frontend_truth.json",
+    "m4a_auth_truth": CURRENT_DIR / "m4a_auth_truth.json",
+    "m4b_upload_queue_truth": CURRENT_DIR / "m4b_upload_queue_truth.json",
+    "m4c_lifecycle_retrieval_truth": CURRENT_DIR / "m4c_lifecycle_retrieval_truth.json",
+    "m4e_backup_restore_truth": CURRENT_DIR / "m4e_backup_restore_truth.json",
 }
 
 REPORT_FORMAT_VERSION = 1
+REPORT_SCHEMA_VERSION = 1
+
+MARKER_GATES = {
+    "m3a_truth": "m3a",
+    "m4_truth": "m4",
+    "m4a_auth_truth": "m4a",
+    "m4b_upload_queue_truth": "m4b",
+    "m4c_lifecycle_retrieval_truth": "m4c",
+    "m4e_backup_restore_truth": "m4e",
+    "m5_truth": "m5",
+    "governance_truth": "governance",
+    "observability_truth": "observability",
+    "unit_fast": "unit_fast",
+}
 
 
 @dataclass
@@ -87,6 +108,96 @@ class TruthSplitPlugin:
             self.collect_errors.append(report.nodeid)
 
 
+def _commit_hash() -> str | None:
+    result = subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    value = result.stdout.strip()
+    return value or None
+
+
+def _status_from_counts(collected: int, failed: int, errors: int, skipped: int) -> str:
+    if collected <= 0 or failed or errors or skipped:
+        return "FAIL"
+    return "PASS"
+
+
+def _source_command(marker: str) -> str:
+    return f"python scripts/generate_truth_split_reports.py -- -m {marker}"
+
+
+def _normalize_marker_report(marker: str, report: dict[str, Any]) -> dict[str, Any]:
+    collected = int(report.get("collected") or 0)
+    passed = int(report.get("passed") or 0)
+    failed = int(report.get("failed") or 0)
+    errors = int(report.get("errors") or 0)
+    skipped = int(report.get("skipped") or 0)
+    status = _status_from_counts(collected, failed, errors, skipped)
+    exit_code = 0 if status == "PASS" else 1
+    blockers = list(report.get("blockers") or [])
+    if status != "PASS" and not blockers:
+        blockers.append({
+            "gate": MARKER_GATES.get(marker, marker),
+            "severity": "critical",
+            "reason": f"{collected} collected, {failed} failed, {errors} errors, {skipped} skipped",
+        })
+
+    normalized = dict(report)
+    normalized.update({
+        "report_format_version": REPORT_FORMAT_VERSION,
+        "report_schema_version": REPORT_SCHEMA_VERSION,
+        "report_name": marker,
+        "marker": marker,
+        "gate": MARKER_GATES.get(marker, marker),
+        "status": status,
+        "environment": str(report.get("environment") or "local"),
+        "report_type": "truth",
+        "collected": collected,
+        "passed": passed,
+        "failed": failed,
+        "errors": errors,
+        "skipped": skipped,
+        "exit_code": exit_code,
+        "blockers": blockers,
+        "source_command": str(report.get("source_command") or _source_command(marker)),
+        "generated_by": "gate_validator",
+    })
+    commit_hash = report.get("commit_hash") or _commit_hash()
+    if commit_hash:
+        normalized["commit_hash"] = str(commit_hash)
+    return normalized
+
+
+def build_write_failure_report(marker: str, exc: Exception, timestamp: str | None = None) -> dict[str, Any]:
+    return _normalize_marker_report(
+        marker,
+        {
+            "marker": marker,
+            "timestamp": timestamp or datetime.now(UTC).isoformat(),
+            "collected": 1,
+            "passed": 0,
+            "failed": 0,
+            "errors": 1,
+            "skipped": 0,
+            "pytest_exit_code": 1,
+            "test_database_url_set": bool(os.getenv("TEST_DATABASE_URL")),
+            "failed_tests": [],
+            "write_error": str(exc),
+            "blockers": [{
+                "gate": MARKER_GATES.get(marker, marker),
+                "severity": "critical",
+                "reason": f"report write failed: {exc}",
+            }],
+        },
+    )
+
+
 def build_split_reports(
     *,
     collected_by_marker: dict[str, list[str]],
@@ -121,9 +232,7 @@ def build_split_reports(
             if outcomes.get(test_id) is not None and outcomes[test_id].status == "failed"
         )
         skipped = sum(1 for status in statuses if status == "skipped")
-        marker_exit_code = 1 if failed_tests or errors or skipped else 0
-
-        reports[marker] = {
+        report = {
             "report_format_version": REPORT_FORMAT_VERSION,
             "marker": marker,
             "timestamp": timestamp,
@@ -132,25 +241,63 @@ def build_split_reports(
             "failed": len(failed_tests),
             "errors": errors,
             "skipped": skipped,
-            "exit_code": marker_exit_code,
+            "exit_code": 0,
             "pytest_exit_code": exit_code,
             "test_database_url_set": test_database_url_set,
             "failed_tests": failed_tests,
             "unmarked_truth_tests": unmarked_truth_tests,
             "ambiguous_truth_tests": ambiguous_truth_tests,
         }
+        reports[marker] = _normalize_marker_report(marker, report)
 
     return reports
 
 
-def write_split_reports(reports: dict[str, dict[str, Any]], report_dir: Path = REPORTS_DIR) -> list[Path]:
+def write_split_reports(reports: dict[str, dict[str, Any]], report_dir: Path = CURRENT_DIR) -> list[Path]:
     report_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
-    for marker in REPORT_MARKERS:
-        path = report_dir / f"{marker}_report.json"
-        path.write_text(json.dumps(reports[marker], indent=2) + "\n", encoding="utf-8")
+    for marker, default_path in REPORT_PATHS.items():
+        path = report_dir / default_path.name
+        if marker in reports:
+            report = _normalize_marker_report(marker, reports[marker])
+        else:
+            report = build_write_failure_report(
+                marker,
+                KeyError(f"missing built report for marker: {marker}"),
+                timestamp=datetime.now(UTC).isoformat(),
+            )
+        try:
+            path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        except Exception as exc:
+            failure_report = build_write_failure_report(marker, exc, timestamp=str(report.get("timestamp") or ""))
+            path.write_text(json.dumps(failure_report, indent=2) + "\n", encoding="utf-8")
         written.append(path)
     return written
+
+
+def write_marker_report(
+    marker: str,
+    reports: dict[str, dict[str, Any]],
+    report_dir: Path = CURRENT_DIR,
+) -> Path:
+    if marker not in REPORT_PATHS:
+        raise KeyError(f"unsupported report marker: {marker}")
+    report_dir.mkdir(parents=True, exist_ok=True)
+    path = report_dir / REPORT_PATHS[marker].name
+    if marker in reports:
+        report = _normalize_marker_report(marker, reports[marker])
+    else:
+        report = build_write_failure_report(
+            marker,
+            KeyError(f"missing built report for marker: {marker}"),
+            timestamp=datetime.now(UTC).isoformat(),
+        )
+    try:
+        path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    except Exception as exc:
+        failure_report = build_write_failure_report(marker, exc, timestamp=str(report.get("timestamp") or ""))
+        path.write_text(json.dumps(failure_report, indent=2) + "\n", encoding="utf-8")
+    return path
 
 
 @contextlib.contextmanager
@@ -197,7 +344,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--report-dir",
         type=Path,
-        default=REPORTS_DIR,
+        default=CURRENT_DIR,
         help="Directory for split JSON reports.",
     )
     parser.add_argument(

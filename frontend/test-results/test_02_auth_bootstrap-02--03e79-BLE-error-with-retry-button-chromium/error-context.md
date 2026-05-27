@@ -25,6 +25,10 @@ Call log:
 
 ```
 
+```yaml
+- text: "{\"error\":{\"code\":\"AUTH_REQUIRED\",\"message\":\"Authentication required\",\"details\":{}}}"
+```
+
 # Test source
 
 ```ts

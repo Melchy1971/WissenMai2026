@@ -1,122 +1,102 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "ruflo:report_schema:v1",
-  "title": "Ruflo Report — Canonical Schema",
-  "description": "Required fields for every report artifact in reports/. Validator: scripts/validate_reports.py",
+  "$id": "wissen:report-schema:1",
+  "title": "Wissen Report Schema",
+  "description": "Versioned mandatory schema for active gate reports under reports/current. Enforced by scripts/validate_reports.py.",
   "type": "object",
+  "additionalProperties": true,
   "required": [
-    "name",
+    "report_schema_version",
+    "report_name",
+    "gate",
+    "status",
     "timestamp",
     "environment",
-    "database_url_set",
-    "test_database_url_set",
     "collected",
     "passed",
     "failed",
     "errors",
     "skipped",
     "exit_code",
-    "gate",
     "blockers",
-    "known_limitations"
+    "source_command",
+    "generated_by"
   ],
   "properties": {
-    "report_format_version": {
+    "report_schema_version": {
       "type": "integer",
-      "description": "Schema version. Increment when required fields change.",
-      "enum": [1, 2]
+      "const": 1
     },
-    "name": {
+    "report_name": {
       "type": "string",
-      "description": "Stable machine identifier for this report. Matches filename stem.",
-      "examples": [
-        "seed_smoke", "runtime_connectivity", "frontend_truth",
-        "gui_chaos_suite", "contract_runtime", "auth_bootstrap_guard",
-        "m3a_release_candidate", "m4_truth", "m4b_upload_queue_truth",
-        "m4_backend_release_candidate"
-      ]
-    },
-    "timestamp": {
-      "type": "string",
-      "description": "ISO 8601 datetime when the report was generated (UTC preferred).",
-      "examples": ["2026-05-26T08:28:56.846946+00:00"]
-    },
-    "environment": {
-      "type": ["string", "null"],
-      "description": "Target environment (e.g. 'local', 'ci', 'staging'). Null when unknown.",
-      "examples": ["local", "ci", null]
-    },
-    "database_url_set": {
-      "type": "boolean",
-      "description": "True when DATABASE_URL (non-test) was present and non-empty at runtime."
-    },
-    "test_database_url_set": {
-      "type": "boolean",
-      "description": "True when TEST_DATABASE_URL pointed to a real PostgreSQL instance."
-    },
-    "collected": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Total items evaluated (tests, checks, criteria, contracts, etc.)."
-    },
-    "passed": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Items that passed."
-    },
-    "failed": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Items that failed."
-    },
-    "errors": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Setup/collection/infrastructure errors (not counted in failed)."
-    },
-    "skipped": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Items explicitly skipped."
-    },
-    "exit_code": {
-      "type": "integer",
-      "description": "Process exit code. 0 = pass, non-zero = fail/error."
+      "minLength": 1
     },
     "gate": {
       "type": "string",
-      "description": "Gate this report belongs to.",
-      "examples": [
-        "m3a_preflight", "m3a", "m4", "m4a", "m4b", "m4c", "m4e",
-        "m4_rc", "m5", "governance"
-      ]
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "BLOCKED", "INFO"]
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    },
+    "environment": {
+      "type": "string",
+      "minLength": 1
+    },
+    "report_type": {
+      "type": "string",
+      "enum": ["gate", "truth", "release_candidate", "informational"]
+    },
+    "collected": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "passed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "failed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "errors": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "skipped": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "exit_code": {
+      "type": "integer"
     },
     "blockers": {
-      "type": "array",
-      "description": "List of active blockers derived from this report.",
-      "items": {
-        "type": "object",
-        "required": ["reason"],
-        "properties": {
-          "gate": {"type": "string"},
-          "severity": {"type": "string", "enum": ["critical", "warning", "info"]},
-          "reason": {"type": "string"}
-        }
-      }
+      "type": "array"
     },
-    "known_limitations": {
-      "description": "Active KL entries relevant to this report (array or registry object).",
-      "oneOf": [
-        {"type": "array"},
-        {"type": "object"}
-      ]
+    "source_command": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generated_by": {
+      "type": "string",
+      "const": "gate_validator"
+    },
+    "commit_hash": {
+      "type": "string"
     }
   },
-  "additionalProperties": true,
-  "_notes": [
-    "additionalProperties:true — existing report fields are preserved.",
-    "collected = passed + failed + errors + skipped is NOT enforced here because",
-    "  some reports use different counting (e.g. RC criteria vs test counts).",
-    "Report files are normalized in-place by scripts/validate_reports.py --normalize."
+  "x-rules": [
+    "Missing report_schema_version is invalid.",
+    "Unknown report_schema_version is invalid.",
+    "status PASS is allowed only when failed=0, errors=0, skipped=0.",
+    "collected must be >0 unless report_type=informational.",
+    "Numbers must be internally consistent: collected = passed + failed + errors + skipped."
+    ,
+    "Gate PASS/FAIL artifacts are valid only when generated_by=gate_validator.",
+    "Final release reports are valid only when generated_by=gate_validator and based on validator output."
   ]
 }

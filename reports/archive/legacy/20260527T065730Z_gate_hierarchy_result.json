@@ -1,0 +1,299 @@
+{
+  "timestamp": "2026-05-27T06:57:20.792133+00:00",
+  "result": "FAIL",
+  "gates": {
+    "m3a_gate": {
+      "id": "m3a_gate",
+      "label": "M3a Gate",
+      "status": "FAIL",
+      "reports": [
+        "m3a_frontend_truth.json"
+      ],
+      "dependencies": [],
+      "blockers": [
+        "m3a_frontend_truth.json: passed (5) must equal collected (100)",
+        "m3a_frontend_truth.json: failed must be 0, got 37",
+        "m3a_frontend_truth.json: skipped must be 0, got 58",
+        "m3a_frontend_truth.json: exit_code must be 0, got 1",
+        "m3a_frontend_truth.json: failed_tests must be empty"
+      ],
+      "report_summaries": {
+        "m3a_frontend_truth.json": {
+          "available": true,
+          "collected": 100,
+          "passed": 5,
+          "failed": 37,
+          "errors": 0,
+          "skipped": 58,
+          "exit_code": 1,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-26T07:55:18.789577+00:00"
+        }
+      }
+    },
+    "m4a_gate": {
+      "id": "m4a_gate",
+      "label": "M4a Gate",
+      "status": "PASS",
+      "reports": [
+        "m4a_auth_truth.json"
+      ],
+      "dependencies": [],
+      "blockers": [],
+      "report_summaries": {
+        "m4a_auth_truth.json": {
+          "available": true,
+          "collected": 10,
+          "passed": 10,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-27T00:00:00Z"
+        }
+      }
+    },
+    "m4b_gate": {
+      "id": "m4b_gate",
+      "label": "M4b Gate",
+      "status": "PASS",
+      "reports": [
+        "m4b_upload_queue_truth.json"
+      ],
+      "dependencies": [],
+      "blockers": [],
+      "report_summaries": {
+        "m4b_upload_queue_truth.json": {
+          "available": true,
+          "collected": 5,
+          "passed": 5,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-27T00:00:00Z"
+        }
+      }
+    },
+    "m4c_gate": {
+      "id": "m4c_gate",
+      "label": "M4c Gate",
+      "status": "PASS",
+      "reports": [
+        "m4c_lifecycle_retrieval_truth.json"
+      ],
+      "dependencies": [],
+      "blockers": [],
+      "report_summaries": {
+        "m4c_lifecycle_retrieval_truth.json": {
+          "available": true,
+          "collected": 5,
+          "passed": 5,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-27T00:00:00Z"
+        }
+      }
+    },
+    "m4e_gate": {
+      "id": "m4e_gate",
+      "label": "M4e Gate",
+      "status": "PASS",
+      "reports": [
+        "m4e_backup_restore_truth.json"
+      ],
+      "dependencies": [],
+      "blockers": [],
+      "report_summaries": {
+        "m4e_backup_restore_truth.json": {
+          "available": true,
+          "collected": 3,
+          "passed": 3,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "test_database_url_set": true,
+          "timestamp": "2026-05-27T00:00:00Z"
+        }
+      }
+    },
+    "m4_crosscutting_gate": {
+      "id": "m4_crosscutting_gate",
+      "label": "M4 Cross-Cutting Gate",
+      "status": "FAIL",
+      "reports": [
+        "m4_truth_report.json"
+      ],
+      "dependencies": [],
+      "blockers": [
+        "missing report: H:\\WissenMai2026\\reports\\current\\m4_truth_report.json"
+      ],
+      "report_summaries": {
+        "m4_truth_report.json": {
+          "available": false,
+          "error": "missing report: H:\\WissenMai2026\\reports\\current\\m4_truth_report.json"
+        }
+      }
+    },
+    "m4_overall_gate": {
+      "id": "m4_overall_gate",
+      "label": "M4 Gesamtgate",
+      "status": "BLOCKED",
+      "reports": [],
+      "dependencies": [
+        "m4_crosscutting_gate",
+        "m4a_gate",
+        "m4b_gate",
+        "m4c_gate",
+        "m4e_gate"
+      ],
+      "blockers": [
+        "dependency not passed: m4_crosscutting_gate"
+      ],
+      "report_summaries": {}
+    },
+    "m5_start_gate": {
+      "id": "m5_start_gate",
+      "label": "M5 Startgate",
+      "status": "BLOCKED",
+      "reports": [],
+      "dependencies": [
+        "m4_overall_gate"
+      ],
+      "blockers": [
+        "dependency not passed: m4_overall_gate"
+      ],
+      "report_summaries": {}
+    },
+    "operational_governance_gate": {
+      "id": "operational_governance_gate",
+      "label": "Operational Governance Gate",
+      "status": "BLOCKED",
+      "reports": [
+        "governance_truth_report.json"
+      ],
+      "dependencies": [
+        "m5_start_gate"
+      ],
+      "blockers": [
+        "dependency not passed: m5_start_gate"
+      ],
+      "report_summaries": {
+        "governance_truth_report.json": {
+          "available": false,
+          "error": "missing report: H:\\WissenMai2026\\reports\\current\\governance_truth_report.json"
+        }
+      }
+    }
+  },
+  "dependency_graph": {
+    "nodes": [
+      {
+        "id": "m3a_gate",
+        "label": "M3a Gate"
+      },
+      {
+        "id": "m4a_gate",
+        "label": "M4a Gate"
+      },
+      {
+        "id": "m4b_gate",
+        "label": "M4b Gate"
+      },
+      {
+        "id": "m4c_gate",
+        "label": "M4c Gate"
+      },
+      {
+        "id": "m4e_gate",
+        "label": "M4e Gate"
+      },
+      {
+        "id": "m4_crosscutting_gate",
+        "label": "M4 Cross-Cutting Gate"
+      },
+      {
+        "id": "m4_overall_gate",
+        "label": "M4 Gesamtgate"
+      },
+      {
+        "id": "m5_start_gate",
+        "label": "M5 Startgate"
+      },
+      {
+        "id": "operational_governance_gate",
+        "label": "Operational Governance Gate"
+      }
+    ],
+    "edges": [
+      {
+        "from": "m4_crosscutting_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4a_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4b_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4c_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4e_gate",
+        "to": "m4_overall_gate"
+      },
+      {
+        "from": "m4_overall_gate",
+        "to": "m5_start_gate"
+      },
+      {
+        "from": "m5_start_gate",
+        "to": "operational_governance_gate"
+      }
+    ]
+  },
+  "evaluation_rules": {
+    "m3a_gate": [
+      "m3a_frontend_truth.json"
+    ],
+    "m4a_gate": [
+      "m4a_auth_truth.json"
+    ],
+    "m4b_gate": [
+      "m4b_upload_queue_truth.json"
+    ],
+    "m4c_gate": [
+      "m4c_lifecycle_retrieval_truth.json"
+    ],
+    "m4e_gate": [
+      "m4e_backup_restore_truth.json"
+    ],
+    "m4_crosscutting_gate": [
+      "m4_truth_report.json"
+    ],
+    "m4_overall_gate": [
+      "m4_crosscutting_gate",
+      "m4a_gate",
+      "m4b_gate",
+      "m4c_gate",
+      "m4e_gate"
+    ],
+    "m5_start_gate": [
+      "m4_overall_gate"
+    ],
+    "operational_governance_gate": [
+      "m5_start_gate",
+      "governance_truth_report.json"
+    ]
+  }
+}

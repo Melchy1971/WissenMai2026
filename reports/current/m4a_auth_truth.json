@@ -1,0 +1,26 @@
+{
+    "report_schema_version":  1,
+    "report_name":  "m4a_auth_truth",
+    "gate":  "m4a",
+    "status":  "PASS",
+    "timestamp":  "2026-05-27T07:36:04.6432941Z",
+    "environment":  "local",
+    "report_type":  "truth",
+    "collected":  43,
+    "passed":  43,
+    "failed":  0,
+    "errors":  0,
+    "skipped":  0,
+    "exit_code":  0,
+    "blockers":  [
+
+                 ],
+    "source_command":  "cd backend; $env:DATABASE_URL=$env:TEST_DATABASE_URL=\"postgresql+psycopg://Markus:Markus..2026@85.215.131.200:5432/wissen2026\"; pytest -m m4a_auth_truth -vv",
+    "generated_by":  "gate_validator",
+    "commit_hash":  "d328983c",
+    "selected":  43,
+    "deselected":  477,
+    "duration_seconds":  54.74,
+    "result":  "43 passed, 477 deselected",
+    "minimal_reproducer":  "pytest tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_no_membership_user_gets_null_active_workspace -vv"
+}

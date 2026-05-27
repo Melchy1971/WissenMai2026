@@ -32,6 +32,8 @@ markers = [
     "m4e_backup_restore_truth: M4e backup and restore truth",
     "m5_truth: M5 operational hardening truth; does not block M4",
     "governance_truth: Governance, cleanup, reindex and longevity truth; does not block M4",
+    "observability_truth: Observability and structured logging truth; does not block M4c",
+    "unit_fast: Fast unit/component tests outside M4 gate truth",
     "chaos_truth: Chaos and race-condition truth",
     "slow_truth: Slow truth simulations and benchmarks",
     "postgres: requires a real PostgreSQL database - set TEST_DATABASE_URL or use docker-compose.test.yml",

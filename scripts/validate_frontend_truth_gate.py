@@ -7,7 +7,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-REPORT_PATH = REPO_ROOT / "reports" / "frontend_truth_report.json"
+REPORT_PATH = REPO_ROOT / "reports" / "current" / "m3a_frontend_truth.json"
 
 
 def _load_report(path: Path) -> dict[str, Any]:

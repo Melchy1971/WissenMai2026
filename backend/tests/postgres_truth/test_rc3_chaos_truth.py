@@ -379,7 +379,8 @@ def test_chaos_job_claim_and_replay_locks_are_independent(
         session2.rollback()
 
 
-@pytest.mark.m4c_lifecycle_retrieval_truth
+@pytest.mark.governance_truth
+@pytest.mark.chaos_truth
 def test_chaos_source_status_live_lookup_reflects_lifecycle_transitions(
     truth_ids: TruthIds,
     truth_seed: dict[str, str],

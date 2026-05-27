@@ -1,7 +1,7 @@
 """
 Runtime Connectivity Gate
 =========================
-Wertet reports/runtime_connectivity_report.json aus und berechnet einen Score.
+Wertet reports/current/runtime_connectivity_report.json aus und berechnet einen Score.
 
 9 Checks (je 1 Punkt):
   1. db_reachable          — DATABASE_URL gesetzt + DB erreichbar
@@ -31,8 +31,9 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-REPORT_IN = REPO_ROOT / "reports" / "runtime_connectivity_report.json"
-REPORT_OUT = REPO_ROOT / "reports" / "runtime_connectivity_gate.json"
+CURRENT_DIR = REPO_ROOT / "reports" / "current"
+REPORT_IN = CURRENT_DIR / "runtime_connectivity_report.json"
+REPORT_OUT = CURRENT_DIR / "runtime_connectivity_gate.json"
 THRESHOLD_PCT = 95.0
 TOTAL_CHECKS = 9
 
@@ -181,9 +182,13 @@ def main() -> int:
     blockers = [c["id"] for c in checks if c["status"] == "fail"]
 
     result_payload = {
+        "report_schema_version": 1,
+        "report_name": "runtime_connectivity_gate",
+        "generated_by": "gate_validator",
         "name": "runtime_connectivity_gate",
         "timestamp": report.get("generated_at", report.get("timestamp", "")),
         "gate": "m3a_preflight",
+        "status": "PASS" if gate_passed else "FAIL",
         "threshold_pct": THRESHOLD_PCT,
         "total_checks": TOTAL_CHECKS,
         "passed_checks": passed,
@@ -202,6 +207,7 @@ def main() -> int:
         "errors": 0,
         "skipped": 0,
         "exit_code": 0 if gate_passed else 1,
+        "source_command": "python scripts/validate_runtime_connectivity_gate.py",
         "known_limitations": [],
     }
 

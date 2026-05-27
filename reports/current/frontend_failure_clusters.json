@@ -1,0 +1,1286 @@
+{
+  "report_schema_version": 1,
+  "report_name": "frontend_failure_clusters",
+  "gate": "m3a",
+  "status": "INFO",
+  "timestamp": "2026-05-27T07:13:29.444524+00:00",
+  "environment": "local",
+  "report_type": "informational",
+  "collected": 37,
+  "passed": 37,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "blockers": [],
+  "source_command": "python scripts/cluster_frontend_failures.py --report reports\\current\\m3a_frontend_truth.json",
+  "generated_by": "gate_validator",
+  "commit_hash": "d328983c",
+  "input": {
+    "playwright_json_report": "reports\\current\\m3a_frontend_truth.json",
+    "test_results_dir": "frontend\\test-results",
+    "screenshots": [],
+    "traces": [],
+    "videos": [],
+    "error_context_count": 37,
+    "console_error_count": 0,
+    "network_error_count": 0
+  },
+  "cluster_order": [
+    "Setup Failure",
+    "Selector Failure",
+    "Auth Failure",
+    "Workspace Failure",
+    "API Failure",
+    "Routing Failure",
+    "Timeout Failure",
+    "Test Data Missing"
+  ],
+  "clusters": {
+    "Setup Failure": {
+      "count": 0,
+      "failures": [],
+      "root_cause_hint": "Truth run setup or Playwright runner did not produce stable browser evidence.",
+      "top_signals": []
+    },
+    "Selector Failure": {
+      "count": 0,
+      "failures": [],
+      "root_cause_hint": "Expected UI contract is not visible; selector may be stale or the page renders a different state.",
+      "top_signals": []
+    },
+    "Auth Failure": {
+      "count": 23,
+      "failures": [
+        {
+          "name": "01 Login flow > redirects unauthenticated request to login page",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 5000ms\n  - waiting for getByRole('heading', { name: 'Anmeldung' })\n\n\n  12 |   test('redirects unauthenticated request to login page', async ({ page }) => {\n  13 |     await page.goto('/documents');\n> 14 |     await expect(page.",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_01_login-01-Login-flo-7a21b-cated-request-to-login-page-chromium\\error-context.md",
+          "scores": {
+            "Selector Failure": 4,
+            "Auth Failure": 8,
+            "Routing Failure": 4,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:unauthenticated",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Routing Failure:redirect",
+            "Selector Failure:element(s) not found",
+            "Selector Failure:getbyrole",
+            "Selector Failure:locator",
+            "Selector Failure:tobevisible"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > redirects to /login without token",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for getByRole('heading', { name: 'Anmeldung' })\n\n\n  21 |   test('redirects to /login without token', async ({ barePage }) => {\n  22 |     await barePage.goto('/documents');\n> 23 |     await expect(barePage.",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 01 no token > no workspace error shown on login page",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for getByRole('heading', { name: 'Anmeldung' })\n\n\n  43 |   test('no workspace error shown on login page', async ({ barePage }) => {\n  44 |     await barePage.goto('/documents');\n> 45 |     await expect(bare",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > calls /auth/me exactly once during bootstrap",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\n\n\n  69 |     );\n  70 |     await page.goto('/documents');\n> 71 |     await expect(page.getByRole('heading', { name: 'Dokumente', exa",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > bootstrap resolves to documents page",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 3,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > workspace id appears in page header after bootstrap",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 3,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 02 bootstrap resolves > no error state after successful bootstrap",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 3,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > no bootstrap loading flash with complete session",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 3,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > app shell renders without error state",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 3,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 03 complete session > complete session does not call /auth/me",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 10000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 10000ms\n  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\n\n\n  130 |     );\n  131 |     await page.goto('/documents');\n> 132 |     await expect(page.getByRole('heading', { name: 'Dokumente', ",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > shows session-expired error, does not redirect silently",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for locator('.state-card--error')\n\n\n  153 |\n  154 |     // Should show auth error (session expired), NOT silently redirect or show blank page\n> 155 |     await expect(page.locator('.state-card--error')).toBeVisible({ tim",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--4d833-ssion-does-not-call-auth-me-chromium\\error-context.md",
+          "scores": {
+            "Selector Failure": 4,
+            "Auth Failure": 12,
+            "Workspace Failure": 12,
+            "Routing Failure": 4,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "Auth Failure:/auth/me",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Routing Failure:redirect",
+            "Selector Failure:element(s) not found",
+            "Selector Failure:getbyrole"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 04 invalid token > invalid token error contains session-expired messaging",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for locator('.state-card--error')\n\n\n  169 |     });\n  170 |     await page.goto('/documents');\n> 171 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                       ",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--4d833-ssion-does-not-call-auth-me-chromium\\error-context.md",
+          "scores": {
+            "Selector Failure": 4,
+            "Auth Failure": 12,
+            "Workspace Failure": 12,
+            "Routing Failure": 4,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "Auth Failure:/auth/me",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Routing Failure:redirect",
+            "Selector Failure:element(s) not found",
+            "Selector Failure:getbyrole"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > shows API_UNREACHABLE error with retry button",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for locator('.state-card--error')\n\n\n  200 |\n  201 |     await page.goto('/documents');\n> 202 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               ",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--a7e40--does-not-redirect-silently-chromium\\error-context.md",
+          "scores": {
+            "Selector Failure": 4,
+            "Auth Failure": 10,
+            "Workspace Failure": 10,
+            "API Failure": 6,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "API Failure:net::",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Routing Failure:redirect"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 05 backend unreachable > retry button re-triggers bootstrap",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for locator('.state-card--error')\n\n\n  232 |\n  233 |     await page.goto('/documents');\n> 234 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               ",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--338cb-s-session-expired-messaging-chromium\\error-context.md",
+          "scores": {
+            "Selector Failure": 4,
+            "Auth Failure": 10,
+            "Workspace Failure": 10,
+            "API Failure": 6,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "API Failure:net::",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Routing Failure:redirect"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > shows workspace-not-configured error for user with no memberships",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.state-card--error') to be visible\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--4d833-ssion-does-not-call-auth-me-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 12,
+            "Workspace Failure": 12,
+            "Routing Failure": 4,
+            "Timeout Failure": 3,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "Auth Failure:/auth/me",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Routing Failure:redirect",
+            "Selector Failure:element(s) not found",
+            "Selector Failure:getbyrole"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 06 no workspace membership > no-membership error is not AUTH_SESSION_EXPIRED",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.state-card--error') to be visible\n\n\n   at fixtures.js:46\n\n  44 |     { timeout: 15_000 },\n  45 |   );\n> 46 |   await page.waitForSelector('.state-card--error', { state: 'visible', timeout: 15_000 });\n     |              ^\n  47 | }\n  48 |\n  49 | export const test = base.extend({\n    at waitForProtectedErrorReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:46:14)\n    at Object.noMe",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 3,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > shows error state on 403 from /auth/me",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for locator('.state-card--error')\n\n\n  281 |\n  282 |     await page.goto('/documents');\n> 283 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               ",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--1be73-utton-re-triggers-bootstrap-chromium\\error-context.md",
+          "scores": {
+            "Selector Failure": 4,
+            "Auth Failure": 14,
+            "Workspace Failure": 10,
+            "API Failure": 6,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "API Failure:net::",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 07 forbidden > 403 error does not show retry button",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('.state-card--error')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for locator('.state-card--error')\n\n\n  308 |\n  309 |     await page.goto('/documents');\n> 310 |     await expect(page.locator('.state-card--error')).toBeVisible({ timeout: 15_000 });\n      |                               ",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > logout clears session and redirects to login",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--06cec-r-state-on-403-from-auth-me-chromium\\error-context.md",
+          "scores": {
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 10,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:net::",
+            "Auth Failure:/auth/login",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, navigating to /documents redirects to login",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--14679--does-not-show-retry-button-chromium\\error-context.md",
+          "scores": {
+            "Selector Failure": 4,
+            "Auth Failure": 18,
+            "Workspace Failure": 10,
+            "API Failure": 2,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/login",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, localStorage is cleared",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--070b3-ects-to-login-without-token-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 16,
+            "Workspace Failure": 12,
+            "API Failure": 4,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "API Failure:api_unreachable",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "02 Auth bootstrap \u00e2\u20ac\u201d 08 logout > after logout, a fresh login restores workspace ready state",
+          "error_excerpt": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Dokumente', exact: true })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 15000ms\n  - waiting for getByRole('heading', { name: 'Dokumente', exact: true })\n\n\n  332 |   }, authState);\n  333 |   await page.goto('/documents');\n> 334 |   await expect(page.getByRole('heading', { name: 'Dokume",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--9d2fc-sion-and-redirects-to-login-chromium\\error-context.md",
+          "scores": {
+            "Selector Failure": 4,
+            "Auth Failure": 18,
+            "Workspace Failure": 10,
+            "API Failure": 2,
+            "Routing Failure": 5,
+            "Timeout Failure": 1,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/login",
+            "Auth Failure:/auth/me",
+            "Auth Failure:403",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:forbidden",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login"
+          ]
+        },
+        {
+          "name": "03 Workspace loading > shows active workspace id in documents page header",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_02_auth_bootstrap-02--4d833-ssion-does-not-call-auth-me-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 4,
+            "Auth Failure": 12,
+            "Workspace Failure": 12,
+            "Routing Failure": 4,
+            "Timeout Failure": 3,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "Auth Failure:/auth/me",
+            "Auth Failure:anmeldung",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Routing Failure:redirect",
+            "Selector Failure:element(s) not found",
+            "Selector Failure:getbyrole"
+          ]
+        }
+      ],
+      "root_cause_hint": "Auth bootstrap, session state, login redirect, or auth error handling blocks protected screens.",
+      "top_signals": [
+        {
+          "signal": "Auth Failure:auth",
+          "count": 23
+        },
+        {
+          "signal": "Auth Failure:login",
+          "count": 23
+        },
+        {
+          "signal": "Routing Failure:/documents",
+          "count": 23
+        },
+        {
+          "signal": "Routing Failure:/login",
+          "count": 23
+        },
+        {
+          "signal": "Routing Failure:page.goto",
+          "count": 23
+        },
+        {
+          "signal": "Routing Failure:redirect",
+          "count": 23
+        },
+        {
+          "signal": "Selector Failure:element(s) not found",
+          "count": 23
+        },
+        {
+          "signal": "Selector Failure:getbyrole",
+          "count": 23
+        }
+      ]
+    },
+    "Workspace Failure": {
+      "count": 14,
+      "failures": [
+        {
+          "name": "03 Workspace loading > shows active workspace id in app shell session area",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_03_workspace_loading--cd9b1-d-in-app-shell-session-area-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 10,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:session",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_"
+          ]
+        },
+        {
+          "name": "03 Workspace loading > shows navigation links in shell header",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_03_workspace_loading--90a03-ation-links-in-shell-header-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        },
+        {
+          "name": "03 Workspace loading > shows logout button when authenticated",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_03_workspace_loading--3db9e-t-button-when-authenticated-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        },
+        {
+          "name": "03 Workspace loading > does not show workspace missing warning when workspace is configured",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_03_workspace_loading--8f915-hen-workspace-is-configured-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:missing",
+            "Test Data Missing:truth_"
+          ]
+        },
+        {
+          "name": "04 Dokumentliste > shows documents page heading",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_04_documents-04-Dokum-1f401-hows-documents-page-heading-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        },
+        {
+          "name": "04 Dokumentliste > shows empty state for workspace with no documents",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_04_documents-04-Dokum-c3dc4-workspace-with-no-documents-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 2
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:no documents",
+            "Test Data Missing:truth_"
+          ]
+        },
+        {
+          "name": "04 Dokumentliste > loads the seeded active document in the list",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_04_documents-04-Dokum-744fb-active-document-in-the-list-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 4
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:active document",
+            "Test Data Missing:seed"
+          ]
+        },
+        {
+          "name": "04 Dokumentliste > opens document detail with versions and chunk preview",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_04_documents-04-Dokum-59bf4--versions-and-chunk-preview-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        },
+        {
+          "name": "04 Dokumentliste > unknown document detail is an error state, not an empty list",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_04_documents-04-Dokum-4ef03-ror-state-not-an-empty-list-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        },
+        {
+          "name": "04 Dokumentliste > empty document list is distinct from an API error",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_04_documents-04-Dokum-d3de1--distinct-from-an-API-error-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        },
+        {
+          "name": "04 Dokumentliste > shows lifecycle filter section",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_04_documents-04-Dokum-09201-ws-lifecycle-filter-section-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        },
+        {
+          "name": "04 Dokumentliste > shows upload section",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_04_documents-04-Dokumentliste-shows-upload-section-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        },
+        {
+          "name": "04 Dokumentliste > shows search section",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_04_documents-04-Dokumentliste-shows-search-section-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        },
+        {
+          "name": "05 Upload flow > shows upload form elements",
+          "error_excerpt": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1",
+          "source": "frontend_truth_report",
+          "context_path": "frontend\\test-results\\test_05_upload-05-Upload-flow-shows-upload-form-elements-chromium\\error-context.md",
+          "scores": {
+            "Setup Failure": 2,
+            "Selector Failure": 1,
+            "Auth Failure": 8,
+            "Workspace Failure": 14,
+            "API Failure": 2,
+            "Routing Failure": 3,
+            "Timeout Failure": 5,
+            "Test Data Missing": 1
+          },
+          "signals": [
+            "API Failure:/api/",
+            "Auth Failure:/auth/me",
+            "Auth Failure:auth",
+            "Auth Failure:login",
+            "Auth Failure:token",
+            "Routing Failure:/documents",
+            "Routing Failure:/login",
+            "Routing Failure:page.goto",
+            "Selector Failure:locator",
+            "Setup Failure:fixture",
+            "Test Data Missing:truth_",
+            "Timeout Failure:timeout"
+          ]
+        }
+      ],
+      "root_cause_hint": "Workspace membership or active workspace bootstrap prevents AppShell/documents readiness.",
+      "top_signals": [
+        {
+          "signal": "API Failure:/api/",
+          "count": 14
+        },
+        {
+          "signal": "Auth Failure:/auth/me",
+          "count": 14
+        },
+        {
+          "signal": "Auth Failure:auth",
+          "count": 14
+        },
+        {
+          "signal": "Auth Failure:login",
+          "count": 14
+        },
+        {
+          "signal": "Auth Failure:token",
+          "count": 14
+        },
+        {
+          "signal": "Routing Failure:/documents",
+          "count": 14
+        },
+        {
+          "signal": "Routing Failure:/login",
+          "count": 14
+        },
+        {
+          "signal": "Routing Failure:page.goto",
+          "count": 14
+        }
+      ]
+    },
+    "API Failure": {
+      "count": 0,
+      "failures": [],
+      "root_cause_hint": "Frontend observed API, health, fetch, or HTTP failure evidence.",
+      "top_signals": []
+    },
+    "Routing Failure": {
+      "count": 0,
+      "failures": [],
+      "root_cause_hint": "Route guard or redirect behavior does not land on the expected page.",
+      "top_signals": []
+    },
+    "Timeout Failure": {
+      "count": 0,
+      "failures": [],
+      "root_cause_hint": "Tests wait until timeout, usually as a cascade after an earlier state transition failure.",
+      "top_signals": []
+    },
+    "Test Data Missing": {
+      "count": 0,
+      "failures": [],
+      "root_cause_hint": "Seeded truth data or expected test fixture state is missing or not visible.",
+      "top_signals": []
+    }
+  },
+  "top_root_causes": [
+    {
+      "rank": 1,
+      "cluster": "Auth Failure",
+      "count": 23,
+      "root_cause": "Auth bootstrap, session state, login redirect, or auth error handling blocks protected screens.",
+      "evidence": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Anmeldung' })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" with timeout 5000ms\n  - waiting for getByRole('heading', { name: 'Anmeldung' })\n\n\n  12 |   test('redirects unauthenticated request to login page', async ({ page }) => {\n  13 |     await page.goto('/documents');\n> 14 |     await expect(page."
+    },
+    {
+      "rank": 2,
+      "cluster": "Workspace Failure",
+      "count": 14,
+      "root_cause": "Workspace membership or active workspace bootstrap prevents AppShell/documents readiness.",
+      "evidence": "TimeoutError: page.waitForSelector: Timeout 15000ms exceeded.\nCall log:\n  - waiting for locator('.shell') to be visible\n\n\n   at fixtures.js:35\n\n  33 |     { timeout: 15_000 },\n  34 |   );\n> 35 |   await page.waitForSelector('.shell', { state: 'visible', timeout: 15_000 });\n     |              ^\n  36 |   await page.waitForSelector('h2', { state: 'visible', timeout: 15_000 });\n  37 | }\n  38 |\n    at waitForProtectedDocumentsReady (H:\\WissenMai2026\\frontend\\tests\\gui_truth\\fixtures.js:35:1"
+    }
+  ],
+  "fix_order": [
+    {
+      "rank": 1,
+      "cluster": "Auth Failure",
+      "why_first": "Auth bootstrap gates every protected screen and causes broad cascades.",
+      "affected_failures": 23
+    },
+    {
+      "rank": 2,
+      "cluster": "Workspace Failure",
+      "why_first": "Workspace readiness gates AppShell, documents, upload, search, and chat flows.",
+      "affected_failures": 14
+    }
+  ],
+  "runtime_errors": {
+    "console_errors": [],
+    "network_errors": []
+  }
+}

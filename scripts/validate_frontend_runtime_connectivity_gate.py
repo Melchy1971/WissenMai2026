@@ -10,9 +10,10 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
-DEFAULT_TRUTH_REPORT = REPORTS_DIR / "connectivity_truth_report.json"
-DEFAULT_JSON_REPORT = REPORTS_DIR / "frontend_runtime_connectivity_gate_report.json"
-DEFAULT_MARKDOWN_REPORT = REPORTS_DIR / "frontend_runtime_connectivity_gate_report.md"
+CURRENT_DIR = REPORTS_DIR / "current"
+DEFAULT_TRUTH_REPORT = CURRENT_DIR / "connectivity_truth_report.json"
+DEFAULT_JSON_REPORT = CURRENT_DIR / "frontend_runtime_connectivity_gate_report.json"
+DEFAULT_MARKDOWN_REPORT = CURRENT_DIR / "frontend_runtime_connectivity_gate_report.md"
 PASS_THRESHOLD = 90.0
 
 
@@ -105,15 +106,32 @@ def evaluate_gate(truth_report: dict[str, Any], *, generated_at: str | None = No
     decision = "CONNECTIVITY_STABLE" if result == "PASS" else "M3A_BLOCKED"
 
     return {
+        "report_schema_version": 1,
+        "report_name": "frontend_runtime_connectivity_gate_report",
+        "generated_by": "gate_validator",
         "version": 1,
         "report": "Frontend Runtime Connectivity Gate Report",
         "generated_at": generated_at or _utc_now(),
-        "source_truth_report": "reports/connectivity_truth_report.json",
+        "source_truth_report": "reports/current/connectivity_truth_report.json",
         "frontend_base_url": truth_report.get("frontend_base_url"),
         "api_base_url": truth_report.get("api_base_url"),
         "score": score,
         "threshold": PASS_THRESHOLD,
         "result": result,
+        "status": result,
+        "gate": "m3a_preflight",
+        "environment": "local",
+        "collected": len(GATE_CHECKS),
+        "passed": passed_count,
+        "failed": len(GATE_CHECKS) - passed_count,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 0 if result == "PASS" else 1,
+        "blockers": [
+            {"gate": "m3a_preflight", "severity": "critical", "reason": blocker["id"]}
+            for blocker in runtime_blockers
+        ],
+        "source_command": "python scripts/validate_frontend_runtime_connectivity_gate.py",
         "decision": decision,
         "gate_effect": "Connectivity stabil" if result == "PASS" else "M3a blockiert",
         "checks": gate_checks,

@@ -9,8 +9,9 @@ const { chromium } = require('../frontend/node_modules/@playwright/test');
 
 const ROOT = path.resolve(__dirname, '..');
 const REPORTS_DIR = path.join(ROOT, 'reports');
-const REPORT_JSON = path.join(REPORTS_DIR, 'connectivity_truth_report.json');
-const REPORT_MD = path.join(REPORTS_DIR, 'connectivity_truth_report.md');
+const CURRENT_DIR = path.join(REPORTS_DIR, 'current');
+const REPORT_JSON = path.join(CURRENT_DIR, 'connectivity_truth_report.json');
+const REPORT_MD = path.join(CURRENT_DIR, 'connectivity_truth_report.md');
 
 const FRONTEND_BASE_URL = process.env.CONNECTIVITY_FRONTEND_BASE_URL
   || process.env.GUI_TRUTH_BASE_URL
@@ -240,7 +241,7 @@ async function runBrowserProbe() {
 
 async function main() {
   const generatedAt = nowIso();
-  fs.mkdirSync(REPORTS_DIR, { recursive: true });
+  fs.mkdirSync(CURRENT_DIR, { recursive: true });
 
   const health = await requestUrl(`${API_BASE_URL}/health`);
   const authMe = await requestUrl(`${API_BASE_URL}/api/v1/auth/me`, {

@@ -11,10 +11,11 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
+CURRENT_DIR = REPORTS_DIR / "current"
 DEFAULT_BASELINE = REPORTS_DIR / "gate_drift_baseline.json"
-DEFAULT_OUTPUT_JSON = REPORTS_DIR / "gate_drift_report.json"
+DEFAULT_OUTPUT_JSON = CURRENT_DIR / "gate_drift_report.json"
 DEFAULT_OUTPUT_MD = REPORTS_DIR / "gate_drift_report.md"
-DEFAULT_TAXONOMY_REPORT = REPORTS_DIR / "truth_marker_taxonomy.json"
+DEFAULT_TAXONOMY_REPORT = CURRENT_DIR / "truth_marker_taxonomy.json"
 
 DOCS_TO_SCAN = (
     REPO_ROOT / "masterplan.md",
@@ -28,15 +29,13 @@ DOCS_TO_SCAN = (
 )
 
 GATE_REPORTS = (
-    "frontend_truth_report.json",
-    "m3a_truth_report.json",
-    "m4_truth_report.json",
-    "m4a_auth_truth_report.json",
-    "m4b_upload_queue_truth_report.json",
-    "m4c_lifecycle_retrieval_truth_report.json",
-    "m4e_backup_restore_truth_report.json",
-    "m5_truth_report.json",
-    "governance_truth_report.json",
+    "m3a_frontend_truth.json",
+    "m3a_release_candidate.json",
+    "m4a_auth_truth.json",
+    "m4b_upload_queue_truth.json",
+    "m4c_lifecycle_retrieval_truth.json",
+    "m4e_backup_restore_truth.json",
+    "masterplan_status.json",
 )
 
 GATE_MARKERS = (
@@ -141,7 +140,7 @@ def _snapshot_report(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_baseline(report_dir: Path = REPORTS_DIR, taxonomy_path: Path = DEFAULT_TAXONOMY_REPORT) -> dict[str, Any]:
+def build_baseline(report_dir: Path = CURRENT_DIR, taxonomy_path: Path = DEFAULT_TAXONOMY_REPORT) -> dict[str, Any]:
     reports: dict[str, Any] = {}
     for report_name in GATE_REPORTS:
         payload, error = _load_json(report_dir / report_name)
@@ -407,7 +406,7 @@ def _documentation_findings(
 
 def detect_gate_drift(
     *,
-    report_dir: Path = REPORTS_DIR,
+    report_dir: Path = CURRENT_DIR,
     taxonomy_path: Path = DEFAULT_TAXONOMY_REPORT,
     baseline_path: Path = DEFAULT_BASELINE,
     docs: tuple[Path, ...] = DOCS_TO_SCAN,
@@ -527,7 +526,7 @@ def write_report(payload: dict[str, Any], json_path: Path, md_path: Path) -> Non
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Detect drift in truth gate reports, markers and documentation.")
-    parser.add_argument("--report-dir", type=Path, default=REPORTS_DIR)
+    parser.add_argument("--report-dir", type=Path, default=CURRENT_DIR)
     parser.add_argument("--taxonomy-report", type=Path, default=DEFAULT_TAXONOMY_REPORT)
     parser.add_argument("--baseline", type=Path, default=DEFAULT_BASELINE)
     parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)

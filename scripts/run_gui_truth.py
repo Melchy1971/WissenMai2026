@@ -26,7 +26,9 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).parent.parent
 REPORTS_DIR = ROOT / "reports" / "gui_truth"
-FRONTEND_JSON_REPORT_PATH = ROOT / "reports" / "frontend_truth_report.json"
+FRONTEND_JSON_REPORT_PATH = ROOT / "reports" / "current" / "m3a_frontend_truth.json"
+FRONTEND_MINIMAL_JSON_REPORT_PATH = ROOT / "reports" / "current" / "frontend_truth_minimal_report.json"
+FRONTEND_CLUSTER_REPORT_PATH = ROOT / "reports" / "current" / "frontend_failure_clusters.json"
 FRONTEND_MARKDOWN_REPORT_PATH = ROOT / "reports" / "frontend_truth_report.md"
 DEFAULT_API_BASE_URL = "http://127.0.0.1:8000"
 DEFAULT_GUI_TRUTH_API_BASE_URL = "http://127.0.0.1:8013"
@@ -525,7 +527,7 @@ def cleanup(conn) -> None:
     conn.commit()
 
 
-def run_playwright(seeds: dict, headed: bool, spec_filter: str | None) -> dict:
+def run_playwright(seeds: dict, headed: bool, spec_filter: str | list[str] | tuple[str, ...] | None) -> dict:
     api_base_url = os.environ.get("VITE_API_BASE_URL") or os.environ.get("API_BASE_URL") or DEFAULT_API_BASE_URL
     env = {
         **os.environ,
@@ -562,7 +564,10 @@ def run_playwright(seeds: dict, headed: bool, spec_filter: str | None) -> dict:
     if headed:
         cmd.append("--headed")
     if spec_filter:
-        cmd.append(spec_filter)
+        if isinstance(spec_filter, (list, tuple)):
+            cmd.extend(str(item) for item in spec_filter if item)
+        else:
+            cmd.append(spec_filter)
 
     try:
         result = subprocess.run(
@@ -762,7 +767,28 @@ def _browser_name(pw: dict) -> str:
     return ",".join(project_names) if project_names else "unknown"
 
 
-def build_truth_report(pw_result: dict, duration: float, api_health: dict) -> dict:
+def _commit_hash() -> str | None:
+    result = subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    value = result.stdout.strip()
+    return value or None
+
+
+def build_truth_report(
+    pw_result: dict,
+    duration: float,
+    api_health: dict,
+    *,
+    report_name: str = "m3a_frontend_truth",
+    source_command: str = "python scripts/run_gui_truth.py",
+) -> dict:
     pw = pw_result.get("playwright", {})
     passed: list[str] = []
     failed: list[dict] = []
@@ -777,45 +803,101 @@ def build_truth_report(pw_result: dict, duration: float, api_health: dict) -> di
 
     collected = len(passed) + len(failed) + len(skipped)
     api_base_url = os.environ.get("VITE_API_BASE_URL") or os.environ.get("API_BASE_URL") or DEFAULT_API_BASE_URL
-    return {
+    failed_count = len(failed)
+    error_count = len(errors)
+    skipped_count = len(skipped)
+    exit_code = pw_result["exit_code"]
+    status = "PASS" if failed_count == 0 and error_count == 0 and skipped_count == 0 and exit_code == 0 else "FAIL"
+    blockers = []
+    if status != "PASS":
+        blockers.append({
+            "gate": "m3a",
+            "severity": "critical",
+            "reason": f"{failed_count} failed, {error_count} errors, {skipped_count} skipped",
+        })
+
+    report = {
         "timestamp": datetime.now(UTC).isoformat(),
         "generated_at": datetime.now(UTC).isoformat(),
         "collected": collected,
         "passed": len(passed),
-        "failed": len(failed),
-        "skipped": len(skipped),
+        "failed": failed_count,
+        "skipped": skipped_count,
         "browser": _browser_name(pw),
         "api_base_url": api_base_url,
         "test_database_url_set": bool(os.environ.get("TEST_DATABASE_URL")),
         "duration": round(duration, 2),
         "duration_seconds": round(duration, 2),
         "failed_flows": failed,
-        "errors": errors,
-        "exit_code": pw_result["exit_code"],
-        "playwright_exit_code": pw_result["exit_code"],
+        "errors": error_count,
+        "error_details": errors,
+        "exit_code": exit_code,
+        "playwright_exit_code": exit_code,
         "real_api": True,
         "mock_only": False,
         "api_database_health": api_health,
         "failed_tests": failed,
         "skipped_tests": skipped,
         "passed_tests": passed,
+        "name": report_name,
+        "environment": "local",
+        "database_url_set": bool(os.environ.get("TEST_DATABASE_URL")),
+        "gate": "m3a",
+        "blockers": blockers,
+        "known_limitations": [],
+        "report_schema_version": 1,
+        "report_name": report_name,
+        "status": status,
+        "report_type": "truth",
+        "source_command": source_command,
+        "generated_by": "gate_validator",
     }
+    commit_hash = _commit_hash()
+    if commit_hash:
+        report["commit_hash"] = commit_hash
+    return report
 
 
-def write_reports(report: dict) -> None:
+def write_reports(
+    report: dict,
+    *,
+    json_report_path: Path = FRONTEND_JSON_REPORT_PATH,
+    markdown_report_path: Path | None = FRONTEND_MARKDOWN_REPORT_PATH,
+    write_historical: bool = True,
+    write_cluster: bool = True,
+) -> None:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    FRONTEND_JSON_REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    json_report_path.parent.mkdir(parents=True, exist_ok=True)
     ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
-    for name in (f"{ts}.json", "latest.json"):
-        (REPORTS_DIR / name).write_text(json.dumps(report, indent=2), encoding="utf-8")
+    if write_historical:
+        for name in (f"{ts}.json", "latest.json"):
+            (REPORTS_DIR / name).write_text(json.dumps(report, indent=2), encoding="utf-8")
 
-    FRONTEND_JSON_REPORT_PATH.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    FRONTEND_MARKDOWN_REPORT_PATH.write_text(render_markdown_report(report), encoding="utf-8")
+    json_report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    if markdown_report_path is not None:
+        markdown_report_path.write_text(render_markdown_report(report), encoding="utf-8")
+    if write_cluster:
+        try:
+            from cluster_frontend_failures import build_cluster_report, write_report
 
-    print(f"Report written: reports/gui_truth/{ts}.json")
-    print("Report written: reports/frontend_truth_report.json")
-    print("Report written: reports/frontend_truth_report.md")
+            cluster_report = build_cluster_report(
+                report,
+                report_path=json_report_path,
+                test_results_dir=ROOT / "frontend" / "test-results",
+                output_path=FRONTEND_CLUSTER_REPORT_PATH,
+            )
+            write_report(cluster_report, FRONTEND_CLUSTER_REPORT_PATH)
+        except Exception as exc:
+            print(f"Warning: frontend failure clustering failed: {exc}")
+
+    if write_historical:
+        print(f"Report written: reports/gui_truth/{ts}.json")
+    print(f"Report written: {json_report_path.relative_to(ROOT)}")
+    if write_cluster:
+        print("Report written: reports/current/frontend_failure_clusters.json")
+    if markdown_report_path is not None:
+        print(f"Report written: {markdown_report_path.relative_to(ROOT)}")
 
 
 def render_markdown_report(report: dict) -> str:
@@ -867,9 +949,12 @@ def main() -> None:
     parser.add_argument("--headed", action="store_true", help="Run browser headed")
     parser.add_argument("--no-cleanup", action="store_true", help="Skip DB cleanup")
     parser.add_argument("--filter", dest="spec_filter", default=None, help="Playwright filter (e.g. test_01)")
+    parser.add_argument("--minimal", action="store_true", help="Run the minimal vertical Frontend Truth slice only")
     parser.add_argument("--start-api", action="store_true", help="Start the real FastAPI backend for this run")
     parser.add_argument("--start-frontend", action="store_true", help="Start the real Vite frontend for this run")
     args = parser.parse_args()
+    if args.minimal:
+        args.spec_filter = "frontend_truth_minimal.spec.js"
 
     db_url = os.environ.get("TEST_DATABASE_URL")
     if not db_url:
@@ -926,8 +1011,26 @@ def main() -> None:
                 frontend_process.kill()
 
     duration = (datetime.now(UTC) - start).total_seconds()
-    report = build_truth_report(pw_result, duration, api_health)
-    write_reports(report)
+    source_command = "python scripts/run_gui_truth.py --minimal" if args.minimal else "python scripts/run_gui_truth.py"
+    if args.spec_filter and not args.minimal:
+        source_command = f"{source_command} --filter {args.spec_filter}"
+    report = build_truth_report(
+        pw_result,
+        duration,
+        api_health,
+        report_name="frontend_truth_minimal" if args.minimal else "m3a_frontend_truth",
+        source_command=source_command,
+    )
+    if args.minimal:
+        write_reports(
+            report,
+            json_report_path=FRONTEND_MINIMAL_JSON_REPORT_PATH,
+            markdown_report_path=None,
+            write_historical=False,
+            write_cluster=False,
+        )
+    else:
+        write_reports(report)
 
     print(
         f"\nResult: {report['passed']} passed, "

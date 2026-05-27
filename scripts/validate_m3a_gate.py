@@ -11,13 +11,14 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
-DEFAULT_FRONTEND_REPORT = REPORTS_DIR / "frontend_truth_report.json"
+CURRENT_DIR = REPORTS_DIR / "current"
+DEFAULT_FRONTEND_REPORT = CURRENT_DIR / "m3a_frontend_truth.json"
 DEFAULT_GUI_TRUTH_LATEST = REPORTS_DIR / "gui_truth" / "latest.json"
 DEFAULT_GUI_CHAOS_REPORT = REPORTS_DIR / "gui_truth" / "gui_chaos_suite_report.json"
 DEFAULT_CONTRACT_REPORT = REPORTS_DIR / "contract_test_report.json"
-DEFAULT_POSTGRES_REPORT = REPORTS_DIR / "postgres_truth_report.json"
-DEFAULT_OUTPUT_JSON = REPORTS_DIR / "m3a_gate_result.json"
-DEFAULT_OUTPUT_MD = REPORTS_DIR / "m3a_gate_result.md"
+DEFAULT_POSTGRES_REPORT = CURRENT_DIR / "m4a_auth_truth.json"
+DEFAULT_OUTPUT_JSON = CURRENT_DIR / "m3a_gate_result.json"
+DEFAULT_OUTPUT_MD = CURRENT_DIR / "m3a_gate_result.md"
 
 RULE_COUNT = 9
 
@@ -471,8 +472,20 @@ def _build_gate_payload(
     m5_operational_blockers = [row for row in postgres_matrix if row["m5_critical"] == "yes"]
     m3a_relevant_blockers = [row for row in postgres_matrix if row["m3a_relevant"] == "yes"]
     return {
+        "report_schema_version": 1,
+        "report_name": "m3a_gate_result",
+        "generated_by": "gate_validator",
         "timestamp": datetime.now(UTC).isoformat(),
         "gate": "M3a",
+        "status": "PASS" if gate_passed else "FAIL",
+        "environment": "local",
+        "collected": RULE_COUNT,
+        "passed": passed_rules,
+        "failed": RULE_COUNT - passed_rules,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 0 if gate_passed else 1,
+        "source_command": "python scripts/validate_m3a_gate.py",
         "gate_result": "PASS" if gate_passed else "FAIL",
         "score": score,
         "decision": "M3a abgeschlossen" if gate_passed else "M3a blockiert",
@@ -490,13 +503,13 @@ def _build_gate_payload(
         },
         "truth_domains": {
             "m3a_frontend_truth": [
-                "reports/frontend_truth_report.json",
-                "reports/gui_truth/latest.json",
-                "reports/gui_truth/gui_chaos_suite_report.json",
-                "reports/contract_test_report.json",
+                "reports/current/m3a_frontend_truth.json",
             ],
             "m4_backend_truth": [
-                "reports/postgres_truth_report.json marker groups m4a_gate/m4b_gate/m4c_gate",
+                "reports/current/m4a_auth_truth.json",
+                "reports/current/m4b_upload_queue_truth.json",
+                "reports/current/m4c_lifecycle_retrieval_truth.json",
+                "reports/current/m4e_backup_restore_truth.json",
             ],
             "m5_operational_truth": [
                 "entropy, queue aging, drift, cleanup, longevity and operational postgres_truth blocks",
@@ -573,7 +586,7 @@ def _render_markdown(payload: dict[str, Any]) -> str:
         lines.append("- keine")
     lines.extend(["", "## Scope-Entscheidung", ""])
     scope = payload.get("scope_decision") or {}
-    lines.append("- M3a Frontend Truth: `frontend_truth_report.json`, `gui_truth/latest.json`, GUI Chaos und Contract Tests sind blockierend.")
+    lines.append("- M3a Frontend Truth: `reports/current/m3a_frontend_truth.json` ist blockierend.")
     lines.append("- M3a Backend-Minimum: echte API erreichbar, echte DB aktiv, Contract Tests gruen und relevante M3a-Endpunktflows im Frontend Truth belegt.")
     lines.append("- M4 Backend Truth: `postgres_truth_report.json` bewertet Backend-Hardening und ist keine M3a-Gate-Regel.")
     lines.append("- M5 Operational Truth: Entropy-, Queue-Aging-, Drift-, Cleanup- und Longevity-Tests sind keine M3a-Gate-Regeln.")

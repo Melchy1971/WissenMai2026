@@ -148,7 +148,14 @@
       "Bash(curl -s --max-time 2 http://localhost:5177/)",
       "Bash(cmd.exe /c \"netstat -ano | findstr :8000\")",
       "Bash(netstat -tlnp)",
-      "Bash(kill -9 267 372)"
+      "Bash(kill -9 267 372)",
+      "Bash(python -m pytest tests/test_gate_hierarchy_validator.py -k \"regression\" -v)",
+      "Bash(python scripts/validate_gate_regression_lock.py)",
+      "Bash(python scripts/validate_documentation_truth.py)",
+      "Bash(python -m pytest backend/tests/test_gate_hierarchy_validator.py -v)",
+      "Bash(python -m pytest backend/tests/ -v --ignore=backend/tests/postgres_truth -x -q)",
+      "Bash(python scripts/generate_masterplan_status_v2.py)",
+      "Bash(python -m pytest backend/tests/test_gate_hierarchy_validator.py -q)"
     ]
   },
   "hooks": {

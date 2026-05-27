@@ -1,0 +1,42 @@
+{
+    "report_schema_version":  1,
+    "report_name":  "m4a_auth_single_issue",
+    "gate":  "m4a",
+    "status":  "INFO",
+    "timestamp":  "2026-05-27T07:36:04.6432941Z",
+    "environment":  "local",
+    "report_type":  "informational",
+    "collected":  1,
+    "passed":  1,
+    "failed":  0,
+    "errors":  0,
+    "skipped":  0,
+    "exit_code":  0,
+    "blockers":  [
+
+                 ],
+    "source_command":  "pytest tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_no_membership_user_gets_null_active_workspace -vv",
+    "generated_by":  "gate_validator",
+    "commit_hash":  "d328983c",
+    "issue":  {
+                  "title":  "M4a Auth Workspace Bootstrap fixture uses invalid UUID",
+                  "failing_test":  "tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_no_membership_user_gets_null_active_workspace",
+                  "original_error":  "psycopg.errors.InvalidTextRepresentation: invalid input syntax for type uuid: \"f2000000-0000-0000-0000-wsboot001111\"",
+                  "root_cause":  "Fixture",
+                  "root_cause_matrix":  {
+                                            "Fixture":  "YES: _NO_WS_USER_ID was a non-UUID string used as %s::uuid",
+                                            "Seed":  "NO: seed logic was not the source; fixture insert failed before test body",
+                                            "DB_State":  "NO: database rejected invalid UUID before persistent state could matter",
+                                            "Auth_Guard":  "NO: auth guard was not reached",
+                                            "Marker_Fehler":  "SECONDARY: test_preflight.py lacked classification and blocked initial marker collection; fixed as m3a_truth",
+                                            "Testdefekt":  "YES: test fixture data was invalid for the real PostgreSQL schema"
+                                        },
+                  "fix":  "Use tests.postgres_truth.support._uuid_with_prefix(\"f2000000\", \"workspace-bootstrap\", \"no-workspace-user\") for _NO_WS_USER_ID and classify test_preflight.py as m3a_truth.",
+                  "verification":  [
+                                       "Initial pytest -m m4a_auth_truth -vv exposed marker collection blocker",
+                                       "Minimal reproducer failed before fix",
+                                       "Minimal reproducer passed after fix: 1 passed",
+                                       "Full M4a marker run passed: 43 passed, 477 deselected"
+                                   ]
+              }
+}

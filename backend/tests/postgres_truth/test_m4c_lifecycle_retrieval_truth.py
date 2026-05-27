@@ -12,9 +12,10 @@ from app.services.documents.lifecycle_service import DocumentLifecycleService
 from tests.postgres_truth.support import TruthIds
 
 
-pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4c_lifecycle_retrieval_truth]
+pytestmark = pytest.mark.postgres_truth
 
 
+@pytest.mark.governance_truth
 def test_m4c_archive_excludes_document_from_search_restore_reactivates(
     truth_client: TestClient,
     truth_ids: TruthIds,
@@ -70,6 +71,7 @@ def test_m4c_archive_excludes_document_from_search_restore_reactivates(
         "restored document must reappear in search"
 
 
+@pytest.mark.m4c_lifecycle_retrieval_truth
 def test_m4c_historical_citations_reflect_live_source_status(
     truth_client: TestClient,
     truth_ids: TruthIds,

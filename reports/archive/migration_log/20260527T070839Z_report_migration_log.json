@@ -1,0 +1,301 @@
+{
+    "timestamp":  "20260527T065730Z",
+    "canonical_reports":  {
+                              "m3a_frontend_truth":  {
+                                                         "path":  "reports/current/m3a_frontend_truth.json",
+                                                         "source":  "reports/current/m3a_frontend_truth.json"
+                                                     },
+                              "m3a_release_candidate":  {
+                                                            "path":  "reports/current/m3a_release_candidate.json",
+                                                            "source":  "reports/current/m3a_release_candidate.json"
+                                                        },
+                              "m4a_auth_truth":  {
+                                                     "path":  "reports/current/m4a_auth_truth.json",
+                                                     "source":  "reports/current/m4a_auth_truth.json"
+                                                 },
+                              "m4b_upload_queue_truth":  {
+                                                             "path":  "reports/current/m4b_upload_queue_truth.json",
+                                                             "source":  "reports/current/m4b_upload_queue_truth.json"
+                                                         },
+                              "m4c_lifecycle_retrieval_truth":  {
+                                                                    "path":  "reports/current/m4c_lifecycle_retrieval_truth.json",
+                                                                    "source":  "reports/current/m4c_lifecycle_retrieval_truth.json"
+                                                                },
+                              "m4e_backup_restore_truth":  {
+                                                               "path":  "reports/current/m4e_backup_restore_truth.json",
+                                                               "source":  "reports/current/m4e_backup_restore_truth.json"
+                                                           },
+                              "masterplan_status":  {
+                                                        "path":  "reports/current/masterplan_status.json",
+                                                        "source":  "reports/current/masterplan_status.json"
+                                                    }
+                          },
+    "archived":  [
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m3a_preflight",
+                         "from":  "reports/auth_bootstrap_guard.json",
+                         "to":  "reports/archive/m3a_preflight/20260527T065210Z_auth_bootstrap_guard.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/auth_smoke_report.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_auth_smoke_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "frontend_connectivity_truth_report",
+                         "from":  "reports/connectivity_truth_report.json",
+                         "to":  "reports/archive/frontend_connectivity_truth_report/20260527T065210Z_connectivity_truth_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m3a",
+                         "from":  "reports/contract_runtime_report.json",
+                         "to":  "reports/archive/m3a/20260527T065210Z_contract_runtime_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/contract_test_report.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_contract_test_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/documentation_audit_report.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_documentation_audit_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/documentation_release_audit.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_documentation_release_audit.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/final_status_report.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_final_status_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "frontend_runtime_connectivity_gate_report",
+                         "from":  "reports/frontend_runtime_connectivity_gate_report.json",
+                         "to":  "reports/archive/frontend_runtime_connectivity_gate_report/20260527T065210Z_frontend_runtime_connectivity_gate_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/frontend_truth_scope.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_frontend_truth_scope.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/gate_drift_report.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_gate_drift_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/gate_hierarchy_result.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_gate_hierarchy_result.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "gesamtarchitektur-reconciliation",
+                         "from":  "reports/gesamtarchitektur_reconciliation.json",
+                         "to":  "reports/archive/gesamtarchitektur-reconciliation/20260527T065210Z_gesamtarchitektur_reconciliation.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "governance_truth",
+                         "from":  "reports/governance_truth_report.json",
+                         "to":  "reports/archive/governance_truth/20260527T065210Z_governance_truth_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/known_limitations.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_known_limitations.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m3a_final_gate",
+                         "from":  "reports/m3a_final_gate_report.json",
+                         "to":  "reports/archive/m3a_final_gate/20260527T065210Z_m3a_final_gate_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/m3a_final_release.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_m3a_final_release.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/m3a_gate_result.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_m3a_gate_result.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m3a_frontend_truth",
+                         "from":  "reports/m3a_truth_report.json",
+                         "to":  "reports/archive/m3a_frontend_truth/20260527T065210Z_m3a_truth_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m4_rc",
+                         "from":  "reports/m4_backend_release_candidate.json",
+                         "to":  "reports/archive/m4_rc/20260527T065210Z_m4_backend_release_candidate.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/m4_release_candidate.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_m4_release_candidate.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m4_truth",
+                         "from":  "reports/m4_truth_report.json",
+                         "to":  "reports/archive/m4_truth/20260527T065210Z_m4_truth_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m4a_auth_truth",
+                         "from":  "reports/m4a_auth_truth_report.json",
+                         "to":  "reports/archive/m4a_auth_truth/20260527T065210Z_m4a_auth_truth_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m4c_lifecycle_retrieval_truth",
+                         "from":  "reports/m4c_lifecycle_retrieval_truth_report.json",
+                         "to":  "reports/archive/m4c_lifecycle_retrieval_truth/20260527T065210Z_m4c_lifecycle_retrieval_truth_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m4e_backup_restore_truth",
+                         "from":  "reports/m4e_backup_restore_truth_report.json",
+                         "to":  "reports/archive/m4e_backup_restore_truth/20260527T065210Z_m4e_backup_restore_truth_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m5_truth",
+                         "from":  "reports/m5_truth_report.json",
+                         "to":  "reports/archive/m5_truth/20260527T065210Z_m5_truth_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/postgres_truth_report.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_postgres_truth_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "pre-m5_decision_report",
+                         "from":  "reports/pre_m5_decision_report.json",
+                         "to":  "reports/archive/pre-m5_decision_report/20260527T065210Z_pre_m5_decision_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/report_truth_preflight.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_report_truth_preflight.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m3a_preflight",
+                         "from":  "reports/runtime_connectivity_gate.json",
+                         "to":  "reports/archive/m3a_preflight/20260527T065210Z_runtime_connectivity_gate.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m3a_preflight",
+                         "from":  "reports/runtime_connectivity_report.json",
+                         "to":  "reports/archive/m3a_preflight/20260527T065210Z_runtime_connectivity_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "runtime_connectivity_root_cause",
+                         "from":  "reports/runtime_connectivity_root_cause.json",
+                         "to":  "reports/archive/runtime_connectivity_root_cause/20260527T065210Z_runtime_connectivity_root_cause.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/seed_report.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_seed_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "m3a_preflight",
+                         "from":  "reports/seed_smoke_report.json",
+                         "to":  "reports/archive/m3a_preflight/20260527T065210Z_seed_smoke_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/stale_report_audit.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_stale_report_audit.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/test_boundary_report.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_test_boundary_report.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "legacy",
+                         "from":  "reports/truth_marker_taxonomy.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_truth_marker_taxonomy.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "truth_root_cause_matrix",
+                         "from":  "reports/truth_root_cause_matrix.json",
+                         "to":  "reports/archive/truth_root_cause_matrix/20260527T065210Z_truth_root_cause_matrix.json"
+                     },
+                     {
+                         "reason":  "root_legacy_json",
+                         "gate":  "blocked",
+                         "from":  "reports/validation_report.json",
+                         "to":  "reports/archive/blocked/20260527T065210Z_validation_report.json"
+                     },
+                     {
+                         "reason":  "noncanonical_current_json",
+                         "gate":  "m3a_frontend_truth",
+                         "from":  "reports/current/m3a.json",
+                         "to":  "reports/archive/m3a_frontend_truth/20260527T065210Z_m3a.json"
+                     },
+                     {
+                         "reason":  "noncanonical_current_json",
+                         "gate":  "legacy",
+                         "from":  "reports/current/m4_gate_report.json",
+                         "to":  "reports/archive/legacy/20260527T065210Z_m4_gate_report.json"
+                     },
+                     {
+                         "reason":  "noncanonical_current_json",
+                         "gate":  "legacy",
+                         "from":  "reports/current/gate_hierarchy_result.json",
+                         "to":  "reports/archive/legacy/20260527T065730Z_gate_hierarchy_result.json"
+                     },
+                     {
+                         "reason":  "noncanonical_current_markdown",
+                         "gate":  "legacy",
+                         "from":  "reports/current/gate_hierarchy_result.md",
+                         "to":  "reports/archive/legacy/20260527T065759Z_gate_hierarchy_result.md"
+                     }
+                 ],
+    "missing_sources":  [
+
+                        ],
+    "current_dir":  "reports/current",
+    "archive_dir":  "reports/archive",
+    "included_logs":  [
+                          "reports/archive/migration_log/20260527T065730Z_report_migration_log.json"
+                      ]
+}

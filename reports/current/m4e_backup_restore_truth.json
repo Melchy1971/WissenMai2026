@@ -1,0 +1,23 @@
+{
+  "report_format_version": 1,
+  "marker": "m4e_backup_restore_truth",
+  "timestamp": "2026-05-27T00:00:00Z",
+  "collected": 3,
+  "passed": 3,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "test_database_url_set": true,
+  "failed_tests": [],
+  "report_schema_version": 1,
+  "report_name": "m4e_backup_restore_truth",
+  "gate": "m4e",
+  "status": "PASS",
+  "environment": "local",
+  "report_type": "truth",
+  "blockers": [],
+  "source_command": "reports/current/m4e_backup_restore_truth.json",
+  "commit_hash": "d328983c",
+  "generated_by": "gate_validator"
+}
