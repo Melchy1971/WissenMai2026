@@ -48,7 +48,7 @@ Statuslogik:
 ## Platzhalter fuer Nachweise
 
 - Truth-Test-Block: `cleanup_dry_run`
-- geplanter Report-Bezug: `reports/postgres_truth_report.json`
+- geplanter Report-Bezug: `reports/current/m4_truth_report.json`
 - geplanter Dry-Run-Report: noch nicht implementiert
 
 ## Nicht-Scope

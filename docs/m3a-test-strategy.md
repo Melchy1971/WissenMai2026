@@ -10,7 +10,7 @@ Leitprinzipien:
 - Tests pruefen Anzeige, Mapping und Fehlertransparenz, nicht Backend-Reparatur.
 - Fehlercodes muessen sichtbar bleiben.
 - Mocking darf den API-Contract simulieren, aber nicht veraendern.
-- `reports/frontend_truth_report.json` ist Pflichtartefakt fuer produktionsnahe GUI-Aussagen.
+- `reports/current/frontend_full_suite_staged_report.json` ist Pflichtartefakt fuer produktionsnahe GUI-Aussagen.
 - GUI-Regressionen sind gate-relevant, wenn sie Nutzerfluesse, Error States, Recovery-Pfade oder Drift-Sichtbarkeit betreffen.
 - Frontend-Drift darf nicht still bleiben; degradierte oder unklare Zustandslagen muessen sichtbar sein.
 - Ein fokussierter Testlauf belegt nur einen Teilscope, niemals den Gesamtzustand von M3a.
@@ -28,7 +28,7 @@ M3a respektiert verbindlich folgende Governance-Dokumente:
 ### Integrationsregeln
 
 1. M3a darf keinen grünen oder stabilisierten Zustand aus Dokumentation, lokaler Beobachtung oder isolierten Komponententests ableiten.
-2. Frontend Truth Reports sind Pflichtartefakte; ohne aktuellen `reports/frontend_truth_report.json` bleibt der Status `unknown`, `partial` oder `fail`.
+2. Frontend Truth Reports sind Pflichtartefakte; ohne aktuellen `reports/current/frontend_full_suite_staged_report.json` bleibt der Status `unknown`, `partial` oder `fail`.
 3. Contract-Stabilitaet ist Pflicht. Ein grüner Frontend-Lauf kompensiert keinen roten Contract-Report.
 4. Recovery-Flows wie API down, Retry, Reconnect, Restore-Mode und sichtbare Error States sind Teil der Pflichtabdeckung von M3a.
 5. Security-Flows wie Auth Required, Forbidden, Workspace-Isolation, Route Guards, Logout und Session-Kontext sind gate-relevant, sobald M3a produktionsnahe GUI-Aussagen treffen will.
@@ -38,9 +38,9 @@ M3a respektiert verbindlich folgende Governance-Dokumente:
 
 M3a darf nur dann als `pass`, `stabilisiert` oder `operational bereit` beschrieben werden, wenn alle folgenden Bedingungen gleichzeitig erfuellt sind:
 
-- `reports/frontend_truth_report.json` ist aktuell, maschinenlesbar und weist `passed = collected`, `failed = 0`, `skipped = 0` und `exit_code = 0` aus
-- `reports/contract_test_report.json` ist gruen
-- ein integrierter Gate-Report wie `reports/m3a_gate_result.json` weist keine Blocker aus
+- `reports/current/frontend_full_suite_staged_report.json` ist aktuell, maschinenlesbar und weist `passed = collected`, `failed = 0`, `skipped = 0` und `exit_code = 0` aus
+- `reports/current/m3a_release_candidate.json` ist gruen
+- ein integrierter Gate-Report wie `reports/current/gate_hierarchy_result.json` weist keine Blocker aus
 - GUI-Regressionen in den Pflichtslices Auth, Workspace, Documents, Search, Chat, Upload, Lifecycle und Diagnostics sind null oder als nicht-scope dokumentiert
 - sichtbare Drift-Hinweise werden nicht unterdrueckt oder auf gruen gemappt
 - Recovery-Pfade sind sichtbar, testbar und widersprechen nicht der Runtime-State-Machine
@@ -56,7 +56,7 @@ Wenn eine dieser Bedingungen fehlt:
 
 ### Pflichtregeln
 
-1. `reports/frontend_truth_report.json` ist Pflichtartefakt fuer GUI-Readiness und Regression-Bewertung.
+1. `reports/current/frontend_full_suite_staged_report.json` ist Pflichtartefakt fuer GUI-Readiness und Regression-Bewertung.
 2. GUI-Regressionen sind gate-relevant und duerfen nicht als kosmetisch herabgestuft werden, wenn sie sichtbare Kernpfade betreffen.
 3. Ein lokaler Vitest-, Storybook- oder Mock-Lauf darf einen roten Frontend-Truth-Report nicht ueberstimmen.
 4. Frontend-Truth-Berichte muessen Auth-, Workspace- und API-Kontext offenlegen, wenn daraus Freigabeaussagen abgeleitet werden.

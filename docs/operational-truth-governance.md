@@ -34,11 +34,11 @@ Produktionsnahe Systemzustaende duerfen nicht aus Dokumentation, Absichtserklaer
 
 | Quelle | Primaerer Zweck | Artefakt | Maschinenlesbar | Finale Wahrheit fuer |
 |---|---|---|---|---|
-| PostgreSQL Truth Reports | harte End-to-End-Wahrheit gegen echte PostgreSQL-Transaktionen | `reports/postgres_truth/latest.json`, versionierte `reports/postgres_truth/YYYYMMDD_HHMMSS.json` | ja | M4/M5 Truth-Gates, Setup-/Migration-/Isolation-/Recovery-Faelle |
-| Drift Reports | Abweichung zwischen Sollzustand und Laufzeitzustand | geplanter `reports/m5_drift/latest.json`, bis dahin Search-Drift-API/Entropy-Report | ja erforderlich | Search/Lifecycle/Citation/Queue/Backup/Data-Quality-Drift |
+| PostgreSQL Truth Reports | harte End-to-End-Wahrheit gegen echte PostgreSQL-Transaktionen | `reports/current/m4_truth_report.json`, versionierte `historische PostgreSQL-Truth-Archivkopie` | ja | M4/M5 Truth-Gates, Setup-/Migration-/Isolation-/Recovery-Faelle |
+| Drift Reports | Abweichung zwischen Sollzustand und Laufzeitzustand | geplanter `geplanter M5-Drift-Report`, bis dahin Search-Drift-API/Entropy-Report | ja erforderlich | Search/Lifecycle/Citation/Queue/Backup/Data-Quality-Drift |
 | Restore Truth Reports | Wiederherstellbarkeit und Datenparitaet | `reports/restore_truth_report.md`, spaeter zusaetzlich JSON | teilweise; JSON fuer Gate erforderlich | Restore-Faehigkeit, DR-Basis, Backup-Vertrauen |
 | Cleanup Truth Reports | Dry-Run- und Safety-Wahrheit fuer Cleanup | geplanter Cleanup-Report plus `postgres_truth` Cleanup-Block | ja erforderlich | Cleanup-Safety, Schutz von Citations, aktiven Daten und Queue |
-| Health Score | laufende Steuerungs- und Risikometrik | geplanter `reports/m5_health/latest.json` | ja erforderlich | Betriebszustand, nicht Gate-Ersatz |
+| Health Score | laufende Steuerungs- und Risikometrik | geplanter `geplanter M5-Health-Report` | ja erforderlich | Betriebszustand, nicht Gate-Ersatz |
 | Observability Metriken | Laufzeit- und Trenddaten | strukturierte JSON-Logs, Metrik-Snapshots, `m5_metric_observed` | ja | Trends, Alerts, Dashboard, Eskalation |
 
 ### Quellenhierarchie
@@ -93,8 +93,8 @@ Wenn eines dieser Kriterien fehlt:
 
 Quelle:
 
-- `reports/postgres_truth/latest.json`
-- `reports/postgres_truth_report.json`
+- `reports/current/m4_truth_report.json`
+- `reports/current/m4_truth_report.json`
 - Validator: `scripts/validate_m4_truth_gate.py`
 
 Policy:
@@ -113,11 +113,11 @@ Dokumentation darf M4 nur dann als gruen beschreiben, wenn sie diesen Report und
 
 Quelle:
 
-- `reports/frontend_truth_report.json`
-- `reports/gui_truth/latest.json`
-- `reports/gui_truth/gui_chaos_suite_report.json`
-- `reports/contract_test_report.json`
-- `reports/m3a_gate_result.json`
+- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/current/m3a_release_candidate.json`
+- `reports/current/gate_hierarchy_result.json`
 - Detailregel: `docs/m3a-gate-policy.md`
 
 Policy:
@@ -139,7 +139,7 @@ Policy:
 - Recovery-relevante Flows wie API down, Reconnect, Restore-Mode, Retry-Buttons und sichtbare Error States muessen durch Truth-Artefakte oder fokussierte Pflichtreports belegt sein
 - Security-relevante Frontend-Flows wie Auth Required, Forbidden, Workspace-Isolation, Route-Guard-Verhalten und Logout-/Session-Invalidierung duerfen nicht nur dokumentiert, sondern muessen fuer produktionsnahe Aussagen durch Truth-Reports belegt sein
 - `m3a_gate_result.json` muss alle blockierenden Findings maschinenlesbar ausweisen
-- `reports/postgres_truth_report.json` ist keine blockierende M3a-Quelle. Es gehoert zu M4 Backend Truth und M5 Operational Truth.
+- `reports/current/m4_truth_report.json` ist keine blockierende M3a-Quelle. Es gehoert zu M4 Backend Truth und M5 Operational Truth.
 - M5 Entropy Tests, Queue Aging Tests sowie M4/M5 Drift-, Cleanup- und Longevity-Tests sind keine M3a-Gate-Regeln.
 
 Dokumentation darf M3a nur dann als `stabilisiert`, `freigabefaehig` oder `operational bereit` beschreiben, wenn diese Artefakte vorhanden und aktuell sind.
@@ -187,7 +187,7 @@ Cleanup darf nur `pass` sein, wenn:
 - keine aktiven Dokumente, Versionen oder Chunks geloescht werden
 - PostgreSQL-only Truth-Test den Pfad belegt
 
-Destructive Cleanup braucht ein separates Mutationsgate. Ein Dry-Run-Pass ist keine Loeschfreigabe.
+Destructive Cleanup braucht ein separates Mutationsgate. Ein Dry-Run-Pass ist keine Loeschfreigabe. Quelle: `reports/current/masterplan_status.json`.
 
 ### Observability Gate Policy
 
@@ -300,9 +300,9 @@ Diese Regeln gelten verpflichtend fuer M3a und alle spaeteren GUI-Slices mit pro
 
 ### Pflichtartefakte
 
-- `reports/frontend_truth_report.json` ist das primaere Truth-Artefakt fuer GUI-Verhalten
-- `reports/contract_test_report.json` ist Pflichtartefakt fuer Frontend/Backend-Contract-Stabilitaet
-- `reports/m3a_gate_result.json` oder ein nachfolgender GUI-Gate-Report ist Pflichtartefakt fuer die integrierte Gate-Entscheidung
+- `reports/current/frontend_full_suite_staged_report.json` ist das primaere Truth-Artefakt fuer GUI-Verhalten
+- `reports/current/m3a_release_candidate.json` ist Pflichtartefakt fuer Frontend/Backend-Contract-Stabilitaet
+- `reports/current/gate_hierarchy_result.json` oder ein nachfolgender GUI-Gate-Report ist Pflichtartefakt fuer die integrierte Gate-Entscheidung
 
 ### Policy-Regeln
 

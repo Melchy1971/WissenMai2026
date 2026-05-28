@@ -4,8 +4,8 @@ Stand: 2026-05-19
 
 ## Inputs
 
-- `reports/m3a_gate_result.json`
-- `reports/postgres_truth_report.json`
+- `reports/current/gate_hierarchy_result.json`
+- `reports/current/m4_truth_report.json`
 - `reports/restore_truth_report.md`
 - `docs/m4-m5-freigabefassung.md`
 - `masterplan.md`
@@ -36,12 +36,12 @@ Stand: 2026-05-19
 
 | Voraussetzung fuer M4 Gesamtabschluss | Soll | Aktueller Ist-Stand | Ergebnis |
 |---|---|---|---|
-| M3a Score | `>= 90` | `100.0` | PASS |
+| M3a Score | `>= 90` | `100.0` | PASS | Quelle: `reports/current/masterplan_status.json`.
 | M4a | erfuellt | Markergruppe `100.0%`, aber Gesamt-Truth rot | BLOCKED |
 | M4b | erfuellt | Markergruppe `91.7%`, aber Gesamt-Truth rot | BLOCKED |
 | M4c | erfuellt | Markergruppe `100.0%`, aber Gesamt-Truth rot | BLOCKED |
-| M4e Entscheidung | dokumentiert | Minimal-Scope/Restore-Truth dokumentiert | PASS als Dokumentationspunkt |
-| Frontend Truth | gruen | Full-Suite `82/82`, `0 failed`, `0 skipped` | PASS |
+| M4e Entscheidung | dokumentiert | Minimal-Scope/Restore-Truth dokumentiert | PASS als Dokumentationspunkt | Quelle: `reports/current/masterplan_status.json`.
+| Frontend Truth | gruen | Full-Suite `82/82`, `0 failed`, `0 skipped` | PASS | Quelle: `reports/current/masterplan_status.json`.
 | PostgreSQL Truth | gruen | `120/138`, `16 failed`, `2 errors`, Exit-Code `1` | FAIL |
 | Keine offenen Gesamtblocker | Pflicht | PostgreSQL Truth rot | FAIL |
 

@@ -241,7 +241,7 @@ export function DocumentsPage() {
         <p className="page-header__meta">Workspace: {workspaceId || 'nicht konfiguriert'}</p>
       </div>
       {canUseDocumentControls ? (
-      <section className="panel" data-testid="upload-panel">
+      <section className="panel" data-testid="lifecycle-panel">
         <div className="panel__header search-bar__header">
           <div>
             <p className="panel__eyebrow">Lifecycle</p>
@@ -264,27 +264,31 @@ export function DocumentsPage() {
       </section>
       ) : null}
       {canUseDocumentControls ? (
-      <section className="panel" data-testid="search-page">
+      <section className="panel" data-testid="upload-panel">
         <div className="panel__header search-bar__header">
           <div>
             <p className="panel__eyebrow">Import</p>
             <h3>Dokument hochladen</h3>
           </div>
         </div>
-        <form className="search-bar" onSubmit={handleUploadSubmit}>
+        <form className="search-bar" data-testid="upload-form" onSubmit={handleUploadSubmit}>
           <label className="search-bar__field">
             <span className="search-bar__label">Datei</span>
-            <input type="file" name="file" accept=".txt,.md,.docx,.doc,.pdf" />
+            <input data-testid="upload-file-input" type="file" name="file" accept=".txt,.md,.docx,.doc,.pdf" />
           </label>
           <div className="search-bar__actions">
-            <button type="submit" disabled={uploadState.status === 'loading' || uploadState.status === 'polling'}>
+            <button
+              data-testid="upload-submit"
+              type="submit"
+              disabled={uploadState.status === 'loading' || uploadState.status === 'polling'}
+            >
               {uploadState.status === 'loading' || uploadState.status === 'polling' ? 'Upload laeuft...' : 'Dokument importieren'}
             </button>
           </div>
         </form>
 
         {uploadState.status === 'polling' ? (
-          <div className="meta-grid">
+          <div className="meta-grid" data-testid="upload-job-status">
             <div>
               <dt>Job-ID</dt>
               <dd>{uploadState.job?.id}</dd>
@@ -305,7 +309,7 @@ export function DocumentsPage() {
         ) : null}
 
         {uploadState.status === 'success' ? (
-          <div className="meta-grid">
+          <div className="meta-grid" data-testid="upload-success">
             <div>
               <dt>Import</dt>
               <dd>{uploadOutcome.title}</dd>
@@ -345,21 +349,22 @@ export function DocumentsPage() {
           </div>
         ) : null}
 
-        {uploadState.status === 'error' ? <ErrorState error={uploadState.error} testId="auth-error" /> : null}
+        {uploadState.status === 'error' ? <ErrorState error={uploadState.error} testId="upload-error" /> : null}
       </section>
       ) : null}
       {canUseDocumentControls ? (
-      <section className="panel">
+      <section className="panel" data-testid="search-page">
         <div className="panel__header search-bar__header">
           <div>
             <p className="panel__eyebrow">Einfache Suche</p>
             <h3>Chunk-Suche</h3>
           </div>
         </div>
-        <form className="search-bar" onSubmit={handleSearchSubmit}>
+        <form className="search-bar" data-testid="search-form" onSubmit={handleSearchSubmit}>
           <label className="search-bar__field">
             <span className="search-bar__label">Suchbegriff</span>
             <input
+              data-testid="search-input"
               type="search"
               value={queryInput}
               onChange={(event) => setQueryInput(event.target.value)}
@@ -367,7 +372,7 @@ export function DocumentsPage() {
             />
           </label>
           <div className="search-bar__actions">
-            <button type="submit">Suchen</button>
+            <button data-testid="search-submit" type="submit">Suchen</button>
             <button type="button" className="button-secondary" onClick={handleSearchReset}>Zuruecksetzen</button>
           </div>
         </form>
@@ -375,7 +380,7 @@ export function DocumentsPage() {
       ) : null}
 
       {canUseDocumentControls && searchState.status === 'loading' ? <LoadingState label="Suchtreffer werden geladen..." /> : null}
-      {canUseDocumentControls && searchState.status === 'error' ? <ErrorState error={searchState.error} testId="auth-error" /> : null}
+      {canUseDocumentControls && searchState.status === 'error' ? <ErrorState error={searchState.error} testId="search-error" /> : null}
       {canUseDocumentControls && searchState.status === 'success' && searchState.items.length === 0 ? (
         <EmptyState
           title="Keine Treffer gefunden"

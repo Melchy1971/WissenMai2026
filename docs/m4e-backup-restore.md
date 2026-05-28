@@ -309,7 +309,7 @@ Pflichtpruefungen:
 - Alembic-Revision lesbar
 - alle referenzierten Originaldateien im Blob-Store vorhanden
 - jede aktuelle Dokumentversion hat rekonstruierbare Chunks oder bereits persistierte Chunks
-- Search-Index-Refresh erfolgreich abgeschlossen
+- Search-Index-Refresh erfolgreich abgeschlossen Quelle: `reports/current/masterplan_status.json`.
 
 Fachliche Pruefungen:
 

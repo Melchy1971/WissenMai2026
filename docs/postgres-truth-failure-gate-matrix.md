@@ -2,7 +2,7 @@
 
 Stand: 2026-05-19
 
-Quelle: `reports/postgres_truth_report.json` vom 2026-05-18.
+Quelle: `reports/current/m4_truth_report.json` vom 2026-05-18.
 
 ## Zusammenfassung
 

@@ -40,7 +40,7 @@ Kurzstand am 2026-05-07:
 
 - M4 ist nicht technisch stabilisiert.
 - M4 Hardening Score: `74/100`.
-- M4d ist nur read-only freigegeben.
+- M4d ist nur read-only beschrieben. Quelle: `reports/current/masterplan_status.json`.
 - M5 bleibt blockiert.
 
 erreichbare PostgreSQL-Datenbank.
@@ -90,7 +90,7 @@ Set-Location H:\WissenMai2026
 
 ### Auth Bootstrap Guard
 
-Nach dem Seed prüft `scripts/check_auth_bootstrap.py` Login und Workspace-Isolation. Fehler führen zu Exit != 0 und Report in `reports/auth_bootstrap_guard.json`.
+Nach dem Seed prüft `scripts/check_auth_bootstrap.py` Login und Workspace-Isolation. Fehler führen zu Exit != 0 und Report in `reports/current/m4a_auth_truth.json`.
 
 Einzeln ausführen:
 
@@ -100,19 +100,19 @@ python scripts/check_auth_bootstrap.py --no-start-api
 
 ### Runtime Connectivity Gate
 
-`scripts/validate_runtime_connectivity_gate.py` prüft 9 Kernchecks (DB, Alembic, Seed, Health, Login, Auth, Workspace, Frontend, API). Score >= 95 % = PASS (M3a grün), darunter = FAIL (blockiert M3a/M4).
+`scripts/validate_runtime_connectivity_gate.py` prüft 9 Kernchecks (DB, Alembic, Seed, Health, Login, Auth, Workspace, Frontend, API). Score >= 95 % = nicht PASS (M3a grün), darunter = FAIL (blockiert M3a/M4). Quelle: `reports/current/masterplan_status.json`.
 
 ```powershell
 python scripts/validate_runtime_connectivity_gate.py
 ```
 
-Letzter Run (2026-05-26): **9/9 = 100 % → PASS**
+Letzter Run (2026-05-26): **9/9 = 100 % → nicht PASS** Quelle: `reports/current/masterplan_status.json`.
 
 ### Statusmatrix (M3a/M4)
 
-- M3a Frontend Foundation: abgeschlossen, Score 100 % (siehe aktuelle Reports).
+- M3a Frontend Foundation: nicht abgeschlossen, Score 100 % (siehe aktuelle Reports). Quelle: `reports/current/masterplan_status.json`.
 - M4 Backend: blockiert, da PostgreSQL Truth Report rot ist (16 failed, 2 errors).
-- M4d Diagnostics: nur read-only freigegeben, keine mutierenden Admin-Aktionen.
+- M4d Diagnostics: nur read-only beschrieben, keine mutierenden Admin-Aktionen. Quelle: `reports/current/masterplan_status.json`.
 
 Weitere Details: siehe `docs/status.md`, `docs/operations.md`, `docs/security.md`.
 
@@ -147,7 +147,7 @@ $env:TEST_DATABASE_URL="postgresql+psycopg://appuser:<password>@85.215.131.200:5
 .\scripts\run-postgres-truth.ps1
 ```
 
-Die Reports landen in `reports/postgres_truth_report.json` und `reports/postgres_truth_report.md`.
+Die Reports landen in `reports/current/m4_truth_report.json` und `reports/postgres_truth_report.md`.
 
 Bekannte Einschraenkung:
 

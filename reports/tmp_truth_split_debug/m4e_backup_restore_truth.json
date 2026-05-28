@@ -1,0 +1,32 @@
+{
+  "report_format_version": 1,
+  "marker": "m4e_backup_restore_truth",
+  "timestamp": "2026-05-28T07:33:05.775588+00:00",
+  "collected": 0,
+  "passed": 0,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "pytest_exit_code": 0,
+  "test_database_url_set": true,
+  "failed_tests": [],
+  "unmarked_truth_tests": [],
+  "ambiguous_truth_tests": [],
+  "report_schema_version": 1,
+  "report_name": "m4e_backup_restore_truth",
+  "gate": "m4e",
+  "status": "FAIL",
+  "environment": "local",
+  "report_type": "truth",
+  "blockers": [
+    {
+      "gate": "m4e",
+      "severity": "critical",
+      "reason": "0 collected, 0 failed, 0 errors, 0 skipped"
+    }
+  ],
+  "source_command": "python scripts/generate_truth_split_reports.py -- -m m4e_backup_restore_truth",
+  "generated_by": "gate_validator",
+  "commit_hash": "0d59bcb78"
+}

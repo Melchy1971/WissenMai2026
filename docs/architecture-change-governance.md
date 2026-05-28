@@ -154,7 +154,7 @@ Legende: W = Wahrscheinlichkeit (H/M/L), S = Schwere (H/M/L), Score = KRIT/HOCH/
 
 ## 6. Truth-Test-Plan (Pflichtartefakt)
 
-Der Truth-Test-Plan beschreibt, welche Tests vor dem Merge grün sein müssen.
+Der Truth-Test-Plan beschreibt, welche Tests vor dem Merge grün sein müssen. Quelle: `reports/current/masterplan_status.json`.
 
 **Pflichtinhalt:**
 
@@ -176,7 +176,7 @@ Erwartetes Ergebnis:
   - keine Skips außer bei fehlender TEST_DATABASE_URL
 
 Gate-Bedingung:
-  reports/postgres_truth_report.json: passed = N, failed = 0, skipped = 0
+  reports/current/m4_truth_report.json: passed = N, failed = 0, skipped = 0
 ```
 
 **Sonderregel für Schemaänderungen:** Jede neue Alembic-Migration muss vor Merge gegen eine echte PostgreSQL-Instanz mit `alembic upgrade head` erfolgreich durchlaufen. Ein Mock-Lauf reicht nicht.
@@ -245,7 +245,7 @@ Während der Implementierung:
 Vor dem Merge:
 
 1. postgres_truth-Lauf mit `TEST_DATABASE_URL` gesetzt: alle Tests grün, keine Skips
-2. `reports/postgres_truth_report.json` aktualisiert: `failed = 0`, `skipped = 0`
+2. `reports/current/m4_truth_report.json` aktualisiert: `failed = 0`, `skipped = 0`
 3. `scripts/validate_m4_truth_gate.py` gibt `PASS` zurück
 4. Alle KRIT- und HOCH-Mitigationen aus der Risk Matrix sind umgesetzt
 5. Rollback-Pfad ist dokumentiert und (wenn möglich) lokal getestet
@@ -332,7 +332,7 @@ Kritische Sonderregel: Keine mutierende Admin-Aktion ohne `dry_run_only=True`-De
 | `docs/data-model-invariants.md` | Invarianten INV-001 bis INV-020, die durch Schemaänderungen nicht verletzt werden dürfen |
 | `docs/m4-m5-freigabefassung.md` | Gate-Freigabestand; wird durch erfolgreiche Change-Control-Prozesse aktualisiert |
 | `backend/pyproject.toml` markers | Neue Marker müssen vor neuen Test-Dateien registriert werden |
-| `scripts/validate_m4_truth_gate.py` | Verbindlicher Validator; PASS ist Gate-Bedingung |
+| `scripts/validate_m4_truth_gate.py` | Verbindlicher Validator; PASS ist Gate-Bedingung | Quelle: `reports/current/masterplan_status.json`.
 
 ---
 

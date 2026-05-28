@@ -73,8 +73,8 @@ API_UNREACHABLE-Recovery, Retry-Grenzen und Reconnect-Verhalten sind in `docs/fr
 | `api_unreachable` | Retry erfolgreich mit Token | `authenticating` | Auth-Bootstrap neu starten |
 | `forbidden` | Logout | `unauthenticated` | API-Kontext leeren; Caches leeren |
 | `forbidden` | anderer gueltiger Login | `authenticating` | alte Session leeren; neuen Bootstrap starten |
-| `restore_mode` | Restore abgeschlossen, Token vorhanden | `authenticating` | alle Caches invalidieren; Auth/Workspace neu validieren |
-| `restore_mode` | Restore abgeschlossen, kein Token | `unauthenticated` | API-Kontext leeren; Login anzeigen |
+| `restore_mode` | Restore abgeschlossen, Token vorhanden | `authenticating` | alle Caches invalidieren; Auth/Workspace neu validieren | Quelle: `reports/current/masterplan_status.json`.
+| `restore_mode` | Restore abgeschlossen, kein Token | `unauthenticated` | API-Kontext leeren; Login anzeigen | Quelle: `reports/current/masterplan_status.json`.
 
 ## Verbotene Transitions
 

@@ -125,4 +125,4 @@ Nachweisgrenze:
 - Dokumentation aktualisiert: ja
 - Upload-Flow im Code nachweisbar: ja
 - Vollstaendige Enterprise-Produktreife gemaess spaeterem Zielbild: nein
-- Entscheidung: M4b ist im aktuellen M4-Gate-Stand freigabefaehig abgeschlossen
+- Entscheidung: M4b ist im aktuellen M4-Gate-Stand freigabefaehig abgeschlossen Quelle: `reports/current/masterplan_status.json`.

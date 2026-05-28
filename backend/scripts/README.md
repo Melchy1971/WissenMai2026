@@ -9,7 +9,7 @@ Bootstrap-Invariante: Eine frisch migrierte lokale DB muss nach `seed_auth.py` e
 - Idempotent: mehrfach ausfuehrbar, keine Duplikate.
 - Passwort wird mit der Auth-Hashfunktion erzeugt.
 - Legacy-Logins `default-user` und `mdickscheit@googlemail.com` werden auf den kanonischen Login migriert oder deaktiviert.
-- Nach Ausfuehrung validiert das Script die Bootstrap-Invariante und schreibt sie in `reports/seed_report.json`.
+- Nach Ausfuehrung validiert das Script die Bootstrap-Invariante und schreibt sie in `reports/current/m4a_auth_truth.json`.
 
 ### Ausfuehrung
 

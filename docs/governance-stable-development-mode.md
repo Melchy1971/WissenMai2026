@@ -34,7 +34,7 @@ Ohne diese Zuordnung bleibt Arbeit Analyse, Planung oder Blocker-Behebung. Sie i
 | GSDM-005 | Known Limitations Register | Jeder offene Blocker ist klassifiziert. | Unregistrierte Blocker stoppen Gate- und Release-Entscheidungen. |
 | GSDM-006 | Documentation Audit Pflicht | Abschluss- und Release-Aussagen brauchen Doku-Audit. | Doku-Widersprueche oder alte Gruen-Zahlen blockieren Freigabe. |
 | GSDM-007 | Gate Drift Detection | Drift wird vor Freigaben geprueft. | Drift `FAIL` blockiert Implementierungs- oder Release-Go fuer betroffene Gates. |
-| GSDM-008 | Masterplan Status Engine | Masterplan-Status wird generiert. | Manuelle Statusaussagen duerfen `reports/masterplan_status.json` nicht ueberschreiben. |
+| GSDM-008 | Masterplan Status Engine | Masterplan-Status wird generiert. | Manuelle Statusaussagen duerfen `reports/current/masterplan_status.json` nicht ueberschreiben. |
 
 ## No-Go-Verhalten
 
@@ -73,9 +73,9 @@ Ohne diese Zuordnung bleibt Arbeit Analyse, Planung oder Blocker-Behebung. Sie i
 - `docs/governance-boundary.json`
 - `docs/release-candidate-model.json`
 - `docs/known_limitations.json`
-- `reports/documentation_release_audit.json`
-- `reports/gate_drift_report.json`
-- `reports/masterplan_status.json`
-- `reports/pre_m5_decision_report.json`
+- `reports/current/documentation_truth_lint.json`
+- `reports/current/gate_hierarchy_result.json`
+- `reports/current/masterplan_status.json`
+- `reports/current/recovery_sprint_gate.json`
 
 Die maschinenlesbare Quelle fuer diesen Modus ist `docs/governance-stable-development-mode.json`.

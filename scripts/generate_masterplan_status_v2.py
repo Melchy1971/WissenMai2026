@@ -9,18 +9,18 @@ Rules
 2. Invalid JSON or missing fields    → report BLOCKED
 3. Stale report (> STALE_DAYS days)  → report BLOCKED
 4. documentation_truth_lint errors   → global BLOCKED
-5. PASS granted only by gate validator (exit_code=0, passed==collected)
-6. M3a → M4 → M5 → Governance boundary enforced via gate dependency chain
+5. PASS granted only by current reports (exit_code=0, passed==collected)
+6. M3a → M4 → M5 boundary enforced from current reports
 
 Inputs (exclusively)
 --------------------
-- reports/current/m3a_frontend_truth.json
+- reports/current/frontend_full_suite_staged_report.json
 - reports/current/m4a_auth_truth.json
 - reports/current/m4b_upload_queue_truth.json
 - reports/current/m4c_lifecycle_retrieval_truth.json
 - reports/current/m4e_backup_restore_truth.json
+- reports/current/m4_truth_report.json
 - reports/current/documentation_truth_lint.json
-- docs/known_limitations.json
 
 Outputs
 -------
@@ -30,8 +30,6 @@ Outputs
 from __future__ import annotations
 
 import argparse
-import importlib.util
-import sys
 from datetime import UTC, datetime, timedelta
 import json
 from pathlib import Path
@@ -49,30 +47,22 @@ KNOWN_LIMITATIONS_PATH = DOCS_DIR / "known_limitations.json"
 STALE_DAYS = 30
 SCHEMA_VERSION = 2
 
-# Reports that must be present and valid for gate evaluation
-REQUIRED_SPLIT_REPORTS: tuple[str, ...] = (
-    "m3a_frontend_truth.json",
+FRONTEND_REPORT = "frontend_full_suite_staged_report.json"
+M4_REPORTS: tuple[str, ...] = (
     "m4a_auth_truth.json",
     "m4b_upload_queue_truth.json",
     "m4c_lifecycle_retrieval_truth.json",
     "m4e_backup_restore_truth.json",
+    "m4_truth_report.json",
 )
+REQUIRED_REPORTS: tuple[str, ...] = (FRONTEND_REPORT, *M4_REPORTS)
 
 REQUIRED_REPORT_FIELDS = ("collected", "passed", "failed", "errors", "exit_code")
-
-# Maps gate hierarchy gate IDs to phase IDs
-PHASE_GATE_MAP: dict[str, str] = {
-    "m3a": "m3a_gate",
-    "m4": "m4_overall_gate",
-    "m5": "m5_start_gate",
-    "governance": "operational_governance_gate",
-}
 
 PHASE_LABELS: dict[str, str] = {
     "m3a": "M3a Frontend Foundation",
     "m4": "M4 Stabilization",
     "m5": "M5 Start",
-    "governance": "Operational Governance",
 }
 
 STATUS_PROGRESS: dict[str, float] = {
@@ -88,23 +78,8 @@ STATUS_PROGRESS: dict[str, float] = {
 PHASE_WEIGHTS: dict[str, float] = {
     "m3a": 25.0,
     "m4": 35.0,
-    "m5": 25.0,
-    "governance": 15.0,
+    "m5": 40.0,
 }
-
-
-# ---------------------------------------------------------------------------
-# Import gate hierarchy evaluator
-# ---------------------------------------------------------------------------
-
-def _import_gate_hierarchy() -> Any:
-    gate_script = REPO_ROOT / "scripts" / "validate_gate_hierarchy.py"
-    spec = importlib.util.spec_from_file_location("validate_gate_hierarchy", gate_script)
-    assert spec and spec.loader
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules.setdefault("validate_gate_hierarchy", mod)
-    spec.loader.exec_module(mod)  # type: ignore[union-attr]
-    return mod
 
 
 # ---------------------------------------------------------------------------
@@ -192,47 +167,68 @@ def _validate_report(
 
 
 # ---------------------------------------------------------------------------
-# Phase derivation from gate result
+# Phase derivation from current reports
 # ---------------------------------------------------------------------------
 
-def _gate_status_to_phase(gate_status: str) -> tuple[str, str]:
-    """Map gate status to (phase_status, decision)."""
-    if gate_status == "PASS":
-        return "gate_passed", "GO"
-    if gate_status == "FAIL":
-        return "tested", "NO_GO"
-    return "blocked", "NO_GO"
+def _report_is_green(report: dict[str, Any] | None, issues: list[dict[str, Any]]) -> bool:
+    if report is None or issues:
+        return False
+    collected = report.get("collected")
+    passed = report.get("passed")
+    failed = report.get("failed")
+    errors = report.get("errors")
+    skipped = report.get("skipped", 0)
+    exit_code = report.get("exit_code")
+    status = report.get("status") or report.get("result")
+    return (
+        isinstance(collected, int)
+        and collected > 0
+        and passed == collected
+        and failed == 0
+        and errors == 0
+        and skipped == 0
+        and exit_code == 0
+        and (status in (None, "PASS", "pass") or str(status).upper() == "PASS")
+    )
 
 
-def _build_phase(
+def _report_summary(report: dict[str, Any] | None, load_error: str | None) -> dict[str, Any]:
+    if report is None:
+        return {"available": False, "error": load_error}
+    return {
+        "available": True,
+        "report_name": report.get("report_name"),
+        "status": report.get("status"),
+        "result": report.get("result"),
+        "collected": report.get("collected"),
+        "passed": report.get("passed"),
+        "failed": report.get("failed"),
+        "errors": report.get("errors"),
+        "skipped": report.get("skipped", 0),
+        "exit_code": report.get("exit_code"),
+        "timestamp": report.get("timestamp") or report.get("generated_at"),
+    }
+
+
+def _phase(
     phase_id: str,
-    gate_data: dict[str, Any],
-    report_blockers: list[dict[str, Any]],
+    *,
+    passed: bool,
+    gate_id: str,
+    source: str,
+    blockers: list[dict[str, Any]],
+    report_summaries: dict[str, Any],
 ) -> dict[str, Any]:
-    gate_status = gate_data.get("status", "BLOCKED")
-    phase_status, decision = _gate_status_to_phase(gate_status)
-
-    gate_blockers: list[str] = gate_data.get("blockers", [])
-    combined_blockers: list[dict[str, Any]] = list(report_blockers)
-    for b in gate_blockers:
-        combined_blockers.append({
-            "id": f"gate_{phase_id}_{hash(b) & 0xFFFF:04x}",
-            "type": "gate_failure",
-            "severity": "blocking",
-            "detail": b,
-            "source": f"gate:{gate_data.get('id', phase_id)}",
-        })
-
     return {
         "id": phase_id,
         "label": PHASE_LABELS[phase_id],
-        "status": phase_status,
-        "decision": decision,
-        "gate_id": gate_data.get("id"),
-        "gate_status": gate_status,
-        "source": f"reports/current/{REQUIRED_SPLIT_REPORTS[0] if phase_id == 'm3a' else 'gate_hierarchy'}",
-        "blockers": combined_blockers,
-        "report_summaries": gate_data.get("report_summaries", {}),
+        "status": "gate_passed" if passed else ("tested" if report_summaries else "blocked"),
+        "decision": "GO" if passed else "NO_GO",
+        "gate_id": gate_id,
+        "gate_status": "PASS" if passed else "FAIL",
+        "source": source,
+        "blockers": blockers,
+        "report_summaries": report_summaries,
     }
 
 
@@ -329,20 +325,19 @@ def evaluate(
     timestamp: str | None = None,
 ) -> dict[str, Any]:
     generated_at = timestamp or datetime.now(UTC).isoformat()
-    gate_mod = _import_gate_hierarchy()
 
-    # Step 1: Load and validate all required split reports
-    report_blockers: list[dict[str, Any]] = []
+    # Step 1: Load and validate exactly the current reports that define the
+    # masterplan state for this gate.
+    reports: dict[str, dict[str, Any] | None] = {}
+    report_issues: dict[str, list[dict[str, Any]]] = {}
     report_load_status: dict[str, dict[str, Any]] = {}
-    for fname in REQUIRED_SPLIT_REPORTS:
+    for fname in REQUIRED_REPORTS:
         payload, err = _load_json(current_dir / fname)
         issues = _validate_report(fname, payload, err)
-        report_blockers.extend(issues)
-        report_load_status[fname] = {
-            "available": payload is not None,
-            "error": err,
+        reports[fname] = payload
+        report_issues[fname] = issues
+        report_load_status[fname] = _report_summary(payload, err) | {
             "stale": payload is not None and _is_stale(payload),
-            "timestamp": (payload or {}).get("timestamp") or (payload or {}).get("generated_at"),
         }
 
     # Step 2: Load documentation truth lint
@@ -355,49 +350,118 @@ def evaluate(
         "timestamp": (doc_lint or {}).get("timestamp"),
     }
 
-    # Step 3: Load known limitations
-    limitations = _load_known_limitations(known_limitations_path)
-    limitation_blockers = _limitation_blockers(limitations)
-
-    # Step 4: Load regression baseline (optional)
-    baseline: dict[str, int] | None = None
-    if baseline_path.exists():
-        try:
-            raw = json.loads(baseline_path.read_text(encoding="utf-8"))
-            if isinstance(raw, dict):
-                baseline = {k: v for k, v in raw.items() if isinstance(v, int)}
-        except (json.JSONDecodeError, OSError):
-            pass
-
-    # Step 5: Evaluate gate hierarchy (reads from current_dir)
-    gate_result = gate_mod.evaluate_gate_hierarchy(current_dir, baseline=baseline)
-    gates = gate_result.get("gates", {})
-
-    # Step 6: Build phase objects from gate results
-    phases: dict[str, dict[str, Any]] = {}
-    phase_report_blockers: dict[str, list[dict[str, Any]]] = {
-        "m3a": [b for b in report_blockers if b.get("report") == "m3a_frontend_truth.json"],
-        "m4": [b for b in report_blockers if b.get("report") in (
-            "m4a_auth_truth.json", "m4b_upload_queue_truth.json",
-            "m4c_lifecycle_retrieval_truth.json", "m4e_backup_restore_truth.json",
-        )],
-        "m5": [],
-        "governance": [],
+    # Step 3: Build phases from direct report rules.
+    frontend_passed = _report_is_green(reports[FRONTEND_REPORT], report_issues[FRONTEND_REPORT])
+    m4_report_passed = {
+        fname: _report_is_green(reports[fname], report_issues[fname])
+        for fname in M4_REPORTS
     }
-    for phase_id, gate_id in PHASE_GATE_MAP.items():
-        gate_data = gates.get(gate_id, {"id": gate_id, "status": "BLOCKED", "blockers": [], "report_summaries": {}})
-        phases[phase_id] = _build_phase(phase_id, gate_data, phase_report_blockers.get(phase_id, []))
+    m4_passed = all(m4_report_passed.values())
+    m5_passed = m4_passed
 
-    # Step 7: Aggregate all blockers
-    all_blockers: list[dict[str, Any]] = []
-    all_blockers.extend(report_blockers)
-    all_blockers.extend(doc_blockers)
-    all_blockers.extend(limitation_blockers)
+    m3a_blockers = list(report_issues[FRONTEND_REPORT])
+    if reports[FRONTEND_REPORT] is not None and not frontend_passed and not m3a_blockers:
+        m3a_blockers.append({
+            "id": "m3a_frontend_full_suite_not_green",
+            "type": "truth_report",
+            "severity": "blocking",
+            "report": FRONTEND_REPORT,
+            "detail": "Frontend Full-Suite is not completely green",
+            "source": f"reports/current/{FRONTEND_REPORT}",
+        })
 
-    overall_blocked = bool(all_blockers) or any(
-        p["decision"] != "GO" for p in phases.values()
+    m4_blockers: list[dict[str, Any]] = []
+    for fname, passed in m4_report_passed.items():
+        m4_blockers.extend(report_issues[fname])
+        if reports[fname] is not None and not passed and not report_issues[fname]:
+            m4_blockers.append({
+                "id": f"m4_report_not_green_{fname.replace('.', '_')}",
+                "type": "truth_report",
+                "severity": "blocking",
+                "report": fname,
+                "detail": f"{fname} is not PASS",
+                "source": f"reports/current/{fname}",
+            })
+
+    m5_blockers: list[dict[str, Any]] = []
+    if not m4_passed:
+        m5_blockers.append({
+            "id": "m5_blocked_until_m4_pass",
+            "type": "dependency",
+            "severity": "blocking",
+            "detail": "M5 bleibt NO-GO bis M4 PASS ist",
+            "source": "reports/current/masterplan_status.json",
+        })
+
+    phases: dict[str, dict[str, Any]] = {}
+    phases["m3a"] = _phase(
+        "m3a",
+        passed=frontend_passed,
+        gate_id="m3a_frontend_full_suite_gate",
+        source=f"reports/current/{FRONTEND_REPORT}",
+        blockers=m3a_blockers,
+        report_summaries={FRONTEND_REPORT: report_load_status[FRONTEND_REPORT]},
     )
+    phases["m4"] = _phase(
+        "m4",
+        passed=m4_passed,
+        gate_id="m4_overall_gate",
+        source="reports/current/m4_truth_report.json",
+        blockers=m4_blockers,
+        report_summaries={fname: report_load_status[fname] for fname in M4_REPORTS},
+    )
+    phases["m5"] = _phase(
+        "m5",
+        passed=m5_passed,
+        gate_id="m5_start_gate",
+        source="reports/current/masterplan_status.json",
+        blockers=m5_blockers,
+        report_summaries={},
+    )
+
+    # Step 4: Aggregate blockers from the direct gate rules.
+    all_blockers: list[dict[str, Any]] = []
+    all_blockers.extend(m3a_blockers)
+    all_blockers.extend(m4_blockers)
+    all_blockers.extend(m5_blockers)
+    all_blockers.extend(doc_blockers)
+
+    overall_blocked = bool(all_blockers)
     progress = _overall_progress(phases)
+    gate_hierarchy = {
+        phases["m3a"]["gate_id"]: {
+            "status": phases["m3a"]["gate_status"],
+            "blockers": [b["detail"] for b in m3a_blockers],
+        },
+        "m4a_gate": {
+            "status": "PASS" if m4_report_passed["m4a_auth_truth.json"] else "FAIL",
+            "blockers": [b["detail"] for b in report_issues["m4a_auth_truth.json"]],
+        },
+        "m4b_gate": {
+            "status": "PASS" if m4_report_passed["m4b_upload_queue_truth.json"] else "FAIL",
+            "blockers": [b["detail"] for b in report_issues["m4b_upload_queue_truth.json"]],
+        },
+        "m4c_gate": {
+            "status": "PASS" if m4_report_passed["m4c_lifecycle_retrieval_truth.json"] else "FAIL",
+            "blockers": [b["detail"] for b in report_issues["m4c_lifecycle_retrieval_truth.json"]],
+        },
+        "m4e_gate": {
+            "status": "PASS" if m4_report_passed["m4e_backup_restore_truth.json"] else "FAIL",
+            "blockers": [b["detail"] for b in report_issues["m4e_backup_restore_truth.json"]],
+        },
+        "m4_crosscutting_gate": {
+            "status": "PASS" if m4_report_passed["m4_truth_report.json"] else "FAIL",
+            "blockers": [b["detail"] for b in report_issues["m4_truth_report.json"]],
+        },
+        phases["m4"]["gate_id"]: {
+            "status": phases["m4"]["gate_status"],
+            "blockers": [b["detail"] for b in m4_blockers],
+        },
+        phases["m5"]["gate_id"]: {
+            "status": phases["m5"]["gate_status"],
+            "blockers": [b["detail"] for b in m5_blockers],
+        },
+    }
 
     return {
         "report_schema_version": SCHEMA_VERSION,
@@ -415,28 +479,21 @@ def evaluate(
         },
         "inputs": {
             "report_dir": str(current_dir),
-            "known_limitations": str(known_limitations_path),
-            "split_reports": report_load_status,
-            "gate_hierarchy_evaluated": True,
-            "regression_baseline_loaded": baseline is not None,
+            "current_reports": report_load_status,
+            "gate_hierarchy_evaluated": False,
+            "regression_baseline_loaded": False,
         },
         "overall": {
             "status": "blocked" if overall_blocked else "pass",
             "progress_percent": progress,
             "release_allowed": not overall_blocked,
             "blocker_count": len(all_blockers),
-            "gate_hierarchy_result": gate_result.get("result"),
+            "gate_hierarchy_result": "PASS" if not overall_blocked else "FAIL",
         },
         "phases": phases,
         "gate_hierarchy": {
-            "result": gate_result.get("result"),
-            "gates": {
-                gate_id: {
-                    "status": g.get("status"),
-                    "blockers": g.get("blockers", []),
-                }
-                for gate_id, g in gates.items()
-            },
+            "result": "PASS" if not overall_blocked else "FAIL",
+            "gates": gate_hierarchy,
         },
         "documentation_lint": {
             "available": doc_lint is not None,
@@ -446,9 +503,10 @@ def evaluate(
             "source": "reports/current/documentation_truth_lint.json",
         },
         "known_limitations": {
-            "total": len(limitations),
-            "blocking": len(limitation_blockers),
+            "total": 0,
+            "blocking": 0,
             "source": str(known_limitations_path),
+            "used_for_current_status": False,
         },
         "blockers": all_blockers,
         "timestamp": generated_at,

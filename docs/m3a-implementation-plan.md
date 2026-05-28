@@ -4,7 +4,7 @@ Stand: 2026-05-04
 
 Annahmen:
 
-- Backend Paket 5 ist abgeschlossen.
+- Backend Paket 5 ist abgeschlossen. Quelle: `reports/current/masterplan_status.json`.
 - Der API-Contract fuer die Dokument-Read-Pfade ist stabil.
 - Die GUI bleibt in M3a strikt read-only.
 

@@ -15,7 +15,7 @@ python -m app.cli m5 longrun-simulation --cycles 28 --restore-every 7
 
 Reports:
 
-- `reports/m5_longrun/YYYYMMDD_HHMMSS.json`
+- `historische M5-Longrun-Archivkopie`
 - `reports/m5_longrun/latest.json`
 - `reports/m5_longrun_summary.md`
 

@@ -161,7 +161,7 @@ $env:TEST_DATABASE_URL="postgresql://..."
 
 Der Lauf schreibt:
 
-- `reports/postgres_truth_report.json`
+- `reports/current/m4_truth_report.json`
 - `reports/postgres_truth_report.md`
 
 Unit-Tests benoetigen keine Datenbankverbindung und laufen ohne Konfiguration durch.

@@ -29,7 +29,7 @@ STALE_DAYS = 30
 # ---------------------------------------------------------------------------
 
 REPORT_REF_RE = re.compile(r'reports/[\w./:-]+\.(?:json|md)')
-PERCENTAGE_RE = re.compile(r'(?<!\d)\d{1,3}%(?!\d)')
+PERCENTAGE_RE = re.compile(r'(?<![\d.])\d{1,3}(?:\.\d+)?%(?![\d.])')
 CODE_FENCE_RE = re.compile(r'^\s*```')
 
 CLAIM_KW_RE = re.compile(
@@ -48,12 +48,19 @@ NEGATION_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Phase-level claim patterns: "[phase keyword] … [positive status word]"
-_STATUS = r'(?:abgeschlossen|freigegeben|PASS|GO(?:-Entscheidung)?|grün[ae]?|green|bestanden)'
-PHASE_CLAIM_RE: dict[str, re.Pattern[str]] = {
-    'm3a': re.compile(rf'\bM3a\b.*{_STATUS}', re.IGNORECASE),
-    'm4': re.compile(rf'\bM4\b[^a-z].*{_STATUS}', re.IGNORECASE),
-    'm5': re.compile(rf'\bM5\b[^a-z].*{_STATUS}', re.IGNORECASE),
+# Phase-level claim detection is split into phase and status matches so
+# negation is evaluated at the status keyword, not at the phase keyword.
+STATUS_CLAIM_RE = re.compile(
+    r'\b(abgeschlossen|freigegeben|PASS|grün[ae]?|green|bestanden)\b'
+    r'|GO-Entscheidung'
+    r'|Entscheidung[:\s]+GO\b'
+    r'|(?<!NO_)\bGO\b',
+    re.IGNORECASE,
+)
+PHASE_RE: dict[str, re.Pattern[str]] = {
+    'm3a': re.compile(r'\bM3a\b', re.IGNORECASE),
+    'm4': re.compile(r'\bM4\b(?![a-z])', re.IGNORECASE),
+    'm5': re.compile(r'\bM5\b(?![a-z])', re.IGNORECASE),
 }
 
 # Only these files are checked for masterplan contradictions (current-state docs)
@@ -175,11 +182,37 @@ _CONDITIONAL_RE = re.compile(
     re.IGNORECASE,
 )
 
+_NON_STATUS_PERCENTAGE_RE = re.compile(
+    r'\b(jitter|wahrscheinlichkeit|risk|risiko|technical[-\s]?debt|schuld|'
+    r'failure\s+rate|parser_failure_rate|ocr_required|duplicate-spike|'
+    r'schwelle|threshold|zielwert|laufzeit|performance|'
+    r'm4a_gate|m4b_gate|m4c_gate|m4d_gate)\b|[<>]=?\s*\d',
+    re.IGNORECASE,
+)
+
 
 def _claim_is_conditional(line: str, match_start: int) -> bool:
     """True if the keyword is inside a conditional clause."""
     prefix = line[max(0, match_start - 70): match_start]
     return bool(_CONDITIONAL_RE.search(prefix))
+
+
+def _percentage_is_non_status_context(rel: str, line: str, para_text: str) -> bool:
+    """True for technical thresholds and risk estimates that are not status progress."""
+    if rel in {'masterplan.md', 'docs/generated/status_section.md'} and 'Fortschritt:' in line:
+        return True
+    if _NON_STATUS_PERCENTAGE_RE.search(line) or _NON_STATUS_PERCENTAGE_RE.search(para_text):
+        return True
+    if any(part in rel for part in (
+        'm4-gap-risk-analysis.md',
+        'paket-5-observability.md',
+        'paket-5-performance-baseline.md',
+        'paket-5-technical-debt-register.md',
+        'm4-stabilization-exit-criteria.md',
+        'frontend-api-unreachable-recovery.md',
+    )):
+        return True
+    return False
 
 
 def _claim_in_backticks(line: str, match_start: int) -> bool:
@@ -293,6 +326,8 @@ def scan_file(
         # ----------------------------------------------------------------
         for m in PERCENTAGE_RE.finditer(line):
             para_text = '\n'.join(_paragraph_lines(lines, i))
+            if _percentage_is_non_status_context(rel, line, para_text):
+                continue
             if not REPORT_REF_RE.search(para_text):
                 raw.append({
                     'rule': 'manual-percentage',
@@ -311,7 +346,7 @@ def scan_file(
     if rel not in CONTRADICTION_FILES:
         return raw
     phases = masterplan.get('phases', {})
-    for phase_id, pattern in PHASE_CLAIM_RE.items():
+    for phase_id, pattern in PHASE_RE.items():
         phase = phases.get(phase_id, {})
         decision = phase.get('decision', 'UNKNOWN')
         status = phase.get('status', 'unknown')
@@ -320,13 +355,16 @@ def scan_file(
         for i, line in enumerate(lines):
             if _in_code_block(lines, i):
                 continue
-            m = pattern.search(line)
-            if m and not (
-                _claim_is_negated(line, m.start(), m.end())
-                or _claim_is_conditional(line, m.start())
-                or _claim_in_backticks(line, m.start())
-                or _claim_is_definitional(line, m.start())
-                or _claim_is_compound_prefix(line, m.end())
+            phase_match = pattern.search(line)
+            if not phase_match:
+                continue
+            status_match = next(STATUS_CLAIM_RE.finditer(line, phase_match.end()), None)
+            if status_match and not (
+                _claim_is_negated(line, status_match.start(), status_match.end())
+                or _claim_is_conditional(line, status_match.start())
+                or _claim_in_backticks(line, status_match.start())
+                or _claim_is_definitional(line, status_match.start())
+                or _claim_is_compound_prefix(line, status_match.end())
             ):
                 raw.append({
                     'rule': 'masterplan-contradiction',

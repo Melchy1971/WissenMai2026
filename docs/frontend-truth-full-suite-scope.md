@@ -131,6 +131,6 @@ Ein Full-Suite-Frontend-Truth-Report ist akzeptiert, wenn:
 12. keine technische Fehlersituation als Empty-State erscheint,
 13. kein nicht retryable Fehler einen Retry-Loop anbietet,
 14. Workspace-, Auth- und Request-Generation-Wechsel stale Responses verwerfen,
-15. der Report in `reports/frontend_truth_report.json` und `reports/gui_truth/latest.json` identisch referenziert wird.
+15. der Report in `reports/current/frontend_full_suite_staged_report.json` und `reports/current/frontend_full_suite_staged_report.json` identisch referenziert wird.
 
 Wenn einer dieser Punkte fehlt, ist der Lauf maximal ein fokussierter Slice-Report, nicht Full-Suite-Frontend-Truth.

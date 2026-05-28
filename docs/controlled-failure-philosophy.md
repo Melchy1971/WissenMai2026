@@ -152,7 +152,7 @@ Recovery ist kein automatischer Hintergrundprozess — sie ist eine explizite, d
 | Job-Retry | automatisch via Retry-Policy | `background_jobs.attempts` + Log-Event |
 | Job-Replay | explizit via Admin-API `POST /admin/jobs/{id}/replay` | Job-Status nach Replay + Truth-Test |
 | Advisory-Lock-Recovery | automatisch nach Lock-Timeout; kein stillerRetry | `RESOURCE_LOCKED` + neuer Versuch durch Aufrufer |
-| Reindex-Recovery | explizit via `ReindexGovernanceService` | `test_reindex_governance_truth.py` grün |
+| Reindex-Recovery | explizit via `ReindexGovernanceService` | `test_reindex_governance_truth.py` grün | Quelle: `reports/current/masterplan_status.json`.
 | Cleanup-Recovery | explizit via Dry-Run → Mutation mit Gate | Cleanup-Dry-Run-Report + `blocked_count = 0` |
 | Restore-Recovery | explizit via `BackupRestoreService` + Verify | Restore-Truth-Report + postgres_truth-Smoke |
 | Drift-Repair | explizit via Runbook | Drift-Report nach Repair + `m5_drift_score = 0` |
@@ -250,10 +250,10 @@ Verbotene Felder (nie in Fehler-Logs):
 | `job_dead_lettered` | Job hat maximale Retries erreicht; Status = `dead_letter` |
 | `job_replay_initiated` | Admin-Aktion Replay; explizit ausgelöst |
 | `recovery_started` | Explizite Recovery-Aktion begonnen |
-| `recovery_completed` | Recovery abgeschlossen, Verifikation ausstehend |
+| `recovery_completed` | Recovery abgeschlossen, Verifikation ausstehend | Quelle: `reports/current/masterplan_status.json`.
 | `recovery_failed` | Recovery fehlgeschlagen; Status = `blocked` |
 | `degraded_state_entered` | System wechselt in degradierten Betrieb |
-| `degraded_state_resolved` | Degradierter Zustand aufgelöst, Verifikation bestanden |
+| `degraded_state_resolved` | Degradierter Zustand aufgelöst, Verifikation bestanden | Quelle: `reports/current/masterplan_status.json`.
 | `implicit_correction_blocked` | Versuch einer impliziten Datenkorrektur blockiert |
 
 ---

@@ -1,13 +1,13 @@
 {
   "report_format_version": 1,
   "marker": "m4a_auth_truth",
-  "timestamp": "2026-05-27T13:19:20.787853+00:00",
-  "collected": 0,
-  "passed": 0,
+  "timestamp": "2026-05-28T07:38:49.032209+00:00",
+  "collected": 43,
+  "passed": 43,
   "failed": 0,
   "errors": 0,
   "skipped": 0,
-  "exit_code": 1,
+  "exit_code": 0,
   "pytest_exit_code": 0,
   "test_database_url_set": true,
   "failed_tests": [],
@@ -16,17 +16,11 @@
   "report_schema_version": 1,
   "report_name": "m4a_auth_truth",
   "gate": "m4a",
-  "status": "FAIL",
+  "status": "PASS",
   "environment": "local",
   "report_type": "truth",
-  "blockers": [
-    {
-      "gate": "m4a",
-      "severity": "critical",
-      "reason": "0 collected, 0 failed, 0 errors, 0 skipped"
-    }
-  ],
+  "blockers": [],
   "source_command": "python scripts/generate_truth_split_reports.py -- -m m4a_auth_truth",
   "generated_by": "gate_validator",
-  "commit_hash": "e210afd24"
+  "commit_hash": "0d59bcb78"
 }

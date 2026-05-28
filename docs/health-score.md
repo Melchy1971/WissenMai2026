@@ -48,7 +48,7 @@ Statuslogik:
 ## Platzhalter fuer Nachweise
 
 - Truth-Test-Block: `health_score`
-- geplanter Report-Bezug: `reports/postgres_truth_report.json`
+- geplanter Report-Bezug: `reports/current/m4_truth_report.json`
 - geplanter Score-Report: noch nicht implementiert
 
 ## Nicht-Scope

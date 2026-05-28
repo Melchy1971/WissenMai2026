@@ -4,7 +4,7 @@ Stand: 2026-05-15
 
 ## Eingefrorener In-Scope
 
-Die folgenden 12 Kriterien definieren M3a als abgeschlossen. Kein Kriterium kann nachträglich erweitert werden, ohne M3a aufzumachen.
+Die folgenden 12 Kriterien definieren M3a als abgeschlossen. Kein Kriterium kann nachträglich erweitert werden, ohne M3a aufzumachen. Quelle: `reports/current/masterplan_status.json`.
 
 | # | Kriterium | Implementiert in | Status |
 |---|-----------|------------------|--------|
@@ -19,7 +19,7 @@ Die folgenden 12 Kriterien definieren M3a als abgeschlossen. Kein Kriterium kann
 | 9 | Lifecycle-Statusanzeige | `DocumentsPage.jsx`: Filter 'active'/'archived', Hinweis-Banner | ✅ |
 | 10 | Diagnostics read-only | `AdminDiagnosticsPage.jsx`: System/DB/Migration-Cards, keine Mutationen | ✅ |
 | 11 | Vollständige Fehlerzustände | `ErrorState`, `mapError()`, Bootstrap-Errors in `ProtectedRoute`, alle Pages | ✅ |
-| 12 | Frontend/Backend Contract-Stabilität | 45/45 Vitest-Tests grün; API-Pfade stabil | ✅ |
+| 12 | Frontend/Backend Contract-Stabilität | 45/45 Vitest-Tests grün; API-Pfade stabil | ✅ | Quelle: `reports/current/masterplan_status.json`.
 
 ## Explizit Nicht-Scope (M3a)
 
@@ -40,7 +40,7 @@ Die folgenden Punkte sind **kein Teil von M3a** und dürfen nicht als Blocker be
 M3a gilt als **abgeschlossen**, wenn alle folgenden Punkte erfüllt sind:
 
 ### Code-Qualität
-- [ ] `npx vitest run` → **45/45 Tests grün**, 0 Failures, 0 Skips
+- [ ] `npx vitest run` → **45/45 Tests grün**, 0 Failures, 0 Skips Quelle: `reports/current/masterplan_status.json`.
 - [ ] `ALLOWED_LIFECYCLE_FILTERS` ist entweder in Verwendung oder entfernt (kein toter Code)
 
 ### Auth & Session

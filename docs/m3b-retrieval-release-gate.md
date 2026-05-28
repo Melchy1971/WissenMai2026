@@ -2,7 +2,7 @@
 
 Stand: 2026-05-05
 
-Dieses Gate ersetzt den frueheren No-Go-Zwischenstand. M3b Retrieval Foundation gilt ab Score `>= 90` als abgeschlossen.
+Dieses Gate ersetzt den frueheren No-Go-Zwischenstand. M3b Retrieval Foundation gilt ab Score `>= 90` als abgeschlossen. Quelle: `reports/current/masterplan_status.json`.
 
 ## Ergebnis
 
@@ -21,7 +21,7 @@ Dieses Gate ersetzt den frueheren No-Go-Zwischenstand. M3b Retrieval Foundation 
 
 **Go fuer M3c.**
 
-M3b Retrieval Foundation ist abgeschlossen. PostgreSQL-Tests bleiben optional im Standardlauf, weil sie `TEST_DATABASE_URL` benoetigen; sie sind aber als separater Integrationspfad definiert.
+M3b Retrieval Foundation ist abgeschlossen. PostgreSQL-Tests bleiben optional im Standardlauf, weil sie `TEST_DATABASE_URL` benoetigen; sie sind aber als separater Integrationspfad definiert. Quelle: `reports/current/masterplan_status.json`.
 
 ## Nachweise
 

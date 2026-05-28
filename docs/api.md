@@ -6,7 +6,7 @@ Stand: 2026-05-19
 
 Dieses Dokument beschreibt die API-Abhaengigkeit der aktuellen GUI auf hoher Ebene und den Vertrag fuer M3b Search sowie M3c Chat/RAG. Verbindlicher Detailvertrag fuer die Dokument-Read-Pfade bleibt `docs/api/v1-document-api-contract.md`. Der Retrieval-Vertrag fuer M3b ist zusaetzlich in `docs/retrieval.md` beschrieben.
 
-M3a-Nachweisgrenze: Die GUI konsumiert vorhandene API-Faehigkeiten. Der aktuelle Full-Suite-Frontend-Truth-Lauf in `reports/frontend_truth_report.json` und `reports/gui_truth/latest.json` ist gruen (`82 collected`, `82 passed`, `0 failed`, `0 skipped`) und laeuft gegen echte API mit echter PostgreSQL-Testdatenbank. `reports/m3a_gate_result.json` steht auf `PASS`, Score `100.0`.
+M3a-Nachweisgrenze: Die GUI konsumiert vorhandene API-Faehigkeiten. Der aktuelle Full-Suite-Frontend-Truth-Lauf in `reports/current/frontend_full_suite_staged_report.json` und `reports/current/frontend_full_suite_staged_report.json` ist gruen (`82 collected`, `82 passed`, `0 failed`, `0 skipped`) und laeuft gegen echte API mit echter PostgreSQL-Testdatenbank. `reports/current/gate_hierarchy_result.json` steht auf `PASS`, Score `100.0`.
 
 Backend-Wahrheit fuer M3a ist bewusst reduziert: API erreichbar, `/health/db` gruen, Contract Tests gruen und relevante M3a-/GUI-Endpunktflows im Frontend Truth belegt. Die vollstaendige `postgres_truth`-Suite ist M4 Backend Truth und M5 Operational Truth; M5 Entropy, Queue Aging sowie M4/M5 Drift-, Cleanup- und Longevity-Tests sind keine M3a-Gate-Regeln.
 

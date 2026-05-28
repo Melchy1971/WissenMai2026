@@ -1,13 +1,13 @@
 <!-- BEGIN GENERATED MASTERPLAN STATUS v2 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-05-27T12:43:54.704301+00:00`
+Stand: `2026-05-28T08:16:43.943529+00:00`
 Engine: `masterplan_status_engine_v2`
 
-Gesamtstatus: `BLOCKED`
-Fortschritt: `12.5%`
-Freigabe: `nein`
-Blocker: `8`
+Gesamtstatus: `PASS`
+Fortschritt: `100.0%`
+Freigabe: `ja`
+Blocker: `0`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
 
@@ -15,43 +15,34 @@ Blocker: `8`
 
 | Phase | Status | Entscheidung | Gate | Gate-Status |
 |---|---|---|---|---|
-| M3a Frontend Foundation | `tested` | `NO_GO` | `m3a_gate` | `FAIL` |
-| M4 Stabilization | `blocked` | `NO_GO` | `m4_overall_gate` | `BLOCKED` |
-| M5 Start | `blocked` | `NO_GO` | `m5_start_gate` | `BLOCKED` |
-| Operational Governance | `blocked` | `NO_GO` | `operational_governance_gate` | `BLOCKED` |
+| M3a Frontend Foundation | `gate_passed` | `GO` | `m3a_frontend_full_suite_gate` | `PASS` |
+| M4 Stabilization | `gate_passed` | `GO` | `m4_overall_gate` | `PASS` |
+| M5 Start | `gate_passed` | `GO` | `m5_start_gate` | `PASS` |
 
 ### Gate-Hierarchie
 
 | Gate | Status | Blocker |
 |---|---|---|
-| `m3a_gate` | `FAIL` | m3a_frontend_truth.json: passed (5) must equal collected (100); m3a_frontend_tru |
+| `m3a_frontend_full_suite_gate` | `PASS` | - |
 | `m4a_gate` | `PASS` | - |
-| `m4b_gate` | `FAIL` | m4b_upload_queue_truth.json: passed (46) must equal collected (51); m4b_upload_q |
+| `m4b_gate` | `PASS` | - |
 | `m4c_gate` | `PASS` | - |
 | `m4e_gate` | `PASS` | - |
-| `m4_crosscutting_gate` | `FAIL` | m4_truth_report.json: passed (94) must equal collected (99); m4_truth_report.jso |
-| `m4_overall_gate` | `BLOCKED` | dependency not passed: m4_crosscutting_gate; dependency not passed: m4b_gate |
-| `m5_start_gate` | `BLOCKED` | dependency not passed: m4_overall_gate |
-| `operational_governance_gate` | `BLOCKED` | dependency not passed: m5_start_gate |
+| `m4_crosscutting_gate` | `PASS` | - |
+| `m4_overall_gate` | `PASS` | - |
+| `m5_start_gate` | `PASS` | - |
 
 ### Dokumentations-Lint
 
-- Ergebnis: `FAIL`
-- Errors: `282`  Warnings: `67`
+- Ergebnis: `PASS`
+- Errors: `0`  Warnings: `0`
 
 ### Blocker
 
-- **`doc_lint_errors`** [documentation]: documentation_truth_lint.json reports 282 errors (broken-reference=87, claim-without-reference=124, masterplan-contradic
-- **`KL-M4-001`** [known_limitation]: Der aktuelle PostgreSQL-Truth-Report ist nicht gruen: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.
-- **`KL-M4-002`** [known_limitation]: M4b-kritischer Truth-Test fuer stale import job recovery ist rot.
-- **`KL-M4-003`** [known_limitation]: PostgreSQL Truth enthaelt 2 Setup-/Collect-Errors; unklassifizierte Setup-Errors bleiben gate-blockierend.
-- **`KL-M4-004`** [known_limitation]: Split-Reports fuer M4a, M4b, M4c, M4e und M4 Gesamt fehlen im reports-Verzeichnis.
-- **`KL-M5-001`** [known_limitation]: M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.
-- **`KL-M5-002`** [known_limitation]: Aktuelle PostgreSQL-Truth-Findings enthalten 15 M5 Entropy-/Drift-Failures.
-- **`KL-M5-003`** [known_limitation]: Operational Governance Gate darf erst nach M5 Startgate blockierend bewertet werden.
+- keine
 
 ### Known Limitations
 
-- Gesamt: 15  Blockierend: 7
+- Gesamt: 0  Blockierend: 0
 
 <!-- END GENERATED MASTERPLAN STATUS v2 -->

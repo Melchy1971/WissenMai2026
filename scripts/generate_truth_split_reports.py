@@ -300,6 +300,49 @@ def write_marker_report(
     return path
 
 
+def _selected_report_markers(pytest_args: list[str]) -> set[str] | None:
+    marker_expression: str | None = None
+    for index, arg in enumerate(pytest_args):
+        if arg == "-m" and index + 1 < len(pytest_args):
+            marker_expression = pytest_args[index + 1]
+            break
+        if arg.startswith("-m="):
+            marker_expression = arg.split("=", 1)[1]
+            break
+        if arg.startswith("--markexpr="):
+            marker_expression = arg.split("=", 1)[1]
+            break
+
+    if not marker_expression:
+        return None
+
+    selected = {marker for marker in REPORT_PATHS if marker in marker_expression}
+    return selected or None
+
+
+def _has_explicit_test_target(pytest_args: list[str]) -> bool:
+    skip_next = False
+    for arg in pytest_args:
+        if skip_next:
+            skip_next = False
+            continue
+        if arg in {"-m", "-k", "-o"}:
+            skip_next = True
+            continue
+        if arg.startswith("-"):
+            continue
+        candidate = Path(arg)
+        if "::" in arg or arg.endswith(".py") or candidate.exists() or (REPO_ROOT / candidate).exists():
+            return True
+    return False
+
+
+def _with_default_test_target(pytest_args: list[str]) -> list[str]:
+    if _has_explicit_test_target(pytest_args):
+        return pytest_args
+    return [str(DEFAULT_TEST_TARGET), *pytest_args]
+
+
 @contextlib.contextmanager
 def _taxonomy_only_collection_disabled() -> Any:
     old_value = os.environ.get("WISSEN_MARKER_TAXONOMY_ONLY")
@@ -359,9 +402,15 @@ def main(argv: list[str] | None = None) -> int:
         pytest_args = pytest_args[1:]
     if not pytest_args:
         pytest_args = _default_pytest_args()
+    else:
+        pytest_args = _with_default_test_target(pytest_args)
 
     exit_code, reports, duration = generate_split_reports(pytest_args)
-    written = write_split_reports(reports, args.report_dir)
+    selected_markers = _selected_report_markers(pytest_args)
+    if selected_markers:
+        written = [write_marker_report(marker, reports, args.report_dir) for marker in sorted(selected_markers)]
+    else:
+        written = write_split_reports(reports, args.report_dir)
 
     print(f"Truth split reports written: {len(written)}")
     print(f"Duration: {duration}s")

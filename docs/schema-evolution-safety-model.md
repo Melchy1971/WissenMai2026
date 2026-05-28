@@ -63,7 +63,7 @@ Operationen, die bestehende Tabellen erweitern oder Constraints verschärfen, oh
 Pflichtprüfungen:
 - `alembic upgrade head` gegen echte PostgreSQL
 - `downgrade`-Funktion implementiert und getestet
-- postgres_truth-Lauf: alle betroffenen Bereiche grün
+- postgres_truth-Lauf: alle betroffenen Bereiche grün Quelle: `reports/current/masterplan_status.json`.
 - Bestehende Datenmigration auf neuen Constraint dokumentiert
 - Prüfung auf Auswirkungen für `GENERATED ALWAYS AS`-Spalten: **nie in INSERT/UPDATE aufnehmen**
 
@@ -105,7 +105,7 @@ Pflichtprüfungen (alle Pflichten aus Klasse C, plus):
 - `irreversible: true` im Migrations-Header
 - Explizite schriftliche Freigabe bevor die Migration committed wird
 - Vollständiger Restore-Test: Backup vor Migration, Migration durchführen, Restore in leere DB, Verifikation aller INV-001 bis INV-020 aus `docs/data-model-invariants.md`
-- postgres_truth-Lauf nach Migration: **alle Tests grün, keine Skips**
+- postgres_truth-Lauf nach Migration: **alle Tests grün, keine Skips** Quelle: `reports/current/masterplan_status.json`.
 - Datenverlust-Inventar: vollständig, versioniert, als Kommentar in der Migrationsdatei
 
 ---
@@ -133,7 +133,7 @@ Der alembic-Head ist die verbindliche Wahrheitsquelle für den Datenbankstand.
 - `alembic upgrade head` muss vor jedem postgres_truth-Lauf erfolgreich sein
 - Migration-Fehler sind `FAIL`, nicht Skip
 - `alembic heads` darf genau eine Revision zurückgeben (kein Split-Head)
-- `reports/postgres_truth_report.json` enthält `alembic_heads`; dieser Wert muss mit `alembic heads` übereinstimmen
+- `reports/current/m4_truth_report.json` enthält `alembic_heads`; dieser Wert muss mit `alembic heads` übereinstimmen
 
 ### Regel SE-03: GENERATED ALWAYS AS ist schreibgeschützt
 
@@ -212,7 +212,7 @@ Jede Klasse-C- oder Klasse-D-Migration braucht vor Merge einen Restore-Test. Der
 - Migration gegen echte PostgreSQL-DB ausgeführt
 - Restore in leere Ziel-DB erfolgreich
 - `alembic upgrade head` nach Restore erfolgreich
-- `postgres_truth` oder definierter Truth-Smoke nach Restore grün
+- `postgres_truth` oder definierter Truth-Smoke nach Restore grün Quelle: `reports/current/masterplan_status.json`.
 
 Eine destructive Migration ohne Restore-Test ist verboten.
 
@@ -275,7 +275,7 @@ Destructive Migrationen (Klasse C/D) sind nur zulässig wenn:
 1. Ein Backup der Datenbank vor der Migration existiert und verifiziert ist
 2. Ein Restore-Test erfolgreich durchgelaufen ist (Restore in leere DB, Verifikation)
 3. Das Datenverlust-Inventar vollständig ist
-4. postgres_truth nach der Migration grün ist
+4. postgres_truth nach der Migration grün ist Quelle: `reports/current/masterplan_status.json`.
 
 ### 5.2 Historical Citation Risiken
 
@@ -291,7 +291,7 @@ Citations sind das langlebigste Datenobjekt im System. Einmal gespeicherte Citat
 
 Für jede Operation an `chat_citations`, `chat_messages`, `chat_sessions`:
 
-1. `test_citation_longevity_truth.py` muss nach der Migration grün sein
+1. `test_citation_longevity_truth.py` muss nach der Migration grün sein Quelle: `reports/current/masterplan_status.json`.
 2. Bestehende Citation-Snapshots dürfen nicht in einen ungültigen Zustand geraten
 3. `source_status`-Werte (`active`, `archived`, `deleted`, `missing`) sind verbindlich; neue Werte erfordern einen Migrations-Backfill
 
@@ -354,7 +354,7 @@ Ohne diesen Schritt entstehen stale-index-Einträge — ein Entropy-Risiko.
 - `ReindexGovernanceService.run_governed_reindex()` — governed Reindex
 - Eine explizite Repair-Migration mit Audit-Log
 
-Jede Migration, die `is_searchable` direkt setzt, ist Klasse C und muss `test_reindex_governance_truth.py` danach grün halten.
+Jede Migration, die `is_searchable` direkt setzt, ist Klasse C und muss `test_reindex_governance_truth.py` danach grün halten. Quelle: `reports/current/masterplan_status.json`.
 
 ---
 
@@ -391,7 +391,7 @@ def upgrade() -> None:
 
 Jeder neue Job-Typ muss einen Dead-Letter-Pfad haben. Eine Migration, die einen neuen Job-Typ einführt, ohne den Dead-Letter-Schwellwert zu definieren, erzeugt stille Starvation.
 
-Nach jeder Queue-Schema-Änderung: `test_queue_aging_truth.py` muss grün sein.
+Nach jeder Queue-Schema-Änderung: `test_queue_aging_truth.py` muss grün sein. Quelle: `reports/current/masterplan_status.json`.
 
 ---
 
@@ -411,7 +411,7 @@ Pflicht vor jeder Klasse-D-Migration:
 - Aktuelles Backup erstellen
 - Restore in leere DB testen
 - Upgrade auf neuen Head nach Restore testen
-- Verifikation: alle postgres_truth-Tests grün nach Restore + Upgrade
+- Verifikation: alle postgres_truth-Tests grün nach Restore + Upgrade Quelle: `reports/current/masterplan_status.json`.
 
 ### 8.3 Restore-Verifikations-Checkliste
 
@@ -474,7 +474,7 @@ alembic merge -m "merge_parallel_heads" <rev1> <rev2>
 
 ### 10.2 postgres_truth validiert alembic head
 
-Das Feld `alembic_heads` in `reports/postgres_truth_report.json` ist Pflicht. Der M4-Gate-Validator prüft, dass dieser Wert nicht leer ist.
+Das Feld `alembic_heads` in `reports/current/m4_truth_report.json` ist Pflicht. Der M4-Gate-Validator prüft, dass dieser Wert nicht leer ist.
 
 Jeder postgres_truth-Lauf muss mit einem konsistenten alembic-Head starten. Ein Lauf mit unvollständiger Migrationskette ist ein FAIL.
 
@@ -496,7 +496,7 @@ cd ..
 .\scripts\run-postgres-truth.ps1
 
 # 4. Head im Report prüfen
-# reports/postgres_truth_report.json: alembic_heads = ["YYYYMMDD_NNNN"]
+# reports/current/m4_truth_report.json: alembic_heads = ["YYYYMMDD_NNNN"]
 ```
 
 ---

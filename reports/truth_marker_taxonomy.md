@@ -1,8 +1,8 @@
 # Truth-Test Marker Taxonomie
 
 - Result: `PASS`
-- Collected: `488`
-- Generated: `2026-05-26T08:36:50.828766+00:00`
+- Collected: `537`
+- Generated: `2026-05-28T07:39:23.369723+00:00`
 
 ## Marker
 
@@ -79,7 +79,7 @@
 - `tests/test_seed_auth_bootstrap.py::test_seed_auth_creates_idempotent_bootstrap_admin_login`
 - `tests/test_seed_auth_bootstrap.py::test_seed_auth_migrates_legacy_login_to_canonical_admin`
 
-### `m4b_upload_queue_truth` (51)
+### `m4b_upload_queue_truth` (48)
 - `tests/integration/test_documents_import.py::test_parallel_duplicate_imports_create_single_document`
 - `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_backend_process_kill_during_import_leaves_retryable_job_and_no_orphan_rows`
 - `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_backend_http_process_kill_during_upload_leaves_no_partial_db_rows`
@@ -95,7 +95,6 @@
 - `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_two_workers_claiming_same_job_only_one_succeeds`
 - `tests/test_background_job_queue.py::test_claim_job_is_deterministic_and_allows_only_one_worker`
 - `tests/test_background_job_queue.py::test_recover_stale_running_job_marks_it_retryable`
-- `tests/test_background_job_queue.py::test_recover_stale_running_job_emits_recovery_observability`
 - `tests/test_background_job_queue.py::test_renew_job_lock_prevents_slow_worker_from_being_recovered`
 - `tests/test_background_job_queue.py::test_renew_job_lock_rejects_wrong_worker`
 - `tests/test_background_job_queue.py::test_process_import_job_marks_generic_failure_retryable_and_keeps_payload_for_recovery`
@@ -129,189 +128,10 @@
 - `tests/test_documents_retry_import_api.py::test_retry_import_recovers_parser_failed_document_without_creating_duplicate_versions`
 - `tests/test_documents_retry_import_api.py::test_retry_import_recovers_indexing_failed_document_without_duplicate_chunks`
 - `tests/test_documents_retry_import_api.py::test_retry_import_recovers_partial_import_by_rebuilding_chunks`
-- `tests/test_observability.py::test_upload_logs_structured_context_without_document_content`
-- `tests/test_observability.py::test_duplicate_import_is_observable_without_logging_sensitive_content`
 
-### `m4c_lifecycle_retrieval_truth` (179)
-- `tests/integration/test_m3b_search.py::test_search_returns_at_least_one_hit`
-- `tests/integration/test_m3b_search.py::test_search_result_has_required_fields`
-- `tests/integration/test_m3b_search.py::test_search_ranking_order_is_deterministic`
-- `tests/integration/test_m3b_search.py::test_search_chunks_http_contract_filters_to_current_readable_workspace_chunks`
-- `tests/integration/test_m3b_search.py::test_search_hits_belong_to_queried_workspace`
-- `tests/integration/test_m3b_search.py::test_search_excludes_non_current_version_chunks`
-- `tests/integration/test_m3b_search.py::test_search_excludes_failed_documents`
-- `tests/integration/test_m3b_search.py::test_search_excludes_pending_documents`
-- `tests/integration/test_m3b_search.py::test_search_excludes_archived_documents`
-- `tests/integration/test_m3b_search.py::test_search_excludes_deleted_documents`
-- `tests/integration/test_m3b_search.py::test_search_excludes_other_workspace_chunks`
-- `tests/integration/test_m3b_search.py::test_search_finds_chunk_in_correct_workspace`
-- `tests/integration/test_m3b_search.py::test_search_current_python_chunk_found_not_old_version`
-- `tests/integration/test_m3b_search.py::test_search_index_rebuild_recreates_missing_index_and_search_still_returns_results`
+### `m4c_lifecycle_retrieval_truth` (2)
 - `tests/integration/test_m3b_search.py::test_lifecycle_e2e_excludes_archived_deleted_from_search_chat_and_reindex`
-- `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_sql_crash_matrix_detects_no_stale_lifecycle_index_in_truth_workspace`
-- `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_reindex_worker_crash_recovery_leaves_retryable_job_without_lifecycle_drift`
-- `tests/postgres_truth/test_m4_truth_flows.py::test_search_chat_retrieval_and_reindex_use_real_postgresql_state`
-- `tests/postgres_truth/test_m4_truth_flows.py::test_search_index_drift_endpoint_reports_real_postgresql_drift`
-- `tests/postgres_truth/test_m4_truth_flows.py::test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchors`
-- `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_retryable`
-- `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_chat_citations_use_missing_instead_of_unknown`
-- `tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_archive_excludes_document_from_search_restore_reactivates`
 - `tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_historical_citations_reflect_live_source_status`
-- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_source_status_live_lookup_reflects_lifecycle_transitions`
-- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_requires_authentication`
-- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_requires_admin_role`
-- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_rejects_foreign_workspace`
-- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_returns_read_only_summary`
-- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_maps_database_failure_to_diagnostics_failed`
-- `tests/test_admin_diagnostics_api.py::test_admin_verify_backup_returns_integrity_report`
-- `tests/test_admin_diagnostics_api.py::test_admin_verify_backup_maps_service_failure`
-- `tests/test_admin_diagnostics_api.py::test_admin_replay_job_response_exposes_previous_error_and_replay_audit`
-- `tests/test_admin_diagnostics_api.py::test_admin_replay_job_second_attempt_is_rejected_after_first_success`
-- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_requires_authentication`
-- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_requires_authentication_even_with_legacy_admin_token_header`
-- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_requires_admin_role`
-- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_returns_stable_shape`
-- `tests/test_admin_search_index_api.py::test_admin_search_index_inconsistencies_requires_authentication`
-- `tests/test_admin_search_index_api.py::test_admin_search_index_inconsistencies_returns_stable_shape`
-- `tests/test_admin_search_index_api.py::test_admin_search_index_drift_requires_authentication`
-- `tests/test_admin_search_index_api.py::test_admin_search_index_drift_returns_stable_shape`
-- `tests/test_chat_api.py::test_create_chat_session_persists_session_and_returns_summary`
-- `tests/test_chat_api.py::test_list_chat_sessions_requires_authenticated_context`
-- `tests/test_chat_api.py::test_list_chat_sessions_uses_pagination_and_stable_response_shape`
-- `tests/test_chat_api.py::test_chat_persistence_error_uses_standard_error_format`
-- `tests/test_chat_api.py::test_get_chat_session_detail_returns_messages_and_filtered_citations`
-- `tests/test_chat_api.py::test_get_chat_session_detail_keeps_historical_citations_visible_for_deleted_documents`
-- `tests/test_chat_api.py::test_get_chat_session_detail_returns_404_for_unknown_session`
-- `tests/test_chat_api.py::test_create_chat_message_runs_rag_pipeline_and_returns_assistant_response`
-- `tests/test_chat_api.py::test_create_chat_message_endpoint_can_run_real_rag_service_with_fake_llm`
-- `tests/test_chat_api.py::test_create_chat_message_returns_404_for_unknown_session`
-- `tests/test_chat_api.py::test_create_chat_message_validation_uses_standard_error_format`
-- `tests/test_chat_api.py::test_create_chat_message_maps_insufficient_context`
-- `tests/test_chat_api.py::test_create_chat_message_maps_retrieval_failure`
-- `tests/test_chat_api.py::test_create_chat_message_maps_llm_unavailable`
-- `tests/test_chat_api.py::test_rag_error_classes_are_registered_with_standard_error_format`
-- `tests/test_chat_persistence_service.py::test_create_session_persists_chat_session`
-- `tests/test_chat_persistence_service.py::test_list_sessions_orders_by_updated_at_desc`
-- `tests/test_chat_persistence_service.py::test_create_message_persists_immutable_message_and_updates_session_timestamp`
-- `tests/test_chat_persistence_service.py::test_create_message_persists_citations`
-- `tests/test_chat_persistence_service.py::test_delete_of_cited_document_chunk_is_restricted`
-- `tests/test_chat_persistence_service.py::test_delete_of_cited_document_is_restricted`
-- `tests/test_chat_persistence_service.py::test_service_rejects_citation_without_snapshot_fields`
-- `tests/test_chat_persistence_service.py::test_service_rejects_invalid_inputs`
-- `tests/test_chat_persistence_service.py::test_service_rejects_missing_session`
-- `tests/test_chat_persistence_service.py::test_historical_chat_replay_keeps_snapshot_stable_for_archived_document`
-- `tests/test_chat_persistence_service.py::test_historical_chat_replay_keeps_snapshot_stable_for_deleted_document`
-- `tests/test_chat_persistence_service.py::test_historical_chat_replay_survives_version_replacement`
-- `tests/test_chat_persistence_service.py::test_historical_chat_replay_survives_rechunk_without_dangling_reference`
-- `tests/test_chat_persistence_service.py::test_historical_chat_replay_is_unchanged_by_search_index_state_changes`
-- `tests/test_chat_persistence_service.py::test_live_status_lookup_returns_missing_for_absent_document`
-- `tests/test_chat_persistence_service.py::test_service_accepts_missing_citation_source_status`
-- `tests/test_chat_persistence_service.py::test_service_rejects_unknown_citation_source_status`
-- `tests/test_chat_schemas.py::test_chat_session_request_and_summary_are_strict`
-- `tests/test_chat_schemas.py::test_chat_message_response_contains_filtered_citations_and_confidence`
-- `tests/test_chat_schemas.py::test_chat_session_detail_nests_messages_without_orm_mode`
-- `tests/test_chat_schemas.py::test_message_create_request_requires_workspace_question_and_valid_limit`
-- `tests/test_chat_schemas.py::test_response_models_reject_extra_metadata_fields`
-- `tests/test_chat_schemas.py::test_chat_citation_response_accepts_missing_source_status`
-- `tests/test_chat_schemas.py::test_chat_citation_response_rejects_unknown_source_status`
-- `tests/test_chat_schemas.py::test_response_models_do_not_accept_raw_orm_objects`
-- `tests/test_citation_mapper.py::test_citation_mapper_maps_citations_by_first_use_order`
-- `tests/test_citation_mapper.py::test_citation_mapper_ignores_unreferenced_context_blocks`
-- `tests/test_citation_mapper.py::test_citation_mapper_returns_empty_list_for_answer_without_chunk_references`
-- `tests/test_citation_mapper.py::test_citation_mapper_truncates_quote_preview_to_maximum_length`
-- `tests/test_citation_mapper.py::test_citation_mapper_rejects_context_block_without_chunk_id`
-- `tests/test_citation_mapper.py::test_citation_mapper_rejects_duplicate_chunk_ids_in_context`
-- `tests/test_context_builder.py::test_context_builder_builds_package_in_ranking_order`
-- `tests/test_context_builder.py::test_context_builder_deduplicates_chunk_ids_and_keeps_first_ranked_occurrence`
-- `tests/test_context_builder.py::test_context_builder_uses_full_chunk_text_when_available`
-- `tests/test_context_builder.py::test_context_builder_excludes_empty_and_very_short_chunks`
-- `tests/test_context_builder.py::test_context_builder_respects_char_limit_without_losing_kept_source_information`
-- `tests/test_context_builder.py::test_context_builder_respects_token_limit_and_can_include_smaller_later_chunk`
-- `tests/test_context_builder.py::test_context_builder_excludes_single_chunk_that_exceeds_hard_limits`
-- `tests/test_context_builder.py::test_context_builder_rejects_invalid_configuration[kwargs0-max_context_chars must be positive]`
-- `tests/test_context_builder.py::test_context_builder_rejects_invalid_configuration[kwargs1-max_context_tokens must be positive]`
-- `tests/test_context_builder.py::test_context_builder_rejects_invalid_configuration[kwargs2-min_chunk_chars must be positive]`
-- `tests/test_documents_read_api.py::test_get_documents_lists_workspace_documents_sorted_by_created_at`
-- `tests/test_documents_read_api.py::test_get_documents_uses_authenticated_workspace_when_query_param_is_missing`
-- `tests/test_documents_read_api.py::test_get_documents_rejects_limit_above_100`
-- `tests/test_documents_read_api.py::test_get_document_returns_metadata_and_latest_version`
-- `tests/test_documents_read_api.py::test_get_document_returns_404_for_missing_document`
-- `tests/test_documents_read_api.py::test_get_documents_excludes_archived_by_default_and_shows_with_filter`
-- `tests/test_documents_read_api.py::test_deleted_document_is_not_retrievable`
-- `tests/test_documents_read_api.py::test_archive_document_updates_lifecycle_status`
-- `tests/test_documents_read_api.py::test_restore_document_moves_archived_document_back_to_active`
-- `tests/test_documents_read_api.py::test_archive_document_cannot_mutate_foreign_workspace_document`
-- `tests/test_documents_read_api.py::test_delete_document_soft_deletes_document`
-- `tests/test_documents_read_api.py::test_archive_document_rejects_already_archived_document`
-- `tests/test_documents_read_api.py::test_restore_document_rejects_active_document`
-- `tests/test_documents_read_api.py::test_deleted_document_cannot_be_restored_without_admin_function`
-- `tests/test_documents_read_api.py::test_deleted_document_cannot_be_archived_again`
-- `tests/test_documents_read_api.py::test_delete_document_rejects_already_deleted_document`
-- `tests/test_documents_read_api.py::test_archive_and_restore_update_chunk_searchability`
-- `tests/test_documents_read_api.py::test_document_lifecycle_updates_historical_chat_citation_source_status`
-- `tests/test_documents_read_api.py::test_get_document_returns_409_when_document_has_no_version`
-- `tests/test_documents_read_api.py::test_get_document_returns_pending_document_without_version`
-- `tests/test_documents_read_api.py::test_get_document_returns_409_when_completed_version_has_no_chunks`
-- `tests/test_documents_read_api.py::test_duplicate_document_content_hash_is_rejected_by_test_database`
-- `tests/test_documents_read_api.py::test_get_latest_chunks_returns_preview_structured_anchor_and_optional_limit`
-- `tests/test_documents_read_service.py::test_get_document_detail_maps_repository_record_without_fastapi_or_database`
-- `tests/test_documents_read_service.py::test_get_document_detail_raises_conflict_for_document_without_version`
-- `tests/test_documents_read_service.py::test_get_document_detail_returns_pending_document_without_version`
-- `tests/test_documents_read_service.py::test_get_document_detail_raises_conflict_for_completed_version_without_chunks`
-- `tests/test_documents_read_service.py::test_get_documents_maps_stable_list_fields_without_fastapi_or_database`
-- `tests/test_documents_read_service.py::test_get_document_detail_raises_not_found_without_fastapi`
-- `tests/test_fake_llm_provider.py::test_fake_llm_provider_returns_deterministic_answer_with_sources`
-- `tests/test_fake_llm_provider.py::test_fake_llm_provider_can_simulate_unavailable`
-- `tests/test_fake_llm_provider.py::test_fake_llm_provider_can_simulate_timeout`
-- `tests/test_fake_llm_provider.py::test_fake_llm_provider_can_return_empty_answer`
-- `tests/test_fake_llm_provider.py::test_fake_llm_provider_can_return_answer_without_sources`
-- `tests/test_fake_llm_provider.py::test_rag_pipeline_maps_fake_unavailable_to_llm_unavailable`
-- `tests/test_fake_llm_provider.py::test_rag_pipeline_maps_fake_timeout_to_llm_unavailable`
-- `tests/test_fake_llm_provider.py::test_rag_pipeline_rejects_fake_empty_answer`
-- `tests/test_fake_llm_provider.py::test_rag_pipeline_rejects_fake_answer_without_sources`
-- `tests/test_insufficient_context_policy.py::test_policy_denies_when_no_retrieval_hits_exist`
-- `tests/test_insufficient_context_policy.py::test_policy_denies_when_max_score_is_below_threshold`
-- `tests/test_insufficient_context_policy.py::test_policy_denies_when_top_hit_is_too_short`
-- `tests/test_insufficient_context_policy.py::test_policy_denies_when_question_is_outside_document_scope`
-- `tests/test_insufficient_context_policy.py::test_policy_denies_when_sources_conflict_without_resolution`
-- `tests/test_insufficient_context_policy.py::test_policy_allows_sufficient_context`
-- `tests/test_insufficient_context_policy.py::test_policy_uses_custom_thresholds`
-- `tests/test_insufficient_context_policy.py::test_policy_exposes_default_thresholds_as_stable_contract`
-- `tests/test_observability.py::test_correlation_id_middleware_sets_response_header`
-- `tests/test_observability.py::test_parser_failure_is_not_logged_as_completed`
-- `tests/test_observability.py::test_chat_observability_logs_context_without_full_question`
-- `tests/test_observability.py::test_persistence_logs_chunking_and_indexing_events`
-- `tests/test_observability.py::test_drift_check_is_observable`
-- `tests/test_prompt_builder.py::test_prompt_builder_builds_deterministic_prompt_with_question_and_context`
-- `tests/test_prompt_builder.py::test_prompt_builder_is_byte_stable_for_same_inputs`
-- `tests/test_prompt_builder.py::test_prompt_builder_renders_empty_context_marker`
-- `tests/test_prompt_builder.py::test_prompt_builder_keeps_context_order`
-- `tests/test_prompt_builder.py::test_prompt_builder_rejects_blank_question`
-- `tests/test_prompt_builder.py::test_prompt_builder_rejects_blank_template_version`
-- `tests/test_rag_chat_service.py::test_rag_chat_service_runs_full_flow_and_persists_cited_answer`
-- `tests/test_rag_chat_service.py::test_rag_chat_service_uses_request_retrieval_limit`
-- `tests/test_rag_chat_service.py::test_rag_chat_service_maps_unknown_session_to_chat_session_not_found`
-- `tests/test_rag_chat_service.py::test_rag_chat_service_does_not_call_llm_or_save_answer_when_context_is_insufficient`
-- `tests/test_rag_chat_service.py::test_rag_chat_service_maps_retrieval_failure`
-- `tests/test_rag_chat_service.py::test_rag_chat_service_maps_llm_failure_without_saving_assistant_answer`
-- `tests/test_rag_chat_service.py::test_rag_chat_service_rejects_answer_without_chunk_citations`
-- `tests/test_rag_chat_service.py::test_rag_chat_service_maps_persistence_failure`
-- `tests/test_search_api.py::test_search_chunks_returns_results_with_stable_shape`
-- `tests/test_search_api.py::test_search_chunks_requires_authentication`
-- `tests/test_search_api.py::test_search_chunks_requires_query`
-- `tests/test_search_api.py::test_search_chunks_rejects_invalid_pagination`
-- `tests/test_search_index_service.py::test_rebuild_search_index_rejects_non_postgresql`
-- `tests/test_search_index_service.py::test_rebuild_search_index_syncs_searchability_and_reindexes`
-- `tests/test_search_index_service.py::test_inspect_inconsistencies_rejects_non_postgresql`
-- `tests/test_search_index_service.py::test_inspect_drift_rejects_non_postgresql`
-- `tests/test_search_index_service.py::test_inspect_inconsistencies_detects_deleted_and_archived_chunks`
-- `tests/test_search_index_service.py::test_inspect_drift_detects_missing_deleted_archived_duplicate_and_lifecycle_mismatches`
-- `tests/test_search_service.py::test_search_chunks_validates_and_maps_results`
-- `tests/test_search_service.py::test_search_chunks_rejects_invalid_input[ -query-20-0-workspace_id is required]`
-- `tests/test_search_service.py::test_search_chunks_rejects_invalid_input[workspace-1-   -20-0-query must not be blank]`
-- `tests/test_search_service.py::test_search_chunks_rejects_invalid_input[workspace-1-query-0-0-limit must be between 1 and 100]`
-- `tests/test_search_service.py::test_search_chunks_rejects_invalid_input[workspace-1-query-101-0-limit must be between 1 and 100]`
-- `tests/test_search_service.py::test_search_chunks_rejects_invalid_input[workspace-1-query-20--1-offset must be non-negative]`
 
 ### `m4e_backup_restore_truth` (9)
 - `tests/test_backup_restore_service.py::test_original_file_store_persists_source_file`
@@ -324,7 +144,7 @@
 - `tests/test_backup_restore_service.py::test_cli_verify_backup_prints_integrity_report`
 - `tests/test_backup_restore_service.py::test_validate_restored_config_reports_mismatches`
 
-### `m5_truth` (44)
+### `m5_truth` (40)
 - `tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_chunks_are_detected_by_metric`
 - `tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_purge_restores_clean_state`
 - `tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_grows_when_archive_skips_repair`
@@ -365,12 +185,8 @@
 - `tests/test_m5_entropy_audit.py::test_entropy_audit_builds_all_required_categories`
 - `tests/test_m5_entropy_audit.py::test_entropy_audit_flags_duplicate_cardinality_as_residual_risk`
 - `tests/test_m5_entropy_audit.py::test_entropy_audit_writes_versioned_reports`
-- `tests/test_m5_observability_metrics.py::test_m5_metric_definitions_cover_required_metrics`
-- `tests/test_m5_observability_metrics.py::test_m5_metric_payload_uses_workspace_scope_without_sensitive_fields`
-- `tests/test_m5_observability_metrics.py::test_m5_metric_payload_removes_workspace_for_global_metrics`
-- `tests/test_m5_observability_metrics.py::test_m5_metric_dimensions_reject_sensitive_content`
 
-### `governance_truth` (39)
+### `governance_truth` (71)
 - `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_clean_state_ok`
 - `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_archive_syncs_citation_status`
 - `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_delete_syncs_citation_status`
@@ -395,6 +211,15 @@
 - `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceAuditTrail::test_correlation_id_propagated`
 - `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceApiEndpoint::test_api_defaults_to_dry_run_only`
 - `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceApiEndpoint::test_api_returns_governance_report_shape`
+- `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_sql_crash_matrix_detects_no_stale_lifecycle_index_in_truth_workspace`
+- `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_reindex_worker_crash_recovery_leaves_retryable_job_without_lifecycle_drift`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_search_chat_retrieval_and_reindex_use_real_postgresql_state`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_search_index_drift_endpoint_reports_real_postgresql_drift`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchors`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_retryable`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_chat_citations_use_missing_instead_of_unknown`
+- `tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_archive_excludes_document_from_search_restore_reactivates`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_source_status_live_lookup_reflects_lifecycle_transitions`
 - `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_full_reindex_produces_report`
 - `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_workspace_reindex_scoped_correctly`
 - `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_document_reindex_scoped_correctly`
@@ -410,6 +235,29 @@
 - `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_auto_generates_correlation_id`
 - `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_api_endpoint_returns_report`
 - `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_api_endpoint_rejects_constraint_violation`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_requires_authentication`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_requires_admin_role`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_rejects_foreign_workspace`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_returns_read_only_summary`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_maps_database_failure_to_diagnostics_failed`
+- `tests/test_admin_diagnostics_api.py::test_admin_verify_backup_returns_integrity_report`
+- `tests/test_admin_diagnostics_api.py::test_admin_verify_backup_maps_service_failure`
+- `tests/test_admin_diagnostics_api.py::test_admin_replay_job_response_exposes_previous_error_and_replay_audit`
+- `tests/test_admin_diagnostics_api.py::test_admin_replay_job_second_attempt_is_rejected_after_first_success`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_requires_authentication`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_requires_authentication_even_with_legacy_admin_token_header`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_requires_admin_role`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_returns_stable_shape`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_inconsistencies_requires_authentication`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_inconsistencies_returns_stable_shape`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_drift_requires_authentication`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_drift_returns_stable_shape`
+- `tests/test_auth_login_diagnostics.py::test_login_not_found_raises_generic_error`
+- `tests/test_auth_login_diagnostics.py::test_login_not_found_logs_reason`
+- `tests/test_auth_login_diagnostics.py::test_user_inactive_logs_reason`
+- `tests/test_auth_login_diagnostics.py::test_password_mismatch_logs_reason`
+- `tests/test_auth_login_diagnostics.py::test_empty_credentials_logs_reason`
+- `tests/test_search_index_service.py::test_rebuild_search_index_syncs_searchability_and_reindexes`
 
 ## Unklassifizierte Tests
 - keine

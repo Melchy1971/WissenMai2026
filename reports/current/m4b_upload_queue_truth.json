@@ -1,7 +1,7 @@
 {
   "report_format_version": 1,
   "marker": "m4b_upload_queue_truth",
-  "timestamp": "2026-05-27T13:19:20.787853+00:00",
+  "timestamp": "2026-05-28T07:38:49.032209+00:00",
   "collected": 48,
   "passed": 48,
   "failed": 0,
@@ -22,5 +22,5 @@
   "blockers": [],
   "source_command": "python scripts/generate_truth_split_reports.py -- -m m4b_upload_queue_truth",
   "generated_by": "gate_validator",
-  "commit_hash": "e210afd24"
+  "commit_hash": "0d59bcb78"
 }

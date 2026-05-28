@@ -12,7 +12,7 @@ Nachweisanker:
 - `reports/m5_retrieval_summary.md`
 - `reports/m5_entropy/latest.json`
 - `reports/m5_entropy_audit.md`
-- `reports/postgres_truth/latest.json`
+- `reports/current/m4_truth_report.json`
 - `reports/restore_truth_report.md`
 
 ## Betriebsrollen
@@ -34,7 +34,7 @@ Nachweisanker:
 | Backup-Verifikation | Backup-/Restore-Report | `verify-backup`, Restore-Dry-Run oder Restore-Truth-Nachweis |
 | Reindex Governance | Governed-Reindex-Report, Drift-Snapshot, Retrieval-Regression-Report | `POST /api/v1/admin/reindex/governed`, danach `python -m app.cli m5 retrieval-benchmark --trigger reindex` |
 | Cleanup Governance | Cleanup-Governance-Report, Cleanup Truth Block, Citation-Longevity-Check | `POST /api/v1/admin/cleanup/governed` mit `dry_run_only=true` als Default |
-| Truth-Test-Zyklen | `reports/postgres_truth/latest.json`, `reports/postgres_truth_report.json` | `pytest -m postgres_truth tests/postgres_truth -vv` |
+| Truth-Test-Zyklen | `reports/current/m4_truth_report.json`, `reports/current/m4_truth_report.json` | `pytest -m postgres_truth tests/postgres_truth -vv` |
 
 Wenn ein Report fehlt oder aelter als das zu bewertende Ereignis ist, lautet der Status `unknown` oder `not_verified`, nicht `pass`.
 

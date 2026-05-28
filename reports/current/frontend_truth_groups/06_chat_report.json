@@ -1,33 +1,57 @@
 {
+  "timestamp": "2026-05-28T07:03:47.208337+00:00",
+  "generated_at": "2026-05-28T07:03:47.208345+00:00",
+  "collected": 7,
+  "passed": 7,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8013",
+  "test_database_url_set": true,
+  "duration": 11.04,
+  "duration_seconds": 11.04,
+  "failed_flows": [],
+  "errors": 0,
+  "error_details": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8013/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "07 Chat flow > shows chat page heading and workspace context",
+    "07 Chat flow > shows empty chat state or session list",
+    "07 Chat flow > shows chat composer form",
+    "07 Chat flow > navigation from documents to chat preserves workspace context",
+    "07 Chat flow > creates a chat session through the real API",
+    "07 Chat flow > posts a question and renders an answer with citations",
+    "07 Chat flow > insufficient context is rendered as a controlled error state"
+  ],
+  "name": "frontend_truth_group_chat",
+  "environment": "local",
+  "database_url_set": true,
+  "gate": "m3a",
+  "blockers": [],
+  "known_limitations": [],
   "report_schema_version": 1,
   "report_name": "frontend_truth_group_chat",
-  "gate": "m3a",
-  "status": "BLOCKED",
-  "timestamp": "2026-05-27T13:04:44.785680+00:00",
-  "environment": "local",
+  "status": "PASS",
   "report_type": "truth",
-  "collected": 1,
-  "passed": 0,
-  "failed": 1,
-  "errors": 0,
-  "skipped": 0,
-  "exit_code": 1,
-  "blockers": [
-    {
-      "gate": "m3a",
-      "severity": "critical",
-      "reason": "Previous group failed: Upload"
-    }
-  ],
   "source_command": "python scripts/run_frontend_full_suite_staged.py --group chat",
   "generated_by": "gate_validator",
-  "commit_hash": "e210afd24",
+  "commit_hash": "0d59bcb78",
   "group": "Chat",
   "slug": "chat",
   "rank": 6,
   "specs": [
     "test_07_chat.spec.js"
   ],
-  "activation_status": "blocked",
-  "blocked_by": "Upload"
+  "activation_status": "active"
 }

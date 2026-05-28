@@ -71,8 +71,8 @@ Jeder Repair-Vorgang muss einen Audit-Eintrag erzeugen. Mindestfelder:
 Audit-Artefakte:
 
 - Maschinenlesbarer Repair-Report: `reports/m5_repair/<timestamp>_<repair_id>.json`
-- Aktueller Zeiger: `reports/m5_repair/latest.json`, wenn ein Repair-Lauf stattgefunden hat
-- Menschenlesbare Summary: `reports/m5_repair_summary.md`
+- Aktueller Zeiger: `geplanter M5-Repair-Report`, wenn ein Repair-Lauf stattgefunden hat
+- Menschenlesbare Summary: `geplante M5-Repair-Zusammenfassung`
 - Referenz auf den ausloesenden Drift-Report
 - Referenz auf den Verifikationsreport nach Repair
 

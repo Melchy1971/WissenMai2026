@@ -1,33 +1,58 @@
 {
+  "timestamp": "2026-05-28T07:04:02.094871+00:00",
+  "generated_at": "2026-05-28T07:04:02.094885+00:00",
+  "collected": 8,
+  "passed": 8,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8013",
+  "test_database_url_set": true,
+  "duration": 14.74,
+  "duration_seconds": 14.74,
+  "failed_flows": [],
+  "errors": 0,
+  "error_details": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8013/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "08 Lifecycle GUI > shows lifecycle filter with correct default option",
+    "08 Lifecycle GUI > lifecycle filter shows correct option labels",
+    "08 Lifecycle GUI > switching to archived filter triggers API call without error",
+    "08 Lifecycle GUI > switching back to active filter restores document list",
+    "08 Lifecycle GUI > shows lifecycle warning hint text",
+    "08 Lifecycle GUI > active document is visible while deleted document is hidden",
+    "08 Lifecycle GUI > archived document is not returned by active search",
+    "08 Lifecycle GUI > archived document is visible only in archived filter"
+  ],
+  "name": "frontend_truth_group_lifecycle",
+  "environment": "local",
+  "database_url_set": true,
+  "gate": "m3a",
+  "blockers": [],
+  "known_limitations": [],
   "report_schema_version": 1,
   "report_name": "frontend_truth_group_lifecycle",
-  "gate": "m3a",
-  "status": "BLOCKED",
-  "timestamp": "2026-05-27T13:04:44.934675+00:00",
-  "environment": "local",
+  "status": "PASS",
   "report_type": "truth",
-  "collected": 1,
-  "passed": 0,
-  "failed": 1,
-  "errors": 0,
-  "skipped": 0,
-  "exit_code": 1,
-  "blockers": [
-    {
-      "gate": "m3a",
-      "severity": "critical",
-      "reason": "Previous group failed: Upload"
-    }
-  ],
   "source_command": "python scripts/run_frontend_full_suite_staged.py --group lifecycle",
   "generated_by": "gate_validator",
-  "commit_hash": "e210afd24",
+  "commit_hash": "0d59bcb78",
   "group": "Lifecycle",
   "slug": "lifecycle",
   "rank": 7,
   "specs": [
     "test_08_lifecycle.spec.js"
   ],
-  "activation_status": "blocked",
-  "blocked_by": "Upload"
+  "activation_status": "active"
 }

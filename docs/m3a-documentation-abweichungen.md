@@ -4,13 +4,13 @@ Stand: 2026-05-19
 
 ## Verbindliche Reports
 
-- `reports/frontend_truth_report.json`
-- `reports/gui_truth/latest.json`
-- `reports/gui_truth/gui_chaos_suite_report.json`
-- `reports/contract_test_report.json`
-- `reports/m3a_gate_result.json`
+- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/current/m3a_release_candidate.json`
+- `reports/current/gate_hierarchy_result.json`
 
-`reports/postgres_truth_report.json` ist keine M3a-Pflichtquelle. Der Report bleibt M4 Backend Truth und M5 Operational Truth.
+`reports/current/m4_truth_report.json` ist keine M3a-Pflichtquelle. Der Report bleibt M4 Backend Truth und M5 Operational Truth.
 
 ## Aktueller Gate-Stand
 
@@ -27,7 +27,7 @@ Stand: 2026-05-19
 | Datei | Alte Aussageklasse | Korrektur |
 |---|---|---|
 | `scripts/validate_m3a_gate.py` | vollstaendige `postgres_truth` konnte M3a blockieren | M3a nutzt Backend-Minimum statt M4/M5-Truth-Gesamtsuite |
-| `masterplan.md` | M3a als blockiert durch roten Frontend-/PostgreSQL-Truth beschrieben | M3a PASS, M4/M5 bleiben separat ueber PostgreSQL Truth blockiert |
+| `masterplan.md` | M3a als blockiert durch roten Frontend-/PostgreSQL-Truth beschrieben | M3a PASS, M4/M5 bleiben separat ueber PostgreSQL Truth blockiert | Quelle: `reports/current/masterplan_status.json`.
 | `docs/status.md` | M3a nicht stabilisiert, M4 zusaetzlich durch GUI blockiert | M3a abgeschlossen; M4 bleibt durch Backend Truth blockiert |
 | `docs/frontend.md` | alter roter Full-Suite-Lauf als aktuelle Gate-Grenze | aktueller gruener Full-Suite-Frontend-Truth referenziert |
 | `docs/api.md` | API-/GUI-Vertrag konnte als M3a durch komplette `postgres_truth` gekoppelt gelesen werden | M3a Backend-Minimum explizit reduziert |
@@ -43,4 +43,4 @@ Stand: 2026-05-19
 
 ## Dokumentationsregel
 
-M3a darf als `abgeschlossen`, `freigegeben`, `PASS` oder `stabilisiert` markiert werden, solange `reports/m3a_gate_result.json` gruen ist und keine neuere rote M3a-Quelle existiert.
+M3a darf als `abgeschlossen`, `freigegeben`, `PASS` oder `stabilisiert` markiert werden, solange `reports/current/gate_hierarchy_result.json` gruen ist und keine neuere rote M3a-Quelle existiert.

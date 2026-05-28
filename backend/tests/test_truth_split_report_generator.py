@@ -287,3 +287,32 @@ def test_write_marker_report_writes_only_m4b(tmp_path: Path) -> None:
 
     assert path == tmp_path / "m4b_upload_queue_truth.json"
     assert sorted(item.name for item in tmp_path.iterdir()) == ["m4b_upload_queue_truth.json"]
+
+
+def test_selected_report_markers_detects_single_marker_expression() -> None:
+    selected = split_reports._selected_report_markers(["-m", "m4a_auth_truth", "-q"])
+
+    assert selected == {"m4a_auth_truth"}
+
+
+def test_selected_report_markers_detects_multiple_marker_expression() -> None:
+    selected = split_reports._selected_report_markers([
+        "backend/tests",
+        "--markexpr=m4a_auth_truth or m4b_upload_queue_truth",
+        "-q",
+    ])
+
+    assert selected == {"m4a_auth_truth", "m4b_upload_queue_truth"}
+
+
+def test_with_default_test_target_prepends_target_for_marker_only_args() -> None:
+    pytest_args = split_reports._with_default_test_target(["-m", "m4c_lifecycle_retrieval_truth", "-q"])
+
+    assert pytest_args[0] == str(split_reports.DEFAULT_TEST_TARGET)
+    assert pytest_args[1:] == ["-m", "m4c_lifecycle_retrieval_truth", "-q"]
+
+
+def test_with_default_test_target_preserves_explicit_target() -> None:
+    pytest_args = split_reports._with_default_test_target(["backend/tests", "-m", "m4a_auth_truth"])
+
+    assert pytest_args == ["backend/tests", "-m", "m4a_auth_truth"]

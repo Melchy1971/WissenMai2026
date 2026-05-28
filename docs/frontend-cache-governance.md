@@ -50,9 +50,9 @@ Erlaubte Ausnahme: Membership-Caches nutzen statt `workspace_id` den Key `user_i
 | Workspace-Wechsel | invalidate old workspace | invalidate old workspace | invalidate old workspace | invalidate old workspace | keep only if same user/session, then revalidate |
 | Logout | clear all | clear all | clear all | clear all | clear all |
 | Restore beginnt | mark stale + block mutations | mark stale | mark stale | invalidate | invalidate |
-| Restore abgeschlossen | clear all and refetch | clear all and refetch | clear all and refetch | clear all and refetch | refetch `/auth/me` |
+| Restore abgeschlossen | clear all and refetch | clear all and refetch | clear all and refetch | clear all and refetch | refetch `/auth/me` | Quelle: `reports/current/masterplan_status.json`.
 | Reindex beginnt | keep list, mark search stale | mark stale + block stale-as-fresh | mark chat retrieval context stale | mark stale | no change |
-| Reindex abgeschlossen | optional refetch counts | invalidate all search results | mark citations/retrieval panels stale | refetch diagnostics | no change |
+| Reindex abgeschlossen | optional refetch counts | invalidate all search results | mark citations/retrieval panels stale | refetch diagnostics | no change | Quelle: `reports/current/masterplan_status.json`.
 | Lifecycle archive/restore/delete | invalidate list/detail for document | invalidate search for workspace | mark citations/source-status stale | refetch counts/status | no change |
 | Dokumentimport completed | invalidate active list | invalidate search for workspace | no direct reset; mark retrieval context stale | refetch import/counts | no change |
 | Duplicate erkannt | no list mutation unless backend returns existing doc update | no change | no change | refetch import counters | no change |

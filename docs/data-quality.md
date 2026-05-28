@@ -48,7 +48,7 @@ Statuslogik:
 ## Platzhalter fuer Nachweise
 
 - Truth-Test-Block: `data_quality`
-- geplanter Report-Bezug: `reports/postgres_truth_report.json`
+- geplanter Report-Bezug: `reports/current/m4_truth_report.json`
 - geplanter Detailnachweis: noch nicht implementiert
 
 ## Nicht-Scope

@@ -188,7 +188,7 @@ Erlaubte Vereinfachungen:
 Verbotene Vereinfachungen:
 
 - normale Fachnutzung als gesund darstellen, waehrend Restore aktiv ist
-- Restore-Ende behaupten, bevor Auth-, Workspace- und Cache-Neuvalidierung abgeschlossen sind
+- Restore-Ende behaupten, bevor Auth-, Workspace- und Cache-Neuvalidierung abgeschlossen sind Quelle: `reports/current/masterplan_status.json`.
 
 Degraded Darstellung:
 
@@ -358,7 +358,7 @@ Unknown state handling:
 
 - Wenn korrekte Mutation oder frische Berechnung nicht belegbar ist, wechselt die Surface auf read-only, stale, degraded oder blocked.
 
-### 4. Unknown statt Fake-Green
+### 4. Unknown statt Fake-Green Quelle: `reports/current/masterplan_status.json`.
 
 - Kann ein degradiertes Signal nicht zuverlaessig verifiziert werden, ist `unknown` der korrekte Zustand.
 
@@ -368,7 +368,7 @@ Unknown state handling:
 
 ## Verboten
 
-- Fake-Green
+- Fake-Green Quelle: `reports/current/masterplan_status.json`.
 - implizite Success-Zustaende
 - versteckte Degradation
 - optimistic completion ohne Nachweis

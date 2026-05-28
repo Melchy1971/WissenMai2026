@@ -410,7 +410,7 @@ Empfohlene Fehlerklassen:
 
 Bevor dieser RAG-Fluss produktiv umgesetzt wird, sollten mindestens folgende Bedingungen gelten:
 
-- M3b Retrieval ist hart abgeschlossen.
+- M3b Retrieval ist hart abgeschlossen. Quelle: `reports/current/masterplan_status.json`.
 - Search API und Ranking-Baseline sind gegen PostgreSQL verifiziert.
 - Evaluation-Dataset fuer Retrieval ist vorhanden.
 - Chat/RAG-API-Contract mit Quellenpflicht ist definiert.

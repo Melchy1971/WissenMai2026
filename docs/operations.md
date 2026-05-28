@@ -19,7 +19,7 @@ Was passiert (Reihenfolge):
 4. `backend/scripts/seed_auth.py` — Admin-User und Workspace anlegen/aktualisieren
 5. `scripts/check_auth_bootstrap.py --no-start-api` — Login + Workspace-Isolation prüfen (DB-only, kein API-Start)
 6. `/health` Smoke-Check auf Port 8001 (wenn Backend läuft)
-7. `reports/dev_bootstrap_report.json` schreiben
+7. `reports/current/m4a_auth_truth.json` schreiben
 
 Bei Fehler in einem Schritt: klare Meldung, Exit != 0, kein Silent Continue.
 
@@ -52,7 +52,7 @@ Betroffene Skripte:
 
 ## Auth Bootstrap Guard
 
-`scripts/check_auth_bootstrap.py` prüft nach dem Seed ob Login und Workspace-Isolation korrekt funktionieren. Bei Fehler: Exit != 0, Report in `reports/auth_bootstrap_guard.json`.
+`scripts/check_auth_bootstrap.py` prüft nach dem Seed ob Login und Workspace-Isolation korrekt funktionieren. Bei Fehler: Exit != 0, Report in `reports/current/m4a_auth_truth.json`.
 
 Einzeln ausführen:
 
@@ -65,14 +65,14 @@ python scripts/check_auth_bootstrap.py --no-start-api
 `scripts/validate_runtime_connectivity_gate.py` berechnet einen Score aus dem letzten `runtime_connectivity_report.json`:
 
 - 9 Checks: DB, Alembic, Seed, `/health`, Login, `/auth/me`, Workspace-Bootstrap, Frontend, kein `API_UNREACHABLE`
-- Score >= 95 % → PASS → M3a grün
+- Score >= 95 % → PASS → M3a grün Quelle: `reports/current/masterplan_status.json`.
 - Score < 95 % → FAIL → blockiert M3a und M4
 
 ```powershell
 python scripts/validate_runtime_connectivity_gate.py
 ```
 
-Letzter Run (2026-05-26): **9/9 = 100 % → PASS**
+Letzter Run (2026-05-26): **9/9 = 100 % → PASS** Quelle: `reports/current/masterplan_status.json`.
 
 ## Seed Credentials (Single Source of Truth)
 
@@ -98,7 +98,7 @@ Betroffene Skripte:
 ## Auth Bootstrap Guard
 
 `scripts/check_auth_bootstrap.py` prüft nach dem Seed ob Login und Workspace-Isolation korrekt funktionieren.
-Bei Fehler: Exit != 0, Report in `reports/auth_bootstrap_guard.json`.
+Bei Fehler: Exit != 0, Report in `reports/current/m4a_auth_truth.json`.
 
 Einzeln ausführen:
 
@@ -111,14 +111,14 @@ python scripts/check_auth_bootstrap.py --no-start-api
 `scripts/validate_runtime_connectivity_gate.py` berechnet einen Score aus dem letzten `runtime_connectivity_report.json`:
 
 - 9 Checks: DB, Alembic, Seed, `/health`, Login, `/auth/me`, Workspace-Bootstrap, Frontend, kein `API_UNREACHABLE`
-- Score >= 95 % → PASS → M3a grün
+- Score >= 95 % → PASS → M3a grün Quelle: `reports/current/masterplan_status.json`.
 - Score < 95 % → FAIL → blockiert M3a und M4
 
 ```powershell
 python scripts/validate_runtime_connectivity_gate.py
 ```
 
-Letzter Run (2026-05-26): **9/9 = 100 % → PASS**
+Letzter Run (2026-05-26): **9/9 = 100 % → PASS** Quelle: `reports/current/masterplan_status.json`.
 
 ## Backend Start Guard (PreflightService)
 

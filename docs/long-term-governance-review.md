@@ -48,7 +48,7 @@ Lücken:
 - Drift Detection ist in `docs/drift.md` explizit als **Vorbereitung, nicht gestartet** klassifiziert
 - Kein laufender Drift-Service; keine automatische Erkennung im Betrieb
 - Drift-Repair-Runbook (`docs/runbooks/m5-drift-repair-strategy.md`) vorhanden, aber Auslösung ist manuell
-- Kein maschinenlesbarer Drift-Report aus laufendem System (`reports/m5_drift/latest.json` ausstehend)
+- Kein maschinenlesbarer Drift-Report aus laufendem System (`geplanter M5-Drift-Report` ausstehend)
 - `m5_drift_score` ist metrisch definiert, aber ohne kontinuierliche Produzentenquelle
 
 ---
@@ -186,7 +186,7 @@ Lücken:
 
 **Schwere**: HIGH — Retrieval-Coverage-Degradation ist schleichend und ohne kontinuierliche Messung nicht sichtbar.
 
-**Schließungspfad**: Drift-Service als Background-Scheduler implementieren; `reports/m5_drift/latest.json` als kontinuierliche Truth-Quelle etablieren.
+**Schließungspfad**: Drift-Service als Background-Scheduler implementieren; `geplanter M5-Drift-Report` als kontinuierliche Truth-Quelle etablieren.
 
 ---
 

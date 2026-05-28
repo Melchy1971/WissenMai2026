@@ -1,0 +1,31 @@
+{
+  "marker": "m3a_truth",
+  "timestamp": "2026-05-28T07:33:06.752272+00:00",
+  "collected": 1,
+  "passed": 0,
+  "failed": 0,
+  "errors": 1,
+  "skipped": 0,
+  "pytest_exit_code": 1,
+  "test_database_url_set": true,
+  "failed_tests": [],
+  "write_error": "'missing built report for marker: m3a_truth'",
+  "blockers": [
+    {
+      "gate": "m3a",
+      "severity": "critical",
+      "reason": "report write failed: 'missing built report for marker: m3a_truth'"
+    }
+  ],
+  "report_format_version": 1,
+  "report_schema_version": 1,
+  "report_name": "m3a_truth",
+  "gate": "m3a",
+  "status": "FAIL",
+  "environment": "local",
+  "report_type": "truth",
+  "exit_code": 1,
+  "source_command": "python scripts/generate_truth_split_reports.py -- -m m3a_truth",
+  "generated_by": "gate_validator",
+  "commit_hash": "0d59bcb78"
+}

@@ -102,7 +102,7 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_cleanup_governance_tr
 **Repair-Strategie**:
 1. Wenn gelöschtes Dokument in Search erscheint: sofortiger Reindex-Lauf
 2. Wenn `deleted_at IS NOT NULL` aber `is_searchable = TRUE`: Repair-Migration Klasse C
-3. `test_m4c_lifecycle_retrieval_truth.py` muss nach Repair grün sein
+3. `test_m4c_lifecycle_retrieval_truth.py` muss nach Repair grün sein Quelle: `reports/current/masterplan_status.json`.
 
 ---
 
@@ -120,9 +120,9 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_cleanup_governance_tr
 ```
 pytest -m postgres_truth backend/tests/postgres_truth/test_m4a_auth_workspace_truth.py
 ```
-Gate-Bedingung: alle Workspace-Isolation-Tests grün; kein Cross-Workspace-Leak.
+Gate-Bedingung: alle Workspace-Isolation-Tests grün; kein Cross-Workspace-Leak. Quelle: `reports/current/masterplan_status.json`.
 
-**Repair-Strategie**: Cross-Workspace-Leak ist ein Sicherheitsvorfall. Keine Code-Änderung ohne Security Review. Gate bleibt `blocked` bis vollständige Root-Cause-Analyse abgeschlossen ist.
+**Repair-Strategie**: Cross-Workspace-Leak ist ein Sicherheitsvorfall. Keine Code-Änderung ohne Security Review. Gate bleibt `blocked` bis vollständige Root-Cause-Analyse abgeschlossen ist. Quelle: `reports/current/masterplan_status.json`.
 
 ---
 
@@ -190,7 +190,7 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_citation_longevity_tr
 
 ### INV-027: Kein Job wird mehr als einmal verarbeitet
 
-**Beschreibung**: Ein Job im Zustand `running` wird von genau einem Worker beansprucht. Advisory-Lock-Mechanismus verhindert parallele Verarbeitung desselben Jobs. Ein Job, der abgeschlossen ist (`completed`, `failed`, `dead_letter`), wird nicht erneut gestartet — nur ein expliziter Replay erzeugt einen neuen Job.
+**Beschreibung**: Ein Job im Zustand `running` wird von genau einem Worker beansprucht. Advisory-Lock-Mechanismus verhindert parallele Verarbeitung desselben Jobs. Ein Job, der abgeschlossen ist (`completed`, `failed`, `dead_letter`), wird nicht erneut gestartet — nur ein expliziter Replay erzeugt einen neuen Job. Quelle: `reports/current/masterplan_status.json`.
 
 **Kritikalität**: CRITICAL
 
@@ -265,7 +265,7 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_m4a_auth_workspace_tr
 ```
 pytest -m postgres_truth backend/tests/postgres_truth/test_m4a_auth_workspace_truth.py
 ```
-Gate-Bedingung: alle 11 Tests grün; kein Skip.
+Gate-Bedingung: alle 11 Tests grün; kein Skip. Quelle: `reports/current/masterplan_status.json`.
 
 **Repair-Strategie**: Sicherheitsvorfall-Protokoll; kein Merge bis vollständige Isolation-Analyse abgeschlossen.
 
@@ -324,7 +324,7 @@ Gate-Bedingung: `verify_backup()` gibt OK; INV-001 bis INV-020 gelten nach Resto
 **Kritikalität**: CRITICAL
 
 **Nachweisquelle**:
-- `reports/postgres_truth_report.json`: `alembic_heads` enthält genau eine Revision
+- `reports/current/m4_truth_report.json`: `alembic_heads` enthält genau eine Revision
 - `alembic heads` gibt genau eine Zeile zurück
 
 **Truth-Test**:
@@ -351,7 +351,7 @@ Gate-Bedingung: `alembic_heads` im Report = 1 Eintrag; `failed = 0`.
 
 **Truth-Test**: `BackupRestoreService.verify_backup()` mit aktuellem Backup-Manifest.
 
-**Repair-Strategie**: Backup-Lauf wiederholen; Verify-Lauf forcieren; bis Verify bestanden: kein destructiver Betrieb (Klasse-D-Migrationen, Cleanup-Mutation).
+**Repair-Strategie**: Backup-Lauf wiederholen; Verify-Lauf forcieren; bis Verify bestanden: kein destructiver Betrieb (Klasse-D-Migrationen, Cleanup-Mutation). Quelle: `reports/current/masterplan_status.json`.
 
 ---
 

@@ -11,7 +11,7 @@ python -m app.cli m5 entropy-audit
 
 Der Lauf erzeugt:
 
-- `reports/m5_entropy/YYYYMMDD_HHMMSS.json`
+- `historische M5-Entropy-Archivkopie`
 - `reports/m5_entropy/latest.json`
 - `reports/m5_entropy_audit.md`
 

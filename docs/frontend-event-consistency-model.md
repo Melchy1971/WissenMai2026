@@ -217,7 +217,7 @@ Ein Event ist stale, wenn mindestens eine Bedingung gilt:
 
 ## Degradation-Prinzipien fuer Events
 
-- Out-of-order Events duerfen niemals zu Fake-Green fuehren.
+- Out-of-order Events duerfen niemals zu Fake-Green fuehren. Quelle: `reports/current/masterplan_status.json`.
 - Wenn Ordering nicht sicher belegbar ist, gewinnt der konservativere Zustand.
 - `unknown`, `stale`, `retrying`, `reconnecting` und `maintenance` sind legitime Zwischenzustaende.
 - Completion ohne verifizierten Endnachweis ist verboten.

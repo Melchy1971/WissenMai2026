@@ -1,33 +1,56 @@
 {
+  "timestamp": "2026-05-28T07:04:24.900204+00:00",
+  "generated_at": "2026-05-28T07:04:24.900219+00:00",
+  "collected": 6,
+  "passed": 6,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8013",
+  "test_database_url_set": true,
+  "duration": 22.67,
+  "duration_seconds": 22.67,
+  "failed_flows": [],
+  "errors": 0,
+  "error_details": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8013/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "09 Diagnostics GUI > shows admin diagnostics page heading",
+    "09 Diagnostics GUI > shows system status card",
+    "09 Diagnostics GUI > shows database status card",
+    "09 Diagnostics GUI > shows migration status card",
+    "09 Diagnostics GUI > diagnostics page accessible via admin nav link",
+    "09 Diagnostics GUI > non-admin workspace member receives FORBIDDEN for diagnostics"
+  ],
+  "name": "frontend_truth_group_diagnostics",
+  "environment": "local",
+  "database_url_set": true,
+  "gate": "m3a",
+  "blockers": [],
+  "known_limitations": [],
   "report_schema_version": 1,
   "report_name": "frontend_truth_group_diagnostics",
-  "gate": "m3a",
-  "status": "BLOCKED",
-  "timestamp": "2026-05-27T13:04:45.075147+00:00",
-  "environment": "local",
+  "status": "PASS",
   "report_type": "truth",
-  "collected": 1,
-  "passed": 0,
-  "failed": 1,
-  "errors": 0,
-  "skipped": 0,
-  "exit_code": 1,
-  "blockers": [
-    {
-      "gate": "m3a",
-      "severity": "critical",
-      "reason": "Previous group failed: Upload"
-    }
-  ],
   "source_command": "python scripts/run_frontend_full_suite_staged.py --group diagnostics",
   "generated_by": "gate_validator",
-  "commit_hash": "e210afd24",
+  "commit_hash": "0d59bcb78",
   "group": "Diagnostics",
   "slug": "diagnostics",
   "rank": 8,
   "specs": [
     "test_09_diagnostics.spec.js"
   ],
-  "activation_status": "blocked",
-  "blocked_by": "Upload"
+  "activation_status": "active"
 }

@@ -1,33 +1,53 @@
 {
+  "timestamp": "2026-05-28T07:04:30.327055+00:00",
+  "generated_at": "2026-05-28T07:04:30.327065+00:00",
+  "collected": 3,
+  "passed": 3,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8013",
+  "test_database_url_set": true,
+  "duration": 5.29,
+  "duration_seconds": 5.29,
+  "failed_flows": [],
+  "errors": 0,
+  "error_details": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8013/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "11 GUI state invariants > documents route does not render data controls without validated workspace",
+    "11 GUI state invariants > API_UNREACHABLE on documents is not rendered as empty list",
+    "11 GUI state invariants > FORBIDDEN bootstrap state has no retry action"
+  ],
+  "name": "frontend_truth_group_error_states",
+  "environment": "local",
+  "database_url_set": true,
+  "gate": "m3a",
+  "blockers": [],
+  "known_limitations": [],
   "report_schema_version": 1,
   "report_name": "frontend_truth_group_error_states",
-  "gate": "m3a",
-  "status": "BLOCKED",
-  "timestamp": "2026-05-27T13:04:45.209752+00:00",
-  "environment": "local",
+  "status": "PASS",
   "report_type": "truth",
-  "collected": 1,
-  "passed": 0,
-  "failed": 1,
-  "errors": 0,
-  "skipped": 0,
-  "exit_code": 1,
-  "blockers": [
-    {
-      "gate": "m3a",
-      "severity": "critical",
-      "reason": "Previous group failed: Upload"
-    }
-  ],
   "source_command": "python scripts/run_frontend_full_suite_staged.py --group error_states",
   "generated_by": "gate_validator",
-  "commit_hash": "e210afd24",
+  "commit_hash": "0d59bcb78",
   "group": "Error States",
   "slug": "error_states",
   "rank": 9,
   "specs": [
     "test_11_state_invariants.spec.js"
   ],
-  "activation_status": "blocked",
-  "blocked_by": "Upload"
+  "activation_status": "active"
 }

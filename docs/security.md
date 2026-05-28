@@ -17,7 +17,7 @@ Alle Seed-Skripte und Bootstrap-Prozesse lesen konsistent:
 
 ### Auth Bootstrap Guard
 
-Nach dem Seed prüft `scripts/check_auth_bootstrap.py` Login und Workspace-Isolation. Fehler führen zu Exit != 0 und Report in `reports/auth_bootstrap_guard.json`.
+Nach dem Seed prüft `scripts/check_auth_bootstrap.py` Login und Workspace-Isolation. Fehler führen zu Exit != 0 und Report in `reports/current/m4a_auth_truth.json`.
 
 ### Auth- und Workspace-Konsistenz
 
@@ -79,7 +79,7 @@ Nicht freigegeben:
 - Workspace-Mutation
 - Dokumentreparatur
 
-M4d ist damit nur read-only vorbereitet. Vollständige M4d-Admin-Aktionen bleiben blockiert, bis M4a, M4b und M4c grün sind.
+M4d ist damit nur read-only vorbereitet. Vollständige M4d-Admin-Aktionen bleiben blockiert, bis M4a, M4b und M4c grün sind. Quelle: `reports/current/masterplan_status.json`.
 
 ### Workspace-Isolation
 
@@ -124,4 +124,4 @@ M4d ist damit nur read-only vorbereitet. Vollständige M4d-Admin-Aktionen bleibe
 
 - Dokumentation aktualisiert: ja
 - Sicherheitsmodell konsistent mit dem aktuellen M4-Minimalscope: ja
-- Entscheidung: M4a ist im aktuellen Gate-Stand freigabefaehig abgeschlossen
+- Entscheidung: M4a ist im aktuellen Gate-Stand freigabefaehig abgeschlossen Quelle: `reports/current/masterplan_status.json`.

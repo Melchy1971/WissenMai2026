@@ -27,7 +27,7 @@ Pflichtprozess:
 
 1. Breaking Changes erfordern neue Contract-Version (`v2` oder explizites Feld-Deprecation-Fenster).
 2. Deprecated fields bleiben mindestens eine Minor-Version erhalten und müssen hier dokumentiert sein.
-3. Contract-Tests (`test_frontend_backend_contracts.py`) müssen vor Merge grün sein.
+3. Contract-Tests (`test_frontend_backend_contracts.py`) müssen vor Merge grün sein. Quelle: `reports/current/masterplan_status.json`.
 4. Frontend-Mapping (`mappers.js`, `errorCatalog.js`) und diese Registry müssen im selben PR aktualisiert werden.
 5. Pydantic-Schema-Änderungen erfordern Registry-Update im selben Change.
 

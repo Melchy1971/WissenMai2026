@@ -239,5 +239,5 @@ Cache expiry:
 
 - Freshness verschlechtert sich konservativ, nicht optimistisch.
 - Invalidierende Ereignisse schlagen TTLs: Reindex, Restore, Workspace-Wechsel und Lifecycle-Mutation machen Daten sofort stale oder expired.
-- `unknown` ist besser als Fake-Green.
+- `unknown` ist besser als Fake-Green. Quelle: `reports/current/masterplan_status.json`.
 - Kein Auto-Refresh-Mechanismus darf still blockierende Betriebszustaende ueberschreiben.

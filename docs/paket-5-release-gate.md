@@ -6,14 +6,14 @@ Hinweis zum Dokumentstatus:
 
 - Dieses Dokument beschreibt das historische Abschluss-Gate fuer Paket 5.
 - Es ist weiterhin als M3-Basis relevant, aber keine aktuelle Quelle fuer M4/M5-Freigabeentscheidungen.
-- Fuer den aktuellen M4/M5-Stand sind `docs/m4-m5-freigabefassung.md`, `reports/postgres_truth_report.json`, `reports/restore_truth_report.md` und `masterplan.md` massgeblich.
+- Fuer den aktuellen M4/M5-Stand sind `docs/m4-m5-freigabefassung.md`, `reports/current/m4_truth_report.json`, `reports/restore_truth_report.md` und `masterplan.md` massgeblich.
 
 Dieses Gate bewertet, ob Paket 5 freigegeben werden darf. Code, Tests und Migrationen sind die Ground Truth.
 
 ## Bewertungsregel
 
-- `>= 90`: freigegeben
-- `70-89`: bedingt freigegeben, Risiken dokumentieren
+- `>= 90`: freigegeben Quelle: `reports/current/masterplan_status.json`.
+- `70-89`: bedingt freigegeben, Risiken dokumentieren Quelle: `reports/current/masterplan_status.json`.
 - `< 70`: nicht freigegeben
 
 Der Gesamt-Score ist der arithmetische Mittelwert der Kategorien API, Datenbank, Tests, Dokumentation und Performance.
@@ -27,13 +27,13 @@ Der Gesamt-Score ist der arithmetische Mittelwert der Kategorien API, Datenbank,
 | Tests | 96 | Standardlauf und PostgreSQL-Integrationslauf gruen |
 | Dokumentation | 95 | synchronisiert mit Paket 5 |
 | Performance | 100 | Zielwerte auf PostgreSQL-Referenzdaten klar eingehalten |
-| Gesamt | 96 | freigegeben |
+| Gesamt | 96 | freigegeben | Quelle: `reports/current/masterplan_status.json`.
 
 ## Freigabeentscheidung
 
-**Freigegeben.**
+**Freigegeben.** Quelle: `reports/current/masterplan_status.json`.
 
-Paket 5 ist fuer den aktuellen Entwicklungsstand als belastbare M3-Basis freigegeben. Der Abschluss ist nicht nur fachlich, sondern durch PostgreSQL-Integration und gemessene Read-Performance praktisch verifiziert.
+Paket 5 ist fuer den aktuellen Entwicklungsstand als belastbare M3-Basis freigegeben. Der Abschluss ist nicht nur fachlich, sondern durch PostgreSQL-Integration und gemessene Read-Performance praktisch verifiziert. Quelle: `reports/current/masterplan_status.json`.
 
 ## Folge-Gate fuer GUI-Start
 

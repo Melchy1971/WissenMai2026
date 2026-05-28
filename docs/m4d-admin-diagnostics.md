@@ -206,7 +206,7 @@ Fehlerdetails muessen redigiert bleiben. `details` darf keine Secrets, Connectio
 - M4d write/admin actions bleiben bis zum erfolgreichen M4a/M4b/M4c-Gate deaktiviert oder `not_implemented`.
 - Erst nach M4a-Gate duerfen Admin-Aktionen auf den finalen Auth-/Workspace-Kontext bauen.
 - Erst nach M4b-Gate duerfen Import- und Job-Aktionen produktiv erweitert werden.
-- Erst nach M4c-Gate duerfen Lifecycle-nahe Reparatur-, Reindex- oder Restore-Aktionen produktiv freigegeben werden.
+- Erst nach M4c-Gate duerfen Lifecycle-nahe Reparatur-, Reindex- oder Restore-Aktionen produktiv freigegeben werden. Quelle: `reports/current/masterplan_status.json`.
 - Jede spaetere mutierende Admin-Aktion braucht einen eigenen API-Vertrag, Auth-Test, Audit-/Observability-Regel und Rollback-/Failure-Mode-Dokumentation.
 
 ### Aktuelle Code-Markierung

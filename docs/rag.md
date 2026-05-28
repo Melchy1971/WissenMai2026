@@ -90,8 +90,8 @@ Alle Fehler verwenden das API-Error-Envelope.
 
 ## Abschlussstand
 
-- Fachlicher Fortschritt: abgeschlossen fuer M3c Foundation
-- Harter Abschluss: bestanden
+- Fachlicher Fortschritt: abgeschlossen fuer M3c Foundation Quelle: `reports/current/masterplan_status.json`.
+- Harter Abschluss: bestanden Quelle: `reports/current/masterplan_status.json`.
 - Score: `94/100`
 - Historische Entscheidung nach M3c-Abschluss: `Go` fuer den Start von M4-Produktisierung; kein aktueller M4-Freigabestatus.
 

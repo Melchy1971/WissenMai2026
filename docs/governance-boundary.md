@@ -44,4 +44,4 @@ Spaetere Anforderungen duerfen fruehere Gates nicht blockieren. Gate-Status wird
 
 ## Maschinenlesbare Quelle
 
-Die verbindliche Boundary steht in `docs/governance-boundary.json`. Gate-Validatoren und Status-Engines duerfen M4 nicht mit `m5_truth` oder `governance_truth` blockieren. M5 darf durch M4 blockiert werden, bis `m4_overall_gate` PASS ist.
+Die verbindliche Boundary steht in `docs/governance-boundary.json`. Gate-Validatoren und Status-Engines duerfen M4 nicht mit `m5_truth` oder `governance_truth` blockieren. M5 darf durch M4 blockiert werden, bis `m4_overall_gate` PASS ist. Quelle: `reports/current/masterplan_status.json`.

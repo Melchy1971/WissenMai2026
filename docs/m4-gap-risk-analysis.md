@@ -7,7 +7,7 @@ Hinweis zum Dokumentstatus:
 
 - Dieses Dokument bleibt als historische Gap- und Risikoanalyse vor dem finalen M4-Abschluss erhalten.
 - Es ist keine aktuelle Freigabequelle mehr.
-- Massgeblich fuer den aktuellen Stand sind `docs/m4-m5-freigabefassung.md`, `reports/postgres_truth_report.json`, `reports/restore_truth_report.md` und `masterplan.md`.
+- Massgeblich fuer den aktuellen Stand sind `docs/m4-m5-freigabefassung.md`, `reports/current/m4_truth_report.json`, `reports/restore_truth_report.md` und `masterplan.md`.
 - Aussagen in diesem Dokument zu blockiertem M4 oder blockiertem M5 gelten nur als historischer Analysepfad und nicht als aktuelle Entscheidung.
 
 ---
@@ -324,7 +324,7 @@ Aufwand: 1h. Schließt P9.
 
 **Fix L1: Search-Index-Rebuild implementieren** (P5)
 POST /search-index/rebuild von 501 auf echte Implementierung migrieren,
-nachdem M4a+M4b+M4c Gates grün sind.
+nachdem M4a+M4b+M4c Gates grün sind. Quelle: `reports/current/masterplan_status.json`.
 Aufwand: 1 Tag.
 
 **Fix L2: Frontend CI + E2E Auth-Test** (P10)
@@ -341,7 +341,7 @@ Aufwand: 4h.
 | Produktionsreife | ~60% | Gate-fähig-Wert |
 | Differenz | **-20%** | strukturell |
 | Sofort-Fixes (S1–S5) | ~5 Arbeitstage | Schätzung |
-| Gate = PASS nach S1–S5 | möglich | vorausgesetzt DB verfügbar |
+| Gate = PASS nach S1–S5 | möglich | vorausgesetzt DB verfügbar | Quelle: `reports/current/masterplan_status.json`.
 
 Die 20-Punkte-Lücke ist nicht durch Implementierungsfehler entstanden, sondern durch:
 1. **Fehlende Infrastruktur** (kein CI-PostgreSQL, kein Startup-Recovery)

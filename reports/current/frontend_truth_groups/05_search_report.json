@@ -1,33 +1,56 @@
 {
+  "timestamp": "2026-05-28T07:03:36.045129+00:00",
+  "generated_at": "2026-05-28T07:03:36.045140+00:00",
+  "collected": 6,
+  "passed": 6,
+  "failed": 0,
+  "skipped": 0,
+  "browser": "chromium",
+  "api_base_url": "http://127.0.0.1:8013",
+  "test_database_url_set": true,
+  "duration": 11.65,
+  "duration_seconds": 11.65,
+  "failed_flows": [],
+  "errors": 0,
+  "error_details": [],
+  "exit_code": 0,
+  "playwright_exit_code": 0,
+  "real_api": true,
+  "mock_only": false,
+  "api_database_health": {
+    "url": "http://127.0.0.1:8013/health/db",
+    "ok": true,
+    "status_code": 200,
+    "status": "ok"
+  },
+  "failed_tests": [],
+  "skipped_tests": [],
+  "passed_tests": [
+    "06 Search flow > shows search form elements",
+    "06 Search flow > submitting empty search term shows idle state without error",
+    "06 Search flow > query with hits returns the seeded truth document",
+    "06 Search flow > query with no hits renders empty search state",
+    "06 Search flow > search with workspace context sends request to real backend",
+    "06 Search flow > search API error is an error state, not an empty result"
+  ],
+  "name": "frontend_truth_group_search",
+  "environment": "local",
+  "database_url_set": true,
+  "gate": "m3a",
+  "blockers": [],
+  "known_limitations": [],
   "report_schema_version": 1,
   "report_name": "frontend_truth_group_search",
-  "gate": "m3a",
-  "status": "BLOCKED",
-  "timestamp": "2026-05-27T13:04:44.660663+00:00",
-  "environment": "local",
+  "status": "PASS",
   "report_type": "truth",
-  "collected": 1,
-  "passed": 0,
-  "failed": 1,
-  "errors": 0,
-  "skipped": 0,
-  "exit_code": 1,
-  "blockers": [
-    {
-      "gate": "m3a",
-      "severity": "critical",
-      "reason": "Previous group failed: Upload"
-    }
-  ],
   "source_command": "python scripts/run_frontend_full_suite_staged.py --group search",
   "generated_by": "gate_validator",
-  "commit_hash": "e210afd24",
+  "commit_hash": "0d59bcb78",
   "group": "Search",
   "slug": "search",
   "rank": 5,
   "specs": [
     "test_06_search.spec.js"
   ],
-  "activation_status": "blocked",
-  "blocked_by": "Upload"
+  "activation_status": "active"
 }

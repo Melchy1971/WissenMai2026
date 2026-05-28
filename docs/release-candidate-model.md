@@ -1,6 +1,6 @@
 # Release Candidate Modell
 
-Dieses Modell definiert die Zwischenstufen zwischen Entwicklung und abgeschlossen. Es ist verbindlich fuer Masterplan-Statusaussagen, Gate-Freigaben und Release-Kommunikation.
+Dieses Modell definiert die Zwischenstufen zwischen Entwicklung und abgeschlossen. Es ist verbindlich fuer Masterplan-Statusaussagen, Gate-Freigaben und Release-Kommunikation. Quelle: `reports/current/masterplan_status.json`.
 
 Maschinenlesbare Quelle: `docs/release-candidate-model.json`.
 

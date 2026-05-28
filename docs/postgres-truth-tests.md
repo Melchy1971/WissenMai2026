@@ -11,7 +11,7 @@ Die Suite liegt unter `backend/tests/postgres_truth/` und ist mit `postgres_trut
 Aktueller Code-Stand:
 
 - Die Suite liegt unter `backend/tests/postgres_truth/test_*.py`.
-- Collection- und Laufzahlen fuer M4-Gates muessen aus `reports/postgres_truth_report.json` kommen.
+- Collection- und Laufzahlen fuer M4-Gates muessen aus `reports/current/m4_truth_report.json` kommen.
 - Ob die Suite gruen ist, darf nur aus einem aktuellen JSON-Testreport mit gesetzter `TEST_DATABASE_URL` behauptet werden.
 - `reports/postgres_truth_report.md` ist nur eine menschenlesbare Begleitansicht und keine M4-Gate-Quelle.
 
@@ -149,12 +149,12 @@ Die Tests verwenden echte SQLAlchemy-/psycopg-Verbindungen gegen PostgreSQL. Feh
 
 Jeder Lauf schreibt zwei Artefakte:
 
-- `reports/postgres_truth_report.json`
+- `reports/current/m4_truth_report.json`
 - `reports/postgres_truth_report.md`
 
 Die einzige automatisierbare und freigaberelevante M4-Gate-Quelle ist:
 
-- `reports/postgres_truth_report.json`
+- `reports/current/m4_truth_report.json`
 
 Fuer M5 gilt dieselbe Regel:
 
@@ -179,7 +179,7 @@ Die Markdown-Datei ist nur die menschenlesbare Sicht auf denselben Lauf. Massgeb
 
 Der Validator liegt unter `scripts/validate_m4_truth_gate.py` und wird lokal ueber `scripts/validate-m4-truth-gate.ps1` ausgefuehrt.
 
-`M4 Truth Gate = PASS` gilt nur, wenn alle Bedingungen aus `reports/postgres_truth_report.json` erfuellt sind:
+`M4 Truth Gate = PASS` gilt nur, wenn alle Bedingungen aus `reports/current/m4_truth_report.json` erfuellt sind:
 
 - `test_database_url_set = true`
 - `skipped = 0`

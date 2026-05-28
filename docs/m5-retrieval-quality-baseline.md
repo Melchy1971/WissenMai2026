@@ -30,10 +30,10 @@ python -m app.cli m5 retrieval-benchmark --set-baseline
 
 Reports:
 
-- `reports/m5_retrieval/YYYYMMDD_HHMMSS.json`
+- `historische M5-Retrieval-Archivkopie`
 - `reports/m5_retrieval/latest.json`
 - `reports/m5_retrieval_summary.md`
-- `reports/m5_retrieval_regression/YYYYMMDD_HHMMSS.json`
+- `historische M5-Retrieval-Regression-Archivkopie`
 - `reports/m5_retrieval_regression/latest.json`
 - `reports/m5_retrieval_regression/baseline.json`
 - `reports/m5_retrieval_regression_summary.md`

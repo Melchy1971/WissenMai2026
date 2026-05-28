@@ -31,15 +31,15 @@ Nicht erforderlich fuer M3a:
 
 ## Blockierende M3a-Quellen
 
-- `reports/frontend_truth_report.json`
-- `reports/gui_truth/latest.json`
-- `reports/gui_truth/gui_chaos_suite_report.json`
-- `reports/contract_test_report.json`
-- `reports/m3a_gate_result.json`
+- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/current/m3a_release_candidate.json`
+- `reports/current/gate_hierarchy_result.json`
 
 ## Nicht blockierende M3a-Referenz
 
-`reports/postgres_truth_report.json` darf im M3a-Report als M4/M5-Referenz erscheinen, aber sein Gesamtstatus ist keine M3a-Regel.
+`reports/current/m4_truth_report.json` darf im M3a-Report als M4/M5-Referenz erscheinen, aber sein Gesamtstatus ist keine M3a-Regel.
 
 Rote `postgres_truth`-Bloecke blockieren weiterhin M4/M5, wenn sie zu Auth/Workspace, Upload/Queue, Lifecycle/Retrieval, Recovery, Drift, Cleanup, Entropy oder Operational Readiness gehoeren.
 
@@ -47,7 +47,7 @@ Die Detailklassifikation der aktuellen roten `postgres_truth`-Findings steht in 
 
 ## Gate-Regel
 
-M3a ist abgeschlossen, wenn alle M3a-Regeln in `scripts/validate_m3a_gate.py` gruen sind:
+M3a ist abgeschlossen, wenn alle M3a-Regeln in `scripts/validate_m3a_gate.py` gruen sind: Quelle: `reports/current/masterplan_status.json`.
 
 - Full-Suite Frontend Truth gruen.
 - Der Full-Suite-Scope entspricht `docs/frontend-truth-full-suite-scope.md`; ein Auth-/Bootstrap-Slice reicht nicht.

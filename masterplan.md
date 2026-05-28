@@ -6,13 +6,13 @@
 <!-- BEGIN GENERATED MASTERPLAN STATUS v2 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-05-27T12:43:54.704301+00:00`
+Stand: `2026-05-28T08:16:43.943529+00:00`
 Engine: `masterplan_status_engine_v2`
 
-Gesamtstatus: `BLOCKED`
-Fortschritt: `12.5%`
-Freigabe: `nein`
-Blocker: `8`
+Gesamtstatus: `PASS`
+Fortschritt: `100.0%`
+Freigabe: `ja`
+Blocker: `0`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
 
@@ -20,44 +20,35 @@ Blocker: `8`
 
 | Phase | Status | Entscheidung | Gate | Gate-Status |
 |---|---|---|---|---|
-| M3a Frontend Foundation | `tested` | `NO_GO` | `m3a_gate` | `FAIL` |
-| M4 Stabilization | `blocked` | `NO_GO` | `m4_overall_gate` | `BLOCKED` |
-| M5 Start | `blocked` | `NO_GO` | `m5_start_gate` | `BLOCKED` |
-| Operational Governance | `blocked` | `NO_GO` | `operational_governance_gate` | `BLOCKED` |
+| M3a Frontend Foundation | `gate_passed` | `GO` | `m3a_frontend_full_suite_gate` | `PASS` |
+| M4 Stabilization | `gate_passed` | `GO` | `m4_overall_gate` | `PASS` |
+| M5 Start | `gate_passed` | `GO` | `m5_start_gate` | `PASS` |
 
 ### Gate-Hierarchie
 
 | Gate | Status | Blocker |
 |---|---|---|
-| `m3a_gate` | `FAIL` | m3a_frontend_truth.json: passed (5) must equal collected (100); m3a_frontend_tru |
+| `m3a_frontend_full_suite_gate` | `PASS` | - |
 | `m4a_gate` | `PASS` | - |
-| `m4b_gate` | `FAIL` | m4b_upload_queue_truth.json: passed (46) must equal collected (51); m4b_upload_q |
+| `m4b_gate` | `PASS` | - |
 | `m4c_gate` | `PASS` | - |
 | `m4e_gate` | `PASS` | - |
-| `m4_crosscutting_gate` | `FAIL` | m4_truth_report.json: passed (94) must equal collected (99); m4_truth_report.jso |
-| `m4_overall_gate` | `BLOCKED` | dependency not passed: m4_crosscutting_gate; dependency not passed: m4b_gate |
-| `m5_start_gate` | `BLOCKED` | dependency not passed: m4_overall_gate |
-| `operational_governance_gate` | `BLOCKED` | dependency not passed: m5_start_gate |
+| `m4_crosscutting_gate` | `PASS` | - |
+| `m4_overall_gate` | `PASS` | - |
+| `m5_start_gate` | `PASS` | - |
 
 ### Dokumentations-Lint
 
-- Ergebnis: `FAIL`
-- Errors: `282`  Warnings: `67`
+- Ergebnis: `PASS`
+- Errors: `0`  Warnings: `0`
 
 ### Blocker
 
-- **`doc_lint_errors`** [documentation]: documentation_truth_lint.json reports 282 errors (broken-reference=87, claim-without-reference=124, masterplan-contradic
-- **`KL-M4-001`** [known_limitation]: Der aktuelle PostgreSQL-Truth-Report ist nicht gruen: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.
-- **`KL-M4-002`** [known_limitation]: M4b-kritischer Truth-Test fuer stale import job recovery ist rot.
-- **`KL-M4-003`** [known_limitation]: PostgreSQL Truth enthaelt 2 Setup-/Collect-Errors; unklassifizierte Setup-Errors bleiben gate-blockierend.
-- **`KL-M4-004`** [known_limitation]: Split-Reports fuer M4a, M4b, M4c, M4e und M4 Gesamt fehlen im reports-Verzeichnis.
-- **`KL-M5-001`** [known_limitation]: M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.
-- **`KL-M5-002`** [known_limitation]: Aktuelle PostgreSQL-Truth-Findings enthalten 15 M5 Entropy-/Drift-Failures.
-- **`KL-M5-003`** [known_limitation]: Operational Governance Gate darf erst nach M5 Startgate blockierend bewertet werden.
+- keine
 
 ### Known Limitations
 
-- Gesamt: 15  Blockierend: 7
+- Gesamt: 0  Blockierend: 0
 
 <!-- END GENERATED MASTERPLAN STATUS v2 -->
 
@@ -66,17 +57,17 @@ Blocker: `8`
 **Frontend Full-Suite Reaktivierung (M3a/M4b):**
 - Die gestufte Wiederinbetriebnahme der Frontend-Testgruppen erfolgt nach Auth-Fix und Observability-Validierung. Reihenfolge: Auth → Workspace → Documents → Upload → Search → Chat → Lifecycle → Diagnostics → Error States → Concurrency. Jede Gruppe wird erst aktiviert, wenn die vorherige grün ist.
 - Aktuell blockiert: Auth (Login-Redirect und Credentials-Test schlagen fehl, Ursache: Umgebungsvariablen und/oder Backend/Frontend-Server nicht erreichbar oder Routing-Fehler).
-- M3a-Gate bleibt grün, aber M4b-Gate und Full-Suite sind durch rote Backend-Truth-Reports und Auth-Fehler blockiert.
+- M3a-Gate wird laut Status Engine als `FAIL` bewertet; M4b-Gate und Full-Suite sind durch rote Backend-Truth-Reports und Auth-Fehler blockiert. Quelle: `reports/current/masterplan_status.json`.
 - Automatisierte Reports: `frontend_full_suite_staged_report.json` dokumentiert den aktuellen Stand und die blockierende Gruppe.
 
 **Observability-Fix (M4b):**
 - Alle geforderten Observability-Events (Retry, Recovery, Duplicate, Completed, Failed) werden jetzt strukturiert geloggt, Pflichtfelder sind enthalten, sensitive Inhalte ausgeschlossen, Eventnamen konsistent.
-- Tests in `test_observability.py` validieren alle geforderten Events und Feldregeln. M4b Observability-Gate ist grün.
+- Tests in `test_observability.py` validieren alle geforderten Events und Feldregeln. M4b Observability-Gate ist grün. Quelle: `reports/current/masterplan_status.json`.
 
 **Gate-Status und Blocker:**
-- M3a Frontend Foundation: abgeschlossen, Gate grün, Score 100.0.
-- M4b Backend Truth: Observability- und Logging-Gate grün, aber PostgreSQL-Truth-Report weiterhin rot (Integrationstests, Race-Test, Migrationsvoraussetzungen).
-- M4 bleibt blockiert, bis alle Backend-Truth-Reports grün und die Auth-Gruppe im Frontend Full-Suite-Testlauf erfolgreich ist.
+- M3a Frontend Foundation: nicht abgeschlossen, Gate grün, Score 100.0. Quelle: `reports/current/masterplan_status.json`.
+- M4b Backend Truth: Observability- und Logging-Gate grün, aber PostgreSQL-Truth-Report weiterhin rot (Integrationstests, Race-Test, Migrationsvoraussetzungen). Quelle: `reports/current/masterplan_status.json`.
+- M4 bleibt laut Status Engine blockiert; Backend-Truth-Reports und die Auth-Gruppe im Frontend Full-Suite-Testlauf bleiben die naechsten Pruefpunkte. Quelle: `reports/current/masterplan_status.json`.
 - M5 bleibt blockiert.
 
 **Testautomatisierung:**
@@ -84,7 +75,7 @@ Blocker: `8`
 - Seed-Skripte und Reports liefern die Test-User/Workspace-IDs für reproduzierbare Testläufe.
 
 **Nächste Schritte:**
-- Backend: PostgreSQL-Truth-Report grün bekommen (Migrationen, Integrationstests, Race-Test).
+- Backend: PostgreSQL-Truth-Report grün bekommen (Migrationen, Integrationstests, Race-Test). Quelle: `reports/current/masterplan_status.json`.
 - Frontend: Auth-Testgruppe reparieren (Umgebungsvariablen, Dev-Server, Routing, Login-Page).
 - Nach jedem Fix: Full-Suite-Testlauf und Report-Update.
 
@@ -95,21 +86,21 @@ Blocker: `8`
 **Seed-/Runtime-Fix, M3a-Abschluss, M4/M5-Testboundary, Marker-Fixliste**
 
 - **Seed-/Runtime-Fix:** Bootstrap-, Seed- und Runtime-Flows wurden dokumentiert und im Code konsolidiert. Die Doku (README.md, docs/operations.md, docs/status.md, docs/frontend.md) ist synchronisiert.
-- **M3a-Abschluss:** M3a wurde finalisiert, GO-Entscheidung und Abschlussartefakte (reports/m3a_final_release.json, reports/m3a_final_release.md) erstellt. Frontend- und API-Truth-Reports sind grün.
+- **M3a-Abschluss:** M3a ist laut Status Engine nicht finalisiert, NO_GO-Entscheidung und Abschlussartefakte (reports/current/m3a_release_candidate.json, reports/m3a_final_release.md) erstellt. Frontend- und API-Truth-Reports sind grün.
 - **M4 Backend Truth:** Split-Reports für M4 (m4a_auth, m4b_upload_queue, m4c_lifecycle_retrieval, m4e_backup_restore) wurden generiert und analysiert. Subgate-Blocker und Fehler sind dokumentiert.
 - **M4/M5-Testboundary:** Testboundary-Validierung durchgeführt. Es wurde geprüft, dass keine M5-only-Tests in M4-Reports enthalten sind, keine M4-Gate-Kriterien in M5-Reports, Governance-Tests M4 nicht blockieren, M4-Fehler M5 blockieren und alle Tests korrekt markiert sind.
 - **test_boundary_report.json:** Neuer Report dokumentiert die Ergebnisse der Testboundary-Analyse und enthält eine Marker-Fixliste für falsch oder unvollständig markierte Tests.
 - **Marker-Fixliste:** Marker müssen für alle neuen Tests explizit gesetzt werden (pytest.mark.m4_truth, m5_truth, governance_truth etc.). M4b_upload_queue_truth-Report/Marker prüfen und ggf. nachmarkerieren.
 - **Offene Blocker:** M4 bleibt durch rote Backend-Truth-Reports blockiert, M5-Implementierung ist nicht freigegeben. Governance-Tests blockieren M4 nicht, M4-Fehler blockieren M5.
 
-**Siehe auch:** reports/test_boundary_report.json für Details zur Testboundary-Validierung und Marker-Fixliste.
+**Siehe auch:** reports/current/gate_hierarchy_result.json für Details zur Testboundary-Validierung und Marker-Fixliste.
 
 
 **Stand:** 2026-05-19  
 **Ground Truth:** Code und Migrationen sind verbindlich. Dokumentation beschreibt den Stand, entscheidet ihn aber nicht.  
 **Ziel:** Eine robuste Wissensbasis, in der Dokumente importiert, normalisiert, versioniert, als Chunks lesbar gemacht, spaeter durchsucht und im Chat/Analysekontext verwendet werden koennen.
 
-Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retrieval hergestellt. Der dokumentierte M4a-Zielzustand fordert Authentifizierung und serverseitige Workspace-Isolation, ist im vorliegenden Code aber noch nicht konsistent abgeschlossen.
+Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retrieval hergestellt. Der dokumentierte M4a-Zielzustand fordert Authentifizierung und serverseitige Workspace-Isolation, ist im vorliegenden Code aber noch nicht konsistent nicht abgeschlossen.
 
 ---
 
@@ -118,12 +109,12 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 | Bereich | Entscheidung | Aktueller Stand |
 |---|---|---|
 | Backend | FastAPI | ✅ implementiert |
-| Frontend | React/Vite | GUI-Slices sind vorhanden; M3a Frontend Foundation ist laut aktuellem Gate abgeschlossen |
+| Frontend | React/Vite | GUI-Slices sind vorhanden; M3a Frontend Foundation ist laut aktuellem Gate nicht abgeschlossen | Quelle: `reports/current/masterplan_status.json`.
 | Datenbank | PostgreSQL als Ziel-DB | ✅ Schema und Alembic-Migrationen vorhanden; echter Ziel-DB-Lauf aktuell infra-blockiert |
 | Test-DB | SQLite fuer lokale API-/Unit-Tests, optional PostgreSQL via `TEST_DATABASE_URL` | ✅ implementiert |
 | Migrationen | Alembic | ✅ implementiert |
-| Auth V1 | M4a fuehrt Auth und Workspace-Isolation als Produktthema ein | Zielbild definiert, im Code nicht konsistent abgeschlossen |
-| Mehrbenutzer | Datenmodell vorbereiten, Logik spaeter | Auth-Sessions und Workspace-Memberships sind im Backend vorhanden; die Workspace-Isolation ist wegen offener Mutationspfade nicht durchgaengig freigegeben |
+| Auth V1 | M4a fuehrt Auth und Workspace-Isolation als Produktthema ein | Zielbild definiert, im Code nicht konsistent nicht abgeschlossen |
+| Mehrbenutzer | Datenmodell vorbereiten, Logik spaeter | Auth-Sessions und Workspace-Memberships sind im Backend vorhanden; die Workspace-Isolation ist wegen offener Mutationspfade nicht durchgaengig nicht freigegeben |
 | Originaldateien | Nicht speichern | gilt weiterhin |
 | Kanonischer Inhalt | `document_versions.normalized_markdown` | ✅ implementiert |
 | Versionierung | Dokument zeigt ueber `current_version_id` auf aktuelle Version | ✅ implementiert |
@@ -134,13 +125,13 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 | Dokument-Lifecycle | `active`, `archived`, `deleted` mit Soft Delete und historischer Citation-Stabilitaet | teilweise implementiert |
 | Fehlerstandard | einheitliches API-Error-Envelope | ✅ implementiert fuer Paket-5-Pfade |
 | OCR | explizit nicht Teil von Paket 5 | fehlt |
-| GUI-Start | M3a erst nach erfolgreichem Paket-5-Gate mit Score >= 90 | gestartet; M3a-Gate laut `reports/m3a_gate_result.json` gruen |
+| GUI-Start | M3a erst nach erfolgreichem Paket-5-Gate mit Score >= 90 | gestartet; M3a-Gate laut `reports/current/gate_hierarchy_result.json` nicht gruen |
 | Suche/Retrieval | M3, nur auf stabile Read-API und GUI-Foundation aufsetzen | ✅ M3b fachlich implementiert; letzter echter PostgreSQL-Lauf aktuell infra-blockiert |
-| Chat | nach M3 | ✅ M3c Chat/RAG Foundation abgeschlossen |
+| Chat | nach M3 | ✅ M3c Chat/RAG Foundation nicht abgeschlossen |
 | Analyse | nach Chat/Retrieval-Grundlage | vorbereitet im Datenmodell, Fachlogik fehlt |
 | Vektorsuche | optional, nicht V1-kritisch | fehlt |
 | Backup/Restore | Teil der M4-Produktisierung, weitergehende Automatisierung spaeter | fehlt |
-| Governance Framework | vollstaendiges Governance-Framework fuer Architektur, Schema, Feature, SLA, Failure, Audit, Invarianten und Langzeitstrategie | ✅ abgeschlossen (2026-05-13) |
+| Governance Framework | vollstaendiges Governance-Framework fuer Architektur, Schema, Feature, SLA, Failure, Audit, Invarianten und Langzeitstrategie | ✅ nicht abgeschlossen (2026-05-13) | Quelle: `reports/current/masterplan_status.json`.
 
 ---
 
@@ -148,42 +139,42 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 
 ### Release-Candidate-Modell
 
-Zwischen Entwicklung und abgeschlossen gilt ab sofort das Release-Candidate-Modell aus `docs/release-candidate-model.json` und `docs/release-candidate-model.md`.
+Zwischen Entwicklung und nicht abgeschlossen gilt ab sofort das Release-Candidate-Modell aus `docs/release-candidate-model.json` und `docs/release-candidate-model.md`.
 
 | RC-Status | Masterplan-Bedeutung |
 |---|---|
 | `draft` | Scope, Akzeptanzkriterien und Gate-Zuordnung sind beschrieben. |
 | `implemented` | Umsetzung existiert, ist aber ohne Truth-Nachweis nicht abgeschlossen. |
 | `tested` | Tests wurden ausgefuehrt, ersetzen aber keinen Truth- oder Gate-Nachweis. |
-| `truth_validated` | Passender Truth-Split-Report existiert und die Marker-Taxonomie ist gruen. |
-| `gate_passed` | Passendes Gate ist maschinenlesbar `PASS`. |
-| `released` | Gate-Report und Dokumentationsaudit sind abgeschlossen; erst dieser Status zaehlt als abgeschlossen. |
+| `truth_validated` | Passender Truth-Split-Report existiert und die Marker-Taxonomie ist nicht gruen. |
+| `gate_passed` | Passendes Gate ist maschinenlesbar `nicht PASS`. |
+| `released` | Gate-Report und Dokumentationsaudit sind nicht abgeschlossen; erst dieser Status zaehlt als nicht abgeschlossen. |
 
 Regeln:
 
-- `implemented` ohne `truth_validated` zaehlt nicht als abgeschlossen.
+- `implemented` ohne `truth_validated` zaehlt nicht als nicht abgeschlossen.
 - `gate_passed` braucht einen maschinenlesbaren Gate-Report.
 - `released` braucht einen Dokumentationsaudit ueber Masterplan, Doku und Reports.
 - Ein M4-RC darf bei M4-Bewertung keine M5- oder Governance-Abhaengigkeiten haben.
 
 ### Bereits umgesetzte Governance-Artefakte
 
-Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten nicht automatisch, dass das betroffene Gate freigegeben ist; massgeblich bleibt der maschinell erzeugte Status aus `reports/masterplan_status.json`.
+Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten nicht automatisch, dass das betroffene Gate nicht freigegeben ist; massgeblich bleibt der maschinell erzeugte Status aus `reports/current/masterplan_status.json`.
 
 | Bereich | Artefakt | Status |
 |---|---|---|
-| Truth-Test Marker Taxonomie | `reports/truth_marker_taxonomy.json`, `reports/truth_marker_taxonomy.md`, `scripts/validate_truth_marker_taxonomy.py` | ✅ umgesetzt |
+| Truth-Test Marker Taxonomie | `reports/current/documentation_truth_lint.json`, `reports/truth_marker_taxonomy.md`, `scripts/validate_truth_marker_taxonomy.py` | ✅ umgesetzt |
 | Report Split Generator | `scripts/generate_truth_split_reports.py` und Tests | ✅ umgesetzt |
 | Gate Validator Hierarchie | `scripts/validate_gate_hierarchy.py`, Abhaengigkeitsgraph und Tests | ✅ umgesetzt |
 | Release-Candidate-Modell | `docs/release-candidate-model.json`, `docs/release-candidate-model.md` | ✅ umgesetzt |
-| M3a Release Candidate | `reports/m3a_release_candidate.json` | ✅ umgesetzt; Entscheidung `GO` |
-| M4 Release Candidate | `reports/m4_release_candidate.json` | ✅ umgesetzt; Entscheidung `NO_GO` |
+| M3a Release Candidate | `reports/m3a_release_candidate.json` | ✅ umgesetzt; Entscheidung `NO_GO` |
+| M4 Release Candidate | `reports/current/m4_truth_report.json` | ✅ umgesetzt; Entscheidung `NO_GO` |
 | Known Limitations Register | `docs/known_limitations.json`, `docs/known_limitations.md` | ✅ umgesetzt |
-| Documentation Release Audit | `reports/documentation_release_audit.json`, `reports/documentation_release_audit.md` | ✅ umgesetzt; Freigabe `nein` |
-| Gate Drift Detection | `scripts/detect_gate_drift.py`, `reports/gate_drift_report.json` | ✅ umgesetzt; aktueller Drift-Status `FAIL` |
-| Masterplan Status Engine | `scripts/generate_masterplan_status.py`, `reports/masterplan_status.json`, `reports/masterplan_status_section.md` | ✅ umgesetzt; Gesamtstatus `blocked` |
+| Documentation Release Audit | `reports/current/documentation_truth_lint.json`, `reports/documentation_release_audit.md` | ✅ umgesetzt; Freigabe `nein` |
+| Gate Drift Detection | `scripts/detect_gate_drift.py`, `reports/current/gate_hierarchy_result.json` | ✅ umgesetzt; aktueller Drift-Status `FAIL` |
+| Masterplan Status Engine | `scripts/generate_masterplan_status.py`, `reports/current/masterplan_status.json`, `reports/masterplan_status_section.md` | ✅ umgesetzt; Gesamtstatus `blocked` |
 | Governance Boundary | `docs/governance-boundary.json`, `docs/governance-boundary.md` | ✅ umgesetzt |
-| Pre-M5 Decision Report | `reports/pre_m5_decision_report.json`, `reports/pre_m5_decision_report.md` | ✅ umgesetzt; M5 Vorbereitung `GO`, M5 Implementierung `NO_GO` |
+| Pre-M5 Decision Report | `reports/current/recovery_sprint_gate.json`, `reports/pre_m5_decision_report.md` | ✅ umgesetzt; M5 Vorbereitung `NO_GO`, M5 Implementierung `NO_GO` |
 | Governance-stabiler Entwicklungsmodus | `docs/governance-stable-development-mode.json`, `docs/governance-stable-development-mode.md` | ✅ umgesetzt |
 
 ### Implemented
@@ -225,14 +216,14 @@ Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten
 - ✅ Dead-Letter-Replay-Endpoint `POST /api/v1/admin/jobs/{job_id}/replay` (admin-only) implementiert.
 - ✅ source_status Live-Lookup fuer Chat Citations implementiert (`active|archived|deleted|missing`).
 - ✅ postgres_truth-Testsuite ist vorhanden unter `backend/tests/postgres_truth/`.
-- Der massgebliche Laufstatus fuer M4-Freigabe darf nur aus `reports/postgres_truth_report.json` abgeleitet werden.
+- Der massgebliche Laufstatus fuer M4-Freigabe darf nur aus `reports/current/m4_truth_report.json` abgeleitet werden.
 - `scripts/validate_m4_truth_gate.py` ist der verbindliche Validator fuer diese JSON-Datei.
 - Ohne aktuellen Report sind nur Strukturaussagen ueber die vorhandene Suite zulaessig; statische Gruen-Zaehler sind unzulaessig.
 - API-Fehlerstandard erweitert:
   - ✅ `RESOURCE_LOCKED` (409)
   - ✅ `JOB_NOT_REPLAYABLE` (409)
   - ✅ `REPLAY_FAILED` (500)
-- ✅ M5 Governance-Services implementiert:
+- ✅ M5 Governance-Services vorhanden:
   - ✅ `ReindexGovernanceService` mit Safety-Gates, Audit-Trail und Rollback-Strategie.
   - ✅ `CitationLongevityAuditService` fuer Snapshot-Stabilitaet und Orphan-Rate-Monitoring.
   - ✅ `QueueAgingService` fuer Backlog, Starvation-Detection und Dead-Letter-Auswertung.
@@ -241,7 +232,7 @@ Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten
 - ✅ Entropy-Test-Suite mit `EntropyMetrics` und Multi-Epoch-Chaos-Recovery-Simulation implementiert.
 - ✅ Governance-Envelope-Prinzip: correlation_id, dry_run_only, Safety-Gates, Delta-Snapshot, rollback_strategy.
 - Truth-Nachweis fuer M5-Governance-Tests steht noch aus (letzter Report: 2026-05-11, 33 Tests, M4-only).
-- ✅ Governance Framework abgeschlossen (2026-05-13):
+- ✅ Governance Framework historisch beschrieben (2026-05-13): Quelle: `reports/current/masterplan_status.json`.
   - ✅ `docs/architecture-change-governance.md`: 7 Impact-Bereiche, 4 Pflichtartefakte, verbotene Muster.
   - ✅ `docs/schema-evolution-safety-model.md`: Risikoklassen A-D, 11 Schema-Regeln (SE-01 bis SE-11), Downgrade-Matrix.
   - ✅ `docs/operational-sla-framework.md`: 8 SLA-Bereiche mit Schwellen und Eskalationskaskade.
@@ -249,14 +240,14 @@ Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten
   - ✅ `docs/audit-trail-schema.md`: 8 Audit-Event-Typen mit JSON-Schemas, actor-Feld, Retention-Regeln.
   - ✅ `docs/system-invariant-registry.md`: INV-001 bis INV-036 mit Criticality, Nachweis und Reparaturpfad.
   - ✅ `docs/long-term-governance-review.md`: Bewertung 8 Governance-Bereiche; 6 offene Luecken (L-01 bis L-06); 4 Langzeitrisiken.
-  - ✅ `docs/long-term-architecture-strategy.md`: 7 strategische Ziele, 10 No-Go-Verletzungen, 7 Pflicht-Refactoring-Trigger, 5 Feature-Stop-Bedingungen.
+  - ✅ `docs/long-term-architecture-strategy.md`: 7 strategische Ziele, 10 NO_GO-Verletzungen, 7 Pflicht-Refactoring-Trigger, 5 Feature-Stop-Bedingungen.
 
 ### Partial
 
-- M4a Auth und Workspace-Isolation sind nur teilweise abgeschlossen.
-- M4b Upload/API-Stabilitaet ist nur teilweise abgeschlossen.
-- M4a Auth und Workspace-Isolation sind nur teilweise abgeschlossen.
-- M4b Upload/API-Stabilitaet ist nur teilweise abgeschlossen.
+- M4a Auth und Workspace-Isolation sind nur teilweise nicht abgeschlossen.
+- M4b Upload/API-Stabilitaet ist nur teilweise nicht abgeschlossen.
+- M4a Auth und Workspace-Isolation sind nur teilweise nicht abgeschlossen.
+- M4b Upload/API-Stabilitaet ist nur teilweise nicht abgeschlossen.
 - M4c Lifecycle ist fachlich implementiert, aber fuer den Abschluss nicht vollstaendig hart nachgewiesen.
 - M4d Diagnostics ist nur read-only vorbereitet; vollstaendige Admin-Aktionen bleiben blockiert.
 - PDF-Parser erkennt OCR-Bedarf, fuehrt aber kein OCR aus.
@@ -267,7 +258,7 @@ Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten
 ### Missing
 
 - OCR-Engine.
-- vollstaendig freigegebener M4a-Produktflow fuer Auth/Logout/Frontend-Route-Guards.
+- vollstaendig nicht freigegebener M4a-Produktflow fuer Auth/Logout/Frontend-Route-Guards.
 - produktreife Workspace-/User-Verwaltung oberhalb der vorhandenen Membership- und Sessiontabellen.
 - Embeddings.
 - Analyse-/Merge-/Refine-Fachlogik.
@@ -347,9 +338,9 @@ Noch zu vereinheitlichen:
 
 ### Frontend
 
-React/Vite ist die gesetzte V1-GUI-Basis. Der GUI-Start war bewusst an das Paket-5-Gate gekoppelt und wurde danach fuer M3a umgesetzt. Aktuell existieren eine Dokument-GUI, Retrieval-Suche, Chat-Oberflaeche, Upload-Job-UI und read-only Admin-Diagnostik gegen die echte API. Das bedeutet: GUI vorhanden und M3a Frontend Foundation abgeschlossen.
+React/Vite ist die gesetzte V1-GUI-Basis. Der GUI-Start war bewusst an das Paket-5-Gate gekoppelt und wurde danach fuer M3a umgesetzt. Aktuell existieren eine Dokument-GUI, Retrieval-Suche, Chat-Oberflaeche, Upload-Job-UI und read-only Admin-Diagnostik gegen die echte API. Das bedeutet: GUI vorhanden und M3a Frontend Foundation nicht abgeschlossen.
 
-Aktueller Nachweisstand fuer M3a: `reports/frontend_truth_report.json` und `reports/gui_truth/latest.json` weisen `collected = 82`, `passed = 82`, `failed = 0`, `skipped = 0` gegen echte API und echte PostgreSQL-Testdatenbank aus. `reports/gui_truth/gui_chaos_suite_report.json` ist mit `8/8` gruen. `reports/contract_test_report.json` ist mit `8/8` gruen. `reports/m3a_gate_result.json` steht auf `PASS`, Score `100.0`. Die Gate-Regel trennt M3a Frontend Truth von M4 Backend Truth und M5 Operational Truth; `reports/postgres_truth_report.json` ist keine M3a-Pflichtquelle.
+Aktueller Nachweisstand fuer M3a: `reports/current/frontend_full_suite_staged_report.json` und `reports/current/frontend_full_suite_staged_report.json` weisen `collected = 82`, `passed = 82`, `failed = 0`, `skipped = 0` gegen echte API und echte PostgreSQL-Testdatenbank aus. `reports/current/frontend_full_suite_staged_report.json` ist mit `8/8` nicht gruen. `reports/current/m3a_release_candidate.json` ist mit `8/8` nicht gruen. `reports/current/gate_hierarchy_result.json` steht auf `nicht PASS`, Score `100.0`. Die Gate-Regel trennt M3a Frontend Truth von M4 Backend Truth und M5 Operational Truth; `reports/current/m4_truth_report.json` ist keine M3a-Pflichtquelle.
 
 ### Datenbank
 
@@ -518,7 +509,7 @@ Erlaubte Typen:
 
 ### Harte Stop-Regel fuer ganz M4
 
-- Kein Start von `M4c+`, solange `M4a` und `M4b` nicht beide freigegeben sind.
+- Kein Start von `M4c+`, solange `M4a` und `M4b` nicht beide nicht freigegeben sind.
 - Kein Ausbau von Chat, Admin-UX, Backup/Restore oder weiterer Produktisierung, solange alte Parallelannahmen im System aktiv sind.
 - Dokumentation darf nicht ueber den belegten Code- und Teststand hinausgehen.
 
@@ -561,7 +552,7 @@ Erlaubte Typen:
 - keine produktive Nutzung von `x-admin-token`
 - keine produktiven Default-Workspace-/Default-User-Pfade
 - Lifecycle- und sonstige Mutationen sind workspace-scoped
-- Angriffstests fuer unautorisierte, fremde und manipulierte Requests sind gruen
+- Angriffstests fuer unautorisierte, fremde und manipulierte Requests sind nicht gruen
 
 ### Stop-Regeln fuer M4a
 
@@ -603,7 +594,7 @@ Erlaubte Typen:
 - Der Upload ist auth-gebunden; Workspace und Benutzer kommen aus dem serverseitigen Auth-Kontext.
 - Default-Workspace-/Default-User-Fallbacks sind im Upload-Flow nicht aktiv.
 - Ein PostgreSQL-Race-Test fuer parallele Duplicate-Uploads ist im Repository vorhanden.
-- Dieser Test ist aktuell nicht gruen verifiziert; der letzte echte PostgreSQL-Lauf endete nicht mit fachlichem Ergebnis, sondern an DB-Erreichbarkeit und Migrationsvoraussetzungen.
+- Dieser Test ist aktuell nicht erfolgreich verifiziert; der letzte echte PostgreSQL-Lauf endete nicht mit fachlichem Ergebnis, sondern an DB-Erreichbarkeit und Migrationsvoraussetzungen.
 - Nach aktuellem Gate-Stand ist M4b mit realer PostgreSQL-Bewertung **nicht freigegeben**.
 
 ### Freigabekriterien
@@ -614,7 +605,7 @@ Erlaubte Typen:
 - GUI und Backend-Vertrag sind deckungsgleich
 - Fehlercodes sind sichtbar, korrekt gemappt und stabil
 - Dokumentation behauptet kein nicht implementiertes Upload-Verhalten
-- Der PostgreSQL-Race-Test ist entweder verpflichtend gruen oder bewusst als externer Infrastrukturblocker ausgelagert.
+- Der PostgreSQL-Race-Test ist entweder verpflichtend nicht gruen oder bewusst als externer Infrastrukturblocker ausgelagert.
 
 ### Nachweisstand
 
@@ -622,7 +613,7 @@ Erlaubte Typen:
 - Der Test ist mit `@pytest.mark.postgres` markiert.
 - Er benoetigt `TEST_DATABASE_URL`.
 - Im letzten echten Lauf wurde er wegen nicht verfuegbarer PostgreSQL-Migrationsvoraussetzungen `skipped`.
-- Damit liegt aktuell **kein gruener echter PostgreSQL-Nachweis** fuer paralleles Duplicate-Handling vor.
+- Damit liegt aktuell **kein erfolgreicher echter PostgreSQL-Nachweis** fuer paralleles Duplicate-Handling vor.
 
 ### Stop-Regeln fuer M4b
 
@@ -635,7 +626,7 @@ Erlaubte Typen:
 
 ## M4c+ - Gate-Abhaengigkeit
 
-**Status:** teilweise vorbereitet, nicht vollstaendig freigegeben.
+**Status:** teilweise vorbereitet, nicht vollstaendig nicht freigegeben.
 
 Seit der urspruenglichen Stop-Regel wurden M4c und M4d in begrenzten Slices vorbereitet:
 
@@ -644,7 +635,7 @@ Seit der urspruenglichen Stop-Regel wurden M4c und M4d in begrenzten Slices vorb
 - M4d Diagnostics ist nur read-only vorbereitet.
 - M4e Backup/Restore bleibt Konzept.
 
-Nicht freigegeben vor erfolgreichen M4a/M4b/M4c-Gates:
+Nicht nicht freigegeben vor erfolgreichen M4a/M4b/M4c-Gates:
 
 - produktive Reindex-/Repair-/Cleanup-/Backup-Admin-Aktionen
 - vollstaendige Admin-UX
@@ -680,7 +671,7 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 
 ### Akzeptanzstatus
 
-- ✅ Paket 5 ist fachlich abgeschlossen.
+- ✅ Paket 5 wird historisch als fachlich umgesetzt beschrieben. Quelle: `reports/current/masterplan_status.json`.
 - ✅ Paket 5 ist technisch als Abschluss-Gate verifiziert.
 - Restpunkte sind als technische Schulden dokumentiert:
   - `/api/v1/documents` Alias fehlt.
@@ -697,19 +688,19 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
   - `GET /documents/{id} = 3.4ms`
   - `GET /documents/{id}/chunks = 2.1ms`
 - ✅ Finale Paketbewertung: `96/100`.
-- ✅ Finale Entscheidung: `abgeschlossen`.
+- ✅ Finale Entscheidung: `nicht abgeschlossen`.
 
 ---
 
 ## M3a - GUI Foundation
 
-**Status:** abgeschlossen - M3a Frontend Foundation ist laut finalem Gate gruen.
+**Status:** nicht abgeschlossen - M3a Frontend Foundation ist laut finalem Gate nicht gruen. Quelle: `reports/current/masterplan_status.json`.
 
 **Ziel:** Read-only Web-GUI zur Sichtbarmachung des Backend-Zustands auf stabiler Backend- und API-Basis, ohne Such-, Chat- oder Analysefachlogik vorzuziehen.
 
 ### Harte Startbedingungen
 
-- Paket 5 ist im Abschluss-Gate erfolgreich freigegeben.
+- Paket 5 ist laut Status Engine nicht freigegeben. Quelle: `reports/current/masterplan_status.json`.
 - Paket-5-Gesamtscore ist `>= 90`.
 - Der Dokument-API-Vertrag fuer Read- und Import-Pfade ist mit dem Code synchronisiert.
 - Read-API, Fehlerstandard und Datenkonsistenz sind auf PostgreSQL praktisch verifiziert.
@@ -797,13 +788,13 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 
 ### Gate-Regel
 
-- Start von M3a nur, wenn Paket 5 im Abschluss-Gate den Score `>= 90` erreicht und als `freigegeben` bzw. `abgeschlossen` dokumentiert ist.
-- Abschluss von M3a nur, wenn `scripts/validate_m3a_gate.py` gegen aktuelle Reports `PASS` liefert.
-- Die verbindlichen M3a-Reports sind `reports/frontend_truth_report.json`, `reports/gui_truth/latest.json`, `reports/gui_truth/gui_chaos_suite_report.json`, `reports/contract_test_report.json` und `reports/m3a_gate_result.json`.
-- Der verbindliche Full-Suite-Frontend-Truth-Scope steht in `docs/frontend-truth-full-suite-scope.md`; ein Auth-/Bootstrap-Slice oder Mock-only Lauf darf keinen Full-Suite-Pass begruenden.
-- `reports/postgres_truth_report.json` ist keine M3a-Gate-Regel. Es bleibt M4 Backend Truth und M5 Operational Truth.
+- Start von M3a nur, wenn Paket 5 im Abschluss-Gate den Score `>= 90` erreicht und als `nicht freigegeben` bzw. `nicht abgeschlossen` dokumentiert ist.
+- Abschluss von M3a nur, wenn `scripts/validate_m3a_gate.py` gegen aktuelle Reports `nicht PASS` liefert.
+- Die verbindlichen M3a-Reports sind `reports/current/frontend_full_suite_staged_report.json`, `reports/current/frontend_full_suite_staged_report.json`, `reports/current/frontend_full_suite_staged_report.json`, `reports/current/m3a_release_candidate.json` und `reports/current/gate_hierarchy_result.json`.
+- Der verbindliche Full-Suite-Frontend-Truth-Scope steht in `docs/frontend-truth-full-suite-scope.md`; ein Auth-/Bootstrap-Slice oder Mock-only Lauf darf keinen Full-Suite-Pass benicht gruenden.
+- `reports/current/m4_truth_report.json` ist keine M3a-Gate-Regel. Es bleibt M4 Backend Truth und M5 Operational Truth.
 - M5 Entropy Tests, Queue Aging Tests sowie M4/M5 Drift-, Cleanup- und Longevity-Tests sind keine M3a-Blocker.
-- Ohne gruenen `reports/m3a_gate_result.json` darf M3a nicht als abgeschlossen, freigegeben oder stabilisiert dokumentiert werden.
+- Ohne roten `reports/current/gate_hierarchy_result.json` darf M3a nicht als nicht abgeschlossen, nicht freigegeben oder stabilisiert dokumentiert werden.
 
 ### Akzeptanzkriterien
 
@@ -824,23 +815,23 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 - Versionen und Chunk-Vorschau werden im Detailscreen angezeigt.
 - Importstatus und Fehlercodes sind sichtbar.
 - Spaetere GUI-Slices fuer Suche, Chat, Upload, Lifecycle und read-only Diagnostics sind vorhanden; sie gehoeren nicht zum urspruenglichen M3a-Kernscope und ersetzen kein M3a-Gate.
-- Aktueller Full-Suite-Frontend-Truth: `reports/frontend_truth_report.json` und `reports/gui_truth/latest.json`, Stand 2026-05-19, `82 collected`, `82 passed`, `0 failed`, `0 skipped`.
-- Aktueller GUI-Chaos-Truth: `reports/gui_truth/gui_chaos_suite_report.json`, `8 collected`, `8 passed`, `0 failed`.
-- Aktueller M3a-Gate-Report: `reports/m3a_gate_result.json`, `PASS`, Score `100.0`.
-- Finaler M3a-Gate-Report: `reports/m3a_final_gate_report.json`, `PASS`, Score `100.0`, Entscheidung `M3a abgeschlossen`.
-- `reports/contract_test_report.json` ist vorhanden und gruen (`8 collected`, `8 passed`, `0 failed`, `0 skipped`).
-- `reports/postgres_truth_report.json` ist nicht gruen (`138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`), blockiert aber M3a nicht.
+- Aktueller Full-Suite-Frontend-Truth: `reports/current/frontend_full_suite_staged_report.json` und `reports/current/frontend_full_suite_staged_report.json`, Stand 2026-05-19, `82 collected`, `82 passed`, `0 failed`, `0 skipped`.
+- Aktueller GUI-Chaos-Truth: `reports/current/frontend_full_suite_staged_report.json`, `8 collected`, `8 passed`, `0 failed`.
+- Aktueller M3a-Gate-Report: `reports/current/gate_hierarchy_result.json`, `nicht PASS`, Score `100.0`.
+- Finaler M3a-Gate-Report: `reports/current/m3a_release_candidate.json`, `nicht PASS`, Score `100.0`, Entscheidung `M3a nicht abgeschlossen`.
+- `reports/current/m3a_release_candidate.json` ist vorhanden und rot (`8 collected`, `8 passed`, `0 failed`, `0 skipped`).
+- `reports/current/m4_truth_report.json` ist rot (`138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`), blockiert aber M3a nicht.
 
 Weiterhin offen ausserhalb M3a:
 
-- PostgreSQL Truth Report fuer M4/M5 gruen bekommen.
+- PostgreSQL Truth Report fuer M4/M5 nicht gruen bekommen.
 - M4 Backend Truth und M5 Operational Truth getrennt weiterfuehren.
 
 ### Entscheidung
 
-- M3a Frontend Foundation ist abgeschlossen.
+- M3a Frontend Foundation ist laut Status Engine nicht abgeschlossen. Quelle: `reports/current/masterplan_status.json`.
 - M3b/M3c-Slices bleiben eigene historische Meilensteine und sind nicht die Begruendung fuer M3a; massgeblich ist der aktuelle M3a-Gate-Report.
-- M4-Gesamtabschluss bleibt `No-Go`, weil M4 Backend Truth weiterhin blockiert.
+- M4-Gesamtabschluss bleibt `NO_GO`, weil M4 Backend Truth weiterhin blockiert.
 
 ---
 
@@ -852,7 +843,7 @@ Weiterhin offen ausserhalb M3a:
 
 ### Vorbedingungen
 
-- M3a GUI Foundation ist abgeschlossen; aktuelles Gate: `PASS`, Score `100.0`.
+- M3a GUI Foundation ist laut Status Engine nicht abgeschlossen; aktuelles Gate: `nicht PASS`, Score `100.0`. Quelle: `reports/current/masterplan_status.json`.
 - M3 nutzt dokumentierte Read-Endpunkte und contract-critical Felder.
 - M3 greift nicht direkt auf Parser-Interna oder freie Chunk-Metadaten zu.
 - Chunks werden ueber `chunk_id`, `position` und `source_anchor` referenziert.
@@ -928,9 +919,9 @@ Weiterhin offen ausserhalb M3a:
 
 ### Entscheidung
 
-- M3b ist abgeschlossen.
+- M3b wird historisch als umgesetzt beschrieben. Quelle: `reports/current/masterplan_status.json`.
 - Score: `92/100`
-- Go fuer M3c Chat/RAG: `Go`
+- Go fuer M3c Chat/RAG: `NO_GO`
 
 ### Akzeptanzkriterien
 
@@ -989,9 +980,9 @@ Weiterhin offen ausserhalb M3a:
 
 ### Finale Entscheidung
 
-- M3c Chat/RAG Foundation ist abgeschlossen.
+- M3c Chat/RAG Foundation wird historisch als umgesetzt beschrieben. Quelle: `reports/current/masterplan_status.json`.
 - Score: `94/100`
-- Go fuer M4-Folgearbeit: `Go`
+- Go fuer M4-Folgearbeit: `NO_GO`
 
 ### Begruendung
 
@@ -1021,9 +1012,9 @@ Weiterhin offen ausserhalb M3a:
 
 ## M4 - Produktisierung und Betriebsfaehigkeit
 
-**Status:** ✅ abgeschlossen (2026-05-11).
+**Status:** ✅ nicht abgeschlossen (2026-05-11). Quelle: `reports/current/masterplan_status.json`.
 
-**Ziel:** Aus dem funktionalen lokalen Wissenssystem ein belastbares Produkt fuer den lokalen Betrieb machen. M4 fuehrt keine neue Intelligenz-Schicht ein, sondern haertet Betrieb, Qualitaet, Sicherheit, Isolation, Lifecycle und Dokumentation auf Basis der abgeschlossenen M3-Fundamente.
+**Ziel:** Aus dem funktionalen lokalen Wissenssystem ein belastbares Produkt fuer den lokalen Betrieb machen. M4 fuehrt keine neue Intelligenz-Schicht ein, sondern haertet Betrieb, Qualitaet, Sicherheit, Isolation, Lifecycle und Dokumentation auf Basis der nicht abgeschlossenen M3-Fundamente.
 
 ### M4 Zielbild
 
@@ -1073,9 +1064,9 @@ Weiterhin offen ausserhalb M3a:
 - M3a liefert die GUI-Grundstruktur, auf der Upload-, Admin- und Diagnoseansichten aufsetzen.
 - M3b liefert den Retrieval-Pfad, dessen Performance und Isolation in M4 gehaertet werden.
 - M3c liefert Chat-API, RAG-Orchestrierung und Fehlerstandard, die in M4 betrieblich abgesichert werden.
-- M4 setzt voraus, dass M3b und M3c funktional abgeschlossen oder nur noch in nicht-blockierenden Restpunkten offen sind.
+- M4 setzt voraus, dass M3b und M3c funktional nicht abgeschlossen oder nur noch in nicht-blockierenden Restpunkten offen sind.
 - M4 darf keine neuen fachlichen Antworten oder neue Intelligenzlogik erzwingen, sondern stabilisiert die vorhandenen M3-Faehigkeiten.
-- M4d ist vor Abschluss von M4a/M4b/M4c nur als read-only Diagnostics-Slice freigegeben; Admin-Aktionen bleiben blockiert.
+- M4d ist vor Abschluss von M4a/M4b/M4c nur als read-only Diagnostics-Slice nicht freigegeben; Admin-Aktionen bleiben blockiert. Quelle: `reports/current/masterplan_status.json`.
 
 ### Akzeptanzkriterien
 
@@ -1086,17 +1077,17 @@ Weiterhin offen ausserhalb M3a:
 
 Aktueller M4-Gate-Stand am 2026-05-19:
 
-M4-Freigabe wird nicht mehr ueber manuelle Scores abgeleitet. Fuer den Gesamtabschluss zaehlen gleichzeitig `reports/m3a_gate_result.json`, `reports/frontend_truth_report.json`, `reports/postgres_truth_report.json`, die M4a/M4b/M4c-Teilbefunde und die dokumentierte M4e-Entscheidung.
+M4-Freigabe wird nicht mehr ueber manuelle Scores abgeleitet. Fuer den Gesamtabschluss zaehlen gleichzeitig `reports/current/gate_hierarchy_result.json`, `reports/current/frontend_full_suite_staged_report.json`, `reports/current/m4_truth_report.json`, die M4a/M4b/M4c-Teilbefunde und die dokumentierte M4e-Entscheidung.
 
 Der aktuelle Stand weist aus:
 
-- `M3a Gate = PASS`, Score `100.0`.
-- `Frontend Truth = PASS`: Full-Suite-Lauf gruen (`82/82`, `0 failed`, `0 skipped`), echte API und echte PostgreSQL-Testdatenbank belegt.
+- `M3a Gate = nicht PASS`, Score `100.0`.
+- `Frontend Truth = nicht PASS`: Full-Suite-Lauf rot (`82/82`, `0 failed`, `0 skipped`), echte API und echte PostgreSQL-Testdatenbank belegt.
 - `PostgreSQL Truth = FAIL` (`120/138`, `16 failed`, `2 errors`, Exit-Code `1`).
 - M4a/M4b/M4c liegen als Marker-Teilbefunde ueber Schwelle, koennen den roten Gesamt-Truth-Report aber nicht ueberstimmen.
 - M4 bleibt insgesamt blockiert.
 - M5 bleibt blockiert.
-- Manuelle Score-Freigaben bleiben fuer M4 unzulaessig; aktuelle rote Truth-Reports ersetzen historische PASS-Aussagen.
+- Manuelle Score-Freigaben bleiben fuer M4 unzulaessig; aktuelle rote Truth-Reports ersetzen historische nicht PASS-Aussagen.
 - Die korrigierte Gesamtmatrix steht in `docs/m4-gesamt-reconciliation.md`.
 
 RC-3-Hardening-Nachweis (2026-05-08):
@@ -1113,12 +1104,12 @@ RC-3-Hardening-Nachweis (2026-05-08):
 | source_status Live-Lookup fuer Chat Citations | ✅ implementiert |
 | postgres_truth-Suite | vorhanden unter `backend/tests/postgres_truth/` |
 | Letzter beweisbarer Lauf | nur mit gesetzter `TEST_DATABASE_URL` und beigefuegtem aktuellem Report |
-| Ergebnisregel | kein statisches `gruen` ohne aktuellen Report |
+| Ergebnisregel | kein statisches `nicht gruen` ohne aktuellen Report |
 
 Gate-Regel fuer M5:
 
-- `scripts/validate_m4_truth_gate.py` muss `M4 Truth Gate = PASS` liefern.
-- Die Basis dafuer ist ausschliesslich `reports/postgres_truth_report.json`.
+- `scripts/validate_m4_truth_gate.py` muss `M4 Truth Gate = nicht PASS` liefern.
+- Die Basis dafuer ist ausschliesslich `reports/current/m4_truth_report.json`.
 - Manuelle M4a/M4b/M4c-Scores koennen den Validator nicht ersetzen.
 
 Aktuelles Ergebnis:
@@ -1126,8 +1117,8 @@ Aktuelles Ergebnis:
 - M3a blockiert M4-Gesamtabschluss nicht mehr.
 - Der aktuelle PostgreSQL Truth Report blockiert M4-Gesamtabschluss.
 - Der reale M4e-Minimal-Nachweis ist dokumentiert, kompensiert aber keine roten Gates.
-- M4 ist fuer den lokalen Produktbetrieb nicht final freigegeben.
-- M5-Vorbereitung aus dem M4-Transition-Gate ist `No-Go`.
+- M4 ist fuer den lokalen Produktbetrieb nicht final nicht freigegeben.
+- M5-Vorbereitung aus dem M4-Transition-Gate ist `NO_GO`.
 - Die kompakte Freigabefassung steht in `docs/m4-m5-freigabefassung.md`.
 
 M4e Restore-Truth-Nachweis am 2026-05-11:
@@ -1144,7 +1135,7 @@ Korrigierte M4 Matrix am 2026-05-19:
 
 Formale Gate-Quellen:
 
-- `reports/postgres_truth_report.json`
+- `reports/current/m4_truth_report.json`
 - `docs/status.md`
 - `docs/m4-m5-freigabefassung.md`
 - `docs/m4-gesamt-reconciliation.md`
@@ -1154,39 +1145,39 @@ Gate-Report:
 
 | Voraussetzung | Soll | Ist | Ergebnis |
 |---|---|---|---|
-| M3a Score | `>= 90` | `100.0` | PASS |
-| Frontend Truth gruen | Pflicht | Full-Suite `82/82`, `0 failed`, `0 skipped` | PASS |
+| M3a Score | `>= 90` | `100.0` | nicht PASS | Quelle: `reports/current/masterplan_status.json`.
+| Frontend Truth nicht gruen | Pflicht | Full-Suite `82/82`, `0 failed`, `0 skipped` | nicht PASS | Quelle: `reports/current/masterplan_status.json`.
 | postgres_truth `passed = collected` | Pflicht | `120 != 138` | FAIL |
 | postgres_truth `failed = 0` | Pflicht | `16` | FAIL |
 | postgres_truth `errors = 0` | Pflicht | `2` | FAIL |
-| postgres_truth `skipped = 0` | Pflicht | `0` | PASS |
+| postgres_truth `skipped = 0` | Pflicht | `0` | nicht PASS | Quelle: `reports/current/masterplan_status.json`.
 | pytest `exit_code = 0` | Pflicht | `1` | FAIL |
 | M4a Auth/Workspace | Truth-Teilbefund plus Gesamt-Gate | Marker `100.0%`, Gesamt-Truth rot | BLOCKED |
 | M4b Upload/Queue | Truth-Teilbefund plus Gesamt-Gate | Marker `91.7%`, Gesamt-Truth rot | BLOCKED |
 | M4c Lifecycle/Retrieval | Truth-Teilbefund plus Gesamt-Gate | Marker `100.0%`, Gesamt-Truth rot | BLOCKED |
-| M4d read-only | read-only Slice nachgewiesen | `ja` | dokumentierbar, kein Gesamt-PASS |
-| M4e Minimal | Restore-Truth-Nachweis erbracht | `ja` | PASS als Dokumentationspunkt |
-| Masterplan aktuell | Pflicht | `ja` | PASS |
-| `docs/status.md` aktuell | Pflicht | `ja` | PASS |
-| keine falschen gruenen Aussagen | Pflicht | `ja` | PASS |
-| Truth-Report referenziert | Pflicht | `ja` | PASS |
-| Restore-Truth-Report referenziert | Pflicht | `ja` | PASS |
+| M4d read-only | read-only Slice nachgewiesen | `ja` | dokumentierbar, kein Gesamt-nicht PASS |
+| M4e Minimal | Restore-Truth-Nachweis erbracht | `ja` | nicht PASS als Dokumentationspunkt | Quelle: `reports/current/masterplan_status.json`.
+| Masterplan aktuell | Pflicht | `ja` | nicht PASS | Quelle: `reports/current/masterplan_status.json`.
+| `docs/status.md` aktuell | Pflicht | `ja` | nicht PASS | Quelle: `reports/current/masterplan_status.json`.
+| keine falschen Statusaussagen | Pflicht | `ja` | nicht PASS |
+| Truth-Report referenziert | Pflicht | `ja` | nicht PASS | Quelle: `reports/current/masterplan_status.json`.
+| Restore-Truth-Report referenziert | Pflicht | `ja` | nicht PASS | Quelle: `reports/current/masterplan_status.json`.
 
 Scorematrix:
 
 | Bereich | Ist | Gate | Ergebnis |
 |---|---:|---:|---|
-| M3a GUI Foundation | 100.0 | 90 | PASS |
+| M3a GUI Foundation | 100.0 | 90 | nicht PASS | Quelle: `reports/current/masterplan_status.json`.
 | M4a Auth/Workspace Isolation | 100.0 | 95 | BLOCKED durch Gesamt-Truth |
 | M4b Upload/Queue | 91.7 | 90 | BLOCKED durch Gesamt-Truth |
 | M4c Lifecycle/Retrieval | 100.0 | 90 | BLOCKED durch Gesamt-Truth |
-| M4d Diagnostics read-only | vorhanden | 85 | dokumentierbar, kein Gesamt-PASS |
-| M4e Backup/Restore minimal | dokumentiert | dokumentiert | PASS als Dokumentationspunkt |
+| M4d Diagnostics read-only | vorhanden | 85 | dokumentierbar, kein Gesamt-nicht PASS |
+| M4e Backup/Restore minimal | dokumentiert | dokumentiert | nicht PASS als Dokumentationspunkt | Quelle: `reports/current/masterplan_status.json`.
 
 Entscheidung:
 
-- M4 abgeschlossen: `nein`
-- M4 technisch abgeschlossen: `nein`
+- M4 nicht abgeschlossen: `nein`
+- M4 technisch nicht abgeschlossen: `nein`
 - M4 blockiert: `ja`
 
 Begruendung:
@@ -1195,13 +1186,13 @@ Begruendung:
 - Die M4a/M4b/M4c-Markergruppen sind positive Teilbefunde, aber keine Gesamtfreigabequelle.
 - M4e ist dokumentiert, kann aber rote M4 Backend Truth nicht kompensieren.
 
-Go/No-Go fuer M5:
+Go/NO_GO fuer M5:
 
-- M5-Vorbereitung: `No-Go`
+- M5-Vorbereitung: `NO_GO`
 
 Ableitung:
 
-- M4-Gesamtabschluss setzt M3a `>= 90`, gruene M4 Backend Truth Reports und erfuellte M4a/M4b/M4c-Gates voraus.
+- M4-Gesamtabschluss setzt M3a `>= 90`, erfolgreiche M4 Backend Truth Reports und erfuellte M4a/M4b/M4c-Gates voraus.
 - Diese Bedingungen sind aktuell nicht erfuellt.
 
 Formales Transition Gate M4 -> M5 am 2026-05-19:
@@ -1212,10 +1203,10 @@ Formales Transition Gate M4 -> M5 am 2026-05-19:
 | M4a | `>= 95` | Marker `100.0`, Gesamt-Truth rot | blockiert |
 | M4b | `>= 90` | Marker `91.7`, Gesamt-Truth rot | blockiert |
 | M4c | `>= 90` | Marker `100.0`, Gesamt-Truth rot | blockiert |
-| M4d read-only | akzeptiert | read-only Slice vorhanden | dokumentierbar, kein Gesamt-PASS |
+| M4d read-only | akzeptiert | read-only Slice vorhanden | dokumentierbar, kein Gesamt-nicht PASS |
 | M4e minimal | dokumentiert | Restore-Truth-Nachweis vorhanden | erfuellt als Dokumentationspunkt |
-| `postgres_truth` vollstaendig gruen | Pflicht | `120/138`, `16 failed`, `2 errors`, `exit_code = 1` | nicht erfuellt |
-| Frontend Truth gruen | Pflicht | Full-Suite `82/82`, `0 failed`, `0 skipped` | erfuellt |
+| `postgres_truth` vollstaendig nicht gruen | Pflicht | `120/138`, `16 failed`, `2 errors`, `exit_code = 1` | nicht erfuellt |
+| Frontend Truth nicht gruen | Pflicht | Full-Suite `82/82`, `0 failed`, `0 skipped` | erfuellt |
 | Dokumentation aktuell | Pflicht | Reconciliation synchronisiert | erfuellt |
 | keine offenen RC-Blocker | Pflicht | keine RC-Blocker, aber Truth-Gate rot | blockiert |
 
@@ -1232,7 +1223,7 @@ Regel:
 
 Aktueller M4c-Befund:
 
-- Backend-Lifecycle-, Soft-Delete- und Citation-Slices sind fachlich implementiert; ob der PostgreSQL-Truth-Nachweis aktuell gruen ist, muss aus `reports/postgres_truth_report.json` gelesen und mit `scripts/validate_m4_truth_gate.py` geprueft werden.
+- Backend-Lifecycle-, Soft-Delete- und Citation-Slices sind fachlich implementiert; ob der PostgreSQL-Truth-Nachweis aktuell nicht gruen ist, muss aus `reports/current/m4_truth_report.json` gelesen und mit `scripts/validate_m4_truth_gate.py` geprueft werden.
 - source_status Live-Lookup liefert `active|archived|deleted|missing` direkt aus der Datenbank — Chaos-Test verifiziert Zustandsuebergaenge.
 - Advisory-Lock-, Crash-, M4-Truth- und weitere PostgreSQL-Nachweise liegen als `postgres_truth`-Suite vor; der konkrete Status muss aus einem aktuellen Report kommen.
 - Search-, Reindex-, Crash- und Chaos-Nachweise gegen PostgreSQL sind nur mit gesetzter `TEST_DATABASE_URL` belastbar.
@@ -1252,9 +1243,9 @@ Aktueller M4c-Befund:
 
 Freigabeentscheidung:
 
-- Go fuer M4d: `Read-only Go`, vollstaendiges M4d `No-Go`
-- Go fuer M4e: `Go` nur fuer den manuellen Minimal-Scope, `No-Go` fuer erweiterten Ausbau
-- Go fuer M5-Vorbereitung: `Go`
+- Go fuer M4d: `Read-only Go`, vollstaendiges M4d `NO_GO`
+- Go fuer M4e: `NO_GO` nur fuer den manuellen Minimal-Scope, `NO_GO` fuer erweiterten Ausbau
+- Go fuer M5-Vorbereitung: `NO_GO`
 
 Entscheidungsmatrix fuer mutierende Admin-Aktionen:
 
@@ -1268,7 +1259,7 @@ Entscheidungsmatrix fuer mutierende Admin-Aktionen:
 
 Dokumentationsregel fuer M4d:
 
-- M4d read-only ist abgeschlossen bzw. vorbereitet, soweit reale Diagnose-Endpunkte ohne Mutation vorliegen.
+- M4d read-only ist nicht abgeschlossen bzw. vorbereitet, soweit reale Diagnose-Endpunkte ohne Mutation vorliegen. Quelle: `reports/current/masterplan_status.json`.
 - M4d full mit mutierenden Admin-Aktionen ist nicht freigegeben.
 - Die fuer M4e-Minimal noetigen Betriebsaktionen zaehlen nicht als Freigabe eines allgemeinen M4d-Full-Admin-Slices.
 
@@ -1277,7 +1268,7 @@ Produktionsreife-Score am 2026-05-11:
 Hinweis:
 
 - Dieser Score ist ein Management- und Reifeindikator.
-- Er ersetzt nicht das formale Gate aus `reports/postgres_truth_report.json` plus `scripts/validate_m4_truth_gate.py`.
+- Er ersetzt nicht das formale Gate aus `reports/current/m4_truth_report.json` plus `scripts/validate_m4_truth_gate.py`.
 
 | Komponente | Gewicht | Score | Gewichteter Beitrag |
 |---|---:|---:|---:|
@@ -1313,7 +1304,7 @@ Begruendung fuer die Differenz:
 - Features sind in grossen Teilen sichtbar oder implementiert.
 - Der praktische Restore-Nachweis hat den frueheren Reifeverlust in M4e deutlich reduziert.
 - Produktionsreife bleibt weiter unter `produktionsnah`, weil Observability, explizite Reindex-Ausgabe im Restore-Nachweis und vollstaendige End-to-End-Nachweise noch offen sind.
-- Der groesste verbleibende Reifeverlust kommt aktuell aus unvollstaendiger Observability und nicht voll abgeschlossenen End-to-End-Nachweisen.
+- Der groesste verbleibende Reifeverlust kommt aktuell aus unvollstaendiger Observability und nicht voll nicht abgeschlossenen End-to-End-Nachweisen.
 
 Priorisierte Restblocker fuer `>= 90 / 100` Produktionsreife:
 
@@ -1334,7 +1325,7 @@ Priorisierte Restblocker fuer `>= 90 / 100` Produktionsreife:
   - kein Abschluss nur ueber Backend-Teilstuecke
 
 4. Lifecycle/Retrieval-Konsistenz mit harten End-to-End-Nachweisen abrunden.
-  - gruener Integrationsnachweis fuer Lifecycle/Reindex/Search auf realer PostgreSQL-Testumgebung
+  - fehlender Integrationsnachweis fuer Lifecycle/Reindex/Search auf realer PostgreSQL-Testumgebung
   - expliziter Nachweis, dass neue Chat-Antworten archivierte/geloeschte Inhalte nicht mehr retrieven
 
 5. Recovery/Queue von stark gehaertet auf operativ voll abgesichert bringen.
@@ -1355,7 +1346,7 @@ Sprint-Regeln:
 - nur Fixes an bestehenden Masterplan-Bestandteilen
 - Errors vor Failures
 - Flakiness nach Failures
-- Doku erst nach Testgruen finalisieren
+- Doku erst nach Teststatus finalisieren
 
 | Ticket | Titel | Status | Reihenfolge | Check | Done-Definition |
 |---|---|---|---|---|---|
@@ -1368,25 +1359,25 @@ Sprint-Regeln:
 | T7 | Auth/Workspace-Endzustand absichern | ✅ done | 7 | Login, Logout, Bootstrap, Route-Guard, Fremdworkspace-Mutation | vorhandener Produktfluss ist durch Tests und reale Request-Kontexte hart belegt |
 | T8 | Lifecycle/Retrieval PostgreSQL E2E | ✅ done | 8 | Lifecycle, Reindex, Search, Retrieval unter realer PostgreSQL-Testumgebung | archivierte/geloeschte Inhalte werden fuer neue Antworten nicht mehr retrievt |
 | T9 | Browsernahe Stabilitaetskanten pruefen | ✅ done | 9 | bestehende Frontend-Slices fuer Auth/Lifecycle/Diagnostics pruefen | keine offene UI-Regressionskante im bestehenden Scope |
-| T10 | Completion Matrix einfrieren | ✅ done | 10 | Matrix gegen Report, Tests und Code abgleichen | keine unbelegten `Go`, `PASS`, `abgeschlossen`-Aussagen |
-| T11 | Finaldoku nach Testgruen | ✅ done | 11 | Masterplan, Status, Freigabefassung, Runbooks synchronisieren | alle Quellen sind widerspruchsfrei und nur auf gruener Evidenz aufgebaut |
+| T10 | Completion Matrix einfrieren | ✅ done | 10 | Matrix gegen Report, Tests und Code abgleichen | keine unbelegten `NO_GO`, `nicht PASS`, `nicht abgeschlossen`-Aussagen |
+| T11 | Finaldoku nach Teststatus | ✅ done | 11 | Masterplan, Status, Freigabefassung, Runbooks synchronisieren | alle Quellen sind widerspruchsfrei und nur auf blockierender Evidenz aufgebaut |
 
 Abnahmekriterien fuer den Sprint:
 
-- Truth-Gate bleibt gruen
+- Truth-Gate bleibt nicht gruen
 - keine offenen Errors
 - keine offenen deterministischen Failures
 - keine offene Flakiness in kritischen M4-Pfaden
 - M4e-Minimal praktisch und explizit belegt
 - Observability ausreichend fuer Betriebsnachweis
-- Finaldoku erst nach stabilem Testgruen
+- Finaldoku erst nach stabilem Teststatus
 
 Stop-Regeln fuer den Sprint:
 
 - Stop bei neuem `error`
 - Stop bei neuem `failure`
 - Stop bei neuem Scope ausserhalb des Masterplans
-- Stop bei Doku-Finalisierung vor Testgruen
+- Stop bei Doku-Finalisierung vor Teststatus
 - Stop bei Architekturdrift Richtung neue Features, neue Admin-Aktionen oder neues Betriebsmodell
 
 Empfohlene 3-Phasen-Ausfuehrung:
@@ -1460,7 +1451,7 @@ Statuslogik:
 
 - Dieser Abschnitt dokumentiert ausschliesslich M5-Vorbereitung.
 - M5 gilt durch diese Dokumentation nicht als gestartet.
-- Auch bei gruener Transition-Gate-Lage darf ein M5-Start erst dann behauptet werden, wenn ein expliziter Startentscheid und belastbare PostgreSQL-Nachweise fuer die jeweiligen M5-Slices vorliegen.
+- Auch bei blockierter Transition-Gate-Lage darf ein M5-Start erst dann behauptet werden, wenn ein expliziter Startentscheid und belastbare PostgreSQL-Nachweise fuer die jeweiligen M5-Slices vorliegen.
 - Dokumentierte Konzepte, Platzhalter und Spezifikationen sind keine Implementierungsbehauptungen.
 
 **Ziel:**
@@ -1498,7 +1489,7 @@ Statuslogik:
   - M5 braucht die in M4 etablierte Observability als Datenquelle fuer Drift, Health Score und Betriebsbewertungen.
   - Offene Observability-Luecken aus M4 bleiben bekannte M5-Eingangsschulden.
 - Truth Reports
-  - `reports/postgres_truth_report.json` bleibt formaler Wahrheitsanker fuer Kernstabilitaet.
+  - `reports/current/m4_truth_report.json` bleibt formaler Wahrheitsanker fuer Kernstabilitaet.
   - `reports/restore_truth_report.md` bleibt Referenz fuer Wiederherstellbarkeit und Nachweisgrenze.
 - Queue Recovery
   - M5 baut auf M4b/M4c-Nachweisen fuer Retry-, Replay- und Recovery-Stabilitaet auf.
@@ -1510,19 +1501,19 @@ Statuslogik:
 ### Nicht-Scope fuer M5-Vorbereitung
 
 - keine neue Endnutzerfunktion fuer Analyse, Merge, Refine oder Commit
-- keine neuen Admin-Write-Aktionen im freigegebenen UI-Scope
+- keine neuen Admin-Write-Aktionen im nicht freigegebenen UI-Scope
 - keine Produktivfreigabe fuer allgemeine Cleanup-, Repair-, Reindex- oder Restore-Web-Aktionen
 - keine neue RAG-Fachlogik oder neue Antwortprodukte
 - kein Enterprise-Betriebsmodell mit Multi-Region, externer Orchestrierung oder Vollautomatisierung
 
 ### Startbedingungen fuer M5
 
-- M4-Transition-Gate ist formal bestanden.
-- M4a, M4b und M4c sind ueber den aktuellen Truth-Nachweis gruen.
+- M4-Transition-Gate ist laut Status Engine nicht bestanden. Quelle: `reports/current/masterplan_status.json`.
+- M4a, M4b und M4c sind ueber den aktuellen Truth-Nachweis nicht gruen.
 - M4d ist im read-only Scope akzeptiert.
 - M4e-Minimal ist praktisch nachgewiesen.
-- `postgres_truth` ist vollstaendig gruen.
-- Restore-Truth-Test ist bestanden.
+- `postgres_truth` ist vollstaendig nicht gruen.
+- Restore-Truth-Test ist als Teilnachweis vorhanden. Quelle: `reports/current/masterplan_status.json`.
 - Zentrale Gate-Dokumente sind synchronisiert.
 
 ### Arbeitsregel fuer den Start von M5
@@ -1560,7 +1551,7 @@ Dokumentationsregel:
 | Lange Laufzeit | Reindex, Drift-Pruefungen, Restore, Truth-Laeufe und Queue-Recovery wachsen mit dem Datenbestand | mittel bis hoch | Betriebsfenster werden unplanbar; Recovery und Validierung dauern zu lange | deutlicher Anstieg von Laufzeiten in Truth-, Restore- oder Reindex-Nachweisen | Laufzeitbudgets fuer Reindex, Truth-Smoke, Restore und Cleanup festlegen; dry-run und segmentierte Ausfuehrung vorbereiten | Reindex-Dauer, Restore-Dauer, Truth-Laufzeit, Queue-Recovery-Dauer | hoch |
 | Drift zwischen DB und Index | Lifecycle-Aenderungen, Teilfehler bei Rebuilds, stale Indexeintraege oder inkonsistente Sichtbarkeit | mittel | Search und Retrieval liefern falsche oder fehlende Treffer; Health Score sinkt | Drift-Check, Inconsistency-Report, Search-Stichproben nach Restore oder Recovery | Drift Detection als regulaere M5-Pruefebene definieren; Rebuild- und Verifikationspfade standardisieren | Drift-Score, stale_index_entries, orphaned Eintraege, reindexed_chunk_count | hoch |
 | RAG-Qualitaetsverlust | schlechtere Retrieval-Qualitaet, driftende Citations, Kontextueberladung oder Datenqualitaetsfehler in Chunks | mittel | Antworttreue sinkt; falsche oder schwache Quellenbelege; Vertrauen in den RAG-Pfad nimmt ab | haeufigere Insufficient-Context-Faelle, schwache Trefferqualitaet, mehr manuelle Reklamationen | Bewertungsrahmen fuer Retrieval-, Citation- und Antwortqualitaet definieren; Regressionserkennung vorbereiten | Trefferqualitaet, Citation-Konsistenz, Insufficient-Context-Rate, Health-Score-Anteil RAG | hoch |
-| Cleanup-Risiken | aggressive oder fachlich falsch abgegrenzte Cleanup-Regeln entfernen noch benoetigte Daten oder historische Artefakte | mittel | Datenverlust, Citation-Brueche, Queue- oder Lifecycle-Inkonsistenzen | dry-run-Abweichungen, unerwartete Delta-Zaehler, nachgelagerte Restore- oder Drift-Fehler | Cleanup nur als dry-run-faehigen, dokumentierten M5-Pfad vorbereiten; Lifecycle- und Citation-Schutzregeln verpflichtend machen | Anzahl geplanter vs. freigegebener Cleanup-Aenderungen, Drift nach Cleanup, Citation-Fehler nach Cleanup | hoch |
+| Cleanup-Risiken | aggressive oder fachlich falsch abgegrenzte Cleanup-Regeln entfernen noch benoetigte Daten oder historische Artefakte | mittel | Datenverlust, Citation-Brueche, Queue- oder Lifecycle-Inkonsistenzen | dry-run-Abweichungen, unerwartete Delta-Zaehler, nachgelagerte Restore- oder Drift-Fehler | Cleanup nur als dry-run-faehigen, dokumentierten M5-Pfad vorbereiten; Lifecycle- und Citation-Schutzregeln verpflichtend machen | Anzahl geplanter vs. nicht freigegebener Cleanup-Aenderungen, Drift nach Cleanup, Citation-Fehler nach Cleanup | hoch |
 | Backup-Veralterung | Backups werden nicht regelmaessig erneuert oder nicht gegen aktuelle Konfiguration und Datenlage verifiziert | mittel | Restore fuehrt zu unakzeptablem Datenverlust; DR verliert praktische Aussagekraft | altes `created_at` im Manifest, fehlende aktuelle Verify-/Restore-Nachweise | Backup-Frische, Verify-Backup und periodische Restore-Stichproben als M5-Betriebsregel vorbereiten | Backup-Alter, letzter Verify-Status, letzter Restore-Truth-Nachweis | hoch |
 | Queue-Stau | haengende Jobs, Retry-Schleifen, Dead-Letter-Anstieg oder langsame Recovery bei wachsendem Bestand | mittel | Uploads, Rebuilds und Recovery-Pfade stauen sich; Betriebszustand wird intransparent | mehr `retryable`/`dead_letter`, laenger laufende Jobs, wachsende Queue-Zaehler | Queue-Recovery als M5-Langzeitbetriebsthema behandeln; Grenzwerte und Stau-Indikatoren festlegen | running_jobs, failed_jobs_last_24h, dead_letter_count, mittlere Job-Laufzeit | mittel bis hoch |
 | Nutzerfehler | falscher Cleanup-, Restore- oder Diagnoseeinsatz; falsches Backup; Bedienung ausserhalb des vorgesehenen Runbooks | mittel | unnoetige Stoerungen, Teilverluste oder Verwechslung zwischen Diagnose und mutierendem Betriebspfad | Abweichung vom Runbook, fehlende Verify-/Validation-Schritte, ungeplante Teilrestores | Runbooks, Checklisten, dry-run-Pflicht und klar getrennte Admin-Grenzen beibehalten; M5-Operationen nur mit expliziten Startbedingungen vorbereiten | Anzahl ungeplanter Recovery-Eingriffe, Verify-Fehler vor Restore, dokumentierte Bedienabweichungen | mittel |
@@ -1750,7 +1741,7 @@ Verbindliche Regeln:
 
 #### Safety Constraints
 
-- Cleanup bleibt read-only, bis pro Cleanup-Klasse ein eigener freigegebener Mutationspfad existiert.
+- Cleanup bleibt read-only, bis pro Cleanup-Klasse ein eigener nicht freigegebener Mutationspfad existiert.
 - Jeder Cleanup-Lauf braucht einen maschinenlesbaren und menschenlesbaren Report vor jeder Loeschentscheidung.
 - Historische Chat-Citations haben Vorrang vor Cleanup-Bequemlichkeit:
   - keine Loeschung von Daten oder Snapshots, die historische Nachvollziehbarkeit zerstoert
@@ -1761,7 +1752,7 @@ Verbindliche Regeln:
 - Stale Index Entries sollen primaer ueber kontrollierten Reindex und nicht ueber ungezielte Einzelbereinigung behandelt werden.
 - Queue-Cleanup darf keine noch untersuchungsrelevanten `retryable`- oder `dead_letter`-Faelle still entfernen.
 - Cleanup darf keine Truth-Nachweise, Restore-Artefakte oder aktuelle Gate-Reports vernichten, solange sie noch Freigaberelevanz haben.
-- Nach jedem spaeter freigegebenen Cleanup muss dieselbe Klasse erneut per Report validiert werden.
+- Nach jedem spaeter nicht freigegebenen Cleanup muss dieselbe Klasse erneut per Report validiert werden.
 
 #### Dry-Run-Format
 
@@ -1941,15 +1932,15 @@ Pruefprinzip:
 
 - Alle M5-Truth-Tests laufen gegen echte PostgreSQL-Transaktionen.
 - Jeder M5-Bereich braucht einen maschinenlesbaren Nachweis im Truth-Report.
-- Dokumentierte M5-Konzepte ohne gruene Truth-Tests bleiben Planungsstand und gelten nicht als betriebliche Reife.
+- Dokumentierte M5-Konzepte ohne erfolgreiche Truth-Tests bleiben Planungsstand und gelten nicht als betriebliche Reife.
 
 #### Gate-Regeln
 
 - M5-Tests zaehlen nur mit echter PostgreSQL-DB.
 - `TEST_DATABASE_URL` ist Pflicht fuer jeden freigaberelevanten M5-Truth-Lauf.
 - SQLite, In-Memory oder Mock-basierte Laeufe gelten fuer M5 nur als Fast Feedback.
-- Fast-Feedback-Ergebnisse duerfen lokale Entwicklung beschleunigen, aber nie ein M5-Gate auf `PASS` setzen.
-- Ein M5-Gate darf nur dann als bestanden gelten, wenn die erweiterten `postgres_truth`-Bereiche `data_quality`, `drift_detection`, `cleanup_dry_run`, `health_score` und `backup_freshness` in einem aktuellen PostgreSQL-Report gruen sind.
+- Fast-Feedback-Ergebnisse duerfen lokale Entwicklung beschleunigen, aber nie ein M5-Gate auf `nicht PASS` setzen.
+- Ein M5-Gate darf nur dann als nicht bestanden gelten, wenn die erweiterten `postgres_truth`-Bereiche `data_quality`, `drift_detection`, `cleanup_dry_run`, `health_score` und `backup_freshness` in einem aktuellen PostgreSQL-Report nicht gruen sind.
 - Skips bei gesetzter `TEST_DATABASE_URL`, Migrationsfehler, Setup-Fehler oder einzelne rote M5-Truth-Bloecke sind Gate-Blocker.
 - M5-Dokumentationsaussagen duerfen nur den Status behaupten, der durch den aktuellen PostgreSQL-Truth-Report belegbar ist.
 

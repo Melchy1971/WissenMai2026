@@ -237,7 +237,7 @@ F3/F4 mit Retrieval-Auswirkung brauchen einen Retrieval-Regressionstest und Cita
 
 ## 6. Gate-Regeln
 
-1. F1 darf ohne neues Gate freigegeben werden, wenn die bestehende Testabdeckung begründet ist.
+1. F1 darf ohne neues Gate freigegeben werden, wenn die bestehende Testabdeckung begründet ist. Quelle: `reports/current/masterplan_status.json`.
 2. F2 nutzt bestehende Gates, muss aber die betroffenen Nachweise aktualisieren.
 3. F3 braucht einen Chaos-Test und darf ohne bestandenen Recovery-/Drift-/Isolation-Nachweis nicht gemergt werden.
 4. F4 braucht ein neues oder erweitertes Gate. Ohne maschinenlesbare Truth-Quelle bleibt der Status `not_verified`.

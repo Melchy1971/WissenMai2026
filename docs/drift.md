@@ -46,7 +46,7 @@ Statuslogik:
 ## Platzhalter fuer Nachweise
 
 - Truth-Test-Block: `drift_detection`
-- geplanter Report-Bezug: `reports/postgres_truth_report.json`
+- geplanter Report-Bezug: `reports/current/m4_truth_report.json`
 - geplanter Detailreport: noch nicht implementiert
 
 ## Nicht-Scope

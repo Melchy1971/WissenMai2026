@@ -79,7 +79,7 @@ Verboten:
 | Status | Bedeutung |
 |---|---|
 | `blocked` | Constraint verletzt, Lock nicht verfügbar, Audit fehlt oder Scope ungültig |
-| `completed_pending_validation` | Reindex technisch abgeschlossen, Retrieval Regression noch offen |
-| `completed_validated` | Reindex, Drift Detection, Lifecycle Check und Retrieval Regression grün |
+| `completed_pending_validation` | Reindex technisch abgeschlossen, Retrieval Regression noch offen | Quelle: `reports/current/masterplan_status.json`.
+| `completed_validated` | Reindex, Drift Detection, Lifecycle Check und Retrieval Regression grün | Quelle: `reports/current/masterplan_status.json`.
 | `failed` | Reindex oder Nachprüfung fehlgeschlagen |
 

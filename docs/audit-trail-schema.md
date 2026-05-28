@@ -357,7 +357,7 @@ Kanonische Events: `admin_action_started`, `admin_action_completed`, `admin_acti
 }
 ```
 
-**Sonderregel**: Mutierende Admin-Aktionen ohne vorherigen Dry-Run-Pass sind ein Governance-Verstoß. Das Audit-Event muss `dry_run_completed_first: true` oder `dry_run: true` ausweisen.
+**Sonderregel**: Mutierende Admin-Aktionen ohne vorherigen Dry-Run-Pass sind ein Governance-Verstoß. Das Audit-Event muss `dry_run_completed_first: true` oder `dry_run: true` ausweisen. Quelle: `reports/current/masterplan_status.json`.
 
 ---
 

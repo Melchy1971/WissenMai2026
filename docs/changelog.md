@@ -7,7 +7,7 @@ Stand: 2026-05-19
 ### Added
 
 - `docs/frontend-truth-full-suite-scope.md` definiert die 15 Pflichtflows, die Testfallliste und die Akzeptanzkriterien fuer Full-Suite-Frontend-Truth.
-- `reports/frontend_truth_scope.json` stellt den Scope maschinenlesbar bereit.
+- `reports/current/frontend_full_suite_activation_plan.json` stellt den Scope maschinenlesbar bereit.
 
 ### Decision
 
@@ -19,7 +19,7 @@ Stand: 2026-05-19
 
 ### Added
 
-- `reports/m3a_final_gate_report.json` und `reports/m3a_final_gate_report.md` dokumentieren das finale M3a-Gate.
+- `reports/current/m3a_release_candidate.json` und `reports/m3a_final_gate_report.md` dokumentieren das finale M3a-Gate.
 
 ### Findings
 
@@ -37,7 +37,7 @@ Stand: 2026-05-19
 
 ### Added
 
-- `docs/postgres-truth-failure-gate-matrix.md` klassifiziert die 16 Failures und 2 Errors aus `reports/postgres_truth_report.json` nach M4a, M4b, M4c, M5 entropy/drift und Setup/Error.
+- `docs/postgres-truth-failure-gate-matrix.md` klassifiziert die 16 Failures und 2 Errors aus `reports/current/m4_truth_report.json` nach M4a, M4b, M4c, M5 entropy/drift und Setup/Error.
 
 ### Changed
 
@@ -78,7 +78,7 @@ Stand: 2026-05-19
 - Kanonischer Auth-Bootstrap-Nachlauf: `python scripts/run_gui_truth.py --filter tests/gui_truth/test_02_auth_bootstrap.spec.js`.
 - Ergebnis: `22 collected`, `22 passed`, `0 failed`, `0 skipped`.
 - Der zuletzt vollstaendige Frontend-Truth-Lauf bleibt archiviert rot mit `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
-- `reports/m3a_gate_result.json` bleibt deshalb `BLOCKED`, Score `70`.
+- `reports/current/gate_hierarchy_result.json` bleibt deshalb `BLOCKED`, Score `70`.
 
 ### Decision
 
@@ -136,7 +136,7 @@ Stand: 2026-05-19
 ### Changed
 
 - M4-Gesamtbewertung auf den aktuellen M3a- und PostgreSQL-Truth-Stand korrigiert.
-- `masterplan.md`, `docs/status.md`, `docs/m4-completion-matrix.md` und `docs/m4-m5-freigabefassung.md` markieren den 2026-05-11-PASS nicht mehr als aktuelle Freigabe.
+- `masterplan.md`, `docs/status.md`, `docs/m4-completion-matrix.md` und `docs/m4-m5-freigabefassung.md` markieren den 2026-05-11-PASS nicht mehr als aktuelle Freigabe. Quelle: `reports/current/masterplan_status.json`.
 - Neue Gesamtmatrix: `docs/m4-gesamt-reconciliation.md`.
 
 ### Findings
@@ -161,7 +161,7 @@ Stand: 2026-05-19
 
 - `masterplan.md`, `docs/status.md`, `docs/frontend.md` und `docs/api.md` unterscheiden jetzt explizit zwischen vorhandener GUI und stabilisierter GUI.
 - M3a wird nicht mehr als abgeschlossen, freigegeben oder stabilisiert beschrieben.
-- `reports/frontend_truth_report.json` und `reports/m3a_gate_result.json` sind als verbindliche Nachweise referenziert.
+- `reports/current/frontend_full_suite_staged_report.json` und `reports/current/gate_hierarchy_result.json` sind als verbindliche Nachweise referenziert.
 - Offene GUI-Blocker sind sichtbar dokumentiert.
 
 ### Findings
@@ -169,8 +169,8 @@ Stand: 2026-05-19
 - Letzter Full-Suite-Frontend-Truth-Report vom 2026-05-18: `80 collected`, `58 passed`, `22 failed`, `0 skipped`.
 - Aktueller fokussierter Auth-Bootstrap-Truth-Report vom 2026-05-18: `22 collected`, `22 passed`, `0 failed`, `0 skipped`.
 - M3a Gate Result: `BLOCKED`, Score `70`.
-- `reports/contract_test_report.json` ist gruen (`8 collected`, `8 passed`, `0 failed`, `0 skipped`).
-- `reports/postgres_truth_report.json` ist nicht gruen (`138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`).
+- `reports/current/m3a_release_candidate.json` ist gruen (`8 collected`, `8 passed`, `0 failed`, `0 skipped`).
+- `reports/current/m4_truth_report.json` ist nicht gruen (`138 collected`, `120 passed`, `16 failed`, `2 errors`, Exit-Code `1`).
 
 ### Decision
 
@@ -178,7 +178,7 @@ Stand: 2026-05-19
 - GUI: `vorhanden`, aber `nicht stabilisiert`.
 - Gruene Aussagen zu M3a sind erst nach gruenem `scripts/validate_m3a_gate.py` zulaessig.
 
-## 2026-05-11 - M4 abgeschlossen, M5 Vorbereitung und Implementierung freigegeben
+## 2026-05-11 - M4 abgeschlossen, M5 Vorbereitung und Implementierung freigegeben Quelle: `reports/current/masterplan_status.json`.
 
 Historischer Eintrag: Diese Freigabe ist durch die M3a/M4 Gesamt-Reconciliation vom 2026-05-18 ueberholt. Aktueller Stand: M4 `No-Go`, M5-Transition `No-Go`.
 
@@ -191,7 +191,7 @@ Historischer Eintrag: Diese Freigabe ist durch die M3a/M4 Gesamt-Reconciliation 
 
 ### Findings
 
-- `reports/postgres_truth_report.json` ist vollstaendig gruen (`33/33`, `failed = 0`, `errors = 0`, `skipped = 0`).
+- `reports/current/m4_truth_report.json` ist vollstaendig gruen (`33/33`, `failed = 0`, `errors = 0`, `skipped = 0`).
 - `reports/restore_truth_report.md` dokumentiert einen echten Restore-Truth-Test mit Gesamtstatus `PASS`.
 - M4 ist fuer den lokalen Produktbetrieb technisch abgeschlossen.
 - M5 Vorbereitung ist erlaubt.
@@ -517,7 +517,7 @@ Historischer Eintrag: Diese Freigabe ist durch die M3a/M4 Gesamt-Reconciliation 
 ### Superseded
 
 - Dieser Zwischenstand wurde durch spaetere PostgreSQL- und Ranking-Tests ueberholt.
-- M3c wurde am 2026-05-05 auf dem stabilisierten Retrieval-Vertrag abgeschlossen.
+- M3c wurde am 2026-05-05 auf dem stabilisierten Retrieval-Vertrag abgeschlossen. Quelle: `reports/current/masterplan_status.json`.
 
 ## 2026-05-04 - M3c Chat/RAG Foundation
 
@@ -552,7 +552,7 @@ Historischer Eintrag: Diese Freigabe ist durch die M3a/M4 Gesamt-Reconciliation 
 ### Status
 
 - Noch nicht implementiert.
-- Start ist seit dem M3c-Abschluss vom 2026-05-05 freigegeben.
+- Start ist seit dem M3c-Abschluss vom 2026-05-05 freigegeben. Quelle: `reports/current/masterplan_status.json`.
 
 ### Open
 

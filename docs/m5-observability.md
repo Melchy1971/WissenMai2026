@@ -256,7 +256,7 @@ Anzeigen:
 
 - Metrikdefinitionen: `backend/app/observability/m5_metrics.py`
 - Strukturierte Logs: `backend/app/observability/logging.py`
-- Metrik-Snapshots: `reports/m5_observability/latest.json`, spaeter versionierte Snapshots unter `reports/m5_observability/`
+- Metrik-Snapshots: `geplanter M5-Observability-Report`, spaeter versionierte Snapshots unter `reports/m5_observability/`
 - Longrun Quelle: `reports/m5_longrun/latest.json`
 - Retrieval Quelle: `reports/m5_retrieval/latest.json`
 - Entropy Quelle: `reports/m5_entropy/latest.json`
