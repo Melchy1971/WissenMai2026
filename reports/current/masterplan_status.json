@@ -2,28 +2,28 @@
   "report_schema_version": 3,
   "report_name": "masterplan_status",
   "generated_by": "masterplan_status_engine_v3",
-  "generated_at": "2026-05-29T06:47:07.638355+00:00",
+  "generated_at": "2026-05-29T09:16:14.457490+00:00",
   "authority": {
     "source_of_truth": "reports/current release-candidate artifacts",
     "manual_status_override_allowed": false,
     "engine_version": 3,
-    "rule": "M3a and M4 status are derived from RC reports; M5 implementation requires explicit M4e/Operations release."
+    "rule": "M3a and M4 status are derived from RC reports; M5 implementation requires PASS/GO in the explicit M4e/Operations release report."
   },
   "inputs": {
     "current_reports": {
       "m3a_release_candidate.json": {
         "available": true,
         "report_name": "m3a_release_candidate",
-        "status": "FAIL",
-        "result": null,
-        "decision": "NO-GO",
+        "status": "PASS",
+        "result": "PASS",
+        "decision": "GO",
         "collected": 5,
-        "passed": 4,
-        "failed": 1,
+        "passed": 5,
+        "failed": 0,
         "errors": 0,
         "skipped": 0,
-        "exit_code": 1,
-        "timestamp": "2026-05-26T08:11:36.043971Z"
+        "exit_code": 0,
+        "timestamp": "2026-05-29T08:51:25.441334+00:00"
       },
       "m4_backend_release_candidate.json": {
         "available": true,
@@ -39,6 +39,20 @@
         "exit_code": 0,
         "timestamp": "2026-05-29T06:38:24.711878+00:00"
       },
+      "m4e_operations_release_report.json": {
+        "available": true,
+        "report_name": "m4e_operations_release_report",
+        "status": "PASS",
+        "result": "PASS",
+        "decision": "GO",
+        "collected": 7,
+        "passed": 7,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "timestamp": "2026-05-29T07:36:29.870911+00:00"
+      },
       "documentation_truth_lint.json": {
         "available": true,
         "report_name": "documentation_truth_lint",
@@ -51,45 +65,40 @@
         "errors": null,
         "skipped": null,
         "exit_code": 0,
-        "timestamp": "2026-05-29T06:46:48.724293+00:00"
+        "timestamp": "2026-05-29T07:39:35.308253+00:00"
       },
       "known_limitations.json": {
         "available": true,
         "error": null,
-        "total": 1,
-        "blocking": 0,
-        "blocking_ids": [],
-        "operations_explicitly_released": false,
-        "operations_open_ids": [
-          "KL-M5-OPS-001"
-        ]
+        "total": 6,
+        "active": 6,
+        "blocking": 3,
+        "blocking_ids": [
+          "KL-M5-T-001",
+          "KL-M5-T-002",
+          "KL-GOV-001"
+        ],
+        "operations_explicitly_released": true,
+        "operations_open_ids": []
       }
     }
   },
   "overall": {
-    "status": "blocked",
-    "progress_percent": 55,
-    "release_allowed": false,
-    "blocker_count": 1
+    "status": "pass",
+    "progress_percent": 100,
+    "release_allowed": true,
+    "blocker_count": 0
   },
   "phases": {
     "m3a": {
       "id": "m3a",
       "label": "M3a Frontend Foundation",
-      "status": "blocked",
-      "decision": "NO_GO",
+      "status": "gate_passed",
+      "decision": "GO",
       "gate_id": "m3a_release_candidate_gate",
-      "gate_status": "FAIL",
+      "gate_status": "PASS",
       "source": "reports/current/m3a_release_candidate.json",
-      "blockers": [
-        {
-          "id": "m3a_rc_not_pass",
-          "type": "release_candidate",
-          "severity": "blocking",
-          "detail": "m3a_release_candidate.json must be PASS/GO",
-          "source": "reports/current/m3a_release_candidate.json"
-        }
-      ]
+      "blockers": []
     },
     "m4": {
       "id": "m4",
@@ -114,30 +123,20 @@
     "m5_implementation": {
       "id": "m5_implementation",
       "label": "M5 Implementierung",
-      "status": "blocked",
-      "decision": "NO_GO",
+      "status": "gate_passed",
+      "decision": "GO",
       "gate_id": "m5_implementation_gate",
-      "gate_status": "FAIL",
-      "source": "reports/current/known_limitations.json",
-      "blockers": [
-        {
-          "id": "m5_implementation_no_go_until_m4e_operations_release",
-          "type": "dependency",
-          "severity": "blocking",
-          "detail": "M5 Implementierung bleibt NO_GO bis ein expliziter M4e/Operations-Release-Report vorliegt",
-          "source": "reports/current/known_limitations.json"
-        }
-      ]
+      "gate_status": "PASS",
+      "source": "reports/current/m4e_operations_release_report.json",
+      "blockers": []
     }
   },
   "gate_hierarchy": {
-    "result": "FAIL",
+    "result": "PASS",
     "gates": {
       "m3a_release_candidate_gate": {
-        "status": "FAIL",
-        "blockers": [
-          "m3a_release_candidate.json must be PASS/GO"
-        ]
+        "status": "PASS",
+        "blockers": []
       },
       "m4_backend_release_candidate_gate": {
         "status": "PASS",
@@ -148,10 +147,8 @@
         "blockers": []
       },
       "m5_implementation_gate": {
-        "status": "FAIL",
-        "blockers": [
-          "M5 Implementierung bleibt NO_GO bis ein expliziter M4e/Operations-Release-Report vorliegt"
-        ]
+        "status": "PASS",
+        "blockers": []
       }
     }
   },
@@ -164,37 +161,29 @@
   },
   "known_limitations": {
     "source": "reports/current/known_limitations.json",
-    "total": 1,
-    "blocking": 0,
-    "blocking_ids": [],
-    "operations_explicitly_released": false,
-    "operations_open_ids": [
-      "KL-M5-OPS-001"
-    ]
+    "total": 6,
+    "active": 6,
+    "blocking": 3,
+    "blocking_ids": [
+      "KL-M5-T-001",
+      "KL-M5-T-002",
+      "KL-GOV-001"
+    ],
+    "operations_explicitly_released": true,
+    "operations_open_ids": []
   },
   "m5": {
     "preparation_allowed": true,
-    "implementation_allowed": false,
-    "implementation_decision": "NO_GO",
-    "implementation_blockers": [
-      {
-        "id": "m5_implementation_no_go_until_m4e_operations_release",
-        "type": "dependency",
-        "severity": "blocking",
-        "detail": "M5 Implementierung bleibt NO_GO bis ein expliziter M4e/Operations-Release-Report vorliegt",
-        "source": "reports/current/known_limitations.json"
-      }
-    ]
+    "implementation_allowed": true,
+    "implementation_decision": "GO",
+    "implementation_gate_dependency": {
+      "source": "reports/current/m4e_operations_release_report.json",
+      "operations_release_status": "GO",
+      "satisfied": true
+    },
+    "implementation_blockers": []
   },
-  "blockers": [
-    {
-      "id": "m3a_rc_not_pass",
-      "type": "release_candidate",
-      "severity": "blocking",
-      "detail": "m3a_release_candidate.json must be PASS/GO",
-      "source": "reports/current/m3a_release_candidate.json"
-    }
-  ],
-  "timestamp": "2026-05-29T06:47:07.638355+00:00",
-  "exit_code": 1
+  "blockers": [],
+  "timestamp": "2026-05-29T09:16:14.457490+00:00",
+  "exit_code": 0
 }

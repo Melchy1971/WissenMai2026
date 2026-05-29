@@ -104,3 +104,28 @@ def test_final_release_must_come_from_gate_validator() -> None:
 
     assert "invalid_generated_by" in codes
     assert "invalid_final_release_source" in codes
+
+
+def test_active_report_source_must_be_current(tmp_path: Path) -> None:
+    report_path = validate_reports.REPO_ROOT / "frontend_truth_report.json"
+
+    issues = validate_reports._source_policy_issues(report_path, _valid_report())
+
+    assert "non_current_report_source" in {issue.code for issue in issues}
+
+
+def test_archive_report_source_is_invalid() -> None:
+    report_path = validate_reports.REPO_ROOT / "reports" / "archive" / "legacy" / "old_report.json"
+
+    issues = validate_reports._source_policy_issues(report_path, _valid_report())
+
+    assert "archive_report_source" in {issue.code for issue in issues}
+
+
+def test_stale_report_source_is_invalid() -> None:
+    report = _valid_report(timestamp="2026-05-01T00:00:00+00:00")
+    report_path = validate_reports.REPO_ROOT / "reports" / "current" / "unit_report.json"
+
+    issues = validate_reports._source_policy_issues(report_path, report, max_report_age_hours=24)
+
+    assert "stale_report_source" in {issue.code for issue in issues}

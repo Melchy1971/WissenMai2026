@@ -12,6 +12,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
 CURRENT_DIR = REPORTS_DIR / "current"
+ARCHIVE_DIR = REPORTS_DIR / "archive"
 DEFAULT_BASELINE = REPORTS_DIR / "gate_drift_baseline.json"
 DEFAULT_OUTPUT_JSON = CURRENT_DIR / "gate_drift_report.json"
 DEFAULT_OUTPUT_MD = REPORTS_DIR / "gate_drift_report.md"
@@ -83,6 +84,39 @@ def _load_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
     if not isinstance(payload, dict):
         return None, f"JSON root must be object: {path}"
     return payload, None
+
+
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.resolve().relative_to(parent.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def _report_dir_policy_findings(report_dir: Path) -> list[Finding]:
+    resolved = report_dir.resolve()
+    if _is_relative_to(resolved, ARCHIVE_DIR):
+        return [
+            Finding(
+                id="GDD-ARCHIVE-REPORT-SOURCE",
+                severity="critical",
+                rule="Gate-Validatoren duerfen keine Archive-Reports lesen.",
+                message="Report-Quelle liegt unter reports/archive.",
+                evidence={"report_dir": _display_path(report_dir)},
+            )
+        ]
+    if resolved == REPO_ROOT.resolve() or (_is_relative_to(resolved, REPORTS_DIR) and resolved != CURRENT_DIR.resolve()):
+        return [
+            Finding(
+                id="GDD-NONCURRENT-REPORT-SOURCE",
+                severity="critical",
+                rule="Aktive Gate-Reports muessen aus reports/current gelesen werden.",
+                message="Report-Quelle ist nicht reports/current.",
+                evidence={"report_dir": _display_path(report_dir)},
+            )
+        ]
+    return []
 
 
 def _parse_timestamp(value: Any) -> datetime | None:
@@ -371,6 +405,26 @@ def _documentation_findings(
                 seen.add(key)
 
                 if report_name in current_reports:
+                    if match.startswith("reports/archive/"):
+                        findings.append(
+                            Finding(
+                                id="GDD-DOC-REFERENCES-ARCHIVE-REPORT",
+                                severity="critical",
+                                rule="Dokumentation darf Archive-Reports nicht als aktive Evidenz referenzieren.",
+                                message=f"{display_doc_path}:{line_no} referenziert Archive-Report {match}.",
+                                evidence={"document": display_doc_path, "line": line_no, "reference": match},
+                            )
+                        )
+                    elif not match.startswith("reports/current/"):
+                        findings.append(
+                            Finding(
+                                id="GDD-DOC-REFERENCES-NONCURRENT-REPORT",
+                                severity="critical",
+                                rule="Aktive Reportreferenzen muessen auf reports/current zeigen.",
+                                message=f"{display_doc_path}:{line_no} referenziert nicht-current Report {match}.",
+                                evidence={"document": display_doc_path, "line": line_no, "reference": match},
+                            )
+                        )
                     report = current_reports[report_name]
                     error = report_errors[report_name]
                     if error or report is None:
@@ -427,6 +481,7 @@ def detect_gate_drift(
 
     taxonomy, taxonomy_error = _load_json(taxonomy_path)
     findings: list[Finding] = []
+    findings.extend(_report_dir_policy_findings(report_dir))
     if baseline_error:
         findings.append(
             Finding(
@@ -470,6 +525,7 @@ def detect_gate_drift(
             "Unclassified or ambiguous tests present.",
             "Gate score rises while failed+error count rises.",
             "Documentation references missing or stale gate report.",
+            "Gate report source is outside reports/current.",
             "Baseline missing or unreadable.",
         ],
         "inputs": {

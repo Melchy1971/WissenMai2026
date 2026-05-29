@@ -1,0 +1,46 @@
+{
+  "gate": "m5_gate_assessment",
+  "timestamp": "2026-05-29T09:00:16Z",
+  "m3a_release_candidate": "PASS",
+  "m4_backend_release_candidate": "PASS",
+  "m4e_operations_release": "PASS",
+  "limitations": [
+    {
+      "id": "KL-M5-T-001",
+      "status": "open",
+      "category": "M5 blocker",
+      "description": "15 M5 Entropy-/Drift-Truth-Failures in aktueller PostgreSQL-Truth-Suite. Kein M5-Slice darf produktiv gehen, bevor sein Truth-Block gruen ist.",
+      "blocks_gate": ["m5_truth_gate"]
+    },
+    {
+      "id": "KL-M5-T-002",
+      "status": "open",
+      "category": "M5 blocker",
+      "description": "Vor Start jedes M5-Slices fehlen drei Pflicht-Artefakte: (1) Retrieval-Baseline, (2) Cleanup Dry-Run mit blocked_count=0, (3) PostgreSQL-Truth-Block gruen.",
+      "blocks_gate": ["m5_slice_start_gate"]
+    },
+    {
+      "id": "KL-GOV-001",
+      "status": "open",
+      "category": "operational governance",
+      "description": "Mutierende Admin-Aktionen (Repair, Cleanup-Loeschen, forced Reindex) duerfen nicht ueber Web-Admin ausgeloest werden. M4d bleibt read-only; operativer Mutationspfad braucht explizites Runbook und Freigabe.",
+      "blocks_gate": ["m5_ops_gate"]
+    }
+  ],
+  "assessment": {
+      "m5_preparation_allowed": true,
+      "m5_implementation_allowed": true,
+      "blockers": [
+        {
+          "id": "KL-M5-002",
+          "description": "M5 Entropy/Drift-Blocker: Kein produktiver M5-Slice darf als freigegeben gelten, bevor der Truth-Block des jeweiligen Slices grün ist."
+        }
+      ],
+      "residual_risks": [
+        "M5 Entropy/Drift-Blocker (KL-M5-002)",
+        "Weitere Restrisiken können nicht ausgeschlossen werden, solange die vollständigen Release-Candidate-Reports fehlen."
+      ],
+      "source": "known_limitations.json"
+  },
+  "decision": "NO-GO"
+}

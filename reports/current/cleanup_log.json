@@ -1,0 +1,465 @@
+{
+  "generated_at": "2026-05-29T08:58:17.945526+00:00",
+  "archive_target": "reports/archive/legacy/20260529T085817Z/",
+  "files_moved": 0,
+  "files_copied_only": 64,
+  "policy": {
+    "active_reports": "reports/current/ only",
+    "gate_validators": "must not read from project root or reports/ root",
+    "archive": "reports/archive/legacy/<timestamp>/",
+    "manual_deletion_required": [
+      "pytest_results.txt",
+      "collected.txt",
+      "reports/auth_bootstrap_guard_backend.err.log",
+      "reports/auth_bootstrap_guard_backend.out.log",
+      "reports/auth_smoke_backend.log",
+      "reports/auth_smoke_frontend.log",
+      "reports/backend-8001-python.err.log",
+      "reports/backend-8001-python.out.log",
+      "reports/backend-8001.err.log",
+      "reports/backend-8001.out.log",
+      "reports/citation_longevity_audit.md",
+      "reports/connectivity_truth_report.md",
+      "reports/contract_test_report.md",
+      "reports/documentation_release_audit.md",
+      "reports/frontend-api-8000.err.log",
+      "reports/frontend-api-8000.out.log",
+      "reports/frontend-api-8013.err.log",
+      "reports/frontend-api-8013.out.log",
+      "reports/frontend-vite-7474.err.log",
+      "reports/frontend-vite-7474.out.log",
+      "reports/frontend-vite-7475.err.log",
+      "reports/frontend-vite-7475.out.log",
+      "reports/frontend-vite-7476.err.log",
+      "reports/frontend-vite-7476.out.log",
+      "reports/frontend_runtime_connectivity_gate_report.md",
+      "reports/frontend_truth_report.md",
+      "reports/gate_drift_report.md",
+      "reports/gate_hierarchy_result.md",
+      "reports/gesamtarchitektur_reconciliation.md",
+      "reports/m3a_final_gate_report.md",
+      "reports/m3a_final_release.md",
+      "reports/m3a_gate_result.md",
+      "reports/m3a_release_candidate.md",
+      "reports/m4_backend_release_candidate.md",
+      "reports/m4_report_fixlog.md",
+      "reports/m5_entropy_audit.md",
+      "reports/m5_longrun_summary.md",
+      "reports/m5_retrieval_regression_summary.md",
+      "reports/m5_retrieval_summary.md",
+      "reports/m5_start_gate_report.md",
+      "reports/masterplan_status.md",
+      "reports/masterplan_status_section.md",
+      "reports/operational_readiness_review.md",
+      "reports/operational_readiness_review_executive.md",
+      "reports/postgres_truth_delta.md",
+      "reports/postgres_truth_report.md",
+      "reports/pre_m5_decision_report.md",
+      "reports/regression_lock_baseline.json",
+      "reports/restore_truth_report.md",
+      "reports/runtime_backend.log",
+      "reports/runtime_connectivity_report.md",
+      "reports/runtime_connectivity_root_cause.md",
+      "reports/runtime_frontend.log",
+      "reports/scope_change_log.json",
+      "reports/scorematrix.md",
+      "reports/seed_report.json",
+      "reports/smoke_backend_stderr.log",
+      "reports/smoke_backend_stdout.log",
+      "reports/smoke_frontend_stderr.log",
+      "reports/smoke_frontend_stdout.log",
+      "reports/status_section_generated.md",
+      "reports/truth_marker_taxonomy.json",
+      "reports/truth_marker_taxonomy.md",
+      "reports/truth_root_cause_matrix.md"
+    ]
+  },
+  "report_source_policy": "Gate-Validators (validate_m3a_gate.py, generate_m4_backend_release_candidate.py, generate_masterplan_status_v3.py) duerfen ausschliesslich aus reports/current/ lesen. Root-Level und reports/-Root-Level Reports sind als legacy eingestuft. Manuelle Loeschung der Originale durch den Nutzer erforderlich.",
+  "moved": [],
+  "unremovable_originals": [
+    {
+      "from": "pytest_results.txt",
+      "to": "reports/archive/legacy/20260529T085817Z/pytest_results.txt",
+      "action": "copied_only",
+      "reason": "stale test result artifact in project root"
+    },
+    {
+      "from": "collected.txt",
+      "to": "reports/archive/legacy/20260529T085817Z/collected.txt",
+      "action": "copied_only",
+      "reason": "stale test result artifact in project root"
+    },
+    {
+      "from": "reports/auth_bootstrap_guard_backend.err.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_auth_bootstrap_guard_backend.err.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/auth_bootstrap_guard_backend.out.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_auth_bootstrap_guard_backend.out.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/auth_smoke_backend.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_auth_smoke_backend.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/auth_smoke_frontend.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_auth_smoke_frontend.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/backend-8001-python.err.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_backend-8001-python.err.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/backend-8001-python.out.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_backend-8001-python.out.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/backend-8001.err.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_backend-8001.err.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/backend-8001.out.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_backend-8001.out.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/citation_longevity_audit.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_citation_longevity_audit.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/connectivity_truth_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_connectivity_truth_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/contract_test_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_contract_test_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/documentation_release_audit.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_documentation_release_audit.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-api-8000.err.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-api-8000.err.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-api-8000.out.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-api-8000.out.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-api-8013.err.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-api-8013.err.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-api-8013.out.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-api-8013.out.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-vite-7474.err.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-vite-7474.err.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-vite-7474.out.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-vite-7474.out.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-vite-7475.err.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-vite-7475.err.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-vite-7475.out.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-vite-7475.out.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-vite-7476.err.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-vite-7476.err.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend-vite-7476.out.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend-vite-7476.out.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend_runtime_connectivity_gate_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend_runtime_connectivity_gate_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/frontend_truth_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_frontend_truth_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/gate_drift_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_gate_drift_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/gate_hierarchy_result.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_gate_hierarchy_result.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/gesamtarchitektur_reconciliation.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_gesamtarchitektur_reconciliation.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m3a_final_gate_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m3a_final_gate_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m3a_final_release.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m3a_final_release.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m3a_gate_result.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m3a_gate_result.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m3a_release_candidate.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m3a_release_candidate.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m4_backend_release_candidate.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m4_backend_release_candidate.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m4_report_fixlog.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m4_report_fixlog.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m5_entropy_audit.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m5_entropy_audit.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m5_longrun_summary.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m5_longrun_summary.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m5_retrieval_regression_summary.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m5_retrieval_regression_summary.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m5_retrieval_summary.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m5_retrieval_summary.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/m5_start_gate_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_m5_start_gate_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/masterplan_status.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_masterplan_status.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/masterplan_status_section.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_masterplan_status_section.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/operational_readiness_review.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_operational_readiness_review.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/operational_readiness_review_executive.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_operational_readiness_review_executive.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/postgres_truth_delta.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_postgres_truth_delta.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/postgres_truth_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_postgres_truth_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/pre_m5_decision_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_pre_m5_decision_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/regression_lock_baseline.json",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_regression_lock_baseline.json",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/restore_truth_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_restore_truth_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/runtime_backend.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_runtime_backend.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/runtime_connectivity_report.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_runtime_connectivity_report.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/runtime_connectivity_root_cause.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_runtime_connectivity_root_cause.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/runtime_frontend.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_runtime_frontend.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/scope_change_log.json",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_scope_change_log.json",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/scorematrix.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_scorematrix.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/seed_report.json",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_seed_report.json",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/smoke_backend_stderr.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_smoke_backend_stderr.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/smoke_backend_stdout.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_smoke_backend_stdout.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/smoke_frontend_stderr.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_smoke_frontend_stderr.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/smoke_frontend_stdout.log",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_smoke_frontend_stdout.log",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/status_section_generated.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_status_section_generated.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/truth_marker_taxonomy.json",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_truth_marker_taxonomy.json",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/truth_marker_taxonomy.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_truth_marker_taxonomy.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    },
+    {
+      "from": "reports/truth_root_cause_matrix.md",
+      "to": "reports/archive/legacy/20260529T085817Z/reports_truth_root_cause_matrix.md",
+      "action": "copied_only",
+      "reason": "stale report artifact at reports/ root (gate validators must read only reports/current/)"
+    }
+  ]
+}

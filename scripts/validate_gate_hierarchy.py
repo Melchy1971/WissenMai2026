@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 import json
 from pathlib import Path
 from typing import Any
@@ -11,10 +11,12 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
 CURRENT_DIR = REPORTS_DIR / "current"
+ARCHIVE_DIR = REPORTS_DIR / "archive"
 DEFAULT_OUTPUT_JSON = CURRENT_DIR / "gate_hierarchy_result.json"
 DEFAULT_OUTPUT_MD = CURRENT_DIR / "gate_hierarchy_result.md"
 
 REGRESSION_THRESHOLD = 0.20
+DEFAULT_MAX_REPORT_AGE_HOURS = 168
 
 
 @dataclass(frozen=True)
@@ -98,6 +100,38 @@ def _load_report(path: Path) -> tuple[dict[str, Any] | None, str | None]:
     return payload, None
 
 
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.resolve().relative_to(parent.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def _report_dir_policy_errors(report_dir: Path) -> list[str]:
+    resolved = report_dir.resolve()
+    if _is_relative_to(resolved, ARCHIVE_DIR):
+        return ["gate validators must not read reports from reports/archive"]
+    if resolved == REPO_ROOT.resolve():
+        return ["gate validators must read active reports from reports/current"]
+    if _is_relative_to(resolved, REPORTS_DIR) and resolved != CURRENT_DIR.resolve():
+        return ["gate validators must read active reports from reports/current"]
+    return []
+
+
+def _parse_timestamp(value: Any) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    normalized = value.replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
 def _as_int(value: Any) -> int | None:
     if isinstance(value, bool):
         return None
@@ -134,6 +168,8 @@ def _report_blockers(
     report: dict[str, Any] | None,
     load_error: str | None,
     baseline_collected: int | None = None,
+    now: datetime | None = None,
+    max_report_age_hours: int | None = None,
 ) -> list[str]:
     if load_error or report is None:
         return [load_error or f"{report_name} unavailable"]
@@ -165,6 +201,12 @@ def _report_blockers(
     regression = _regression_blocker(report_name, report, baseline_collected)
     if regression:
         blockers.append(regression)
+    if max_report_age_hours is not None:
+        timestamp = _parse_timestamp(report.get("timestamp") or report.get("generated_at"))
+        if timestamp is None:
+            blockers.append(f"{report_name}: timestamp must be machine-readable")
+        elif (now or datetime.now(UTC)) - timestamp > timedelta(hours=max_report_age_hours):
+            blockers.append(f"{report_name}: report is older than {max_report_age_hours} hours")
     return blockers
 
 
@@ -189,8 +231,11 @@ def evaluate_gate_hierarchy(
     *,
     timestamp: str | None = None,
     baseline: dict[str, int] | None = None,
+    max_report_age_hours: int | None = None,
 ) -> dict[str, Any]:
     timestamp = timestamp or datetime.now(UTC).isoformat()
+    now = _parse_timestamp(timestamp) or datetime.now(UTC)
+    source_policy_errors = _report_dir_policy_errors(report_dir)
     reports: dict[str, tuple[dict[str, Any] | None, str | None]] = {}
     for spec in GATE_SPECS:
         for report_name in spec.reports:
@@ -207,11 +252,25 @@ def evaluate_gate_hierarchy(
 
         blockers: list[str] = []
         report_summaries: dict[str, dict[str, Any]] = {}
-        if not dependency_blockers:
+        if source_policy_errors:
+            blockers.extend(source_policy_errors)
+            for report_name in spec.reports:
+                report, load_error = reports[report_name]
+                report_summaries[report_name] = _report_summary(report, load_error)
+        elif not dependency_blockers:
             for report_name in spec.reports:
                 report, load_error = reports[report_name]
                 baseline_collected = baseline.get(report_name) if baseline else None
-                blockers.extend(_report_blockers(report_name, report, load_error, baseline_collected))
+                blockers.extend(
+                    _report_blockers(
+                        report_name,
+                        report,
+                        load_error,
+                        baseline_collected,
+                        now,
+                        max_report_age_hours,
+                    )
+                )
                 report_summaries[report_name] = _report_summary(report, load_error)
         else:
             for report_name in spec.reports:
@@ -310,9 +369,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--report-dir", type=Path, default=CURRENT_DIR)
     parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)
     parser.add_argument("--output-md", type=Path, default=DEFAULT_OUTPUT_MD)
+    parser.add_argument(
+        "--max-report-age-hours",
+        type=int,
+        default=DEFAULT_MAX_REPORT_AGE_HOURS,
+        help="Reject gate reports older than this many hours. Use -1 to disable age validation.",
+    )
     args = parser.parse_args(argv)
 
-    payload = evaluate_gate_hierarchy(args.report_dir)
+    max_report_age_hours = None if args.max_report_age_hours < 0 else args.max_report_age_hours
+    payload = evaluate_gate_hierarchy(args.report_dir, max_report_age_hours=max_report_age_hours)
     write_result(payload, args.output_json, args.output_md)
 
     print(f"Gate Hierarchy = {payload['result']}")

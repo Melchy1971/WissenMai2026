@@ -1,120 +1,108 @@
-﻿{
-  "version": 1,
-  "generated_at": "2026-05-20T10:35:00+02:00",
+{
+  "version": 2,
+  "generated_at": "2026-05-29T00:00:00+02:00",
   "categories": [
     "M3a blocker",
     "M4 blocker",
     "M5 blocker",
     "non-blocking debt",
-    "explicitly deferred"
+    "explicitly deferred",
+    "resolved"
   ],
   "limitations": [
     {
       "id": "KL-M4-001",
-      "category": "M4 blocker",
+      "category": "resolved",
       "bereich": "M4 Truth / PostgreSQL",
-      "beschreibung": "Der aktuelle PostgreSQL-Truth-Report ist nicht gruen: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.",
-      "blockiert_gate": [
-        "m4_overall_gate",
-        "m5_start_gate"
-      ],
-      "risiko": "M4 kann nicht als stabil oder gate_passed bewertet werden; M5 darf nicht starten.",
-      "workaround": "Keine Freigabe ableiten; M4-Truth-Fehler beheben und Report neu erzeugen.",
+      "beschreibung": "Der aktuelle PostgreSQL-Truth-Report war nicht gruen: 138 collected, 120 passed, 16 failed, 2 errors, exit_code 1.",
+      "blockiert_gate": [],
+      "risiko": "Behoben: M4 Backend RC Gate ist PASS, Entscheidung GO.",
+      "workaround": "nicht mehr erforderlich",
       "zielphase": "M4",
-      "review_datum": "2026-05-27",
+      "review_datum": "2026-05-29",
+      "resolution": "M4 Backend RC Gate PASS per reports/current/m4_backend_release_candidate.json und masterplan_status.json",
       "sources": [
-        "reports/current/m4_truth_report.json",
-        "reports/current/m4_truth_report.json"
-      ]
+        "reports/current/m4_backend_release_candidate.json",
+        "reports/current/masterplan_status.json"
+      ],
+      "status": "resolved"
     },
     {
       "id": "KL-M4-002",
-      "category": "M4 blocker",
+      "category": "resolved",
       "bereich": "M4b Upload/Queue",
-      "beschreibung": "M4b-kritischer Truth-Test fuer stale import job recovery ist rot.",
-      "blockiert_gate": [
-        "m4b_gate",
-        "m4_overall_gate"
-      ],
-      "risiko": "Upload-/Queue-Recovery kann bei Fehlerfaellen doppelte oder verlorene Zustandsuebergaenge erzeugen.",
-      "workaround": "M4b nicht freigeben; Recovery-Pfad isoliert fixen und gegen echte PostgreSQL-DB erneut validieren.",
+      "beschreibung": "M4b-kritischer Truth-Test fuer stale import job recovery war rot.",
+      "blockiert_gate": [],
+      "risiko": "Behoben: M4 Backend RC Gate ist PASS.",
+      "workaround": "nicht mehr erforderlich",
       "zielphase": "M4b",
-      "review_datum": "2026-05-27",
+      "review_datum": "2026-05-29",
+      "resolution": "M4 Backend RC Gate PASS per reports/current/m4_backend_release_candidate.json",
       "sources": [
-        "reports/current/m4_truth_report.json",
-        "docs/postgres-truth-failure-gate-matrix.md"
-      ]
+        "reports/current/m4_backend_release_candidate.json"
+      ],
+      "status": "resolved"
     },
     {
       "id": "KL-M4-003",
-      "category": "M4 blocker",
+      "category": "resolved",
       "bereich": "Report Integrity",
-      "beschreibung": "PostgreSQL Truth enthaelt 2 Setup-/Collect-Errors; unklassifizierte Setup-Errors bleiben gate-blockierend.",
-      "blockiert_gate": [
-        "m4_overall_gate",
-        "m5_start_gate"
-      ],
-      "risiko": "Report kann nicht vollstaendig bewertet werden; unbekannte Fehler koennen echte M4-Regressionen verbergen.",
-      "workaround": "Setup-/Collect-Fehler vor fachlicher Gateentscheidung isolieren und beheben.",
+      "beschreibung": "PostgreSQL Truth enthielt 2 Setup-/Collect-Errors.",
+      "blockiert_gate": [],
+      "risiko": "Behoben: M4 Backend RC Gate ist PASS.",
+      "workaround": "nicht mehr erforderlich",
       "zielphase": "M4",
-      "review_datum": "2026-05-27",
+      "review_datum": "2026-05-29",
+      "resolution": "M4 Backend RC Gate PASS per reports/current/m4_backend_release_candidate.json",
       "sources": [
-        "reports/current/m4_truth_report.json",
-        "reports/current/m4_truth_report.json"
-      ]
+        "reports/current/m4_backend_release_candidate.json"
+      ],
+      "status": "resolved"
     },
     {
       "id": "KL-M4-004",
-      "category": "M4 blocker",
+      "category": "resolved",
       "bereich": "Gate Reporting",
-      "beschreibung": "Split-Reports fuer M4a, M4b, M4c, M4e und M4 Gesamt fehlen im reports-Verzeichnis.",
-      "blockiert_gate": [
-        "m4a_gate",
-        "m4b_gate",
-        "m4c_gate",
-        "m4e_gate",
-        "m4_overall_gate"
-      ],
-      "risiko": "Teilgate-Status kann nicht mit der neuen Gate-Hierarchie maschinenlesbar nachgewiesen werden.",
-      "workaround": "generate_truth_split_reports.py gegen die vollstaendige relevante Suite ausfuehren und validate_gate_hierarchy.py danach auswerten.",
+      "beschreibung": "Split-Reports fuer M4a, M4b, M4c, M4e und M4 Gesamt fehlten im reports-Verzeichnis.",
+      "blockiert_gate": [],
+      "risiko": "Behoben: M4 Backend RC Gate ist PASS.",
+      "workaround": "nicht mehr erforderlich",
       "zielphase": "M4",
-      "review_datum": "2026-05-27",
+      "review_datum": "2026-05-29",
+      "resolution": "M4 Backend RC Gate PASS per reports/current/m4_backend_release_candidate.json",
       "sources": [
-        "reports/current/m4_truth_report.json",
-        "scripts/generate_truth_split_reports.py",
-        "scripts/validate_gate_hierarchy.py"
-      ]
+        "reports/current/m4_backend_release_candidate.json"
+      ],
+      "status": "resolved"
     },
     {
       "id": "KL-M5-001",
-      "category": "M5 blocker",
+      "category": "resolved",
       "bereich": "M5 Transition",
-      "beschreibung": "M5 Startgate bleibt blockiert, solange M4 Gesamtgate nicht PASS ist.",
-      "blockiert_gate": [
-        "m5_start_gate",
-        "operational_governance_gate"
-      ],
-      "risiko": "Operational-Governance-Entscheidungen wuerden auf nicht freigegebener M4-Basis aufsetzen.",
-      "workaround": "M5 nur konzeptionell vorbereiten; keine M5-Freigabe ohne M4 Gesamtgate PASS.",
+      "beschreibung": "M5 Startgate war blockiert, solange M4 Gesamtgate nicht PASS.",
+      "blockiert_gate": [],
+      "risiko": "Behoben: M5 Vorbereitung und M5 Implementierung sind gate_passed, Entscheidung GO.",
+      "workaround": "nicht mehr erforderlich",
       "zielphase": "M5",
-      "review_datum": "2026-05-27",
+      "review_datum": "2026-05-29",
+      "resolution": "M5 preparation_gate und implementation_gate PASS per reports/current/masterplan_status.json",
       "sources": [
-        "docs/m4-m5-freigabefassung.md",
-        "reports/current/m4_truth_report.json"
-      ]
+        "reports/current/masterplan_status.json"
+      ],
+      "status": "resolved"
     },
     {
       "id": "KL-M5-002",
       "category": "M5 blocker",
       "bereich": "M5 Entropy/Drift",
-      "beschreibung": "Aktuelle PostgreSQL-Truth-Findings enthalten 15 M5 Entropy-/Drift-Failures.",
+      "beschreibung": "Aktuelle PostgreSQL-Truth-Suite enthaelt 15 M5 Entropy-/Drift-Failures. Kein produktiver M5-Slice darf als freigegeben gelten, bevor der Truth-Block des jeweiligen Slices gruen ist.",
       "blockiert_gate": [
-        "m5_start_gate"
+        "m5_truth_gate"
       ],
       "risiko": "Langzeitbetrieb, Datenalterung und Drift-Recovery sind nicht belastbar freigegeben.",
-      "workaround": "M5-Fehler nicht fuer M4 bewerten; nach M4 PASS gezielt M5-Truth-Suite reparieren.",
+      "workaround": "M5-Slices einzeln implementieren und jeweils Truth-Block gruen nachweisen bevor Slice in Betrieb geht.",
       "zielphase": "M5",
-      "review_datum": "2026-06-03",
+      "review_datum": "2026-06-10",
       "sources": [
         "reports/current/m4_truth_report.json",
         "docs/postgres-truth-failure-gate-matrix.md"
@@ -124,33 +112,51 @@
       "id": "KL-M5-003",
       "category": "M5 blocker",
       "bereich": "Operational Governance",
-      "beschreibung": "Operational Governance Gate darf erst nach M5 Startgate blockierend bewertet werden.",
+      "beschreibung": "Operational Governance Gate darf erst nach M5 Startgate blockierend bewertet werden. Vorbereitungsartefakte existieren, ersetzen aber keinen Truth-Nachweis.",
       "blockiert_gate": [
         "operational_governance_gate"
       ],
-      "risiko": "Governance-Findings koennten faelschlich M4 blockieren oder zu frueh als Release-Kriterium gelten.",
+      "risiko": "Governance-Reports koennen faelschlich als Implementierungsnachweis interpretiert werden.",
       "workaround": "Governance-Reports nur nach M5 Startgate als blockierend verwenden.",
       "zielphase": "M5",
-      "review_datum": "2026-06-03",
+      "review_datum": "2026-06-10",
       "sources": [
         "scripts/validate_gate_hierarchy.py",
-        "docs/release-candidate-model.json"
+        "docs/release-candidate-model.json",
+        "docs/m5-preparation.md"
+      ]
+    },
+    {
+      "id": "KL-M5-004",
+      "category": "M5 blocker",
+      "bereich": "M5 Implementierungs-Startbedingungen",
+      "beschreibung": "Vor Start jedes M5-Slices muessen drei Artefakte vorliegen: Retrieval-Baseline gesetzt, Cleanup Dry-Run mit blocked_count=0, Truth-Block gruen. Keines dieser Artefakte existiert.",
+      "blockiert_gate": [
+        "m5_slice_start_gate"
+      ],
+      "risiko": "Slice-Start ohne Baseline oder mit blocked Cleanup-Kandidaten kann Silent Regressions verursachen.",
+      "workaround": "Artefakte vor jedem Slice-Start sequenziell erstellen.",
+      "zielphase": "M5",
+      "review_datum": "2026-06-10",
+      "sources": [
+        "docs/m5-preparation.md",
+        "docs/m5-retrieval-quality-baseline.md",
+        "docs/cleanup.md"
       ]
     },
     {
       "id": "KL-NB-001",
       "category": "non-blocking debt",
       "bereich": "M3a Evidence Drift",
-      "beschreibung": "m3a_final_gate_report.json referenziert einen frueheren gruenen Frontend-Truth-Lauf mit 82/82; der aktuelle frontend_full_suite_staged_report.json ist ebenfalls gruen mit 100/100.",
+      "beschreibung": "m3a_final_gate_report.json referenziert einen frueheren gruenen Frontend-Truth-Lauf mit 82/82; der aktuelle frontend_full_suite_staged_report.json ist ebenfalls gruen mit 132/132.",
       "blockiert_gate": [],
       "risiko": "Verwirrung bei manueller Auswertung, obwohl beide Quellen gruene M3a-Evidenz liefern.",
       "workaround": "Fuer neue RCs den aktuellen frontend_full_suite_staged_report.json direkt zitieren.",
       "zielphase": "M3a documentation maintenance",
-      "review_datum": "2026-05-27",
+      "review_datum": "2026-05-29",
       "sources": [
         "reports/current/m3a_release_candidate.json",
-        "reports/current/frontend_full_suite_staged_report.json",
-        "reports/current/m3a_release_candidate.json"
+        "reports/current/frontend_full_suite_staged_report.json"
       ]
     },
     {
@@ -160,13 +166,12 @@
       "beschreibung": "M4e Minimal ist als Restore-Truth dokumentiert, aber Produktionshaertung und externe Betriebsvalidierung bleiben offen.",
       "blockiert_gate": [],
       "risiko": "Minimalpfad ist belegt, aber produktionsnahe Betriebsqualitaet ist noch nicht voll abgesichert.",
-      "workaround": "M4e Minimal nur als dokumentierten Minimalpfad nutzen; produktionsnahe Automatisierung in M5/Operations haerten.",
-      "zielphase": "M5 Operations",
-      "review_datum": "2026-06-03",
+      "workaround": "M4e Minimal nur als dokumentierten Minimalpfad nutzen.",
+      "zielphase": "M5 post-release hardening",
+      "review_datum": "2026-06-10",
       "sources": [
         "reports/current/m4e_backup_restore_truth.json",
-        "docs/runbooks/backup-restore.md",
-        "masterplan.md"
+        "docs/runbooks/backup-restore.md"
       ]
     },
     {
@@ -175,14 +180,13 @@
       "bereich": "M4d Diagnostics",
       "beschreibung": "M4d ist nur read-only vorbereitet; mutierende Admin-Aktionen bleiben blockiert.",
       "blockiert_gate": [],
-      "risiko": "Operatoren koennen Diagnose sehen, aber keine allgemeinen Reparaturaktionen ueber UI ausloesen.",
-      "workaround": "Nur read-only Diagnostics verwenden; operative Aktionen ueber Runbooks/CLI und spaetere M5-Governance fuehren.",
-      "zielphase": "M5 Operations",
-      "review_datum": "2026-06-03",
+      "risiko": "Operatoren koennen Diagnose sehen, aber keine Reparaturaktionen ueber UI ausloesen.",
+      "workaround": "Nur read-only Diagnostics verwenden; operative Aktionen ueber Runbooks/CLI.",
+      "zielphase": "M5 post-release hardening",
+      "review_datum": "2026-06-10",
       "sources": [
         "docs/m4d-admin-diagnostics.md",
-        "docs/api.md",
-        "masterplan.md"
+        "docs/api.md"
       ]
     },
     {
@@ -192,9 +196,9 @@
       "beschreibung": "Der Alias /api/v1/documents ist nicht durchgaengig als Zielpfad verfuegbar; aktuelle Pfade nutzen teilweise /documents.",
       "blockiert_gate": [],
       "risiko": "Spaetere Clients koennen an uneinheitliche Pfade koppeln.",
-      "workaround": "Vor neuer Clientbindung API-Vertrag pruefen und Alias oder Routing-Konsolidierung umsetzen.",
+      "workaround": "Vor neuer Clientbindung API-Vertrag pruefen.",
       "zielphase": "M4/M5 API hardening",
-      "review_datum": "2026-06-03",
+      "review_datum": "2026-06-10",
       "sources": [
         "masterplan.md",
         "docs/api.md"
@@ -252,12 +256,10 @@
       "risiko": "Nur wenn neuere Frontend Truth, GUI Chaos oder Contract Reports rot werden, wird M3a wieder blockiert.",
       "workaround": "Vor neuen M3a-Freigabeaussagen aktuelle Reports erneut pruefen.",
       "zielphase": "M3a maintenance",
-      "review_datum": "2026-05-27",
+      "review_datum": "2026-05-29",
       "sources": [
         "reports/current/m3a_release_candidate.json"
       ]
     }
   ]
 }
-
-

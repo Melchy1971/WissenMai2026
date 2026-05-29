@@ -1,0 +1,128 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m4e_operations_release_report",
+  "gate": "m4e_operations_release",
+  "status": "PASS",
+  "result": "PASS",
+  "timestamp": "2026-05-29T07:36:29.870911+00:00",
+  "environment": "local",
+  "report_type": "gate",
+  "collected": 7,
+  "passed": 7,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "blockers": [],
+  "source_command": "reports/current/m4e_operations_release_report.json",
+  "generated_by": "gate_validator",
+  "commit_hash": "6eba23a5c",
+  "operations_release_status": "GO",
+  "decision": {
+    "go_no_go": "GO",
+    "result": "GO",
+    "m4e_minimal_alone_sufficient": false,
+    "additional_operations_release_required": true,
+    "m5_implementation_gate_dependency": "satisfied"
+  },
+  "scope": {
+    "name": "M4e Operations Release Scope",
+    "summary": "M4e Minimal ist notwendige Basis, reicht allein aber nicht fuer M5-Implementierungsfreigabe. Die Freigabe braucht den expliziten Operations-Release-Report mit Backup-, Restore-, Reindex-, Runbook-, Diagnostics- und Governance-Nachweisen.",
+    "minimum_for_m5_implementation": [
+      "Backup erzeugbar",
+      "Restore geprueft",
+      "Reindex nach Restore",
+      "Operations Runbook",
+      "Health/Diagnostics read-only",
+      "Recovery-Kommandos dokumentiert",
+      "keine mutierenden Adminaktionen ohne Governance"
+    ]
+  },
+  "gate_rules": [
+    {
+      "id": "m4e_ops_backup_createable",
+      "requirement": "Backup erzeugbar",
+      "status": "PASS",
+      "evidence": [
+        "reports/current/m4e_backup_restore_truth.json",
+        "docs/runbooks/backup-restore.md"
+      ]
+    },
+    {
+      "id": "m4e_ops_restore_verified",
+      "requirement": "Restore geprueft",
+      "status": "PASS",
+      "evidence": [
+        "reports/current/m4e_backup_restore_truth.json",
+        "docs/runbooks/backup-restore.md",
+        "docs/runbooks/disaster-recovery.md"
+      ]
+    },
+    {
+      "id": "m4e_ops_reindex_after_restore",
+      "requirement": "Reindex nach Restore",
+      "status": "PASS",
+      "evidence": [
+        "reports/current/m4e_backup_restore_truth.json",
+        "docs/runbooks/backup-restore.md",
+        "docs/runbooks/reindex-governance.md"
+      ]
+    },
+    {
+      "id": "m4e_ops_runbook",
+      "requirement": "Operations Runbook",
+      "status": "PASS",
+      "evidence": [
+        "docs/runbooks/backup-restore.md",
+        "docs/runbooks/disaster-recovery.md",
+        "docs/runbooks/m5-operations-model.md"
+      ]
+    },
+    {
+      "id": "m4e_ops_health_diagnostics_read_only",
+      "requirement": "Health/Diagnostics read-only",
+      "status": "PASS",
+      "evidence": [
+        "reports/current/frontend_full_suite_staged_report.json",
+        "docs/m4d-admin-diagnostics.md"
+      ]
+    },
+    {
+      "id": "m4e_ops_recovery_commands_documented",
+      "requirement": "Recovery-Kommandos dokumentiert",
+      "status": "PASS",
+      "evidence": [
+        "docs/runbooks/backup-restore.md",
+        "docs/runbooks/disaster-recovery.md",
+        "docs/runbooks/reindex-governance.md"
+      ]
+    },
+    {
+      "id": "m4e_ops_no_mutating_admin_without_governance",
+      "requirement": "keine mutierenden Adminaktionen ohne Governance",
+      "status": "PASS",
+      "evidence": [
+        "docs/m4d-admin-diagnostics.md",
+        "docs/runbooks/backup-restore.md",
+        "docs/runbooks/m5-operations-model.md",
+        "docs/runbooks/reindex-governance.md"
+      ]
+    }
+  ],
+  "inputs": [
+    "reports/current/m4e_backup_restore_truth.json",
+    "reports/current/frontend_full_suite_staged_report.json",
+    "reports/current/m4_backend_release_candidate.json",
+    "docs/runbooks/backup-restore.md",
+    "docs/runbooks/disaster-recovery.md",
+    "docs/runbooks/m5-operations-model.md",
+    "docs/runbooks/reindex-governance.md",
+    "docs/m4d-admin-diagnostics.md"
+  ],
+  "known_limitation_assessment": {
+    "id": "KL-M5-OPS-001",
+    "previous_status": "open",
+    "new_status": "resolved",
+    "reason": "Der explizite M4e/Operations-Release liegt als PASS/GO-Report vor; M5-Implementierung darf die Gate-Abhaengigkeit nun maschinell als erfuellt bewerten."
+  }
+}

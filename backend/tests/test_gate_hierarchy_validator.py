@@ -212,3 +212,36 @@ def test_regression_lock_skipped_when_no_baseline(tmp_path: Path) -> None:
     result = gate_hierarchy.evaluate_gate_hierarchy(tmp_path, baseline=None)
 
     assert result["gates"]["m4a_gate"]["status"] == "PASS"
+
+
+def test_report_dir_under_repo_must_be_current() -> None:
+    result = gate_hierarchy.evaluate_gate_hierarchy(gate_hierarchy.REPO_ROOT)
+
+    assert result["result"] == "FAIL"
+    assert any(
+        "reports/current" in blocker["reason"]
+        for blocker in result["blockers"]
+    )
+
+
+def test_archive_report_dir_is_rejected() -> None:
+    result = gate_hierarchy.evaluate_gate_hierarchy(gate_hierarchy.ARCHIVE_DIR / "legacy")
+
+    assert result["result"] == "FAIL"
+    assert any(
+        "reports/archive" in blocker["reason"]
+        for blocker in result["blockers"]
+    )
+
+
+def test_stale_gate_report_is_rejected(tmp_path: Path) -> None:
+    _write_gate_spec_reports(tmp_path)
+
+    result = gate_hierarchy.evaluate_gate_hierarchy(
+        tmp_path,
+        timestamp="2026-05-29T08:00:00+00:00",
+        max_report_age_hours=24,
+    )
+
+    assert result["gates"]["m3a_gate"]["status"] == "FAIL"
+    assert "older than 24 hours" in " ".join(result["gates"]["m3a_gate"]["blockers"])

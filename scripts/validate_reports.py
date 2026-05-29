@@ -5,6 +5,7 @@ import json
 import subprocess
 import sys
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -12,7 +13,9 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
 CURRENT_DIR = REPORTS_DIR / "current"
+ARCHIVE_DIR = REPORTS_DIR / "archive"
 SUPPORTED_SCHEMA_VERSION = 1
+DEFAULT_MAX_REPORT_AGE_HOURS = 168
 
 REQUIRED_FIELDS = (
     "report_schema_version",
@@ -39,6 +42,7 @@ CANONICAL_REPORTS = (
     CURRENT_DIR / "m4b_upload_queue_truth.json",
     CURRENT_DIR / "m4c_lifecycle_retrieval_truth.json",
     CURRENT_DIR / "m4e_backup_restore_truth.json",
+    CURRENT_DIR / "m4e_operations_release_report.json",
     CURRENT_DIR / "masterplan_status.json",
 )
 
@@ -54,6 +58,61 @@ def _load_json(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("report root must be a JSON object")
     return payload
+
+
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.resolve().relative_to(parent.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def _parse_timestamp(value: Any) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    normalized = value.replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
+
+
+def _source_policy_issues(
+    path: Path,
+    report: dict[str, Any],
+    *,
+    max_report_age_hours: int | None = DEFAULT_MAX_REPORT_AGE_HOURS,
+) -> list[ValidationIssue]:
+    issues: list[ValidationIssue] = []
+    resolved = path.resolve()
+    repo_root = REPO_ROOT.resolve()
+    current_dir = CURRENT_DIR.resolve()
+    archive_dir = ARCHIVE_DIR.resolve()
+
+    if _is_relative_to(resolved, archive_dir):
+        issues.append(ValidationIssue("archive_report_source", "active reports must not be read from reports/archive"))
+    elif _is_relative_to(resolved, repo_root) and not _is_relative_to(resolved, current_dir):
+        issues.append(ValidationIssue("non_current_report_source", "active reports must be read from reports/current"))
+
+    if max_report_age_hours is not None:
+        timestamp = _parse_timestamp(report.get("timestamp") or report.get("generated_at"))
+        if timestamp is None:
+            issues.append(ValidationIssue("missing_report_timestamp", "report timestamp must be machine-readable"))
+        else:
+            max_age = timedelta(hours=max_report_age_hours)
+            if datetime.now(UTC) - timestamp > max_age:
+                issues.append(
+                    ValidationIssue(
+                        "stale_report_source",
+                        f"report timestamp is older than {max_report_age_hours} hours",
+                    )
+                )
+
+    return issues
 
 
 def _status_from_counts(failed: int, errors: int, skipped: int, exit_code: int) -> str:
@@ -238,8 +297,16 @@ def validate_payload(report: dict[str, Any]) -> list[ValidationIssue]:
     return issues
 
 
-def validate_report(path: Path) -> list[ValidationIssue]:
-    return validate_payload(_load_json(path))
+def validate_report(
+    path: Path,
+    *,
+    max_report_age_hours: int | None = DEFAULT_MAX_REPORT_AGE_HOURS,
+) -> list[ValidationIssue]:
+    payload = _load_json(path)
+    return [
+        *validate_payload(payload),
+        *_source_policy_issues(path, payload, max_report_age_hours=max_report_age_hours),
+    ]
 
 
 def _paths_from_args(values: list[str] | None) -> list[Path]:
@@ -252,7 +319,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Validate versioned report schema v1.")
     parser.add_argument("--normalize", action="store_true", help="Write schema-v1 required fields into reports before validation.")
     parser.add_argument("--report", nargs="*", help="Report path(s). Defaults to reports/current canonical reports.")
+    parser.add_argument(
+        "--max-report-age-hours",
+        type=int,
+        default=DEFAULT_MAX_REPORT_AGE_HOURS,
+        help="Reject active reports older than this many hours. Use -1 to disable age validation.",
+    )
     args = parser.parse_args(argv)
+    max_report_age_hours = None if args.max_report_age_hours < 0 else args.max_report_age_hours
 
     failed = 0
     for path in _paths_from_args(args.report):
@@ -264,7 +338,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.normalize:
                 payload = normalize_report(path)
                 path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-            issues = validate_report(path)
+            issues = validate_report(path, max_report_age_hours=max_report_age_hours)
         except Exception as exc:
             print(f"FAIL {path}: {exc}")
             failed += 1

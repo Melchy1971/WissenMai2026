@@ -2,14 +2,25 @@
 
 Derives the current masterplan state from release-candidate reports only.
 Manual status text and historical truth reports are not authority inputs.
+
+Stale Guard (M3a RC):
+  A STALE RC is never treated as PASS.  The engine loads the three mandatory
+  M3a input reports and checks whether any of them carries a timestamp newer
+  than the RC itself.  If so, the RC is considered outdated and the M3a gate
+  is treated as BLOCKED until the RC is regenerated.
 """
 from __future__ import annotations
 
 import argparse
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 import json
 from pathlib import Path
+import sys
 from typing import Any
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+from m3a_stale_guard import check_staleness  # noqa: E402
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -21,7 +32,12 @@ M3A_RC = "m3a_release_candidate.json"
 M4_BACKEND_RC = "m4_backend_release_candidate.json"
 DOC_LINT = "documentation_truth_lint.json"
 KNOWN_LIMITATIONS = "known_limitations.json"
+M4E_OPERATIONS_RELEASE = "m4e_operations_release_report.json"
 SCHEMA_VERSION = 3
+
+# Inputs loaded additionally for the M3a stale guard.
+FRONTEND_FULL_SUITE = "frontend_full_suite_staged_report.json"
+PREFLIGHT = "report_truth_preflight.json"
 
 
 def _load_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
@@ -46,6 +62,9 @@ def _is_pass_report(report: dict[str, Any] | None) -> bool:
     decision = report.get("decision") if isinstance(report.get("decision"), dict) else {}
     go_no_go = decision.get("go_no_go") or decision.get("result") or report.get("go_no_go")
     status = report.get("status") or report.get("result")
+    # STALE and BLOCKED are never PASS.
+    if str(status).upper() in ("STALE", "BLOCKED"):
+        return False
     return (
         str(status).upper() == "PASS"
         and _int_value(report.get("collected")) > 0
@@ -55,6 +74,52 @@ def _is_pass_report(report: dict[str, Any] | None) -> bool:
         and _int_value(report.get("exit_code")) == 0
         and (go_no_go is None or str(go_no_go).upper() == "GO")
     )
+
+
+def _check_m3a_stale(
+    m3a: dict[str, Any] | None,
+    current_dir: Path,
+) -> dict[str, Any] | None:
+    """Return a blocker dict when the M3a RC is stale, None otherwise.
+
+    Loads frontend_full_suite_staged_report and report_truth_preflight from
+    *current_dir* and delegates the freshness comparison to check_staleness().
+    DOC_LINT is already loaded by the caller; we reload it here to avoid
+    changing the function signature of evaluate().
+    """
+    frontend_full_path = current_dir / FRONTEND_FULL_SUITE
+    preflight_path = current_dir / PREFLIGHT
+    doc_lint_path = current_dir / DOC_LINT
+
+    def _quick_load(p: Path) -> dict[str, Any] | None:
+        if not p.exists():
+            return None
+        try:
+            payload = json.loads(p.read_text(encoding="utf-8"))
+            return payload if isinstance(payload, dict) else None
+        except (OSError, json.JSONDecodeError):
+            return None
+
+    stale_result = check_staleness(
+        m3a,
+        _quick_load(frontend_full_path),
+        _quick_load(preflight_path),
+        _quick_load(doc_lint_path),
+    )
+    if not stale_result.is_stale:
+        return None
+    return {
+        "id": "m3a_rc_stale",
+        "type": "stale_guard",
+        "severity": "blocking",
+        "detail": (
+            "M3a RC is STALE: mandatory input reports are newer than the RC. "
+            f"Regenerate with: python scripts/generate_m3a_release_candidate.py "
+            f"({stale_result.stale_reason})"
+        ),
+        "source": f"reports/current/{M3A_RC}",
+        "stale_reasons": stale_result.reasons,
+    }
 
 
 def _doc_lint_errors(report: dict[str, Any] | None) -> int:
@@ -68,14 +133,18 @@ def _known_limitations_summary(report: dict[str, Any] | None) -> dict[str, Any]:
     limitations = report.get("limitations", []) if report else []
     if not isinstance(limitations, list):
         limitations = []
-    blocking = [
-        item for item in limitations
-        if isinstance(item, dict) and item.get("blockiert_gate")
-    ]
-    operations_open = [
+    active_limitations = [
         item for item in limitations
         if isinstance(item, dict)
-        and not item.get("blockiert_gate")
+        and str(item.get("status", "open")).lower() not in {"resolved", "closed", "released"}
+    ]
+    blocking = [
+        item for item in active_limitations
+        if item.get("blockiert_gate")
+    ]
+    operations_open = [
+        item for item in active_limitations
+        if not item.get("blockiert_gate")
         and (
             "Operations" in str(item.get("zielphase", ""))
             or "Operations" in str(item.get("bereich", ""))
@@ -84,6 +153,7 @@ def _known_limitations_summary(report: dict[str, Any] | None) -> dict[str, Any]:
     ]
     return {
         "total": len(limitations),
+        "active": len(active_limitations),
         "blocking": len(blocking),
         "blocking_ids": [str(item.get("id")) for item in blocking],
         "operations_explicitly_released": len(operations_open) == 0,
@@ -138,18 +208,26 @@ def evaluate(
     *,
     timestamp: str | None = None,
 ) -> dict[str, Any]:
-    generated_at = timestamp or datetime.now(UTC).isoformat()
+    generated_at = timestamp or datetime.now(timezone.utc).isoformat()
     m3a, m3a_error = _load_json(current_dir / M3A_RC)
     m4, m4_error = _load_json(current_dir / M4_BACKEND_RC)
     doc_lint, doc_error = _load_json(current_dir / DOC_LINT)
     known, known_error = _load_json(current_dir / KNOWN_LIMITATIONS)
+    m4e_operations, m4e_operations_error = _load_json(current_dir / M4E_OPERATIONS_RELEASE)
 
-    m3a_pass = _is_pass_report(m3a)
+    # Stale guard: checked before _is_pass_report so a stale RC is never PASS.
+    m3a_stale_blocker = _check_m3a_stale(m3a, current_dir)
+    m3a_pass = _is_pass_report(m3a) and m3a_stale_blocker is None
     m4_pass = _is_pass_report(m4)
+    m4e_operations_pass = _is_pass_report(m4e_operations)
     doc_errors = _doc_lint_errors(doc_lint)
     known_summary = _known_limitations_summary(known)
     m5_preparation_allowed = m4_pass
-    m5_implementation_allowed = m4_pass and known_summary["operations_explicitly_released"]
+    m5_implementation_allowed = (
+        m4_pass
+        and m4e_operations_pass
+        and known_summary["operations_explicitly_released"]
+    )
 
     blockers: list[dict[str, Any]] = []
     m3a_blockers: list[dict[str, Any]] = []
@@ -157,12 +235,14 @@ def evaluate(
     release_blockers: list[dict[str, Any]] = []
     m5_impl_blockers: list[dict[str, Any]] = []
 
+    if m3a_stale_blocker is not None:
+        m3a_blockers.append(m3a_stale_blocker)
     if m3a_error or not m3a_pass:
         m3a_blockers.append({
             "id": "m3a_rc_not_pass",
             "type": "release_candidate",
             "severity": "blocking",
-            "detail": f"{M3A_RC} must be PASS/GO",
+            "detail": f"{M3A_RC} must be PASS/GO (not STALE/BLOCKED)",
             "source": f"reports/current/{M3A_RC}",
         })
     if m4_error or not m4_pass:
@@ -189,12 +269,20 @@ def evaluate(
             "detail": f"{KNOWN_LIMITATIONS} is required as current input",
             "source": f"reports/current/{KNOWN_LIMITATIONS}",
         })
-    if not m5_implementation_allowed:
+    if m4_pass and (m4e_operations_error or not m4e_operations_pass):
         m5_impl_blockers.append({
             "id": "m5_implementation_no_go_until_m4e_operations_release",
             "type": "dependency",
             "severity": "blocking",
-            "detail": "M5 Implementierung bleibt NO_GO bis ein expliziter M4e/Operations-Release-Report vorliegt",
+            "detail": f"{M4E_OPERATIONS_RELEASE} must be PASS/GO",
+            "source": f"reports/current/{M4E_OPERATIONS_RELEASE}",
+        })
+    if m4_pass and not known_summary["operations_explicitly_released"]:
+        m5_impl_blockers.append({
+            "id": "m5_implementation_blocked_by_known_operations_limitation",
+            "type": "known_limitations",
+            "severity": "blocking",
+            "detail": "known_limitations.json still contains an active M4e/Operations limitation",
             "source": f"reports/current/{KNOWN_LIMITATIONS}",
         })
 
@@ -236,7 +324,7 @@ def evaluate(
             passed=m5_implementation_allowed,
             decision="GO" if m5_implementation_allowed else "NO_GO",
             gate_id="m5_implementation_gate",
-            source=f"reports/current/{KNOWN_LIMITATIONS}",
+            source=f"reports/current/{M4E_OPERATIONS_RELEASE}",
             blockers=[] if m5_implementation_allowed else m5_impl_blockers,
         ),
     }
@@ -259,12 +347,13 @@ def evaluate(
             "source_of_truth": "reports/current release-candidate artifacts",
             "manual_status_override_allowed": False,
             "engine_version": 3,
-            "rule": "M3a and M4 status are derived from RC reports; M5 implementation requires explicit M4e/Operations release.",
+            "rule": "M3a and M4 status are derived from RC reports; M5 implementation requires PASS/GO in the explicit M4e/Operations release report.",
         },
         "inputs": {
             "current_reports": {
                 M3A_RC: _summary(m3a, m3a_error),
                 M4_BACKEND_RC: _summary(m4, m4_error),
+                M4E_OPERATIONS_RELEASE: _summary(m4e_operations, m4e_operations_error),
                 DOC_LINT: _summary(doc_lint, doc_error),
                 KNOWN_LIMITATIONS: {
                     "available": known is not None,
@@ -305,6 +394,11 @@ def evaluate(
             "preparation_allowed": m5_preparation_allowed,
             "implementation_allowed": m5_implementation_allowed,
             "implementation_decision": "GO" if m5_implementation_allowed else "NO_GO",
+            "implementation_gate_dependency": {
+                "source": f"reports/current/{M4E_OPERATIONS_RELEASE}",
+                "operations_release_status": "GO" if m4e_operations_pass else "NO_GO",
+                "satisfied": m4e_operations_pass and known_summary["operations_explicitly_released"],
+            },
             "implementation_blockers": m5_impl_blockers,
         },
         "blockers": blockers,
@@ -362,9 +456,10 @@ def render_status_section(payload: dict[str, Any]) -> str:
         lines.append("")
         lines.append("### M5-Implementierungsblocker")
         lines.append("")
-        lines.append("Quelle: `reports/current/known_limitations.json`.")
-        lines.append("")
-        lines.extend(f"- `{item['id']}`: {item['detail']}" for item in payload["m5"]["implementation_blockers"])
+        lines.extend(
+            f"- `{item['id']}`: {item['detail']} Quelle: `{item['source']}`."
+            for item in payload["m5"]["implementation_blockers"]
+        )
     lines.extend([
         "",
         "<!-- END GENERATED MASTERPLAN STATUS v3 -->",
@@ -397,6 +492,66 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Wrote: {args.output_json}")
     print(f"Wrote: {args.output_section}")
     return 0 if payload["overall"]["release_allowed"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+lementierung erlaubt: `{'ja' if payload['m5']['implementation_allowed'] else 'nein'}`",
+        f"- Implementierungsentscheidung: `{payload['m5']['implementation_decision']}`",
+        "",
+        "### Dokumentations-Lint",
+        "",
+        f"- Ergebnis: `{payload['documentation_lint']['result']}`",
+        f"- Errors: `{payload['documentation_lint']['errors']}`  Warnings: `{payload['documentation_lint']['warnings']}`",
+        "",
+        "### Blocker",
+        "",
+    ])
+    if payload["blockers"]:
+        lines.extend(f"- `{item['id']}`: {item['detail']}" for item in payload["blockers"])
+    else:
+        lines.append("- keine Release-Blocker")
+    if payload["m5"]["implementation_blockers"]:
+        lines.append("")
+        lines.append("### M5-Implementierungsblocker")
+        lines.append("")
+        lines.extend(
+            f"- `{item['id']}`: {item['detail']} Quelle: `{item['source']}`."
+            for item in payload["m5"]["implementation_blockers"]
+        )
+    lines.extend([
+        "",
+        "<!-- END GENERATED MASTERPLAN STATUS v3 -->",
+        "",
+    ])
+    return "\n".join(lines)
+
+
+def write_outputs(
+    current_dir: Path = CURRENT_DIR,
+    output_json: Path = DEFAULT_OUTPUT_JSON,
+    output_section: Path = DEFAULT_OUTPUT_SECTION,
+) -> dict[str, Any]:
+    payload = evaluate(current_dir)
+    output_json.parent.mkdir(parents=True, exist_ok=True)
+    output_json.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    output_section.parent.mkdir(parents=True, exist_ok=True)
+    output_section.write_text(render_status_section(payload), encoding="utf-8")
+    return payload
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Generate the masterplan status report v3.")
+    parser.add_argument("--current-dir", type=Path, default=CURRENT_DIR)
+    parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)
+    parser.add_argument("--output-section", type=Path, default=DEFAULT_OUTPUT_SECTION)
+    args = parser.parse_args(argv)
+    payload = write_outputs(args.current_dir, args.output_json, args.output_section)
+    status = payload["overall"]["status"]
+    print(f"Masterplan Status: {status.upper()}")
+    print(f"Wrote: {args.output_json}")
+    print(f"Wrote: {args.output_section}")
+    return payload["exit_code"]
 
 
 if __name__ == "__main__":

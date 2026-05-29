@@ -4,6 +4,10 @@ Aktive Gate-Reports liegen ausschliesslich unter `reports/current`.
 
 Pflichtregeln:
 
+- Gate-Validatoren duerfen aktive Reportquellen nur aus `reports/current` lesen.
+- Dateien im Projektroot sind keine aktiven Reportquellen.
+- Dateien unter `reports/archive` sind historische Evidenz und duerfen nie Gate-Input sein.
+- Veraltete Reports duerfen nicht als aktive Gate-Evidenz akzeptiert werden; Validatoren pruefen maschinenlesbare Timestamps.
 - Jeder aktive Report muss `report_schema_version: 1` enthalten.
 - Jeder aktive Report muss `generated_by: "gate_validator"` enthalten.
 - Reports ohne `generated_by` sind invalid.

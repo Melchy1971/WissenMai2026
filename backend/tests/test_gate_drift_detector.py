@@ -59,15 +59,14 @@ def _write_json(path: Path, payload: dict) -> None:
 
 def _write_all_reports(report_dir: Path) -> None:
     marker_by_report = {
-        "frontend_truth_report.json": "frontend_truth",
-        "m3a_truth_report.json": "m3a_truth",
+        "m3a_frontend_truth.json": "frontend_truth",
+        "m3a_release_candidate.json": "m3a_truth",
         "m4_truth_report.json": "m4_truth",
-        "m4a_auth_truth_report.json": "m4a_auth_truth",
-        "m4b_upload_queue_truth_report.json": "m4b_upload_queue_truth",
-        "m4c_lifecycle_retrieval_truth_report.json": "m4c_lifecycle_retrieval_truth",
-        "m4e_backup_restore_truth_report.json": "m4e_backup_restore_truth",
-        "m5_truth_report.json": "m5_truth",
-        "governance_truth_report.json": "governance_truth",
+        "m4a_auth_truth.json": "m4a_auth_truth",
+        "m4b_upload_queue_truth.json": "m4b_upload_queue_truth",
+        "m4c_lifecycle_retrieval_truth.json": "m4c_lifecycle_retrieval_truth",
+        "m4e_backup_restore_truth.json": "m4e_backup_restore_truth",
+        "masterplan_status.json": "governance_truth",
     }
     for filename, marker in marker_by_report.items():
         _write_json(report_dir / filename, _report(marker))
@@ -105,7 +104,7 @@ def test_gate_drift_fails_when_report_contains_fewer_tests_than_baseline(tmp_pat
     _write_all_reports(report_dir)
     _write_json(taxonomy_path, _taxonomy())
     _write_baseline(baseline_path, report_dir, taxonomy_path)
-    _write_json(report_dir / "m4_truth_report.json", _report("m4_truth", collected=1, passed=1))
+    _write_json(report_dir / "m4a_auth_truth.json", _report("m4a_auth_truth", collected=1, passed=1))
 
     result = gate_drift.detect_gate_drift(
         report_dir=report_dir,
@@ -153,10 +152,10 @@ def test_gate_drift_fails_when_score_rises_despite_new_failures(tmp_path: Path) 
     baseline_path = report_dir / "gate_drift_baseline.json"
     _write_all_reports(report_dir)
     _write_json(taxonomy_path, _taxonomy())
-    _write_json(report_dir / "m4b_upload_queue_truth_report.json", _report("m4b_upload_queue_truth", collected=10, passed=6))
+    _write_json(report_dir / "m4b_upload_queue_truth.json", _report("m4b_upload_queue_truth", collected=10, passed=6))
     _write_baseline(baseline_path, report_dir, taxonomy_path)
     _write_json(
-        report_dir / "m4b_upload_queue_truth_report.json",
+        report_dir / "m4b_upload_queue_truth.json",
         _report("m4b_upload_queue_truth", collected=10, passed=7, failed=1),
     )
 
@@ -179,7 +178,7 @@ def test_gate_drift_detects_documentation_references_to_stale_reports(tmp_path: 
     _write_all_reports(report_dir)
     _write_json(taxonomy_path, _taxonomy())
     _write_baseline(baseline_path, report_dir, taxonomy_path)
-    doc_path.write_text("M4 siehe reports/m4_truth_report.json\n", encoding="utf-8")
+    doc_path.write_text("M4 siehe reports/m4a_auth_truth.json\n", encoding="utf-8")
 
     result = gate_drift.detect_gate_drift(
         report_dir=report_dir,

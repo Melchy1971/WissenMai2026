@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-05-27T12:34:39.064158Z",
+  "database_url": "",
+  "status": "success",
+  "seeded": {
+    "workspace": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "Default Workspace",
+      "is_default": true
+    },
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "login": "admin@localhost",
+      "role": "admin"
+    },
+    "membership": {
+      "workspace_id": "00000000-0000-0000-0000-000000000001",
+      "user_id": "00000000-0000-0000-0000-000000000001",
+      "role": "admin"
+    }
+  },
+  "credentials": {
+    "login": "admin@localhost"
+  },
+  "bootstrap_invariant": {
+    "id": "auth_seed_bootstrap_admin_login",
+    "status": "PASS",
+    "login": "admin@localhost",
+    "user_id": "00000000-0000-0000-0000-000000000001",
+    "workspace_id": "00000000-0000-0000-0000-000000000001",
+    "role": "admin",
+    "token_issued": true,
+    "legacy_logins": [
+      "default-user",
+      "mdickscheit@googlemail.com",
+      "mdickscheit@gmail.com"
+    ]
+  },
+  "legacy_repairs": []
+}

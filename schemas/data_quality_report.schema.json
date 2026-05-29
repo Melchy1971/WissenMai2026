@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DataQualityReport",
+  "type": "object",
+  "properties": {
+    "report_schema_version": { "type": "string" },
+    "report_name": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "workspace_id": { "type": "string" },
+    "total_documents": { "type": "integer", "minimum": 0 },
+    "active_documents": { "type": "integer", "minimum": 0 },
+    "archived_documents": { "type": "integer", "minimum": 0 },
+    "deleted_documents": { "type": "integer", "minimum": 0 },
+    "duplicate_documents": { "type": "integer", "minimum": 0 },
+    "orphan_chunks": { "type": "integer", "minimum": 0 },
+    "missing_metadata": { "type": "integer", "minimum": 0 },
+    "invalid_source_status": { "type": "integer", "minimum": 0 },
+    "quality_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+          "remediation": { "type": "string" }
+        },
+        "required": ["id", "description", "severity", "remediation"]
+      }
+    }
+  },
+  "required": [
+    "report_schema_version",
+    "report_name",
+    "timestamp",
+    "workspace_id",
+    "total_documents",
+    "active_documents",
+    "archived_documents",
+    "deleted_documents",
+    "duplicate_documents",
+    "orphan_chunks",
+    "missing_metadata",
+    "invalid_source_status",
+    "quality_score"
+  ]
+}

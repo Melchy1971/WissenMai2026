@@ -1,59 +1,105 @@
 # M5 Data Quality
 
-Stand: 2026-05-11
+Stand: 2026-05-29
 
 ## Status
 
-- Phase: Vorbereitung
+- Phase: Vorbereitung abgeschlossen
 - Implementierung: nicht gestartet
-- Freigabestatus: nicht freigegeben
-- Truth-Status: nicht als gruen behauptet, bis ein aktueller PostgreSQL-Truth-Report den entsprechenden M5-Block belegt
+- Freigabestatus: kein produktiver Betrieb bis PostgreSQL-Truth-Block `data_quality` gruen
+- Massgeblich: `reports/current/masterplan_status.json`
 
-Statuslogik:
+---
 
-- Dieses Dokument beschreibt nur die Vorbereitung fuer M5.
-- Die formale M5-Implementierungsfreigabe ist erreicht, aber dieser Slice ist damit noch nicht automatisch gestartet.
-- Solange das Transition Gate nach M5 nicht explizit als Startfreigabe genutzt wird, markiert dieses Dokument keinen Implementierungsbeginn.
-- Dokumentierte Regeln, Schweregrade und Pruefideen sind kein Nachweis einer produktiven Umsetzung.
+## Scope
 
-## Zweck
+- Invariantenprüfung für Dokumente, Versionen, Chunks, Citations
+- Severity-Modell: Fehler vs. Warnung
+- Prüfstrategie: read-only, keine automatische Reparatur
+- Truth-Test-Anker für spätere PostgreSQL-Nachweise
 
-- Definiert den Dokumentationsrahmen fuer M5 Data Quality.
-- Verankert nur vorbereitete Regeln, Bewertungslogik und offene Nachweisbedarfe.
-- Behauptet keine produktive Pruef- oder Reparaturfunktion.
+---
 
-## Scope in Vorbereitung
+## Regelkatalog
 
-- Dateninvarianten fuer Dokumente, Versionen, Chunks und Citations
-- Severity-Modell fuer Fehler und Warnungen
-- Pruefstrategie fuer spaetere Read-only-Nachweise
-- Truth-Test-Anker fuer spaetere PostgreSQL-Nachweise
+### Harte Fehler (blockieren Gate)
 
-## Aktuell vorbereitete Regeln
+| Regel-ID | Prüfobjekt | Bedingung | Fehlerklasse |
+|---|---|---|---|
+| DQ-001 | Dokument | kein `current_version_id` verknüpft | `document_without_version` |
+| DQ-002 | Version | keine Chunks und `import_status != failed` | `version_without_chunks` |
+| DQ-003 | Chunk | `source_anchor` fehlt oder leer | `chunk_missing_anchor` |
+| DQ-004 | Chunk | `document_version_id` referenziert keine existierende Version | `orphaned_chunk` |
+| DQ-005 | Version | `document_id` referenziert kein existierendes Dokument | `orphaned_version` |
+| DQ-006 | Dokument | `content_hash` mehrfach in derselben `workspace_id` | `duplicate_content_hash` |
+| DQ-007 | Citation | `chunk_id` fehlt und `source_status = active` | `dangling_citation_active` |
+| DQ-008 | Index | Index-Eintrag ohne korrespondierenden DB-Chunk | `stale_index_entry` |
 
-- Dokument ohne Version = Fehler
-- Version ohne Chunks = Fehler ausser `failed import`
-- Chunk ohne `source_anchor` = Fehler
-- orphaned chunks = Fehler
-- orphaned versions = Fehler
-- duplicate `content_hash` = Fehler
-- dangling citations = Warnung oder Fehler je `source_status`
+### Warnungen (reportpflichtig, nicht gate-blockierend)
 
-## Statuslogik fuer spaetere Fortschreibung
+| Regel-ID | Prüfobjekt | Bedingung | Klasse |
+|---|---|---|---|
+| DQ-W-001 | Citation | `chunk_id` fehlt und `source_status != active` | `dangling_citation_archived` |
+| DQ-W-002 | Version | `normalized_markdown` leer und `import_status = completed` | `empty_normalized_content` |
+| DQ-W-003 | Dokument | `lifecycle_status = active` aber kein Index-Eintrag | `missing_index_entry` |
+| DQ-W-004 | Job | `background_job` in `running` älter als Timeout | `stale_running_job` |
 
-- `Vorbereitung`: Regeln, Metriken und Gate-Bezug sind dokumentiert; keine Implementierungsbehauptung.
-- `Nachweis vorbereitet`: Test- und Reportformat sind definiert; weiterhin keine gruene Aussage ohne PostgreSQL-Truth-Lauf.
-- `Nachweis gruen`: darf erst dokumentiert werden, wenn ein aktueller PostgreSQL-Truth-Report den M5-Block `data_quality` grün belegt.
+---
 
-## Platzhalter fuer Nachweise
+## Severity-Modell
 
-- Truth-Test-Block: `data_quality`
-- geplanter Report-Bezug: `reports/current/m4_truth_report.json`
-- geplanter Detailnachweis: noch nicht implementiert
+| Severity | Wirkung |
+|---|---|
+| `error` | Gate-blockierend; Report-Status wird `failed` |
+| `warning` | Reportpflichtig; Gate nicht blockiert; `watch`-Status |
+
+---
+
+## Prüfstrategie
+
+Alle Prüfungen sind read-only. Keine automatische Reparatur.
+Prüfreihenfolge: strukturelle Invarianten → Duplikatschutz → Citation-Integrität → Index-Konsistenz → Content-Validierung → Job-State.
+
+Jede Prüfung läuft workspace-scoped. Globale Reports aggregieren Counts ohne Dokumenttexte oder Dateipfade.
+
+---
+
+## Report-Format
+
+```json
+{
+  "report_type": "data_quality",
+  "generated_at": "<iso8601>",
+  "workspace_id": "<uuid>",
+  "status": "passed | failed | watch",
+  "error_count": 0,
+  "warning_count": 0,
+  "findings": [
+    { "rule_id": "DQ-001", "severity": "error", "entity_type": "document", "count": 0, "sample_ids": [] }
+  ]
+}
+```
+
+`status = failed` wenn `error_count > 0`. `status = watch` wenn nur Warnungen. `status = passed` wenn beide Counts 0.
+
+---
+
+## Gate-Bezug
+
+Data-Quality-Gate gilt als PASS, wenn alle Fehlerregeln `count = 0` und ein aktueller PostgreSQL-Truth-Report den Block `data_quality` grün belegt.
+
+---
 
 ## Nicht-Scope
 
-- keine automatische Datenreparatur
-- keine produktive Cleanup-Freigabe
-- keine mutierenden Admin-Aktionen
-- keine Behauptung eines laufenden M5-Betriebs
+- Keine automatische Datenreparatur
+- Keine produktive Cleanup-Freigabe
+- Kein betrieblicher Dienst ohne Truth-Nachweis
+
+---
+
+## Implementierungsanker
+
+- CLI: `python -m app.cli m5 data-quality-check --workspace <id>`
+- Report-Ziel: `reports/current/m5_data_quality_report.json`
+- Truth-Test-Block: `data_quality`

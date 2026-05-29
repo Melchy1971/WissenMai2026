@@ -13,9 +13,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
 CURRENT_DIR = REPORTS_DIR / "current"
 DEFAULT_FRONTEND_REPORT = CURRENT_DIR / "m3a_frontend_truth.json"
-DEFAULT_GUI_TRUTH_LATEST = REPORTS_DIR / "gui_truth" / "latest.json"
-DEFAULT_GUI_CHAOS_REPORT = REPORTS_DIR / "gui_truth" / "gui_chaos_suite_report.json"
-DEFAULT_CONTRACT_REPORT = REPORTS_DIR / "contract_test_report.json"
+DEFAULT_GUI_TRUTH_LATEST = CURRENT_DIR / "gui_truth_latest.json"
+DEFAULT_GUI_CHAOS_REPORT = CURRENT_DIR / "gui_chaos_suite_report.json"
+DEFAULT_CONTRACT_REPORT = CURRENT_DIR / "contract_test_report.json"
 DEFAULT_POSTGRES_REPORT = CURRENT_DIR / "m4a_auth_truth.json"
 DEFAULT_OUTPUT_JSON = CURRENT_DIR / "m3a_gate_result.json"
 DEFAULT_OUTPUT_MD = CURRENT_DIR / "m3a_gate_result.md"
@@ -31,6 +31,24 @@ class RuleResult:
 
 
 def _load_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+    resolved = path.resolve()
+    repo_root = REPO_ROOT.resolve()
+    current_dir = CURRENT_DIR.resolve()
+    archive_dir = (REPORTS_DIR / "archive").resolve()
+    try:
+        in_repo = resolved.relative_to(repo_root)
+    except ValueError:
+        in_repo = None
+    if in_repo is not None:
+        try:
+            resolved.relative_to(archive_dir)
+            return None, f"archive reports are not valid gate inputs: {path}"
+        except ValueError:
+            pass
+        try:
+            resolved.relative_to(current_dir)
+        except ValueError:
+            return None, f"gate inputs must come from reports/current: {path}"
     if not path.exists():
         return None, f"missing report: {path}"
     try:
@@ -52,7 +70,7 @@ def _as_int(value: Any, default: int | None = None) -> int | None:
 
 def _frontend_rules(report: dict[str, Any] | None, load_error: str | None) -> list[RuleResult]:
     if load_error or report is None:
-        reason = load_error or "frontend_truth_report.json unavailable"
+        reason = load_error or "frontend truth report unavailable"
         return [
             RuleResult("frontend_truth_passed_equals_collected", False, reason),
             RuleResult("frontend_truth_failed_zero", False, reason),
@@ -352,7 +370,7 @@ def _m3a_backend_minimum_rule(
     blockers: list[str] = []
 
     if frontend_error or frontend is None:
-        blockers.append(frontend_error or "frontend_truth_report unavailable")
+        blockers.append(frontend_error or "frontend truth report unavailable")
     else:
         if frontend.get("real_api") is not True:
             blockers.append("M3a backend minimum requires real_api=true")
@@ -399,7 +417,7 @@ def _frontend_full_suite_rule(
 ) -> RuleResult:
     blockers: list[str] = []
     if frontend_error or frontend is None:
-        blockers.append(frontend_error or "frontend_truth_report unavailable")
+        blockers.append(frontend_error or "frontend truth report unavailable")
     else:
         blockers.extend(_green_test_report_blockers(frontend, kind="frontend_truth"))
         if frontend.get("real_api") is not True:
@@ -416,9 +434,9 @@ def _frontend_full_suite_rule(
         blockers.append(gui_latest_error or "reports/gui_truth/latest.json unavailable")
     elif frontend is not None:
         if gui_latest.get("timestamp") != frontend.get("timestamp"):
-            blockers.append("reports/gui_truth/latest.json timestamp differs from frontend_truth_report.json")
+            blockers.append("current GUI truth latest timestamp differs from frontend truth report")
         if gui_latest.get("collected") != frontend.get("collected"):
-            blockers.append("reports/gui_truth/latest.json collected differs from frontend_truth_report.json")
+            blockers.append("current GUI truth latest collected differs from frontend truth report")
 
     return RuleResult(
         "full_suite_frontend_truth_green",

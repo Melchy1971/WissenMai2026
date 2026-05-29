@@ -1,0 +1,266 @@
+# Truth-Test Marker Taxonomie
+
+- Result: `PASS`
+- Collected: `537`
+- Generated: `2026-05-28T07:39:23.369723+00:00`
+
+## Marker
+
+- `m4_truth`
+- `m4a_auth_truth`
+- `m4b_upload_queue_truth`
+- `m4c_lifecycle_retrieval_truth`
+- `m4e_backup_restore_truth`
+- `m5_truth`
+- `governance_truth`
+
+## Blocking-Regeln
+
+- `m3a`: `frontend_truth`
+- `m4`: `m4_truth`, `m4a_auth_truth`, `m4b_upload_queue_truth`, `m4c_lifecycle_retrieval_truth`, `m4e_backup_restore_truth`
+- `m5`: `m4_truth`
+- `not_m4_blocking`: `m5_truth`, `governance_truth`
+
+## Testklassifikation
+
+### `m4_truth` (9)
+- `tests/postgres_truth/test_m4_truth_flows.py::test_truth_cleanup_starts_without_stale_state`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_lifecycle_and_workspace_isolation_are_truth_checked`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_cleanup_starts_without_stale_state`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_advisory_lock_document_import_scope_blocks_concurrent_session`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_lifecycle_lock_blocks_concurrent_session`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_reindex_lock_blocks_concurrent_session`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_lifecycle_and_reindex_locks_are_independent`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_dead_letter_replay_blocks_concurrent_session`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_job_claim_and_replay_locks_are_independent`
+
+### `m4a_auth_truth` (43)
+- `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_valid_token_returns_full_session`
+- `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_active_workspace_id_matches_first_membership`
+- `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_invalid_token_returns_401`
+- `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_missing_authorization_header_returns_401`
+- `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_non_bearer_authorization_returns_401`
+- `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthMeContract::test_user_without_membership_gets_null_workspace`
+- `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthLoginLogoutContract::test_login_produces_workspace_matching_auth_me`
+- `tests/postgres_truth/test_auth_bootstrap_truth.py::TestAuthLoginLogoutContract::test_logout_revokes_session`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_auth_workspace_truth_blocks_foreign_workspace_and_non_admin_diagnostics`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_user_a_lists_only_documents_from_workspace_a`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_user_a_cannot_import_into_workspace_b`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_user_a_cannot_search_workspace_b`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_user_a_cannot_use_chat_session_from_workspace_b`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_manipulated_x_workspace_id_is_forbidden`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_missing_x_workspace_id_is_auth_or_forbidden_contract`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_admin_diagnostics_without_admin_role_is_forbidden`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_user_a_cannot_read_or_replay_workspace_b_queue_job`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_user_a_cannot_archive_workspace_b_document`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_user_a_cannot_delete_workspace_b_document`
+- `tests/postgres_truth/test_m4a_auth_workspace_truth.py::test_m4a_logout_revokes_session`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_single_workspace_user_gets_that_workspace_as_active`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_active_workspace_id_is_always_from_memberships`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_no_membership_user_gets_null_active_workspace`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_multi_workspace_user_active_workspace_is_in_memberships`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceBootstrapContract::test_multi_workspace_user_memberships_contains_both_workspaces`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceAccessEnforcement::test_valid_x_workspace_id_allows_document_list`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceAccessEnforcement::test_x_workspace_id_for_non_member_workspace_is_forbidden`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceAccessEnforcement::test_x_workspace_id_for_non_member_workspace_blocks_search`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceAccessEnforcement::test_x_workspace_id_for_non_member_workspace_blocks_import`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceAccessEnforcement::test_missing_x_workspace_id_returns_auth_or_workspace_error`
+- `tests/postgres_truth/test_workspace_bootstrap_truth.py::TestWorkspaceAccessEnforcement::test_multi_workspace_user_can_switch_to_second_workspace`
+- `tests/test_documents_secure_api.py::test_documents_require_authenticated_workspace_context`
+- `tests/test_documents_secure_api.py::test_documents_list_uses_authenticated_workspace`
+- `tests/test_documents_secure_api.py::test_document_detail_is_scoped_to_authenticated_workspace`
+- `tests/test_m4a_auth_core.py::test_protected_endpoints_require_authentication`
+- `tests/test_m4a_auth_core.py::test_search_uses_authenticated_workspace_context`
+- `tests/test_m4a_auth_core.py::test_chat_session_uses_authenticated_workspace_and_user`
+- `tests/test_m4a_auth_core.py::test_admin_rebuild_is_blocked_until_m4a_m4b_m4c_gates`
+- `tests/test_m4a_auth_core.py::test_auth_me_returns_bootstrap_session_state`
+- `tests/test_m4a_auth_core.py::test_auth_me_requires_valid_session_token`
+- `tests/test_m4a_auth_core.py::test_auth_logout_revokes_current_session`
+- `tests/test_seed_auth_bootstrap.py::test_seed_auth_creates_idempotent_bootstrap_admin_login`
+- `tests/test_seed_auth_bootstrap.py::test_seed_auth_migrates_legacy_login_to_canonical_admin`
+
+### `m4b_upload_queue_truth` (48)
+- `tests/integration/test_documents_import.py::test_parallel_duplicate_imports_create_single_document`
+- `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_backend_process_kill_during_import_leaves_retryable_job_and_no_orphan_rows`
+- `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_backend_http_process_kill_during_upload_leaves_no_partial_db_rows`
+- `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_duplicate_import_worker_crash_recovery_avoids_duplicate_versions_and_chunks`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_upload_and_duplicate_handling_use_real_postgresql_transactions`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_parallel_replay_only_one_request_succeeds`
+- `tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_retryable_job_is_not_claimed_before_backoff_expires`
+- `tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_retryable_job_is_claimed_after_backoff_expires`
+- `tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_file_too_large_returns_413_and_no_job_created`
+- `tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_ocr_required_error_marks_job_as_failed_not_retryable`
+- `tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_parser_failure_marks_job_as_failed_not_retryable`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_two_workers_claiming_same_job_only_one_succeeds`
+- `tests/test_background_job_queue.py::test_claim_job_is_deterministic_and_allows_only_one_worker`
+- `tests/test_background_job_queue.py::test_recover_stale_running_job_marks_it_retryable`
+- `tests/test_background_job_queue.py::test_renew_job_lock_prevents_slow_worker_from_being_recovered`
+- `tests/test_background_job_queue.py::test_renew_job_lock_rejects_wrong_worker`
+- `tests/test_background_job_queue.py::test_process_import_job_marks_generic_failure_retryable_and_keeps_payload_for_recovery`
+- `tests/test_background_job_queue.py::test_process_import_job_retry_is_observable_with_job_correlation`
+- `tests/test_background_job_queue.py::test_process_import_job_marks_parser_crash_as_terminal_failure_without_duplicate_rows`
+- `tests/test_background_job_queue.py::test_process_import_job_recovers_retryable_job_without_job_loss`
+- `tests/test_background_job_queue.py::test_process_import_job_moves_exhausted_retryable_job_to_dead_letter`
+- `tests/test_background_job_queue.py::test_process_search_index_rebuild_job_marks_failure_retryable_without_lifecycle_drift`
+- `tests/test_background_job_queue.py::test_process_search_index_rebuild_job_moves_exhausted_retry_to_dead_letter`
+- `tests/test_background_job_queue.py::test_replay_dead_letter_preserves_previous_error_cause_and_audit`
+- `tests/test_background_job_queue.py::test_replay_retryable_preserves_previous_error_cause_and_audit`
+- `tests/test_background_job_queue.py::test_parallel_replay_only_succeeds_once`
+- `tests/test_background_job_queue.py::test_replay_audit_is_visible_in_job_response`
+- `tests/test_documents_import_api.py::test_import_requires_authentication`
+- `tests/test_documents_import_api.py::test_import_forbidden_for_foreign_workspace`
+- `tests/test_documents_import_api.py::test_import_enqueues_job_and_returns_accepted`
+- `tests/test_documents_import_api.py::test_import_with_valid_auth_uses_authenticated_user_and_workspace`
+- `tests/test_documents_import_api.py::test_import_job_status_returns_duplicate_result_for_sequential_duplicate_uploads`
+- `tests/test_documents_import_api.py::test_import_job_status_returns_completed_result_after_background_processing`
+- `tests/test_documents_import_api.py::test_generic_job_status_endpoint_returns_import_job`
+- `tests/test_documents_import_api.py::test_import_rejects_unsupported_file_type`
+- `tests/test_documents_import_api.py::test_import_rejects_file_above_configured_max_size`
+- `tests/test_documents_import_api.py::test_import_accepts_file_within_configured_max_size`
+- `tests/test_documents_import_api.py::test_import_job_status_surfaces_parser_failures_as_job_failure`
+- `tests/test_documents_import_api.py::test_import_job_status_surfaces_ocr_requirement_as_job_failure`
+- `tests/test_documents_import_api.py::test_import_job_returns_404_for_unknown_job`
+- `tests/test_documents_import_api.py::test_generic_job_status_returns_404_for_unknown_job`
+- `tests/test_documents_read_api.py::test_retry_import_recovers_failed_document_by_reattaching_latest_version_and_chunks`
+- `tests/test_documents_read_api.py::test_retry_import_repairs_indexing_failed_document_without_creating_duplicate_chunks`
+- `tests/test_documents_read_api.py::test_retry_import_repairs_partial_import_without_duplicate_chunks`
+- `tests/test_documents_retry_import_api.py::test_retry_import_recovers_parser_failed_document_without_creating_duplicate_versions`
+- `tests/test_documents_retry_import_api.py::test_retry_import_recovers_indexing_failed_document_without_duplicate_chunks`
+- `tests/test_documents_retry_import_api.py::test_retry_import_recovers_partial_import_by_rebuilding_chunks`
+
+### `m4c_lifecycle_retrieval_truth` (2)
+- `tests/integration/test_m3b_search.py::test_lifecycle_e2e_excludes_archived_deleted_from_search_chat_and_reindex`
+- `tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_historical_citations_reflect_live_source_status`
+
+### `m4e_backup_restore_truth` (9)
+- `tests/test_backup_restore_service.py::test_original_file_store_persists_source_file`
+- `tests/test_backup_restore_service.py::test_backup_validate_reports_checksum_mismatch`
+- `tests/test_backup_restore_service.py::test_verify_backup_reports_structured_integrity_issues`
+- `tests/test_backup_restore_service.py::test_restore_backup_runs_validation_restore_and_reindex_sequence`
+- `tests/test_backup_restore_service.py::test_create_backup_writes_pg_dump_structure_and_manifest`
+- `tests/test_backup_restore_service.py::test_create_database_dump_requires_pg_dump`
+- `tests/test_backup_restore_service.py::test_cli_restore_prints_reindex_result`
+- `tests/test_backup_restore_service.py::test_cli_verify_backup_prints_integrity_report`
+- `tests/test_backup_restore_service.py::test_validate_restored_config_reports_mismatches`
+
+### `m5_truth` (40)
+- `tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_chunks_are_detected_by_metric`
+- `tests/postgres_truth/test_entropy_truth.py::TestOrphanGrowthDetection::test_orphan_purge_restores_clean_state`
+- `tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_grows_when_archive_skips_repair`
+- `tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_stale_index_cleared_by_repair_pass`
+- `tests/postgres_truth/test_entropy_truth.py::TestStaleIndexDetection::test_restore_cycle_does_not_create_stale_entries`
+- `tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_searchability_drift_reduces_coverage`
+- `tests/postgres_truth/test_entropy_truth.py::TestRetrievalDegradation::test_retrieval_repair_restores_coverage`
+- `tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_retryable_jobs_accumulate_and_are_detected`
+- `tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_dead_letter_accumulation_is_detected`
+- `tests/postgres_truth/test_entropy_truth.py::TestQueueBacklogDrift::test_draining_jobs_reduces_backlog`
+- `tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_chunk_deletion_increases_citation_orphan_rate`
+- `tests/postgres_truth/test_entropy_truth.py::TestCitationDegradation::test_citation_orphan_rate_tracks_deletion_scale`
+- `tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_entropy_simulation_detects_chaos_and_verifies_recovery`
+- `tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_repeated_archive_restore_cycles_stay_entropy_neutral`
+- `tests/postgres_truth/test_entropy_truth.py::TestMultiEpochEntropySimulation::test_drift_trend_function_returns_valid_structure`
+- `tests/postgres_truth/test_m5_cleanup_truth.py::test_m5_cleanup_truth_orphan_cleanup_dry_run_is_safe`
+- `tests/postgres_truth/test_m5_cleanup_truth.py::test_m5_cleanup_truth_stale_index_cleanup_respects_lifecycle_and_citations`
+- `tests/postgres_truth/test_m5_cleanup_truth.py::test_m5_cleanup_truth_temp_file_cleanup_protects_active_queue_jobs`
+- `tests/postgres_truth/test_m5_cleanup_truth.py::test_m5_cleanup_truth_old_report_cleanup_keeps_latest_and_fresh_reports`
+- `tests/postgres_truth/test_m5_cleanup_truth.py::test_m5_cleanup_truth_expired_session_cleanup_keeps_active_sessions`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_empty_queue_reports_ok`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_detects_stalled_pending_job`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_fresh_pending_job_is_not_stalled`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_p95_covers_oldest_jobs`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_detects_high_attempt_retryable_job`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_low_attempt_retryable_is_not_loop`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_dead_letter_warning_threshold`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_dead_letter_critical_threshold`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_detects_stuck_running_job`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_fresh_running_job_is_not_stuck`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_report_does_not_count_other_workspace_jobs`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_reports_queue_truth_metrics_and_workspace_distribution`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_backlog_critical_threshold_is_critical`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_reports_retry_rate_without_infinite_silent_retries`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_reports_dead_letter_growth_metric`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_detects_workspace_starvation`
+- `tests/postgres_truth/test_queue_aging_truth.py::test_aging_api_endpoint_returns_200_for_admin`
+- `tests/test_m5_entropy_audit.py::test_entropy_audit_builds_all_required_categories`
+- `tests/test_m5_entropy_audit.py::test_entropy_audit_flags_duplicate_cardinality_as_residual_risk`
+- `tests/test_m5_entropy_audit.py::test_entropy_audit_writes_versioned_reports`
+
+### `governance_truth` (71)
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_clean_state_ok`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_archive_syncs_citation_status`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_delete_syncs_citation_status`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_restore_syncs_citation_back_to_active`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_detects_status_drift`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_detects_deleted_not_marked`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_detects_restored_not_marked`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_detects_orphaned_anchor_after_rechunk`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_detects_preview_staleness`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_workspace_isolation`
+- `tests/postgres_truth/test_citation_longevity_truth.py::test_longevity_api_endpoint_contract`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceDryRun::test_dry_run_on_clean_db_returns_no_candidates`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceDryRun::test_dry_run_does_not_modify_db`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceDryRun::test_dry_run_candidate_count_correct_with_expired_sessions`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceSafetyGates::test_running_jobs_block_execution`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceSafetyGates::test_safety_gates_pass_on_clean_db`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceSnapshots::test_snapshot_delta_on_execute_reflects_session_deletion`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceSnapshots::test_citation_count_never_decreases`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceAuditTrail::test_required_audit_events_are_emitted`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceAuditTrail::test_recovery_hints_always_present`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceAuditTrail::test_rollback_strategy_always_present`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceAuditTrail::test_correlation_id_propagated`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceApiEndpoint::test_api_defaults_to_dry_run_only`
+- `tests/postgres_truth/test_cleanup_governance_truth.py::TestCleanupGovernanceApiEndpoint::test_api_returns_governance_report_shape`
+- `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_sql_crash_matrix_detects_no_stale_lifecycle_index_in_truth_workspace`
+- `tests/postgres_truth/test_m4_crash_recovery_truth.py::test_reindex_worker_crash_recovery_leaves_retryable_job_without_lifecycle_drift`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_search_chat_retrieval_and_reindex_use_real_postgresql_state`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_search_index_drift_endpoint_reports_real_postgresql_drift`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_search_and_chat_retrieval_use_identical_active_chunks_and_source_anchors`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_search_rebuild_failure_keeps_lifecycle_state_and_stays_retryable`
+- `tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_chat_citations_use_missing_instead_of_unknown`
+- `tests/postgres_truth/test_m4c_lifecycle_retrieval_truth.py::test_m4c_archive_excludes_document_from_search_restore_reactivates`
+- `tests/postgres_truth/test_rc3_chaos_truth.py::test_chaos_source_status_live_lookup_reflects_lifecycle_transitions`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_full_reindex_produces_report`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_workspace_reindex_scoped_correctly`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_document_reindex_scoped_correctly`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_full_reindex_rejects_workspace_id`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_full_reindex_rejects_document_id`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_workspace_reindex_requires_workspace_id`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_workspace_reindex_rejects_document_id`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_document_reindex_requires_document_id`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_parallel_full_reindex_blocked`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_drift_snapshots_in_report`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_lifecycle_check_in_report`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_emits_required_audit_events`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_auto_generates_correlation_id`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_api_endpoint_returns_report`
+- `tests/postgres_truth/test_reindex_governance_truth.py::test_governance_api_endpoint_rejects_constraint_violation`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_requires_authentication`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_requires_admin_role`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_rejects_foreign_workspace`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_returns_read_only_summary`
+- `tests/test_admin_diagnostics_api.py::test_admin_diagnostics_maps_database_failure_to_diagnostics_failed`
+- `tests/test_admin_diagnostics_api.py::test_admin_verify_backup_returns_integrity_report`
+- `tests/test_admin_diagnostics_api.py::test_admin_verify_backup_maps_service_failure`
+- `tests/test_admin_diagnostics_api.py::test_admin_replay_job_response_exposes_previous_error_and_replay_audit`
+- `tests/test_admin_diagnostics_api.py::test_admin_replay_job_second_attempt_is_rejected_after_first_success`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_requires_authentication`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_requires_authentication_even_with_legacy_admin_token_header`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_requires_admin_role`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_rebuild_returns_stable_shape`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_inconsistencies_requires_authentication`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_inconsistencies_returns_stable_shape`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_drift_requires_authentication`
+- `tests/test_admin_search_index_api.py::test_admin_search_index_drift_returns_stable_shape`
+- `tests/test_auth_login_diagnostics.py::test_login_not_found_raises_generic_error`
+- `tests/test_auth_login_diagnostics.py::test_login_not_found_logs_reason`
+- `tests/test_auth_login_diagnostics.py::test_user_inactive_logs_reason`
+- `tests/test_auth_login_diagnostics.py::test_password_mismatch_logs_reason`
+- `tests/test_auth_login_diagnostics.py::test_empty_credentials_logs_reason`
+- `tests/test_search_index_service.py::test_rebuild_search_index_syncs_searchability_and_reindexes`
+
+## Unklassifizierte Tests
+- keine
+
+## Mehrfach klassifizierte Tests
+- keine

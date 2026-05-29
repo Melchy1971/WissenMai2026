@@ -1,0 +1,32 @@
+{
+  "generated_at": "2026-05-29T07:20:00Z",
+  "generated_by": "gate_validator",
+  "reason": "Archive stale root-level reports so reports/current remains the only active report source.",
+  "policy": {
+    "active_report_source": "reports/current",
+    "root_level_reports_allowed_as_gate_input": false,
+    "archive_reports_allowed_as_gate_input": false
+  },
+  "moved": [
+    {
+      "from": "validation_report.json",
+      "to": "reports/archive/legacy/20260529T072000Z_validation_report.json",
+      "sha256": "A232E3B3B2DD348FD7E86A41CD21B87CA33BCEF4B6562EA887D1675287159647"
+    },
+    {
+      "from": "frontend_truth_report.json",
+      "to": "reports/archive/legacy/20260529T072000Z_frontend_truth_report.json",
+      "sha256": "79435D126345A755F0634F88D3809AEA17EEEC84F8F9CE497A77AED15C59E578"
+    },
+    {
+      "from": "fixture_report.json",
+      "to": "reports/archive/legacy/20260529T072000Z_fixture_report.json",
+      "sha256": "2C0373BFD5B113664C68BB2AF1BC35263F75539471122C5937033F67EA415F3A"
+    },
+    {
+      "from": "frontend_full_suite_staged_report.json",
+      "to": "reports/archive/legacy/20260529T072000Z_frontend_full_suite_staged_report.json",
+      "sha256": "2C1415BFE158E11B2119D11376906FC7C3761686EE276C7A4B481AB3AB2E07B3"
+    }
+  ]
+}

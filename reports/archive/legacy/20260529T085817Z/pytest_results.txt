@@ -1,0 +1,320 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.13.8, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\User\AppData\Local\Programs\Python\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: H:\WissenMai2026
+plugins: anyio-4.10.0, asyncio-1.3.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... 
+============================== warnings summary ===============================
+backend\tests\integration\test_migrations.py:51
+backend\tests\integration\test_migrations.py:51
+  H:\WissenMai2026\backend\tests\integration\test_migrations.py:51: PytestUnknownMarkWarning: Unknown pytest.mark.postgres - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres
+
+backend\tests\integration\test_migrations.py:111
+backend\tests\integration\test_migrations.py:111
+  H:\WissenMai2026\backend\tests\integration\test_migrations.py:111: PytestUnknownMarkWarning: Unknown pytest.mark.postgres - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres
+
+backend\tests\integration\test_documents_import.py:79
+  H:\WissenMai2026\backend\tests\integration\test_documents_import.py:79: PytestUnknownMarkWarning: Unknown pytest.mark.postgres - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres
+
+backend\tests\integration\test_m3b_search.py:30
+  H:\WissenMai2026\backend\tests\integration\test_m3b_search.py:30: PytestUnknownMarkWarning: Unknown pytest.mark.postgres - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = pytest.mark.postgres
+
+backend\tests\postgres_truth\conftest.py:29
+  H:\WissenMai2026\backend\tests\postgres_truth\conftest.py:29: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_auth_bootstrap_truth.py:31
+  H:\WissenMai2026\backend\tests\postgres_truth\test_auth_bootstrap_truth.py:31: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.auth_bootstrap]
+
+backend\tests\postgres_truth\test_auth_bootstrap_truth.py:31
+  H:\WissenMai2026\backend\tests\postgres_truth\test_auth_bootstrap_truth.py:31: PytestUnknownMarkWarning: Unknown pytest.mark.auth_bootstrap - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.auth_bootstrap]
+
+backend\tests\postgres_truth\test_citation_longevity_truth.py:34
+  H:\WissenMai2026\backend\tests\postgres_truth\test_citation_longevity_truth.py:34: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.citation_longevity]
+
+backend\tests\postgres_truth\test_citation_longevity_truth.py:34
+  H:\WissenMai2026\backend\tests\postgres_truth\test_citation_longevity_truth.py:34: PytestUnknownMarkWarning: Unknown pytest.mark.citation_longevity - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.citation_longevity]
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:27
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:27: PytestUnknownMarkWarning: Unknown pytest.mark.cleanup_governance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = pytest.mark.cleanup_governance
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:214
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:214: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:232
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:232: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:259
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:259: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:283
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:283: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:310
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:310: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:327
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:327: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:355
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:355: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:370
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:370: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:398
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:398: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:410
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:410: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:422
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:422: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:438
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:438: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_cleanup_governance_truth.py:452
+  H:\WissenMai2026\backend\tests\postgres_truth\test_cleanup_governance_truth.py:452: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:59
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:59: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.entropy]
+
+backend\tests\postgres_truth\test_entropy_truth.py:59
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:59: PytestUnknownMarkWarning: Unknown pytest.mark.entropy - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.entropy]
+
+backend\tests\postgres_truth\test_entropy_truth.py:65
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:65: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:85
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:85: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:108
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:108: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:124
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:124: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:142
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:142: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:164
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:164: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:184
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:184: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:205
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:205: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:221
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:221: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:236
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:236: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:257
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:257: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:275
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:275: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:299
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:299: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:401
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:401: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_entropy_truth.py:426
+  H:\WissenMai2026\backend\tests\postgres_truth\test_entropy_truth.py:426: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:24
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:24: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:91
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:91: PytestUnknownMarkWarning: Unknown pytest.mark.m4b_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4b_gate
+
+backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:151
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:151: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4c_gate
+
+backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:204
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:204: PytestUnknownMarkWarning: Unknown pytest.mark.m4b_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4b_gate
+
+backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:254
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:254: PytestUnknownMarkWarning: Unknown pytest.mark.m4b_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4b_gate
+
+backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:306
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_crash_recovery_truth.py:306: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4c_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:33
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:33: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:75
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:75: PytestUnknownMarkWarning: Unknown pytest.mark.m4b_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4b_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:128
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:128: PytestUnknownMarkWarning: Unknown pytest.mark.m4a_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4a_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:129
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:129: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4c_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:154
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:154: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4c_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:206
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:206: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4c_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:331
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:331: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4c_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:399
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:399: PytestUnknownMarkWarning: Unknown pytest.mark.m4a_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4a_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:415
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:415: PytestUnknownMarkWarning: Unknown pytest.mark.m4b_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4b_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:483
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:483: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4c_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:537
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:537: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4c_gate
+
+backend\tests\postgres_truth\test_m4_truth_flows.py:630
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4_truth_flows.py:630: PytestUnknownMarkWarning: Unknown pytest.mark.m4b_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4b_gate
+
+backend\tests\postgres_truth\test_m4a_auth_workspace_truth.py:15
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4a_auth_workspace_truth.py:15: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4a_gate]
+
+backend\tests\postgres_truth\test_m4a_auth_workspace_truth.py:15
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4a_auth_workspace_truth.py:15: PytestUnknownMarkWarning: Unknown pytest.mark.m4a_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4a_gate]
+
+backend\tests\postgres_truth\test_m4b_upload_queue_truth.py:24
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4b_upload_queue_truth.py:24: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4b_gate]
+
+backend\tests\postgres_truth\test_m4b_upload_queue_truth.py:24
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4b_upload_queue_truth.py:24: PytestUnknownMarkWarning: Unknown pytest.mark.m4b_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4b_gate]
+
+backend\tests\postgres_truth\test_m4c_lifecycle_retrieval_truth.py:15
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4c_lifecycle_retrieval_truth.py:15: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4c_gate]
+
+backend\tests\postgres_truth\test_m4c_lifecycle_retrieval_truth.py:15
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m4c_lifecycle_retrieval_truth.py:15: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.m4c_gate]
+
+backend\tests\postgres_truth\test_m5_cleanup_truth.py:18
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m5_cleanup_truth.py:18: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.m5_cleanup]
+
+backend\tests\postgres_truth\test_m5_cleanup_truth.py:18
+  H:\WissenMai2026\backend\tests\postgres_truth\test_m5_cleanup_truth.py:18: PytestUnknownMarkWarning: Unknown pytest.mark.m5_cleanup - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.m5_cleanup]
+
+backend\tests\postgres_truth\test_queue_aging_truth.py:31
+  H:\WissenMai2026\backend\tests\postgres_truth\test_queue_aging_truth.py:31: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.queue_aging]
+
+backend\tests\postgres_truth\test_queue_aging_truth.py:31
+  H:\WissenMai2026\backend\tests\postgres_truth\test_queue_aging_truth.py:31: PytestUnknownMarkWarning: Unknown pytest.mark.queue_aging - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.queue_aging]
+
+backend\tests\postgres_truth\test_rc3_chaos_truth.py:33
+  H:\WissenMai2026\backend\tests\postgres_truth\test_rc3_chaos_truth.py:33: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = pytest.mark.postgres_truth
+
+backend\tests\postgres_truth\test_rc3_chaos_truth.py:239
+  H:\WissenMai2026\backend\tests\postgres_truth\test_rc3_chaos_truth.py:239: PytestUnknownMarkWarning: Unknown pytest.mark.m4b_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4b_gate
+
+backend\tests\postgres_truth\test_rc3_chaos_truth.py:375
+  H:\WissenMai2026\backend\tests\postgres_truth\test_rc3_chaos_truth.py:375: PytestUnknownMarkWarning: Unknown pytest.mark.m4c_gate - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.m4c_gate
+
+backend\tests\postgres_truth\test_reindex_governance_truth.py:35
+  H:\WissenMai2026\backend\tests\postgres_truth\test_reindex_governance_truth.py:35: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.reindex_governance]
+
+backend\tests\postgres_truth\test_reindex_governance_truth.py:35
+  H:\WissenMai2026\backend\tests\postgres_truth\test_reindex_governance_truth.py:35: PytestUnknownMarkWarning: Unknown pytest.mark.reindex_governance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.reindex_governance]
+
+backend\tests\postgres_truth\test_workspace_bootstrap_truth.py:28
+  H:\WissenMai2026\backend\tests\postgres_truth\test_workspace_bootstrap_truth.py:28: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.workspace_bootstrap]
+
+backend\tests\postgres_truth\test_workspace_bootstrap_truth.py:28
+  H:\WissenMai2026\backend\tests\postgres_truth\test_workspace_bootstrap_truth.py:28: PytestUnknownMarkWarning: Unknown pytest.mark.workspace_bootstrap - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    pytestmark = [pytest.mark.postgres_truth, pytest.mark.workspace_bootstrap]
+
+backend\tests\postgres_truth\conftest.py:66
+  H:\WissenMai2026\backend\tests\postgres_truth\conftest.py:66: PytestUnknownMarkWarning: Unknown pytest.mark.postgres_truth - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    item.add_marker(pytest.mark.postgres_truth)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+==================== 311 deselected, 78 warnings in 23.02s ====================
+! _pytest.outcomes.Exit: postgres_truth preflight failed: database is not reachable via TEST_DATABASE_URL (ConnectionTimeout: connection timeout expired
+Multiple connection attempts failed. All failures were:
+- host: 'localhost', port: '5432', hostaddr: '::1': connection timeout expired
+- host: 'localhost', port: '5432', hostaddr: '127.0.0.1': connection timeout expired). !

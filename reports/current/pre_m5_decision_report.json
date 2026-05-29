@@ -1,0 +1,189 @@
+{
+  "report_schema_version": 2,
+  "report_name": "pre_m5_decision_report",
+  "report_type": "decision",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-05-29T09:13:05.681082+00:00",
+  "authority": {
+    "gate_rule": "M5 Implementierung bleibt NO-GO, solange m4e_operations_release_gate nicht PASS ist.",
+    "source_of_truth": [
+      "reports/current/masterplan_status.json",
+      "reports/current/m4e_operations_release_gate.json",
+      "reports/current/known_limitations.json"
+    ],
+    "manual_override_allowed": false
+  },
+  "inputs": {
+    "masterplan_status": {
+      "path": "reports/current/masterplan_status.json",
+      "overall_status": "pass",
+      "progress_percent": 100,
+      "m5_preparation_allowed": true,
+      "m5_implementation_decision_engine": "GO",
+      "timestamp": "2026-05-29T08:57:04.021996+00:00"
+    },
+    "m3a_release_candidate": {
+      "path": "reports/current/m3a_release_candidate.json",
+      "status": "PASS",
+      "decision": "GO",
+      "timestamp": "2026-05-29T08:51:25.441334+00:00"
+    },
+    "m4_backend_release_candidate": {
+      "path": "reports/current/m4_backend_release_candidate.json",
+      "status": "PASS",
+      "decision": "GO",
+      "collected": 102,
+      "passed": 102,
+      "timestamp": "2026-05-29T06:38:24.711878+00:00"
+    },
+    "m4e_operations_release_gate": {
+      "path": "reports/current/m4e_operations_release_gate.json",
+      "status": "PASS",
+      "decision": "GO",
+      "collected": 9,
+      "passed": 9,
+      "gate_rule_satisfied": true,
+      "timestamp": "2026-05-29T09:02:52.923591+00:00"
+    },
+    "known_limitations": {
+      "path": "reports/current/known_limitations.json",
+      "total": 6,
+      "active": 4,
+      "blocking": 3,
+      "m5_slice_blocker_ids": [
+        "KL-M5-T-001",
+        "KL-M5-T-002"
+      ]
+    },
+    "m5_preparation_package": {
+      "path": "docs/m5-preparation.md",
+      "status": "finalized",
+      "docs": [
+        "docs/m5-preparation.md",
+        "docs/data-quality.md",
+        "docs/drift.md",
+        "docs/cleanup.md",
+        "docs/health-score.md",
+        "docs/m5-retrieval-quality-baseline.md"
+      ]
+    }
+  },
+  "decisions": {
+    "1_m5_vorbereitung_erlaubt": {
+      "question": "M5 Vorbereitung erlaubt?",
+      "result": "GO",
+      "basis": [
+        "M3a RC GO — reports/current/m3a_release_candidate.json",
+        "M4 Backend RC GO (102/102) — reports/current/m4_backend_release_candidate.json",
+        "M5 Preparation Gate PASS — reports/current/masterplan_status.json"
+      ],
+      "preparation_package_complete": true
+    },
+    "2_m5_implementierung_erlaubt": {
+      "question": "M5 Implementierung erlaubt?",
+      "result": "GO",
+      "gate_rule_applied": "M5 Implementierung bleibt NO-GO, solange m4e_operations_release_gate nicht PASS ist.",
+      "gate_rule_satisfied": true,
+      "basis": [
+        "m4e_operations_release_gate = PASS/GO (9/9 Regeln) — reports/current/m4e_operations_release_gate.json",
+        "masterplan_status.json: M5 implementation_decision = GO"
+      ],
+      "note": "Implementierung ist gate-freigegeben. Jeder einzelne Slice bleibt NO-GO bis Truth-Block + Baseline + Dry-Run vorliegen."
+    },
+    "3_aktive_blocker": {
+      "question": "Welche Blocker bleiben?",
+      "result": "2 aktive Slice-Level-Blocker",
+      "blocker_type": "slice_level",
+      "blockers": [
+        {
+          "id": "KL-M5-T-001",
+          "beschreibung": "15 M5 Entropy-/Drift-Truth-Failures in aktueller PostgreSQL-Truth-Suite. Kein M5-Slice darf produktiv gehen, bevor sein Truth-Block gruen ist.",
+          "blocks_gate": [
+            "m5_truth_gate"
+          ],
+          "workaround": ""
+        },
+        {
+          "id": "KL-M5-T-002",
+          "beschreibung": "Vor Start jedes M5-Slices fehlen drei Pflicht-Artefakte: (1) Retrieval-Baseline, (2) Cleanup Dry-Run mit blocked_count=0, (3) PostgreSQL-Truth-Block gruen.",
+          "blocks_gate": [
+            "m5_slice_start_gate"
+          ],
+          "workaround": ""
+        }
+      ],
+      "note": "Slice-Level-Blocker verhindern nicht die Implementierungsfreigabe, aber jede Slice-Aktivierung im Produktivbetrieb."
+    },
+    "4_fehlende_artefakte": {
+      "question": "Welche Artefakte fehlen fuer Implementierung?",
+      "result": "6 Artefakte fehlen",
+      "artifacts": [
+        {
+          "id": "PRE-ART-01",
+          "artifact": "Retrieval-Baseline",
+          "command": "python -m app.cli m5 retrieval-benchmark --set-baseline",
+          "report_target": "reports/current/m5_retrieval_baseline.json",
+          "required_before": "erstem Retrieval-Benchmark-Lauf",
+          "status": "missing",
+          "scope": "global"
+        },
+        {
+          "id": "PRE-ART-02",
+          "artifact": "Cleanup Dry-Run mit blocked_count = 0",
+          "command": "python -m app.cli m5 cleanup-dry-run --workspace <id>",
+          "report_target": "reports/current/m5_cleanup_dry_run_report.json",
+          "required_before": "jedem Cleanup-Lauf",
+          "status": "missing",
+          "scope": "per-slice"
+        },
+        {
+          "id": "PRE-ART-03",
+          "artifact": "PostgreSQL-Truth-Block data_quality gruen",
+          "command": "pytest --pg tests/truth/m5/ -k data_quality",
+          "report_target": "reports/current/m5_data_quality_truth.json",
+          "required_before": "Aktivierung Data-Quality-Slice",
+          "status": "missing",
+          "scope": "slice: data_quality"
+        },
+        {
+          "id": "PRE-ART-04",
+          "artifact": "PostgreSQL-Truth-Block drift_detection gruen",
+          "command": "pytest --pg tests/truth/m5/ -k drift_detection",
+          "report_target": "reports/current/m5_drift_truth.json",
+          "required_before": "Aktivierung Drift-Detection-Slice",
+          "status": "missing",
+          "scope": "slice: drift_detection"
+        },
+        {
+          "id": "PRE-ART-05",
+          "artifact": "PostgreSQL-Truth-Block cleanup_dry_run gruen",
+          "command": "pytest --pg tests/truth/m5/ -k cleanup_dry_run",
+          "report_target": "reports/current/m5_cleanup_truth.json",
+          "required_before": "Aktivierung Cleanup-Slice",
+          "status": "missing",
+          "scope": "slice: cleanup_dry_run"
+        },
+        {
+          "id": "PRE-ART-06",
+          "artifact": "PostgreSQL-Truth-Block health_score gruen",
+          "command": "pytest --pg tests/truth/m5/ -k health_score",
+          "report_target": "reports/current/m5_health_score_truth.json",
+          "required_before": "Aktivierung Health-Score-Slice",
+          "status": "missing",
+          "scope": "slice: health_score"
+        }
+      ],
+      "sequence": "Truth-Block gruen → Baseline setzen → Dry-Run → Slice aktivieren"
+    }
+  },
+  "summary": {
+    "m5_vorbereitung_erlaubt": true,
+    "m5_implementierung_erlaubt": true,
+    "m5_implementation_decision": "GO",
+    "gate_rule_satisfied": true,
+    "active_slice_blockers": 2,
+    "missing_precondition_artifacts": 6,
+    "preparation_package_complete": true
+  },
+  "exit_code": 0
+}

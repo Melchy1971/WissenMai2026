@@ -1,6 +1,13 @@
 ﻿# M5 Retrieval Quality Baseline
 
-Status: implementiert als wiederholbarer Benchmark-Runner.
+Stand: 2026-05-29
+
+## Status
+
+- Phase: Vorbereitung abgeschlossen; Benchmark-Runner implementiert
+- Implementierung: nicht gestartet (kein produktiver Betrieb ohne grünen Truth-Block und gesetzte Baseline)
+- Baseline: nicht gesetzt — `python -m app.cli m5 retrieval-benchmark --set-baseline` muss vor erstem Lauf ausgefuehrt werden
+- Massgeblich: `reports/current/masterplan_status.json`
 
 ## Zweck
 

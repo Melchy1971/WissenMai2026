@@ -1,0 +1,7 @@
+{
+  "status": "success",
+  "message": "Backup created successfully.",
+  "data": {
+    "example": 123
+  }
+}

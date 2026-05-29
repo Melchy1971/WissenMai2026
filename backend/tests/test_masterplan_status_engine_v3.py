@@ -62,9 +62,28 @@ def _known_limitations(operations_open: bool = True) -> dict:
     return {"limitations": limitations}
 
 
-def _write_inputs(report_dir: Path, *, m3a: dict | None = None, m4: dict | None = None, doc_errors: int = 0, operations_open: bool = True) -> None:
+def _operations_release(status: str = "PASS", decision: str = "GO") -> dict:
+    payload = _rc(status, decision)
+    payload.update({
+        "report_name": "m4e_operations_release_report",
+        "gate": "m4e_operations_release",
+        "operations_release_status": decision,
+    })
+    return payload
+
+
+def _write_inputs(
+    report_dir: Path,
+    *,
+    m3a: dict | None = None,
+    m4: dict | None = None,
+    doc_errors: int = 0,
+    operations_open: bool = False,
+    operations_release: dict | None = None,
+) -> None:
     _write(report_dir / engine.M3A_RC, m3a or _rc())
     _write(report_dir / engine.M4_BACKEND_RC, m4 or _rc())
+    _write(report_dir / engine.M4E_OPERATIONS_RELEASE, operations_release or _operations_release())
     _write(report_dir / engine.DOC_LINT, _doc_lint(doc_errors))
     _write(report_dir / engine.KNOWN_LIMITATIONS, _known_limitations(operations_open))
 
@@ -90,7 +109,7 @@ def test_v3_allows_m5_preparation_only_when_m4_rc_passes(tmp_path: Path) -> None
 
 
 def test_v3_keeps_m5_implementation_no_go_until_operations_release(tmp_path: Path) -> None:
-    _write_inputs(tmp_path, operations_open=True)
+    _write_inputs(tmp_path, operations_release=_operations_release("FAIL", "NO-GO"))
 
     payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
 
@@ -102,8 +121,30 @@ def test_v3_keeps_m5_implementation_no_go_until_operations_release(tmp_path: Pat
     assert payload["overall"]["release_allowed"] is True
 
 
+def test_v3_allows_m5_implementation_when_operations_release_is_go(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+
+    payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
+
+    assert payload["m5"]["preparation_allowed"] is True
+    assert payload["m5"]["implementation_allowed"] is True
+    assert payload["m5"]["implementation_decision"] == "GO"
+    assert payload["phases"]["m5_implementation"]["gate_status"] == "PASS"
+    assert payload["m5"]["implementation_gate_dependency"]["operations_release_status"] == "GO"
+
+
+def test_v3_keeps_m5_implementation_no_go_for_active_known_operations_limitation(tmp_path: Path) -> None:
+    _write_inputs(tmp_path, operations_open=True)
+
+    payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
+
+    assert payload["m5"]["implementation_allowed"] is False
+    assert payload["m5"]["implementation_decision"] == "NO_GO"
+    assert payload["known_limitations"]["operations_open_ids"] == ["KL-NB-OPS"]
+
+
 def test_v3_doc_lint_errors_block_release(tmp_path: Path) -> None:
-    _write_inputs(tmp_path, doc_errors=2, operations_open=False)
+    _write_inputs(tmp_path, doc_errors=2)
 
     payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
 
@@ -113,7 +154,7 @@ def test_v3_doc_lint_errors_block_release(tmp_path: Path) -> None:
 
 
 def test_v3_status_section_uses_v3_markers(tmp_path: Path) -> None:
-    _write_inputs(tmp_path, operations_open=True)
+    _write_inputs(tmp_path, operations_release=_operations_release("FAIL", "NO-GO"))
     payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
 
     section = engine.render_status_section(payload)

@@ -1,59 +1,93 @@
 # M5 Cleanup
 
-Stand: 2026-05-11
+Stand: 2026-05-29
 
 ## Status
 
-- Phase: Vorbereitung
+- Phase: Vorbereitung abgeschlossen
 - Implementierung: nicht gestartet
-- Freigabestatus: nicht freigegeben
-- Truth-Status: nicht als gruen behauptet, bis ein aktueller PostgreSQL-Truth-Report den entsprechenden M5-Block belegt
+- Freigabestatus: Dry-Run-Konzept freigegeben; produktiver Mutationspfad explizit deferred
+- Cleanup gilt in M5 ausschließlich als Dry-Run-Planungs- und Bewertungsbereich
 
-Statuslogik:
+---
 
-- Dieses Dokument beschreibt nur den Vorbereitungsrahmen fuer M5 Cleanup.
-- Die formale M5-Implementierungsfreigabe ist erreicht, aber dieser Slice ist damit noch nicht automatisch gestartet.
-- Cleanup gilt hier ausschliesslich als dry-run-faehiger Planungs- und Bewertungsbereich.
-- Solange kein freigegebener Mutationspfad und kein gruener PostgreSQL-Nachweis vorliegen, darf keine produktive Cleanup-Implementierung behauptet werden.
+## Scope
 
-## Zweck
+| Kandidat-Typ | Erkennungslogik |
+|---|---|
+| Orphaned Chunks | `document_version_id` referenziert keine existierende Version |
+| Orphaned Versions | `document_id` referenziert kein existierendes Dokument |
+| Stale Index Entries | Index-Eintrag ohne korrespondierenden DB-Chunk |
+| Alte Dead-Letter Jobs | `status = dead_letter` und älter als Retention-Schwelle |
+| Temporäre Upload-Dateien | Upload-Artefakte ohne abgeschlossenen Job |
+| Abgelaufene Sessions | `auth_sessions` jenseits Ablaufzeitstempel |
+| Alte Reports | Reports älter als Retention-Fenster |
 
-- Definiert Cleanup-Kandidaten, Safety Constraints und Dry-Run-Format fuer M5.
-- Stellt sicher, dass Vorbereitung nicht mit Loeschfreigabe verwechselt wird.
+---
 
-## Scope in Vorbereitung
+## Safety Constraints (verbindlich)
 
-- orphaned chunks
-- orphaned versions
-- stale index entries
-- alte `dead_letter` jobs
-- alte reports
-- temporaere Upload-Dateien
-- abgelaufene Sessions
+1. Dry Run zuerst — kein Löschlauf ohne vorherigen Dry-Run
+2. Keine Löschung ohne Report
+3. Keine Chat-Citation zerstören — Citations mit `source_status = active` sind geschützt
+4. Stop bei `blocked_count > 0`
+5. Backup vor Mutation — produktiver Löschlauf nur nach verifizierbarem Backup
+6. Audit-Spur — jede mutierende Aktion erzeugt einen Audit-Log-Eintrag
 
-## Verbindliche Vorbereitungsregeln
+---
 
-- Dry Run zuerst
-- keine Loeschung ohne Report
-- keine Chat-Citation zerstoeren
-- keine Originaldatei loeschen, wenn referenziert
+## Schutzklassen
 
-## Statuslogik fuer spaetere Fortschreibung
+| Schutzklasse | Entitäten | Begründung |
+|---|---|---|
+| `citation_referenced` | Chunks mit aktiver oder historischer Citation | Retrieval-Stabilität |
+| `active_document` | Versions und Chunks aktiver Dokumente | Lifecycle-Integrität |
+| `pending_job` | Temporäre Dateien mit pending/running Job | Upload-Integrität |
+| `recent_backup` | Reports und Manifeste jünger als Retention | Restore-Fähigkeit |
 
-- `Vorbereitung`: Kandidaten, Schutzregeln und Reportformat sind dokumentiert.
-- `Nachweis vorbereitet`: Dry-Run-Logik und Truth-Bezug sind beschrieben.
-- `Nachweis gruen`: darf erst dokumentiert werden, wenn ein aktueller PostgreSQL-Truth-Report den M5-Block `cleanup_dry_run` grün belegt.
-- `Mutationspfad freigegeben`: darf erst nach eigener expliziter Freigabe und separater Dokumentation behauptet werden.
+---
 
-## Platzhalter fuer Nachweise
+## Dry-Run Output
 
-- Truth-Test-Block: `cleanup_dry_run`
-- geplanter Report-Bezug: `reports/current/m4_truth_report.json`
-- geplanter Dry-Run-Report: noch nicht implementiert
+```json
+{
+  "report_type": "cleanup_dry_run",
+  "generated_at": "<iso8601>",
+  "workspace_id": "<uuid>",
+  "status": "ready | blocked",
+  "candidate_count": 0,
+  "protected_count": 0,
+  "blocked_count": 0,
+  "candidates": [{ "type": "orphaned_chunk", "count": 0, "sample_ids": [] }],
+  "blocked_reasons": []
+}
+```
+
+`status = blocked` wenn `blocked_count > 0`. Kein Löschlauf bei `status = blocked`.
+
+---
+
+## Retention-Regeln (konfigurierbar)
+
+| Kandidat-Typ | Standard |
+|---|---|
+| Dead-Letter Jobs | 30 Tage nach `updated_at` |
+| Abgelaufene Sessions | 7 Tage nach `expires_at` |
+| Temporäre Upload-Dateien | 24 Stunden nach Job-Abschluss |
+| Alte Reports | 90 Tage |
+
+---
 
 ## Nicht-Scope
 
-- keine produktive Loeschung
-- kein automatischer Cleanup
-- keine stille Mutation von Referenzen, Citations oder Originaldateien
-- keine Behauptung eines gestarteten M5-Cleanup-Betriebs
+- Keine produktive Löschung ohne explizite Freigabe
+- Kein automatischer Cleanup
+- Keine stille Mutation von References, Citations oder Originaldateien
+
+---
+
+## Implementierungsanker
+
+- CLI (Dry-Run): `python -m app.cli m5 cleanup-dry-run --workspace <id>`
+- Report-Ziel: `reports/current/m5_cleanup_dry_run_report.json`
+- Truth-Test-Block: `cleanup_dry_run`

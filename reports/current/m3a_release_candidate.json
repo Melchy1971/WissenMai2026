@@ -1,126 +1,131 @@
 {
-  "version": 2,
+  "report_schema_version": 1,
+  "report_name": "m3a_release_candidate",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-05-29T08:51:25.441334+00:00",
+  "generated_at": "2026-05-29T08:51:25.441334+00:00",
+  "version": 3,
   "release_candidate": "M3a",
-  "generated_at": "2026-05-26T08:11:36.043971Z",
+  "gate": "m3a",
+  "status": "PASS",
+  "result": "PASS",
+  "gate_status": "PASS",
   "decision": {
-    "gate_passed": false,
-    "blocked": true,
-    "status": "blocked",
-    "go_no_go": "NO-GO"
+    "gate_passed": true,
+    "blocked": false,
+    "status": "passed",
+    "go_no_go": "GO",
+    "m3a_release_candidate": "GO"
   },
-  "rule": "M3a RC is gate_passed only when login, workspace bootstrap, frontend truth, contracts, and chaos are all green.",
-  "inputs": {
-    "seed_smoke": "reports/seed_smoke_report.json",
-    "runtime_connectivity": "reports/runtime_connectivity_report.json",
-    "frontend_truth": "reports/frontend_truth_report.json",
-    "gui_chaos": "reports/gui_truth/gui_chaos_suite_report.json",
-    "contract_runtime": "reports/contract_runtime_report.json",
-    "auth_bootstrap_guard": "reports/auth_bootstrap_guard.json"
-  },
+  "environment": "local",
+  "report_type": "release_candidate",
+  "rule": "M3a RC is PASS/GO only when frontend full suite, frontend minimal, report truth preflight, and documentation lint are all green. A RC is STALE when any mandatory input carries a timestamp newer than the RC.",
+  "inputs": [
+    "reports/current/frontend_full_suite_staged_report.json",
+    "reports/current/frontend_truth_minimal_report.json",
+    "reports/current/report_truth_preflight.json",
+    "reports/current/documentation_truth_lint.json",
+    "reports/gui_truth/gui_chaos_suite_report.json"
+  ],
   "criteria": [
     {
-      "id": "login_stable",
-      "label": "Login stabil",
+      "id": "frontend_full_suite_staged_green",
+      "label": "Frontend Full Suite Staged gr\u00fcn",
       "passed": true,
+      "source": "reports/current/frontend_full_suite_staged_report.json",
+      "blockers": [],
       "evidence": {
-        "seed_smoke_result": "PASS",
-        "runtime_login_ok": true,
-        "auth_bootstrap_guard_result": "PASS",
-        "login": "mdickscheit@gmail.com"
+        "status": "PASS",
+        "collected": 132,
+        "passed": 132,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "real_api": null,
+        "test_database_url_set": null,
+        "timestamp": "2026-05-28T10:28:30.000000+00:00"
       }
     },
     {
-      "id": "workspace_bootstrap_stable",
-      "label": "Workspace Bootstrap stabil",
+      "id": "frontend_truth_minimal_green",
+      "label": "Frontend Truth Minimal gr\u00fcn",
       "passed": true,
+      "source": "reports/current/frontend_truth_minimal_report.json",
+      "blockers": [],
       "evidence": {
-        "runtime_workspace_bootstrap_successful": true,
-        "auth_me_active_workspace_id": "00000000-0000-0000-0000-000000000001",
-        "guard_workspace_id": "00000000-0000-0000-0000-000000000001",
-        "membership_role": "admin"
+        "status": "PASS",
+        "collected": 6,
+        "passed": 6,
+        "failed": 0,
+        "errors": 0,
+        "timestamp": "2026-05-27T07:18:41.864548+00:00"
       }
     },
     {
-      "id": "frontend_truth_green",
-      "label": "Frontend Truth gruen",
-      "passed": false,
+      "id": "report_truth_preflight_green",
+      "label": "Report Truth Preflight gr\u00fcn",
+      "passed": true,
+      "source": "reports/current/report_truth_preflight.json",
+      "blockers": [],
       "evidence": {
-        "collected": 100,
-        "passed": 5,
-        "failed": 37,
-        "skipped": 58,
-        "exit_code": 1,
-        "api_base_url": "http://127.0.0.1:8013",
-        "test_database_url_set": true
+        "status": "PASS",
+        "result": "PASS",
+        "collected": 6,
+        "passed": 6,
+        "failed": 0,
+        "errors": 0,
+        "exit_code": 0,
+        "timestamp": "2026-05-29T06:38:24.591859+00:00"
       }
     },
     {
-      "id": "contracts_green",
-      "label": "Contracts gruen",
+      "id": "documentation_truth_lint_green",
+      "label": "Documentation Truth Lint gr\u00fcn",
       "passed": true,
+      "source": "reports/current/documentation_truth_lint.json",
+      "blockers": [],
       "evidence": {
-        "contracts_total": 8,
-        "contracts_passed": 8,
-        "contracts_failed": 0,
-        "deviations_total": 0,
-        "missing_fields": 0,
-        "obsolete_or_undocumented_fields": 0,
-        "enum_deviations": 0
+        "status": "PASS",
+        "result": "PASS",
+        "errors": 0,
+        "warnings": 0,
+        "exit_code": 0,
+        "timestamp": "2026-05-29T07:39:35.308253+00:00"
       }
     },
     {
-      "id": "chaos_green",
-      "label": "Chaos gruen",
+      "id": "gui_chaos_green",
+      "label": "GUI Chaos gr\u00fcn",
       "passed": true,
+      "source": "reports/gui_truth/gui_chaos_suite_report.json",
+      "blockers": [],
       "evidence": {
         "result": "PASS",
         "collected": 8,
         "passed": 8,
         "failed": 0,
-        "path": "reports/gui_truth/gui_chaos_suite_report.json"
+        "errors": 0,
+        "exit_code": 0,
+        "timestamp": "2026-05-18T14:45:46.6959150+02:00"
       }
     }
   ],
-  "blockers": [
-    {
-      "id": "frontend_truth_green",
-      "label": "Frontend Truth gruen",
-      "evidence": {
-        "collected": 100,
-        "passed": 5,
-        "failed": 37,
-        "skipped": 58,
-        "exit_code": 1,
-        "api_base_url": "http://127.0.0.1:8013",
-        "test_database_url_set": true
-      }
-    }
-  ],
-  "summary": {
-    "login_stable": true,
-    "workspace_bootstrap_stable": true,
-    "frontend_truth_green": false,
-    "contracts_green": true,
-    "chaos_green": true
+  "stale_guard": {
+    "input_timestamps": {
+      "frontend_full_suite_staged_report": "2026-05-28T10:28:30.000000+00:00",
+      "report_truth_preflight": "2026-05-29T06:38:24.591859+00:00",
+      "documentation_truth_lint": "2026-05-29T07:39:35.308253+00:00"
+    },
+    "rc_timestamp": "2026-05-29T08:51:25.441334+00:00",
+    "precondition_violations": []
   },
-  "name": "m3a_release_candidate",
-  "timestamp": "2026-05-26T08:11:36.043971Z",
-  "environment": "local",
-  "database_url_set": false,
-  "test_database_url_set": false,
+  "blockers": [],
   "collected": 5,
-  "passed": 4,
-  "failed": 1,
+  "passed": 5,
+  "failed": 0,
   "errors": 0,
   "skipped": 0,
-  "exit_code": 1,
-  "gate": "m3a",
-  "known_limitations": [],
-  "report_schema_version": 1,
-  "report_name": "m3a_release_candidate",
-  "status": "FAIL",
-  "report_type": "release_candidate",
-  "source_command": "reports/current/m3a_release_candidate.json",
-  "commit_hash": "d328983c",
-  "generated_by": "gate_validator"
+  "exit_code": 0,
+  "commit_hash": "4af77abd0"
 }

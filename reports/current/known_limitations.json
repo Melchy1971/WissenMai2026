@@ -1,24 +1,113 @@
 {
-  "report_schema_version": 1,
-  "report_name": "known_limitations",
-  "generated_by": "manual_current_status_input",
-  "timestamp": "2026-05-29T06:45:00+00:00",
-  "source": "reports/current/masterplan_status.json",
+  "schema_version": 3,
+  "generated_at": "2026-05-29T09:00:16.226587+00:00",
+  "generated_from": [
+    "reports/current/m3a_release_candidate.json",
+    "reports/current/m4_backend_release_candidate.json",
+    "reports/current/m4e_operations_release_report.json",
+    "reports/current/masterplan_status.json",
+    "reports/current/documentation_truth_lint.json"
+  ],
+  "authority": "Nur maschinenlesbare Reports sind autoritativ. Manuelle Statusaussagen in dieser Datei duerfen keinen Gate-Status setzen.",
+  "evaluation_basis": {
+    "m3a_rc": "PASS",
+    "m3a_decision": "GO",
+    "m4_rc": "PASS",
+    "m4_decision": "GO",
+    "m4e_ops": "PASS",
+    "m4e_decision": "GO",
+    "doc_lint_errors": 0
+  },
   "limitations": [
     {
-      "id": "KL-M5-OPS-001",
-      "category": "M5 implementation blocker",
-      "bereich": "M4e Operations",
-      "beschreibung": "M5 Implementierung bleibt NO-GO, bis M4e/Operations explizit freigegeben sind.",
-      "blockiert_gate": [],
-      "risiko": "M5-Implementierung wuerde ohne Operations-Freigabe ueber den validierten M4-Backend-RC hinausgehen.",
-      "workaround": "M5-Vorbereitung erlauben, aber Implementierung bis zur expliziten M4e/Operations-Freigabe blockieren.",
+      "id": "KL-M5-T-001",
+      "status": "open",
+      "category": "M5 blocker",
+      "beschreibung": "15 M5 Entropy-/Drift-Truth-Failures in aktueller PostgreSQL-Truth-Suite. Kein M5-Slice darf produktiv gehen, bevor sein Truth-Block gruen ist.",
+      "blocks_gate": [
+        "m5_truth_gate"
+      ],
+      "target_phase": "M5",
+      "evidence_report": "reports/current/m4_truth_report.json",
+      "next_action": "M5-Truth-Failures isoliert reparieren; pytest --pg tests/truth/m5/ -k <slice> ausfuehren; Slice erst nach gruenem Truth-Block aktivieren.",
+      "blockiert_gate": [
+        "m5_truth_gate"
+      ],
+      "zielphase": "M5",
+      "bereich": "M5 blocker"
+    },
+    {
+      "id": "KL-M5-T-002",
+      "status": "open",
+      "category": "M5 blocker",
+      "beschreibung": "Vor Start jedes M5-Slices fehlen drei Pflicht-Artefakte: (1) Retrieval-Baseline, (2) Cleanup Dry-Run mit blocked_count=0, (3) PostgreSQL-Truth-Block gruen.",
+      "blocks_gate": [
+        "m5_slice_start_gate"
+      ],
+      "target_phase": "M5",
+      "evidence_report": "docs/m5-preparation.md",
+      "next_action": "Slice-sequenziell: Truth-Block gruen → python -m app.cli m5 retrieval-benchmark --set-baseline → python -m app.cli m5 cleanup-dry-run --workspace <id>.",
+      "blockiert_gate": [
+        "m5_slice_start_gate"
+      ],
+      "zielphase": "M5",
+      "bereich": "M5 blocker"
+    },
+    {
+      "id": "KL-GOV-001",
+      "status": "open",
+      "category": "operational governance",
+      "beschreibung": "Mutierende Admin-Aktionen (Repair, Cleanup-Loeschen, forced Reindex) duerfen nicht ueber Web-Admin ausgeloest werden. M4d bleibt read-only; operativer Mutationspfad braucht explizites Runbook und Freigabe.",
+      "blocks_gate": [
+        "operational_governance_gate"
+      ],
+      "target_phase": "M5 Operations",
+      "evidence_report": "docs/m4d-admin-diagnostics.md",
+      "next_action": "Fuer jeden Mutationspfad eigenes Runbook schreiben. Runbook vor produktiver Nutzung freigeben. Keine Web-Admin-Buttons ohne Gate-Freigabe.",
+      "blockiert_gate": [
+        "operational_governance_gate"
+      ],
       "zielphase": "M5 Operations",
-      "review_datum": "2026-05-29",
-      "sources": [
-        "reports/current/m4_backend_release_candidate.json",
-        "reports/current/m4e_backup_restore_truth.json"
-      ]
+      "bereich": "operational governance"
+    },
+    {
+      "id": "KL-DEF-001",
+      "status": "deferred",
+      "category": "explicitly deferred",
+      "beschreibung": "OCR fuer gescannte PDFs ist nicht Teil von V1. PDFs ohne extrahierbaren Text bleiben OCR_REQUIRED.",
+      "blocks_gate": [],
+      "target_phase": "Post-M4 feature",
+      "evidence_report": "masterplan.md",
+      "next_action": "OCR als eigenes Feature-Paket konzipieren und priorisieren.",
+      "blockiert_gate": [],
+      "zielphase": "Post-M4 feature",
+      "bereich": "explicitly deferred"
+    },
+    {
+      "id": "KL-DEF-002",
+      "status": "deferred",
+      "category": "explicitly deferred",
+      "beschreibung": "Embeddings und Vektorsuche sind optional und nicht V1-kritisch.",
+      "blocks_gate": [],
+      "target_phase": "Post-V1 or M5+",
+      "evidence_report": "masterplan.md",
+      "next_action": "FTS-Baseline weiter nutzen; Vektorsuche separat konzipieren.",
+      "blockiert_gate": [],
+      "zielphase": "Post-V1 or M5+",
+      "bereich": "explicitly deferred"
+    },
+    {
+      "id": "KL-NB-001",
+      "status": "open",
+      "category": "non-blocking debt",
+      "beschreibung": "Der Alias /api/v1/documents ist nicht durchgaengig verfuegbar; Pfade nutzen teilweise /documents.",
+      "blocks_gate": [],
+      "target_phase": "M4/M5 API hardening",
+      "evidence_report": "docs/api.md",
+      "next_action": "Vor neuer Clientbindung API-Vertrag pruefen; Alias oder Routing konsolidieren.",
+      "blockiert_gate": [],
+      "zielphase": "M4/M5 API hardening",
+      "bereich": "non-blocking debt"
     }
   ]
 }

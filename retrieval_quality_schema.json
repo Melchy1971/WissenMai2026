@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RetrievalQualityReport",
+  "type": "object",
+  "properties": {
+    "precision": { "type": "number", "minimum": 0, "maximum": 1 },
+    "recall": { "type": "number", "minimum": 0, "maximum": 1 },
+    "citation_accuracy": { "type": "number", "minimum": 0, "maximum": 1 },
+    "lifecycle_compliance": { "type": "number", "minimum": 0, "maximum": 1 },
+    "source_status_accuracy": { "type": "number", "minimum": 0, "maximum": 1 },
+    "duplicate_retrieval_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+    "hallucination_risk": { "type": "number", "minimum": 0, "maximum": 1 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "slice": { "type": "string" },
+    "gate_decision": { "type": "string", "enum": ["PASS", "WARN", "BLOCK"] }
+  },
+  "required": [
+    "precision",
+    "recall",
+    "citation_accuracy",
+    "lifecycle_compliance",
+    "source_status_accuracy",
+    "duplicate_retrieval_rate",
+    "hallucination_risk",
+    "timestamp",
+    "slice",
+    "gate_decision"
+  ]
+}

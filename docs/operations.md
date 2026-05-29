@@ -72,7 +72,7 @@ python scripts/check_auth_bootstrap.py --no-start-api
 python scripts/validate_runtime_connectivity_gate.py
 ```
 
-Letzter Run (2026-05-26): **9/9 = 100 % → PASS** Quelle: `reports/current/masterplan_status.json`.
+Aktueller Nachweis: `reports/current/m4a_auth_truth.json` (PASS, 43/43). Gesamtstatus: `reports/current/masterplan_status.json`.
 
 ## Seed Credentials (Single Source of Truth)
 
@@ -118,7 +118,7 @@ python scripts/check_auth_bootstrap.py --no-start-api
 python scripts/validate_runtime_connectivity_gate.py
 ```
 
-Letzter Run (2026-05-26): **9/9 = 100 % → PASS** Quelle: `reports/current/masterplan_status.json`.
+Aktueller Nachweis: `reports/current/m4a_auth_truth.json` (PASS, 43/43). Gesamtstatus: `reports/current/masterplan_status.json`.
 
 ## Backend Start Guard (PreflightService)
 

@@ -1,0 +1,43 @@
+﻿{
+    "SeedUser":  {
+                     "Passed":  false,
+                     "Output":  "psql : Die Benennung \"psql\" wurde nicht als Name eines Cmdlet, einer Funktion, einer Skriptdatei oder eines ausführbaren Programms erkannt. Überprüfen Sie \r\ndie Schreibweise des Namens, oder ob der Pfad korrekt ist (sofern enthalten), und wiederholen Sie den Vorgang.\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:32 Zeichen:19\r\n+     $userResult = psql -U appuser -d wissen2026 -c \"SELECT * FROM use ...\r\n+                   ~~~~\r\n    + CategoryInfo          : ObjectNotFound: (psql:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n"
+                 },
+    "Reindex":  {
+                    "Passed":  true,
+                    "Output":  "Reindex completed\r\n"
+                },
+    "Restore":  {
+                    "Passed":  true,
+                    "Output":  "Restore completed\r\n"
+                },
+    "Search":  {
+                   "Passed":  false,
+                   "Output":  "Invoke-RestMethod : Die zugrunde liegende Verbindung wurde geschlossen: Die Verbindung wurde unerwartet getrennt..\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:56 Zeichen:21\r\n+ ... rchResult = Invoke-RestMethod -Uri \"http://localhost:8000/api/search? ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod], WebException\r\n    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeRestMethodCommand\r\n \r\n"
+               },
+    "PostgreSQL":  {
+                       "Passed":  false,
+                       "Output":  "psql : Die Benennung \"psql\" wurde nicht als Name eines Cmdlet, einer Funktion, einer Skriptdatei oder eines ausführbaren Programms erkannt. Überprüfen Sie \r\ndie Schreibweise des Namens, oder ob der Pfad korrekt ist (sofern enthalten), und wiederholen Sie den Vorgang.\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:20 Zeichen:17\r\n+     $pgResult = psql -U appuser -d wissen2026 -c \"SELECT 1;\" 2\u003e\u00261\r\n+                 ~~~~\r\n    + CategoryInfo          : ObjectNotFound: (psql:String) [], CommandNotFoundException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n"
+                   },
+    "timestamp":  "2026-05-29T11:59:06.7211505+02:00",
+    "Backup":  {
+                   "Passed":  true,
+                   "Output":  "Backup completed\r\n"
+               },
+    "AlembicHead":  {
+                        "Passed":  false,
+                        "Output":  "FAILED: No \u0027script_location\u0027 key found in configuration.\r\n"
+                    },
+    "Frontend":  {
+                     "Passed":  true,
+                     "Output":  "200\r\n"
+                 },
+    "Login":  {
+                  "Passed":  false,
+                  "Output":  "Invoke-RestMethod : Die zugrunde liegende Verbindung wurde geschlossen: Die Verbindung wurde unerwartet getrennt..\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:38 Zeichen:20\r\n+ ... ginResult = Invoke-RestMethod -Uri \"http://localhost:8000/api/auth/lo ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod], WebException\r\n    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeRestMethodCommand\r\n \r\n"
+              },
+    "BackendHealth":  {
+                          "Passed":  false,
+                          "Output":  "Invoke-RestMethod : Die zugrunde liegende Verbindung wurde geschlossen: Die Verbindung wurde unerwartet getrennt..\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:44 Zeichen:21\r\n+ ... lthResult = Invoke-RestMethod -Uri \"http://localhost:8000/health\" -Me ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-RestMethod], WebException\r\n    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeRestMethodCommand\r\n \r\n"
+                      }
+}
