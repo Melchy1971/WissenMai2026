@@ -1,12 +1,12 @@
-# Operational Truth Governance
+﻿# Operational Truth Governance
 
 Stand: 2026-05-13
 
 Verwandte Dokumente:
 
-- [Architecture Change Governance](architecture-change-governance.md) — Pflichtprüfungen und Change-Control-Prozess für governance-pflichtige Änderungen
-- [Schema-Evolution Safety Model](schema-evolution-safety-model.md) — Risiko-Klassen A–D, Migrations-Governance und Downgrade-Bewertung
-- [Feature Governance Model](feature-governance-model.md) — Risikoklassen und Pflichtnachweise für kontrollierte Feature-Einführung
+- [Architecture Change Governance](architecture-change-governance.md) â€” PflichtprÃ¼fungen und Change-Control-Prozess fÃ¼r governance-pflichtige Ã„nderungen
+- [Schema-Evolution Safety Model](schema-evolution-safety-model.md) â€” Risiko-Klassen Aâ€“D, Migrations-Governance und Downgrade-Bewertung
+- [Feature Governance Model](feature-governance-model.md) â€” Risikoklassen und Pflichtnachweise fÃ¼r kontrollierte Feature-EinfÃ¼hrung
 
 ## Ziel
 
@@ -36,7 +36,7 @@ Produktionsnahe Systemzustaende duerfen nicht aus Dokumentation, Absichtserklaer
 |---|---|---|---|---|
 | PostgreSQL Truth Reports | harte End-to-End-Wahrheit gegen echte PostgreSQL-Transaktionen | `reports/current/m4_truth_report.json`, versionierte `historische PostgreSQL-Truth-Archivkopie` | ja | M4/M5 Truth-Gates, Setup-/Migration-/Isolation-/Recovery-Faelle |
 | Drift Reports | Abweichung zwischen Sollzustand und Laufzeitzustand | geplanter `geplanter M5-Drift-Report`, bis dahin Search-Drift-API/Entropy-Report | ja erforderlich | Search/Lifecycle/Citation/Queue/Backup/Data-Quality-Drift |
-| Restore Truth Reports | Wiederherstellbarkeit und Datenparitaet | `reports/restore_truth_report.md`, spaeter zusaetzlich JSON | teilweise; JSON fuer Gate erforderlich | Restore-Faehigkeit, DR-Basis, Backup-Vertrauen |
+| Restore Truth Reports | Wiederherstellbarkeit und Datenparitaet | `reports/current/m4e_backup_restore_truth.json`, spaeter zusaetzlich JSON | teilweise; JSON fuer Gate erforderlich | Restore-Faehigkeit, DR-Basis, Backup-Vertrauen |
 | Cleanup Truth Reports | Dry-Run- und Safety-Wahrheit fuer Cleanup | geplanter Cleanup-Report plus `postgres_truth` Cleanup-Block | ja erforderlich | Cleanup-Safety, Schutz von Citations, aktiven Daten und Queue |
 | Health Score | laufende Steuerungs- und Risikometrik | geplanter `geplanter M5-Health-Report` | ja erforderlich | Betriebszustand, nicht Gate-Ersatz |
 | Observability Metriken | Laufzeit- und Trenddaten | strukturierte JSON-Logs, Metrik-Snapshots, `m5_metric_observed` | ja | Trends, Alerts, Dashboard, Eskalation |
@@ -122,7 +122,7 @@ Quelle:
 
 Policy:
 
-- `frontend_truth_report.json` ist Pflichtartefakt; fehlt der Report, ist M3a mindestens `unknown`, nie `pass`
+- `frontend_full_suite_staged_report.json` ist Pflichtartefakt; fehlt der Report, ist M3a mindestens `unknown`, nie `pass`
 - Full-Suite Frontend Truth muss gruen sein; ein Auth-Bootstrap-Slice reicht nicht
 - `real_api = true`
 - `mock_only = false`
@@ -231,7 +231,7 @@ Verbotene Formulierungen:
 - `manuell validiert`, als Ersatz fuer Pflichtreport
 - `alle Tests gruen`, wenn nur ein Teil-Scope gelaufen ist
 - `M5 freigegeben`, wenn ein uebergeordneter Truth-Validator blockiert
-- `GUI stabil`, wenn `frontend_truth_report.json` fehlt oder rot ist
+- `GUI stabil`, wenn `frontend_full_suite_staged_report.json` fehlt oder rot ist
 - `Regression behoben`, ohne aktualisierten Frontend-Truth- oder Gate-Report
 - `Drift unter Kontrolle`, wenn nur Dokumentation existiert, aber kein sichtbares Frontend-Signal oder maschinenlesbares Artefakt vorliegt
 
@@ -317,7 +317,7 @@ Diese Regeln gelten verpflichtend fuer M3a und alle spaeteren GUI-Slices mit pro
 
 ### Mindestfelder fuer Frontend-Truth-Artefakte
 
-Zusätzlich zu den allgemeinen Mindestfeldern muessen GUI-spezifische Truth-Artefakte enthalten:
+ZusÃ¤tzlich zu den allgemeinen Mindestfeldern muessen GUI-spezifische Truth-Artefakte enthalten:
 
 - `browser`
 - `api_base_url`
@@ -338,3 +338,4 @@ Eine GUI-Regression ist mindestens gate-relevant, wenn sie einen dieser Pfade be
 - Search, Chat, Upload oder Lifecycle-Kernfluss
 - Diagnostics- oder Drift-Warnoberflaeche
 - Restore-, Reconnect- oder degraded-State-Indikatoren
+

@@ -1,4 +1,4 @@
-{
+﻿{
   "model": "release_candidate",
   "version": 1,
   "statuses": [
@@ -105,8 +105,8 @@
     "m3a": {
       "gate": "m3a_gate",
       "truth_reports": [
-        "reports/m3a_truth_report.json",
-        "reports/frontend_truth_report.json"
+        "reports/current/m3a_frontend_truth.json",
+        "reports/current/frontend_full_suite_staged_report.json"
       ],
       "allowed_dependencies": [
         "frontend_truth",
@@ -121,7 +121,7 @@
     "m4a": {
       "gate": "m4a_gate",
       "truth_reports": [
-        "reports/m4a_auth_truth_report.json"
+        "reports/current/m4a_auth_truth.json"
       ],
       "allowed_dependencies": [
         "m4a_auth_truth"
@@ -134,7 +134,7 @@
     "m4b": {
       "gate": "m4b_gate",
       "truth_reports": [
-        "reports/m4b_upload_queue_truth_report.json"
+        "reports/current/m4b_upload_queue_truth.json"
       ],
       "allowed_dependencies": [
         "m4b_upload_queue_truth"
@@ -147,7 +147,7 @@
     "m4c": {
       "gate": "m4c_gate",
       "truth_reports": [
-        "reports/m4c_lifecycle_retrieval_truth_report.json"
+        "reports/current/m4c_lifecycle_retrieval_truth.json"
       ],
       "allowed_dependencies": [
         "m4c_lifecycle_retrieval_truth"
@@ -160,7 +160,7 @@
     "m4e": {
       "gate": "m4e_gate",
       "truth_reports": [
-        "reports/m4e_backup_restore_truth_report.json"
+        "reports/current/m4e_backup_restore_truth.json"
       ],
       "allowed_dependencies": [
         "m4e_backup_restore_truth"
@@ -173,12 +173,12 @@
     "m4_overall": {
       "gate": "m4_overall_gate",
       "truth_reports": [
-        "reports/m3a_truth_report.json",
-        "reports/frontend_truth_report.json",
-        "reports/m4a_auth_truth_report.json",
-        "reports/m4b_upload_queue_truth_report.json",
-        "reports/m4c_lifecycle_retrieval_truth_report.json",
-        "reports/m4e_backup_restore_truth_report.json"
+        "reports/current/m3a_frontend_truth.json",
+        "reports/current/frontend_full_suite_staged_report.json",
+        "reports/current/m4a_auth_truth.json",
+        "reports/current/m4b_upload_queue_truth.json",
+        "reports/current/m4c_lifecycle_retrieval_truth.json",
+        "reports/current/m4e_backup_restore_truth.json"
       ],
       "allowed_dependencies": [
         "m3a",
@@ -195,7 +195,7 @@
     "m5_start": {
       "gate": "m5_start_gate",
       "truth_reports": [
-        "reports/gate_hierarchy_result.json"
+        "reports/current/gate_hierarchy_result.json"
       ],
       "allowed_dependencies": [
         "m4_overall_gate"
@@ -205,8 +205,8 @@
     "operational_governance": {
       "gate": "operational_governance_gate",
       "truth_reports": [
-        "reports/governance_truth_report.json",
-        "reports/gate_hierarchy_result.json"
+        "reports/current/masterplan_status.json",
+        "reports/current/gate_hierarchy_result.json"
       ],
       "allowed_dependencies": [
         "m5_start_gate",
@@ -237,3 +237,4 @@
     "released": "Masterplan, docs and reports have been reconciled by documentation audit."
   }
 }
+

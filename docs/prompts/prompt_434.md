@@ -16,4 +16,4 @@ Output:
 - Root Cause
 - Code-Fix
 - grüner Einzeltest
-- aktualisierter m4b_upload_queue_truth_report.json
+- aktualisierter reports/current/m4b_upload_queue_truth.json

@@ -1,4 +1,4 @@
-{
+﻿{
   "version": 1,
   "generated_at": "2026-05-20T10:35:00+02:00",
   "categories": [
@@ -23,8 +23,8 @@
       "zielphase": "M4",
       "review_datum": "2026-05-27",
       "sources": [
-        "reports/postgres_truth_report.json",
-        "reports/m4_release_candidate.json"
+        "reports/current/m4_truth_report.json",
+        "reports/current/m4_truth_report.json"
       ]
     },
     {
@@ -41,7 +41,7 @@
       "zielphase": "M4b",
       "review_datum": "2026-05-27",
       "sources": [
-        "reports/postgres_truth_report.json",
+        "reports/current/m4_truth_report.json",
         "docs/postgres-truth-failure-gate-matrix.md"
       ]
     },
@@ -59,8 +59,8 @@
       "zielphase": "M4",
       "review_datum": "2026-05-27",
       "sources": [
-        "reports/postgres_truth_report.json",
-        "reports/m4_release_candidate.json"
+        "reports/current/m4_truth_report.json",
+        "reports/current/m4_truth_report.json"
       ]
     },
     {
@@ -80,7 +80,7 @@
       "zielphase": "M4",
       "review_datum": "2026-05-27",
       "sources": [
-        "reports/m4_release_candidate.json",
+        "reports/current/m4_truth_report.json",
         "scripts/generate_truth_split_reports.py",
         "scripts/validate_gate_hierarchy.py"
       ]
@@ -100,7 +100,7 @@
       "review_datum": "2026-05-27",
       "sources": [
         "docs/m4-m5-freigabefassung.md",
-        "reports/m4_release_candidate.json"
+        "reports/current/m4_truth_report.json"
       ]
     },
     {
@@ -116,7 +116,7 @@
       "zielphase": "M5",
       "review_datum": "2026-06-03",
       "sources": [
-        "reports/postgres_truth_report.json",
+        "reports/current/m4_truth_report.json",
         "docs/postgres-truth-failure-gate-matrix.md"
       ]
     },
@@ -141,16 +141,16 @@
       "id": "KL-NB-001",
       "category": "non-blocking debt",
       "bereich": "M3a Evidence Drift",
-      "beschreibung": "m3a_final_gate_report.json referenziert einen frueheren gruenen Frontend-Truth-Lauf mit 82/82; der aktuelle frontend_truth_report.json ist ebenfalls gruen mit 100/100.",
+      "beschreibung": "m3a_final_gate_report.json referenziert einen frueheren gruenen Frontend-Truth-Lauf mit 82/82; der aktuelle frontend_full_suite_staged_report.json ist ebenfalls gruen mit 100/100.",
       "blockiert_gate": [],
       "risiko": "Verwirrung bei manueller Auswertung, obwohl beide Quellen gruene M3a-Evidenz liefern.",
-      "workaround": "Fuer neue RCs den aktuellen frontend_truth_report.json direkt zitieren.",
+      "workaround": "Fuer neue RCs den aktuellen frontend_full_suite_staged_report.json direkt zitieren.",
       "zielphase": "M3a documentation maintenance",
       "review_datum": "2026-05-27",
       "sources": [
-        "reports/m3a_release_candidate.json",
-        "reports/frontend_truth_report.json",
-        "reports/m3a_final_gate_report.json"
+        "reports/current/m3a_release_candidate.json",
+        "reports/current/frontend_full_suite_staged_report.json",
+        "reports/current/m3a_release_candidate.json"
       ]
     },
     {
@@ -164,7 +164,7 @@
       "zielphase": "M5 Operations",
       "review_datum": "2026-06-03",
       "sources": [
-        "reports/restore_truth_report.md",
+        "reports/current/m4e_backup_restore_truth.json",
         "docs/runbooks/backup-restore.md",
         "masterplan.md"
       ]
@@ -254,8 +254,10 @@
       "zielphase": "M3a maintenance",
       "review_datum": "2026-05-27",
       "sources": [
-        "reports/m3a_release_candidate.json"
+        "reports/current/m3a_release_candidate.json"
       ]
     }
   ]
 }
+
+

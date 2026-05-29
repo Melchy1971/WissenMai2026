@@ -1,4 +1,4 @@
-{
+﻿{
   "version": 1,
   "model": "governance_stable_development_mode",
   "status": "defined",
@@ -25,7 +25,7 @@
       "name": "Artefaktbasierte Wahrheit",
       "rule": "Status, Fortschritt und Freigabe werden aus maschinenlesbaren Artefakten berechnet, nicht aus manuellen Aussagen.",
       "required_artifacts": [
-        "reports/masterplan_status.json",
+        "reports/current/masterplan_status.json",
         "reports/*_release_candidate.json",
         "reports/*_truth_report.json"
       ],
@@ -36,14 +36,14 @@
       "name": "Gate-spezifische Reports",
       "rule": "Ein Gate darf nur seinen eigenen Report und explizit erlaubte Dependencies auswerten.",
       "required_artifacts": [
-        "reports/frontend_truth_report.json",
-        "reports/m3a_truth_report.json",
-        "reports/m4a_auth_truth_report.json",
-        "reports/m4b_upload_queue_truth_report.json",
-        "reports/m4c_lifecycle_retrieval_truth_report.json",
-        "reports/m4e_backup_restore_truth_report.json",
-        "reports/m5_truth_report.json",
-        "reports/governance_truth_report.json"
+        "reports/current/frontend_full_suite_staged_report.json",
+        "reports/current/m3a_frontend_truth.json",
+        "reports/current/m4a_auth_truth.json",
+        "reports/current/m4b_upload_queue_truth.json",
+        "reports/current/m4c_lifecycle_retrieval_truth.json",
+        "reports/current/m4e_backup_restore_truth.json",
+        "reports/current/masterplan_status.json",
+        "reports/current/masterplan_status.json"
       ],
       "no_go": "Keine Aggregatfreigabe aus fremden Reports; M5/Governance darf M4 nicht blockieren."
     },
@@ -52,7 +52,7 @@
       "name": "Marker-disziplinierte Tests",
       "rule": "Jeder Gate-Test braucht genau einen Gate-Marker; unklassifizierte oder mehrdeutige Tests sind Fehler.",
       "required_artifacts": [
-        "reports/truth_marker_taxonomy.json"
+        "reports/current/documentation_truth_lint.json"
       ],
       "no_go": "Neue Tests ohne eindeutigen Marker blockieren Gate- und Statusberechnung."
     },
@@ -62,8 +62,8 @@
       "rule": "Kein Meilenstein gilt als abgeschlossen, bevor ein RC mit Status, Reports, Blockern, Known Limitations und Go/No-Go existiert.",
       "required_artifacts": [
         "docs/release-candidate-model.json",
-        "reports/m3a_release_candidate.json",
-        "reports/m4_release_candidate.json"
+        "reports/current/m3a_release_candidate.json",
+        "reports/current/m4_truth_report.json"
       ],
       "no_go": "implemented oder tested ohne truth_validated/gate_passed zaehlt nicht als abgeschlossen."
     },
@@ -82,8 +82,8 @@
       "name": "Documentation Audit Pflicht",
       "rule": "Release- oder Abschlussaussagen brauchen einen Documentation Audit, der Doku, Masterplan und Reports abgleicht.",
       "required_artifacts": [
-        "reports/documentation_release_audit.json",
-        "reports/documentation_release_audit.md"
+        "reports/current/documentation_truth_lint.json",
+        "reports/current/documentation_truth_lint.json"
       ],
       "no_go": "Doku-Widersprueche, alte Gruen-Zahlen oder Abschlussaussagen ohne Artefakt blockieren Freigabe."
     },
@@ -92,8 +92,8 @@
       "name": "Gate Drift Detection",
       "rule": "Gate-Drift muss vor Freigaben geprueft werden: Reportalter, Testanzahl, Marker, unklassifizierte Tests, Score-Anomalien und Doku-Referenzen.",
       "required_artifacts": [
-        "reports/gate_drift_report.json",
-        "reports/gate_drift_baseline.json"
+        "reports/current/gate_hierarchy_result.json",
+        "reports/current/gate_hierarchy_result.json"
       ],
       "no_go": "Gate Drift FAIL blockiert Implementierungs- oder Release-Go fuer betroffene Gates."
     },
@@ -102,8 +102,8 @@
       "name": "Masterplan Status Engine",
       "rule": "Der Masterplan-Status wird aus Artefakten generiert; manuelle Statusaussagen duerfen ihn nicht ueberschreiben.",
       "required_artifacts": [
-        "reports/masterplan_status.json",
-        "reports/masterplan_status_section.md",
+        "reports/current/masterplan_status.json",
+        "docs/generated/status_section.md",
         "docs/masterplan_status.schema.json"
       ],
       "no_go": "Manuell gepflegte Statusaussagen gelten nicht als Quelle der Wahrheit."
@@ -171,9 +171,11 @@
     "docs/governance-boundary.json",
     "docs/release-candidate-model.json",
     "docs/known_limitations.json",
-    "reports/documentation_release_audit.json",
-    "reports/gate_drift_report.json",
-    "reports/masterplan_status.json",
-    "reports/pre_m5_decision_report.json"
+    "reports/current/documentation_truth_lint.json",
+    "reports/current/gate_hierarchy_result.json",
+    "reports/current/masterplan_status.json",
+    "reports/current/masterplan_status.json"
   ]
 }
+
+

@@ -1,0 +1,107 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m4b_regression_lock",
+  "generated_by": "m4b_regression_lock",
+  "timestamp": "2026-05-29T06:28:10.647605+00:00",
+  "status": "PASS",
+  "result": "PASS",
+  "inputs": {
+    "m4b_report": "reports\\current\\m4b_upload_queue_truth.json"
+  },
+  "lock": {
+    "marker": "m4b_upload_queue_truth",
+    "baseline_collected": 48,
+    "current_collected": 48,
+    "collected_may_drop_only_with": [
+      "scope_change_reason",
+      "approval"
+    ],
+    "required_zero_fields": [
+      "failed",
+      "errors",
+      "skipped"
+    ],
+    "scope_change_approved": false
+  },
+  "checks": [
+    {
+      "id": "report_exists",
+      "passed": true,
+      "detail": "H:\\WissenMai2026\\reports\\current\\m4b_upload_queue_truth.json"
+    },
+    {
+      "id": "marker",
+      "passed": true,
+      "detail": "m4b_upload_queue_truth"
+    },
+    {
+      "id": "status_pass",
+      "passed": true,
+      "detail": "PASS"
+    },
+    {
+      "id": "collected_positive",
+      "passed": true,
+      "detail": 48
+    },
+    {
+      "id": "passed_equals_collected",
+      "passed": true,
+      "detail": {
+        "passed": 48,
+        "collected": 48
+      }
+    },
+    {
+      "id": "failed_zero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "errors_zero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "skipped_zero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "exit_code_zero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "failed_tests_empty",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "queue_recovery_fixes": [
+    {
+      "id": "retryable_backoff_guard",
+      "evidence": "backend/tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_retryable_job_is_not_claimed_before_backoff_expires",
+      "guarantee": "retryable import jobs stay unclaimed until the retry backoff has expired"
+    },
+    {
+      "id": "retryable_reclaim_after_backoff",
+      "evidence": "backend/tests/postgres_truth/test_m4b_upload_queue_truth.py::test_m4b_retryable_job_is_claimed_after_backoff_expires",
+      "guarantee": "expired retryable jobs can be reclaimed and increment attempt_count deterministically"
+    },
+    {
+      "id": "stale_import_recovery_no_duplicates",
+      "evidence": "backend/tests/postgres_truth/test_m4_truth_flows.py::test_postgres_truth_recover_stale_import_job_retries_without_duplicate_rows",
+      "guarantee": "stale import recovery does not create duplicate document/version/chunk rows"
+    },
+    {
+      "id": "crash_recovery_no_duplicate_rows",
+      "evidence": "backend/tests/postgres_truth/test_m4_crash_recovery_truth.py::test_import_worker_crash_recovery_preserves_retryability_and_no_duplicate_rows",
+      "guarantee": "worker crash recovery preserves retryability and duplicate-row invariants"
+    }
+  ],
+  "blocker_tests": [
+    "backend/tests/integration/test_documents_import.py::test_parallel_duplicate_imports_create_single_document"
+  ],
+  "blockers": []
+}

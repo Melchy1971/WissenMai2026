@@ -8,8 +8,8 @@ export function DocumentMetaCard({ document }) {
           <p className="panel__eyebrow">Dokumentdetail</p>
           <h2>{document.title}</h2>
         </div>
-        <div className="badge-row">
-          <StatusBadge status={document.lifecycleStatus} />
+        <div className="badge-row" data-testid="lifecycle-status">
+          <StatusBadge status={document.lifecycleStatus} testId="document-status-badge" />
           <StatusBadge status={document.importStatus} />
         </div>
       </div>

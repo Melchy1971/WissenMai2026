@@ -1,4 +1,4 @@
-# M4 Gesamt-Reconciliation
+﻿# M4 Gesamt-Reconciliation
 
 Stand: 2026-05-19
 
@@ -6,7 +6,7 @@ Stand: 2026-05-19
 
 - `reports/current/gate_hierarchy_result.json`
 - `reports/current/m4_truth_report.json`
-- `reports/restore_truth_report.md`
+- `reports/current/m4e_backup_restore_truth.json`
 - `docs/m4-m5-freigabefassung.md`
 - `masterplan.md`
 
@@ -63,3 +63,4 @@ Begruendung:
 | M4 technisch stabil, aber GUI blockiert | `Nein`; GUI/M3a ist gruen, PostgreSQL Truth ist rot |
 | M4 bleibt blockiert | `Ja` |
 | M5-Transition aus M4 | `No-Go` |
+

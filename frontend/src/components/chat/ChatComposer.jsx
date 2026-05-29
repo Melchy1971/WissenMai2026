@@ -20,6 +20,7 @@ export function ChatComposer({
         <label className="search-bar__field">
           <span className="search-bar__label">Titel der Sitzung</span>
           <input
+            data-testid="chat-session-title"
             type="text"
             value={titleInput}
             onChange={(event) => onTitleInputChange(event.target.value)}
@@ -27,7 +28,7 @@ export function ChatComposer({
           />
         </label>
         <div className="search-bar__actions">
-          <button type="submit">Neue Sitzung</button>
+          <button data-testid="chat-new-session" type="submit">Neue Sitzung</button>
         </div>
       </form>
 
@@ -35,6 +36,7 @@ export function ChatComposer({
         <label className="search-bar__field">
           <span className="search-bar__label">Frage</span>
           <textarea
+            data-testid="chat-input"
             value={questionInput}
             onChange={(event) => onQuestionInputChange(event.target.value)}
             placeholder="Frage an den Dokumentbestand stellen"
@@ -43,7 +45,7 @@ export function ChatComposer({
           />
         </label>
         <div className="search-bar__actions">
-          <button type="submit" disabled={disabled}>Frage senden</button>
+          <button data-testid="chat-submit" type="submit" disabled={disabled}>Frage senden</button>
         </div>
       </form>
     </section>

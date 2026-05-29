@@ -1,4 +1,4 @@
-# M5 Operations Model
+﻿# M5 Operations Model
 
 Stand: 2026-05-13
 
@@ -6,14 +6,14 @@ Dieses Betriebsmodell definiert wiederkehrende M5-Checks fuer den lokalen produk
 
 Nachweisanker:
 
-- `reports/m5_longrun/latest.json`
-- `reports/m5_longrun_summary.md`
-- `reports/m5_retrieval/latest.json`
-- `reports/m5_retrieval_summary.md`
-- `reports/m5_entropy/latest.json`
-- `reports/m5_entropy_audit.md`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
 - `reports/current/m4_truth_report.json`
-- `reports/restore_truth_report.md`
+- `reports/current/m4e_backup_restore_truth.json`
 
 ## Betriebsrollen
 
@@ -28,9 +28,9 @@ Nachweisanker:
 
 | Bereich | Primaerer Nachweis | Typischer Befehl oder Quelle |
 |---|---|---|
-| Woechentliche Checks | `reports/m5_longrun/latest.json` | `python -m app.cli m5 longrun-simulation --cycles 28 --restore-every 7` |
-| Retrieval/RAG Qualitaet | `reports/m5_retrieval/latest.json` | `python -m app.cli m5 retrieval-benchmark` |
-| Data Aging / Entropy | `reports/m5_entropy/latest.json` | `python -m app.cli m5 entropy-audit` |
+| Woechentliche Checks | `reports/current/masterplan_status.json` | `python -m app.cli m5 longrun-simulation --cycles 28 --restore-every 7` |
+| Retrieval/RAG Qualitaet | `reports/current/masterplan_status.json` | `python -m app.cli m5 retrieval-benchmark` |
+| Data Aging / Entropy | `reports/current/masterplan_status.json` | `python -m app.cli m5 entropy-audit` |
 | Backup-Verifikation | Backup-/Restore-Report | `verify-backup`, Restore-Dry-Run oder Restore-Truth-Nachweis |
 | Reindex Governance | Governed-Reindex-Report, Drift-Snapshot, Retrieval-Regression-Report | `POST /api/v1/admin/reindex/governed`, danach `python -m app.cli m5 retrieval-benchmark --trigger reindex` |
 | Cleanup Governance | Cleanup-Governance-Report, Cleanup Truth Block, Citation-Longevity-Check | `POST /api/v1/admin/cleanup/governed` mit `dry_run_only=true` als Default |
@@ -148,3 +148,5 @@ Wenn ein Report fehlt oder aelter als das zu bewertende Ereignis ist, lautet der
 - Keine M5-Gate-Entscheidung bei `postgres_truth` Failures, Errors oder Skips.
 - Keine Reindex-Policy, die Workspace-Isolation oder Lifecycle-Regeln umgeht.
 - Historical Citations bleiben als Snapshots erhalten; Repair darf sie nicht still ueberschreiben.
+
+

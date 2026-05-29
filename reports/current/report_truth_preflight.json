@@ -1,0 +1,64 @@
+{
+  "report_schema_version": 1,
+  "report_name": "report_truth_preflight",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-05-29T06:38:24.591859+00:00",
+  "gate": "report_truth_preflight",
+  "status": "PASS",
+  "result": "PASS",
+  "environment": "local",
+  "report_type": "gate",
+  "collected": 6,
+  "passed": 6,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "checks": [
+    {
+      "report": "m4a_auth_truth.json",
+      "status": "PASS",
+      "reason": null,
+      "report_status": "PASS",
+      "timestamp": "2026-05-29T06:27:59.342852+00:00"
+    },
+    {
+      "report": "m4b_upload_queue_truth.json",
+      "status": "PASS",
+      "reason": null,
+      "report_status": "PASS",
+      "timestamp": "2026-05-29T06:27:59.342852+00:00"
+    },
+    {
+      "report": "m4c_lifecycle_retrieval_truth.json",
+      "status": "PASS",
+      "reason": null,
+      "report_status": "PASS",
+      "timestamp": "2026-05-29T06:27:59.342852+00:00"
+    },
+    {
+      "report": "m4e_backup_restore_truth.json",
+      "status": "PASS",
+      "reason": null,
+      "report_status": "PASS",
+      "timestamp": "2026-05-29T06:27:59.342852+00:00"
+    },
+    {
+      "report": "m4_truth_report.json",
+      "status": "PASS",
+      "reason": null,
+      "report_status": "PASS",
+      "timestamp": "2026-05-29T06:38:18.679088Z"
+    },
+    {
+      "report": "documentation_truth_lint.json",
+      "status": "PASS",
+      "reason": null,
+      "report_status": "PASS",
+      "timestamp": "2026-05-29T06:35:29.336342+00:00"
+    }
+  ],
+  "blockers": [],
+  "source_command": "python scripts/generate_m4_backend_release_candidate.py",
+  "commit_hash": "6eba23a5c"
+}

@@ -23,7 +23,7 @@ export function DocumentTable({ items }) {
               <Link to={`/documents/${item.id}`}>{item.title}</Link>
             </td>
             <td>{item.mimeType}</td>
-            <td><StatusBadge status={item.lifecycleStatus} /></td>
+            <td><StatusBadge status={item.lifecycleStatus} testId="document-status-badge" /></td>
             <td><StatusBadge status={item.importStatus} /></td>
             <td>{item.versionCount}</td>
             <td>{item.chunkCount}</td>

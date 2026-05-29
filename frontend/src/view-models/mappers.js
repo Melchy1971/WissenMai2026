@@ -236,6 +236,7 @@ export function mapChatCitation(item) {
     documentTitle: item.document_title || 'Unbenanntes Dokument',
     sourceAnchorLabel: formatSourceAnchor(item.source_anchor),
     quotePreview: item.quote_preview || 'Keine Vorschau verfuegbar',
+    sourceStatus: item.source_status || 'missing',
   };
 }
 

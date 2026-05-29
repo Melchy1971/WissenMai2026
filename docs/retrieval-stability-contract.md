@@ -1,4 +1,4 @@
-# Retrieval Stability Contract
+﻿# Retrieval Stability Contract
 
 Stand: 2026-05-13
 
@@ -232,12 +232,12 @@ Pflichtsignale:
 
 Pflichtartefakte:
 
-- `reports/m5_retrieval/latest.json`
+- `reports/current/masterplan_status.json`
 - versionierter Benchmark-Report unter `reports/m5_retrieval/`
-- Summary in `reports/m5_retrieval_summary.md`
-- `reports/m5_retrieval_regression/latest.json`
+- Summary in `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
 - versionierter Regression-Report unter `reports/m5_retrieval_regression/`
-- Regression Summary in `reports/m5_retrieval_regression_summary.md`
+- Regression Summary in `reports/current/masterplan_status.json`
 - Truth-Test-Plan fuer betroffene postgres_truth-Slices
 
 Stop-Regeln:
@@ -360,3 +360,4 @@ Bewertungen: `keine Auswirkung`, `additiv`, `regressionpflichtig`, `breaking`, `
 [ ] Benchmark-Report referenziert
 [ ] Betroffene postgres_truth-Slices gruen
 ```
+

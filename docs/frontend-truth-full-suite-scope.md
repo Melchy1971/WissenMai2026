@@ -1,10 +1,10 @@
-# Frontend Truth Full-Suite Scope
+﻿# Frontend Truth Full-Suite Scope
 
 Stand: 2026-05-19
 
 ## Entscheidung
 
-Ein `frontend_truth_report.json` gilt nur dann als Full-Suite-Frontend-Truth, wenn er alle unten definierten Pflichtflows explizit ausweist. Ein Auth-/Bootstrap-Slice, ein fokussierter Spec-Run oder ein Mock-only Lauf darf keinen Full-Suite-Pass begruenden.
+Ein `frontend_full_suite_staged_report.json` gilt nur dann als Full-Suite-Frontend-Truth, wenn er alle unten definierten Pflichtflows explizit ausweist. Ein Auth-/Bootstrap-Slice, ein fokussierter Spec-Run oder ein Mock-only Lauf darf keinen Full-Suite-Pass begruenden.
 
 Pflichtregeln fuer jeden Full-Suite-Report:
 
@@ -58,7 +58,7 @@ Pflichtregeln fuer jeden Full-Suite-Report:
 | FT-03.1 | Workspace Bootstrap | Membership Workspace | aktiver Workspace stammt aus Membership |
 | FT-03.2 | Workspace Bootstrap | Single Workspace | kein Switcher |
 | FT-03.3 | Workspace Bootstrap | Multi Workspace | Switcher zeigt beide Workspaces |
-| FT-03.4 | Workspace Bootstrap | Invalid Switch | ungültiger Workspace wird abgelehnt |
+| FT-03.4 | Workspace Bootstrap | Invalid Switch | ungÃ¼ltiger Workspace wird abgelehnt |
 | FT-04.1 | Dokumentliste | Dokumentroute | Heading und Controls sichtbar |
 | FT-04.2 | Dokumentliste | Empty/List-State | Empty-State nur bei erfolgreicher leerer API-Antwort |
 | FT-05.1 | Dokumentdetail | Detailnavigation | ein reales Dokument kann geoeffnet werden |
@@ -134,3 +134,4 @@ Ein Full-Suite-Frontend-Truth-Report ist akzeptiert, wenn:
 15. der Report in `reports/current/frontend_full_suite_staged_report.json` und `reports/current/frontend_full_suite_staged_report.json` identisch referenziert wird.
 
 Wenn einer dieser Punkte fehlt, ist der Lauf maximal ein fokussierter Slice-Report, nicht Full-Suite-Frontend-Truth.
+

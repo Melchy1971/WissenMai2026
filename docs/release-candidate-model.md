@@ -1,4 +1,4 @@
-# Release Candidate Modell
+﻿# Release Candidate Modell
 
 Dieses Modell definiert die Zwischenstufen zwischen Entwicklung und abgeschlossen. Es ist verbindlich fuer Masterplan-Statusaussagen, Gate-Freigaben und Release-Kommunikation. Quelle: `reports/current/masterplan_status.json`.
 
@@ -27,14 +27,14 @@ Maschinenlesbare Quelle: `docs/release-candidate-model.json`.
 
 | RC-Scope | Gate | Reports | Verboten bei Bewertung |
 |---|---|---|---|
-| M3a | `m3a_gate` | `m3a_truth_report.json`, `frontend_truth_report.json` | M4/M5/Governance |
-| M4a | `m4a_gate` | `m4a_auth_truth_report.json` | M5/Governance |
-| M4b | `m4b_gate` | `m4b_upload_queue_truth_report.json` | M5/Governance |
-| M4c | `m4c_gate` | `m4c_lifecycle_retrieval_truth_report.json` | M5/Governance |
-| M4e | `m4e_gate` | `m4e_backup_restore_truth_report.json` | M5/Governance |
+| M3a | `m3a_gate` | `m3a_frontend_truth.json`, `frontend_full_suite_staged_report.json` | M4/M5/Governance |
+| M4a | `m4a_gate` | `m4a_auth_truth.json` | M5/Governance |
+| M4b | `m4b_gate` | `m4b_upload_queue_truth.json` | M5/Governance |
+| M4c | `m4c_gate` | `m4c_lifecycle_retrieval_truth.json` | M5/Governance |
+| M4e | `m4e_gate` | `m4e_backup_restore_truth.json` | M5/Governance |
 | M4 Gesamt | `m4_overall_gate` | M3a + M4a/b/c/e Split-Reports | M5/Governance |
 | M5 Start | `m5_start_gate` | `gate_hierarchy_result.json` | keine |
-| Operational Governance | `operational_governance_gate` | `governance_truth_report.json`, `gate_hierarchy_result.json` | keine |
+| Operational Governance | `operational_governance_gate` | `masterplan_status.json`, `gate_hierarchy_result.json` | keine |
 
 ## Masterplan-Abbildung
 
@@ -50,3 +50,4 @@ Maschinenlesbare Quelle: `docs/release-candidate-model.json`.
 ## Bewertungsregel fuer M4
 
 M4 wird ausschliesslich mit M3a und M4a/b/c/e bewertet. `m5_truth`, `governance_truth`, Queue-Aging, Entropy, Cleanup Governance und Longevity duerfen M4 nicht blockieren. Diese Nachweise werden erst fuer M5 Start beziehungsweise Operational Governance herangezogen.
+

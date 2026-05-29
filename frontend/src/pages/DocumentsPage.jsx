@@ -35,6 +35,12 @@ export function DocumentsPage() {
     uploadState.status === 'success'
       ? mapImportOutcome(uploadState.result, { fileName: uploadState.fileName })
       : null;
+  const uploadErrorTestId =
+    uploadState.error?.code === 'OCR_REQUIRED'
+      ? 'upload-ocr-required'
+      : uploadState.error?.code === 'FILE_TOO_LARGE'
+        ? 'upload-file-too-large'
+        : 'upload-error';
 
   requestContextRef.current = { authToken: token || '', workspaceId: workspaceId || '' };
   if (!requestCoordinatorRef.current) {
@@ -251,7 +257,7 @@ export function DocumentsPage() {
         <form className="search-bar" onSubmit={(event) => event.preventDefault()}>
           <label className="search-bar__field">
             <span className="search-bar__label">Statusfilter</span>
-            <select value={lifecycleFilter} onChange={(event) => { if (ALLOWED_LIFECYCLE_FILTERS.includes(event.target.value)) setLifecycleFilter(event.target.value); }}>
+            <select data-testid="archived-filter" value={lifecycleFilter} onChange={(event) => { if (ALLOWED_LIFECYCLE_FILTERS.includes(event.target.value)) setLifecycleFilter(event.target.value); }}>
               <option value="active">Nur aktive Dokumente</option>
               <option value="archived">Nur archivierte Dokumente</option>
             </select>
@@ -349,7 +355,15 @@ export function DocumentsPage() {
           </div>
         ) : null}
 
-        {uploadState.status === 'error' ? <ErrorState error={uploadState.error} testId="upload-error" /> : null}
+        {uploadState.status === 'error' ? (
+          uploadErrorTestId === 'upload-error' ? (
+            <ErrorState error={uploadState.error} testId="upload-error" />
+          ) : (
+            <div data-testid={uploadErrorTestId}>
+              <ErrorState error={uploadState.error} testId="upload-error" />
+            </div>
+          )
+        ) : null}
       </section>
       ) : null}
       {canUseDocumentControls ? (
@@ -379,10 +393,13 @@ export function DocumentsPage() {
       </section>
       ) : null}
 
-      {canUseDocumentControls && searchState.status === 'loading' ? <LoadingState label="Suchtreffer werden geladen..." /> : null}
+      {canUseDocumentControls && searchState.status === 'loading' ? (
+        <LoadingState label="Suchtreffer werden geladen..." testId="search-loading" />
+      ) : null}
       {canUseDocumentControls && searchState.status === 'error' ? <ErrorState error={searchState.error} testId="search-error" /> : null}
       {canUseDocumentControls && searchState.status === 'success' && searchState.items.length === 0 ? (
         <EmptyState
+          testId="search-empty"
           title="Keine Treffer gefunden"
           message={`Fuer \"${searchState.query}\" wurden im aktuellen Workspace keine Chunks gefunden.`}
         />

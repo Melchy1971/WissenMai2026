@@ -402,8 +402,8 @@ describe('DocumentsPage', () => {
     expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
 
     const file = new File(['hello'], 'notes.txt', { type: 'text/plain' });
-    fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
+    fireEvent.change(screen.getByTestId('upload-file-input'), { target: { files: [file] } });
+    fireEvent.click(screen.getByTestId('upload-submit'));
 
     expect(await screen.findByText(/notes.txt erfolgreich verarbeitet/i)).toBeInTheDocument();
     expect(screen.getByText('doc-2')).toBeInTheDocument();
@@ -468,8 +468,8 @@ describe('DocumentsPage', () => {
     expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
 
     const file = new File(['hello'], 'notes.txt', { type: 'text/plain' });
-    fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
+    fireEvent.change(screen.getByTestId('upload-file-input'), { target: { files: [file] } });
+    fireEvent.click(screen.getByTestId('upload-submit'));
 
     expect(await screen.findByText('In Warteschlange')).toBeInTheDocument();
     expect(screen.getByText('Import wartet auf Ausfuehrung.')).toBeInTheDocument();
@@ -544,8 +544,8 @@ describe('DocumentsPage', () => {
     expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
 
     const file = new File(['hello'], 'notes.txt', { type: 'text/plain' });
-    fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
+    fireEvent.change(screen.getByTestId('upload-file-input'), { target: { files: [file] } });
+    fireEvent.click(screen.getByTestId('upload-submit'));
 
     expect(await screen.findByText('Duplicate erkannt')).toBeInTheDocument();
     expect(screen.getByText(/notes.txt ist bereits vorhanden/i)).toBeInTheDocument();
@@ -611,10 +611,11 @@ describe('DocumentsPage', () => {
     expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
 
     const file = new File(['fake'], 'scan.pdf', { type: 'application/pdf' });
-    fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
+    fireEvent.change(screen.getByTestId('upload-file-input'), { target: { files: [file] } });
+    fireEvent.click(screen.getByTestId('upload-submit'));
 
     expect(await screen.findByText('OCR erforderlich')).toBeInTheDocument();
+    expect(screen.getByTestId('upload-ocr-required')).toBeInTheDocument();
     expect(screen.getByText(/Fehlercode: OCR_REQUIRED/i)).toBeInTheDocument();
   });
 
@@ -674,8 +675,8 @@ describe('DocumentsPage', () => {
     expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
 
     const file = new File(['fake'], 'broken.pdf', { type: 'application/pdf' });
-    fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
+    fireEvent.change(screen.getByTestId('upload-file-input'), { target: { files: [file] } });
+    fireEvent.click(screen.getByTestId('upload-submit'));
 
     expect(await screen.findByText('Import fehlgeschlagen')).toBeInTheDocument();
     expect(screen.getByText(/Fehlercode: PARSER_FAILED/i)).toBeInTheDocument();
@@ -702,10 +703,11 @@ describe('DocumentsPage', () => {
     expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
 
     const file = new File(['hello'], 'notes.txt', { type: 'text/plain' });
-    fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
+    fireEvent.change(screen.getByTestId('upload-file-input'), { target: { files: [file] } });
+    fireEvent.click(screen.getByTestId('upload-submit'));
 
     expect(await screen.findByText('Validierungsfehler')).toBeInTheDocument();
+    expect(screen.getByTestId('upload-file-too-large')).toBeInTheDocument();
     expect(screen.getByText(/Fehlercode: FILE_TOO_LARGE/i)).toBeInTheDocument();
   });
 

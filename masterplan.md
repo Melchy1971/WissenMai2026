@@ -1,18 +1,18 @@
-
+﻿
 
 
 # Wissensbasis V1 - Masterplan
 
-<!-- BEGIN GENERATED MASTERPLAN STATUS v2 -->
+<!-- BEGIN GENERATED MASTERPLAN STATUS v3 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-05-28T08:16:43.943529+00:00`
-Engine: `masterplan_status_engine_v2`
+Stand: `2026-05-29T06:43:17.621756+00:00`
+Engine: `masterplan_status_engine_v3`
 
-Gesamtstatus: `PASS`
-Fortschritt: `100.0%`
-Freigabe: `ja`
-Blocker: `0`
+Gesamtstatus: `BLOCKED`
+Fortschritt: `55%`
+Release-Freigabe: `nein`
+Blocker: `1`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
 
@@ -20,22 +20,16 @@ Blocker: `0`
 
 | Phase | Status | Entscheidung | Gate | Gate-Status |
 |---|---|---|---|---|
-| M3a Frontend Foundation | `gate_passed` | `GO` | `m3a_frontend_full_suite_gate` | `PASS` |
-| M4 Stabilization | `gate_passed` | `GO` | `m4_overall_gate` | `PASS` |
-| M5 Start | `gate_passed` | `GO` | `m5_start_gate` | `PASS` |
+| M3a Frontend Foundation | `blocked` | `NO_GO` | `m3a_release_candidate_gate` | `FAIL` |
+| M4 Backend | `gate_passed` | `GO` | `m4_backend_release_candidate_gate` | `PASS` |
+| M5 Vorbereitung | `gate_passed` | `GO` | `m5_preparation_gate` | `PASS` |
+| M5 Implementierung | `blocked` | `NO_GO` | `m5_implementation_gate` | `FAIL` |
 
-### Gate-Hierarchie
+### M5
 
-| Gate | Status | Blocker |
-|---|---|---|
-| `m3a_frontend_full_suite_gate` | `PASS` | - |
-| `m4a_gate` | `PASS` | - |
-| `m4b_gate` | `PASS` | - |
-| `m4c_gate` | `PASS` | - |
-| `m4e_gate` | `PASS` | - |
-| `m4_crosscutting_gate` | `PASS` | - |
-| `m4_overall_gate` | `PASS` | - |
-| `m5_start_gate` | `PASS` | - |
+- Vorbereitung erlaubt: `ja`
+- Implementierung erlaubt: `nein`
+- Implementierungsentscheidung: `NO_GO`
 
 ### Dokumentations-Lint
 
@@ -44,58 +38,28 @@ Blocker: `0`
 
 ### Blocker
 
-- keine
+- `m3a_rc_not_pass`: m3a_release_candidate.json must be PASS/GO
 
-### Known Limitations
+### M5-Implementierungsblocker
 
-- Gesamt: 0  Blockierend: 0
+Quelle: `reports/current/known_limitations.json`.
 
-<!-- END GENERATED MASTERPLAN STATUS v2 -->
+- `m5_implementation_no_go_until_m4e_operations_release`: M5 Implementierung bleibt `NO_GO` bis ein expliziter M4e/Operations-Release-Report vorliegt
 
-## Update 2026-05-27: Frontend-Full-Suite-Reaktivierung, Observability-Fix, Gate-Status
+<!-- END GENERATED MASTERPLAN STATUS v3 -->
 
-**Frontend Full-Suite Reaktivierung (M3a/M4b):**
-- Die gestufte Wiederinbetriebnahme der Frontend-Testgruppen erfolgt nach Auth-Fix und Observability-Validierung. Reihenfolge: Auth → Workspace → Documents → Upload → Search → Chat → Lifecycle → Diagnostics → Error States → Concurrency. Jede Gruppe wird erst aktiviert, wenn die vorherige grün ist.
-- Aktuell blockiert: Auth (Login-Redirect und Credentials-Test schlagen fehl, Ursache: Umgebungsvariablen und/oder Backend/Frontend-Server nicht erreichbar oder Routing-Fehler).
-- M3a-Gate wird laut Status Engine als `FAIL` bewertet; M4b-Gate und Full-Suite sind durch rote Backend-Truth-Reports und Auth-Fehler blockiert. Quelle: `reports/current/masterplan_status.json`.
-- Automatisierte Reports: `frontend_full_suite_staged_report.json` dokumentiert den aktuellen Stand und die blockierende Gruppe.
+## Status-Authority
 
-**Observability-Fix (M4b):**
-- Alle geforderten Observability-Events (Retry, Recovery, Duplicate, Completed, Failed) werden jetzt strukturiert geloggt, Pflichtfelder sind enthalten, sensitive Inhalte ausgeschlossen, Eventnamen konsistent.
-- Tests in `test_observability.py` validieren alle geforderten Events und Feldregeln. M4b Observability-Gate ist grün. Quelle: `reports/current/masterplan_status.json`.
+Aktuelle Gate- und Freigabeaussagen werden ausschliesslich aus `reports/current/masterplan_status.json` und dem generierten Abschnitt `docs/generated/status_section.md` abgeleitet. Historische Update-Notizen duerfen keine aktuelle PASS-, GO-, Prozent- oder Blocker-Aussage ueberschreiben.
 
-**Gate-Status und Blocker:**
-- M3a Frontend Foundation: nicht abgeschlossen, Gate grün, Score 100.0. Quelle: `reports/current/masterplan_status.json`.
-- M4b Backend Truth: Observability- und Logging-Gate grün, aber PostgreSQL-Truth-Report weiterhin rot (Integrationstests, Race-Test, Migrationsvoraussetzungen). Quelle: `reports/current/masterplan_status.json`.
-- M4 bleibt laut Status Engine blockiert; Backend-Truth-Reports und die Auth-Gruppe im Frontend Full-Suite-Testlauf bleiben die naechsten Pruefpunkte. Quelle: `reports/current/masterplan_status.json`.
-- M5 bleibt blockiert.
+Boundary v3:
 
-**Testautomatisierung:**
-- Playwright, Vitest und Pytest sind für alle Kernpfade integriert. CI- und lokale Testläufe prüfen alle relevanten Gates und Marker.
-- Seed-Skripte und Reports liefern die Test-User/Workspace-IDs für reproduzierbare Testläufe.
-
-**Nächste Schritte:**
-- Backend: PostgreSQL-Truth-Report grün bekommen (Migrationen, Integrationstests, Race-Test). Quelle: `reports/current/masterplan_status.json`.
-- Frontend: Auth-Testgruppe reparieren (Umgebungsvariablen, Dev-Server, Routing, Login-Page).
-- Nach jedem Fix: Full-Suite-Testlauf und Report-Update.
+- M3a wird durch `reports/current/m3a_release_candidate.json` bewertet.
+- M4 wird durch `reports/current/m4_backend_release_candidate.json` bewertet.
+- M5-Vorbereitung ist nur bei M4-RC-Entscheidung `GO` erlaubt.
+- M5-Implementierung bleibt `NO_GO` bis ein expliziter M4e/Operations-Release-Report vorliegt.
 
 ---
-
-## Aktualisierung 2026-05-26
-
-**Seed-/Runtime-Fix, M3a-Abschluss, M4/M5-Testboundary, Marker-Fixliste**
-
-- **Seed-/Runtime-Fix:** Bootstrap-, Seed- und Runtime-Flows wurden dokumentiert und im Code konsolidiert. Die Doku (README.md, docs/operations.md, docs/status.md, docs/frontend.md) ist synchronisiert.
-- **M3a-Abschluss:** M3a ist laut Status Engine nicht finalisiert, NO_GO-Entscheidung und Abschlussartefakte (reports/current/m3a_release_candidate.json, reports/m3a_final_release.md) erstellt. Frontend- und API-Truth-Reports sind grün.
-- **M4 Backend Truth:** Split-Reports für M4 (m4a_auth, m4b_upload_queue, m4c_lifecycle_retrieval, m4e_backup_restore) wurden generiert und analysiert. Subgate-Blocker und Fehler sind dokumentiert.
-- **M4/M5-Testboundary:** Testboundary-Validierung durchgeführt. Es wurde geprüft, dass keine M5-only-Tests in M4-Reports enthalten sind, keine M4-Gate-Kriterien in M5-Reports, Governance-Tests M4 nicht blockieren, M4-Fehler M5 blockieren und alle Tests korrekt markiert sind.
-- **test_boundary_report.json:** Neuer Report dokumentiert die Ergebnisse der Testboundary-Analyse und enthält eine Marker-Fixliste für falsch oder unvollständig markierte Tests.
-- **Marker-Fixliste:** Marker müssen für alle neuen Tests explizit gesetzt werden (pytest.mark.m4_truth, m5_truth, governance_truth etc.). M4b_upload_queue_truth-Report/Marker prüfen und ggf. nachmarkerieren.
-- **Offene Blocker:** M4 bleibt durch rote Backend-Truth-Reports blockiert, M5-Implementierung ist nicht freigegeben. Governance-Tests blockieren M4 nicht, M4-Fehler blockieren M5.
-
-**Siehe auch:** reports/current/gate_hierarchy_result.json für Details zur Testboundary-Validierung und Marker-Fixliste.
-
-
 **Stand:** 2026-05-19  
 **Ground Truth:** Code und Migrationen sind verbindlich. Dokumentation beschreibt den Stand, entscheidet ihn aber nicht.  
 **Ziel:** Eine robuste Wissensbasis, in der Dokumente importiert, normalisiert, versioniert, als Chunks lesbar gemacht, spaeter durchsucht und im Chat/Analysekontext verwendet werden koennen.
@@ -108,30 +72,30 @@ Paket 5 hat die stabile Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retri
 
 | Bereich | Entscheidung | Aktueller Stand |
 |---|---|---|
-| Backend | FastAPI | ✅ implementiert |
+| Backend | FastAPI | âœ… implementiert |
 | Frontend | React/Vite | GUI-Slices sind vorhanden; M3a Frontend Foundation ist laut aktuellem Gate nicht abgeschlossen | Quelle: `reports/current/masterplan_status.json`.
-| Datenbank | PostgreSQL als Ziel-DB | ✅ Schema und Alembic-Migrationen vorhanden; echter Ziel-DB-Lauf aktuell infra-blockiert |
-| Test-DB | SQLite fuer lokale API-/Unit-Tests, optional PostgreSQL via `TEST_DATABASE_URL` | ✅ implementiert |
-| Migrationen | Alembic | ✅ implementiert |
+| Datenbank | PostgreSQL als Ziel-DB | âœ… Schema und Alembic-Migrationen vorhanden; echter Ziel-DB-Lauf aktuell infra-blockiert |
+| Test-DB | SQLite fuer lokale API-/Unit-Tests, optional PostgreSQL via `TEST_DATABASE_URL` | âœ… implementiert |
+| Migrationen | Alembic | âœ… implementiert |
 | Auth V1 | M4a fuehrt Auth und Workspace-Isolation als Produktthema ein | Zielbild definiert, im Code nicht konsistent nicht abgeschlossen |
 | Mehrbenutzer | Datenmodell vorbereiten, Logik spaeter | Auth-Sessions und Workspace-Memberships sind im Backend vorhanden; die Workspace-Isolation ist wegen offener Mutationspfade nicht durchgaengig nicht freigegeben |
 | Originaldateien | Nicht speichern | gilt weiterhin |
-| Kanonischer Inhalt | `document_versions.normalized_markdown` | ✅ implementiert |
-| Versionierung | Dokument zeigt ueber `current_version_id` auf aktuelle Version | ✅ implementiert |
-| Chunking | Chunks aus normalisiertem Markdown | ✅ implementiert |
-| Quellenanker | normalisiertes `source_anchor` fuer API | ✅ implementiert |
-| Duplicate Protection | DB-seitig per `(workspace_id, content_hash)` | ✅ implementiert |
+| Kanonischer Inhalt | `document_versions.normalized_markdown` | âœ… implementiert |
+| Versionierung | Dokument zeigt ueber `current_version_id` auf aktuelle Version | âœ… implementiert |
+| Chunking | Chunks aus normalisiertem Markdown | âœ… implementiert |
+| Quellenanker | normalisiertes `source_anchor` fuer API | âœ… implementiert |
+| Duplicate Protection | DB-seitig per `(workspace_id, content_hash)` | âœ… implementiert |
 | Upload-Ausfuehrung | persistierte interne Queue mit `202 + job_id + polling`; `BackgroundTasks` nur Bruecke | teilweise implementiert |
 | Dokument-Lifecycle | `active`, `archived`, `deleted` mit Soft Delete und historischer Citation-Stabilitaet | teilweise implementiert |
-| Fehlerstandard | einheitliches API-Error-Envelope | ✅ implementiert fuer Paket-5-Pfade |
+| Fehlerstandard | einheitliches API-Error-Envelope | âœ… implementiert fuer Paket-5-Pfade |
 | OCR | explizit nicht Teil von Paket 5 | fehlt |
 | GUI-Start | M3a erst nach erfolgreichem Paket-5-Gate mit Score >= 90 | gestartet; M3a-Gate laut `reports/current/gate_hierarchy_result.json` nicht gruen |
-| Suche/Retrieval | M3, nur auf stabile Read-API und GUI-Foundation aufsetzen | ✅ M3b fachlich implementiert; letzter echter PostgreSQL-Lauf aktuell infra-blockiert |
-| Chat | nach M3 | ✅ M3c Chat/RAG Foundation nicht abgeschlossen |
+| Suche/Retrieval | M3, nur auf stabile Read-API und GUI-Foundation aufsetzen | âœ… M3b fachlich implementiert; letzter echter PostgreSQL-Lauf aktuell infra-blockiert |
+| Chat | nach M3 | âœ… M3c Chat/RAG Foundation nicht abgeschlossen |
 | Analyse | nach Chat/Retrieval-Grundlage | vorbereitet im Datenmodell, Fachlogik fehlt |
 | Vektorsuche | optional, nicht V1-kritisch | fehlt |
 | Backup/Restore | Teil der M4-Produktisierung, weitergehende Automatisierung spaeter | fehlt |
-| Governance Framework | vollstaendiges Governance-Framework fuer Architektur, Schema, Feature, SLA, Failure, Audit, Invarianten und Langzeitstrategie | ✅ nicht abgeschlossen (2026-05-13) | Quelle: `reports/current/masterplan_status.json`.
+| Governance Framework | vollstaendiges Governance-Framework fuer Architektur, Schema, Feature, SLA, Failure, Audit, Invarianten und Langzeitstrategie | âœ… nicht abgeschlossen (2026-05-13) | Quelle: `reports/current/masterplan_status.json`.
 
 ---
 
@@ -163,84 +127,84 @@ Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten
 
 | Bereich | Artefakt | Status |
 |---|---|---|
-| Truth-Test Marker Taxonomie | `reports/current/documentation_truth_lint.json`, `reports/truth_marker_taxonomy.md`, `scripts/validate_truth_marker_taxonomy.py` | ✅ umgesetzt |
-| Report Split Generator | `scripts/generate_truth_split_reports.py` und Tests | ✅ umgesetzt |
-| Gate Validator Hierarchie | `scripts/validate_gate_hierarchy.py`, Abhaengigkeitsgraph und Tests | ✅ umgesetzt |
-| Release-Candidate-Modell | `docs/release-candidate-model.json`, `docs/release-candidate-model.md` | ✅ umgesetzt |
-| M3a Release Candidate | `reports/m3a_release_candidate.json` | ✅ umgesetzt; Entscheidung `NO_GO` |
-| M4 Release Candidate | `reports/current/m4_truth_report.json` | ✅ umgesetzt; Entscheidung `NO_GO` |
-| Known Limitations Register | `docs/known_limitations.json`, `docs/known_limitations.md` | ✅ umgesetzt |
-| Documentation Release Audit | `reports/current/documentation_truth_lint.json`, `reports/documentation_release_audit.md` | ✅ umgesetzt; Freigabe `nein` |
-| Gate Drift Detection | `scripts/detect_gate_drift.py`, `reports/current/gate_hierarchy_result.json` | ✅ umgesetzt; aktueller Drift-Status `FAIL` |
-| Masterplan Status Engine | `scripts/generate_masterplan_status.py`, `reports/current/masterplan_status.json`, `reports/masterplan_status_section.md` | ✅ umgesetzt; Gesamtstatus `blocked` |
-| Governance Boundary | `docs/governance-boundary.json`, `docs/governance-boundary.md` | ✅ umgesetzt |
-| Pre-M5 Decision Report | `reports/current/recovery_sprint_gate.json`, `reports/pre_m5_decision_report.md` | ✅ umgesetzt; M5 Vorbereitung `NO_GO`, M5 Implementierung `NO_GO` |
-| Governance-stabiler Entwicklungsmodus | `docs/governance-stable-development-mode.json`, `docs/governance-stable-development-mode.md` | ✅ umgesetzt |
+| Truth-Test Marker Taxonomie | `reports/current/documentation_truth_lint.json`, `reports/current/documentation_truth_lint.json`, `scripts/validate_truth_marker_taxonomy.py` | âœ… umgesetzt |
+| Report Split Generator | `scripts/generate_truth_split_reports.py` und Tests | âœ… umgesetzt |
+| Gate Validator Hierarchie | `scripts/validate_gate_hierarchy.py`, Abhaengigkeitsgraph und Tests | âœ… umgesetzt |
+| Release-Candidate-Modell | `docs/release-candidate-model.json`, `docs/release-candidate-model.md` | âœ… umgesetzt |
+| M3a Release Candidate | `reports/current/m3a_release_candidate.json` | âœ… umgesetzt; Entscheidung `NO_GO` |
+| M4 Release Candidate | `reports/current/m4_truth_report.json` | âœ… umgesetzt; Entscheidung `NO_GO` |
+| Known Limitations Register | `docs/known_limitations.json`, `docs/known_limitations.md` | âœ… umgesetzt |
+| Documentation Release Audit | `reports/current/documentation_truth_lint.json`, `reports/current/documentation_truth_lint.json` | âœ… umgesetzt; Freigabe `nein` |
+| Gate Drift Detection | `scripts/detect_gate_drift.py`, `reports/current/gate_hierarchy_result.json` | âœ… umgesetzt; aktueller Drift-Status `FAIL` |
+| Masterplan Status Engine | `scripts/generate_masterplan_status.py`, `reports/current/masterplan_status.json`, `docs/generated/status_section.md` | âœ… umgesetzt; Gesamtstatus `blocked` |
+| Governance Boundary | `docs/governance-boundary.json`, `docs/governance-boundary.md` | âœ… umgesetzt |
+| Pre-M5 Decision Report | `reports/current/recovery_sprint_gate.json`, `reports/current/masterplan_status.json` | âœ… umgesetzt; M5 Vorbereitung `NO_GO`, M5 Implementierung `NO_GO` |
+| Governance-stabiler Entwicklungsmodus | `docs/governance-stable-development-mode.json`, `docs/governance-stable-development-mode.md` | âœ… umgesetzt |
 
 ### Implemented
 
 - FastAPI-App mit Healthchecks.
-- ✅ Alembic-Migrationen fuer Dokumente, Versionen, Chunks, Tags, Chat-/Analyse-Grundtabellen.
-- ✅ Parser fuer TXT, MD, DOCX, DOC und PDF ohne OCR.
-- ✅ Importpipeline mit Parser-Auswahl, Markdown-Normalisierung, Persistenz und Chunking.
-- ✅ Harte Duplicate Protection ueber Unique Constraint `(workspace_id, content_hash)`.
-- ✅ Expliziter `import_status` fuer Dokumente.
+- âœ… Alembic-Migrationen fuer Dokumente, Versionen, Chunks, Tags, Chat-/Analyse-Grundtabellen.
+- âœ… Parser fuer TXT, MD, DOCX, DOC und PDF ohne OCR.
+- âœ… Importpipeline mit Parser-Auswahl, Markdown-Normalisierung, Persistenz und Chunking.
+- âœ… Harte Duplicate Protection ueber Unique Constraint `(workspace_id, content_hash)`.
+- âœ… Expliziter `import_status` fuer Dokumente.
 - Dokument-Read-API:
-  - ✅ `GET /documents`
-  - ✅ `GET /documents/{document_id}`
-  - ✅ `GET /documents/{document_id}/versions`
-  - ✅ `GET /documents/{document_id}/chunks`
-  - ✅ `POST /documents/import`
+  - âœ… `GET /documents`
+  - âœ… `GET /documents/{document_id}`
+  - âœ… `GET /documents/{document_id}/versions`
+  - âœ… `GET /documents/{document_id}/chunks`
+  - âœ… `POST /documents/import`
 - API-Fehlerstandard:
-  - ✅ `DOCUMENT_NOT_FOUND`
-  - ✅ `WORKSPACE_REQUIRED`
-  - ✅ `INVALID_PAGINATION`
-  - ✅ `DOCUMENT_STATE_CONFLICT`
-  - ✅ `DUPLICATE_DOCUMENT`
-  - ✅ `UNSUPPORTED_FILE_TYPE`
-  - ✅ `OCR_REQUIRED`
-  - ✅ `PARSER_FAILED`
-  - ✅ `SERVICE_UNAVAILABLE`
+  - âœ… `DOCUMENT_NOT_FOUND`
+  - âœ… `WORKSPACE_REQUIRED`
+  - âœ… `INVALID_PAGINATION`
+  - âœ… `DOCUMENT_STATE_CONFLICT`
+  - âœ… `DUPLICATE_DOCUMENT`
+  - âœ… `UNSUPPORTED_FILE_TYPE`
+  - âœ… `OCR_REQUIRED`
+  - âœ… `PARSER_FAILED`
+  - âœ… `SERVICE_UNAVAILABLE`
 - Paket-5-Dokumentation:
-  - ✅ Statusdokument
-  - ✅ API-Vertrag
-  - ✅ Datenmodell-Dokumentation
-  - ✅ ADR
-  - ✅ Definition of Done
-- ✅ Auth-Kern mit Login/Me-Endpunkten sowie serverseitigem Workspace-Kontext ist implementiert.
-- ✅ Jobbasierter Upload-Vertrag `POST /documents/import -> 202 -> Job-Polling` ist implementiert.
-- ✅ Dokument-Lifecycle mit `active`, `archived`, `deleted` und Soft Delete ist implementiert.
-- ✅ Historische Chat-Citations mit `source_status` sind implementiert.
-- ✅ M4d read-only Diagnostics-Aggregat, Search-Index-Inkonsistenzpruefung und blockierter Rebuild-Pfad sind implementiert.
-- ✅ RC-3 Advisory-Lock-Service mit 5 Scopes (`document_import`, `lifecycle_transition`, `reindex`, `job_claim`, `job_replay`) via `pg_try_advisory_xact_lock` implementiert.
-- ✅ Dead-Letter-Replay-Endpoint `POST /api/v1/admin/jobs/{job_id}/replay` (admin-only) implementiert.
-- ✅ source_status Live-Lookup fuer Chat Citations implementiert (`active|archived|deleted|missing`).
-- ✅ postgres_truth-Testsuite ist vorhanden unter `backend/tests/postgres_truth/`.
+  - âœ… Statusdokument
+  - âœ… API-Vertrag
+  - âœ… Datenmodell-Dokumentation
+  - âœ… ADR
+  - âœ… Definition of Done
+- âœ… Auth-Kern mit Login/Me-Endpunkten sowie serverseitigem Workspace-Kontext ist implementiert.
+- âœ… Jobbasierter Upload-Vertrag `POST /documents/import -> 202 -> Job-Polling` ist implementiert.
+- âœ… Dokument-Lifecycle mit `active`, `archived`, `deleted` und Soft Delete ist implementiert.
+- âœ… Historische Chat-Citations mit `source_status` sind implementiert.
+- âœ… M4d read-only Diagnostics-Aggregat, Search-Index-Inkonsistenzpruefung und blockierter Rebuild-Pfad sind implementiert.
+- âœ… RC-3 Advisory-Lock-Service mit 5 Scopes (`document_import`, `lifecycle_transition`, `reindex`, `job_claim`, `job_replay`) via `pg_try_advisory_xact_lock` implementiert.
+- âœ… Dead-Letter-Replay-Endpoint `POST /api/v1/admin/jobs/{job_id}/replay` (admin-only) implementiert.
+- âœ… source_status Live-Lookup fuer Chat Citations implementiert (`active|archived|deleted|missing`).
+- âœ… postgres_truth-Testsuite ist vorhanden unter `backend/tests/postgres_truth/`.
 - Der massgebliche Laufstatus fuer M4-Freigabe darf nur aus `reports/current/m4_truth_report.json` abgeleitet werden.
 - `scripts/validate_m4_truth_gate.py` ist der verbindliche Validator fuer diese JSON-Datei.
 - Ohne aktuellen Report sind nur Strukturaussagen ueber die vorhandene Suite zulaessig; statische Gruen-Zaehler sind unzulaessig.
 - API-Fehlerstandard erweitert:
-  - ✅ `RESOURCE_LOCKED` (409)
-  - ✅ `JOB_NOT_REPLAYABLE` (409)
-  - ✅ `REPLAY_FAILED` (500)
-- ✅ M5 Governance-Services vorhanden:
-  - ✅ `ReindexGovernanceService` mit Safety-Gates, Audit-Trail und Rollback-Strategie.
-  - ✅ `CitationLongevityAuditService` fuer Snapshot-Stabilitaet und Orphan-Rate-Monitoring.
-  - ✅ `QueueAgingService` fuer Backlog, Starvation-Detection und Dead-Letter-Auswertung.
-  - ✅ `CleanupGovernanceService` mit Dry-Run-First, 3 Safety-Gates und Before/After-Snapshot.
-- ✅ Admin-API-Endpunkte fuer M5: `GET /queue/aging`, `GET /citations/longevity`, `POST /reindex/governed`, `POST /cleanup/governed`.
-- ✅ Entropy-Test-Suite mit `EntropyMetrics` und Multi-Epoch-Chaos-Recovery-Simulation implementiert.
-- ✅ Governance-Envelope-Prinzip: correlation_id, dry_run_only, Safety-Gates, Delta-Snapshot, rollback_strategy.
+  - âœ… `RESOURCE_LOCKED` (409)
+  - âœ… `JOB_NOT_REPLAYABLE` (409)
+  - âœ… `REPLAY_FAILED` (500)
+- âœ… M5 Governance-Services vorhanden:
+  - âœ… `ReindexGovernanceService` mit Safety-Gates, Audit-Trail und Rollback-Strategie.
+  - âœ… `CitationLongevityAuditService` fuer Snapshot-Stabilitaet und Orphan-Rate-Monitoring.
+  - âœ… `QueueAgingService` fuer Backlog, Starvation-Detection und Dead-Letter-Auswertung.
+  - âœ… `CleanupGovernanceService` mit Dry-Run-First, 3 Safety-Gates und Before/After-Snapshot.
+- âœ… Admin-API-Endpunkte fuer M5: `GET /queue/aging`, `GET /citations/longevity`, `POST /reindex/governed`, `POST /cleanup/governed`.
+- âœ… Entropy-Test-Suite mit `EntropyMetrics` und Multi-Epoch-Chaos-Recovery-Simulation implementiert.
+- âœ… Governance-Envelope-Prinzip: correlation_id, dry_run_only, Safety-Gates, Delta-Snapshot, rollback_strategy.
 - Truth-Nachweis fuer M5-Governance-Tests steht noch aus (letzter Report: 2026-05-11, 33 Tests, M4-only).
-- ✅ Governance Framework historisch beschrieben (2026-05-13): Quelle: `reports/current/masterplan_status.json`.
-  - ✅ `docs/architecture-change-governance.md`: 7 Impact-Bereiche, 4 Pflichtartefakte, verbotene Muster.
-  - ✅ `docs/schema-evolution-safety-model.md`: Risikoklassen A-D, 11 Schema-Regeln (SE-01 bis SE-11), Downgrade-Matrix.
-  - ✅ `docs/operational-sla-framework.md`: 8 SLA-Bereiche mit Schwellen und Eskalationskaskade.
-  - ✅ `docs/controlled-failure-philosophy.md`: 5 Fehlerprinzipien, Fehlercodes, Recovery-Kategorien, Degraded-States.
-  - ✅ `docs/audit-trail-schema.md`: 8 Audit-Event-Typen mit JSON-Schemas, actor-Feld, Retention-Regeln.
-  - ✅ `docs/system-invariant-registry.md`: INV-001 bis INV-036 mit Criticality, Nachweis und Reparaturpfad.
-  - ✅ `docs/long-term-governance-review.md`: Bewertung 8 Governance-Bereiche; 6 offene Luecken (L-01 bis L-06); 4 Langzeitrisiken.
-  - ✅ `docs/long-term-architecture-strategy.md`: 7 strategische Ziele, 10 NO_GO-Verletzungen, 7 Pflicht-Refactoring-Trigger, 5 Feature-Stop-Bedingungen.
+- âœ… Governance Framework historisch beschrieben (2026-05-13): Quelle: `reports/current/masterplan_status.json`.
+  - âœ… `docs/architecture-change-governance.md`: 7 Impact-Bereiche, 4 Pflichtartefakte, verbotene Muster.
+  - âœ… `docs/schema-evolution-safety-model.md`: Risikoklassen A-D, 11 Schema-Regeln (SE-01 bis SE-11), Downgrade-Matrix.
+  - âœ… `docs/operational-sla-framework.md`: 8 SLA-Bereiche mit Schwellen und Eskalationskaskade.
+  - âœ… `docs/controlled-failure-philosophy.md`: 5 Fehlerprinzipien, Fehlercodes, Recovery-Kategorien, Degraded-States.
+  - âœ… `docs/audit-trail-schema.md`: 8 Audit-Event-Typen mit JSON-Schemas, actor-Feld, Retention-Regeln.
+  - âœ… `docs/system-invariant-registry.md`: INV-001 bis INV-036 mit Criticality, Nachweis und Reparaturpfad.
+  - âœ… `docs/long-term-governance-review.md`: Bewertung 8 Governance-Bereiche; 6 offene Luecken (L-01 bis L-06); 4 Langzeitrisiken.
+  - âœ… `docs/long-term-architecture-strategy.md`: 7 strategische Ziele, 10 NO_GO-Verletzungen, 7 Pflicht-Refactoring-Trigger, 5 Feature-Stop-Bedingungen.
 
 ### Partial
 
@@ -272,15 +236,15 @@ Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten
 
 ### Muss in V1
 
-- ✅ Dokumentimport fuer TXT, MD, DOCX, DOC und PDF.
-- ✅ Sichtbarer OCR-Bedarf fuer PDFs ohne extrahierbaren Text.
-- ✅ Speicherung als normalisierter Markdown in PostgreSQL.
-- ✅ Dokumentversionierung.
-- ✅ Chunking mit stabiler Reihenfolge.
-- ✅ Normalisierte Quellenanker fuer Chunks.
-- ✅ Harte DB-Deduplizierung.
-- ✅ Stabile Read-API fuer Dokumente, Versionen und Chunks.
-- ✅ Einheitlicher Fehlerstandard.
+- âœ… Dokumentimport fuer TXT, MD, DOCX, DOC und PDF.
+- âœ… Sichtbarer OCR-Bedarf fuer PDFs ohne extrahierbaren Text.
+- âœ… Speicherung als normalisierter Markdown in PostgreSQL.
+- âœ… Dokumentversionierung.
+- âœ… Chunking mit stabiler Reihenfolge.
+- âœ… Normalisierte Quellenanker fuer Chunks.
+- âœ… Harte DB-Deduplizierung.
+- âœ… Stabile Read-API fuer Dokumente, Versionen und Chunks.
+- âœ… Einheitlicher Fehlerstandard.
   - Volltextsuche in M3.
   - Chat und Analyse sind fuer M4 kein aktiver Ausbaupfad.
 - Produktionsnahe Tests fuer Kernpfade.
@@ -432,33 +396,33 @@ Erlaubte Typen:
 
 ## M0 - Projektgrundlage und Architekturvertrag
 
-**Status:** ✅ implemented.
+**Status:** âœ… implemented.
 
 **Ziel:** Neubeginn sauber fixieren, Toolgrenzen definieren, Repo-Struktur festlegen.
 
 ### Ergebnis
 
-- ✅ ADRs fuer Tech-Stack und V1-Scope vorhanden.
-- ✅ Backend-/Frontend-/Docs-Struktur vorhanden.
-- ✅ FastAPI/Alembic-Grundlage vorhanden.
+- âœ… ADRs fuer Tech-Stack und V1-Scope vorhanden.
+- âœ… Backend-/Frontend-/Docs-Struktur vorhanden.
+- âœ… FastAPI/Alembic-Grundlage vorhanden.
 
 ---
 
 ## M1 - Datenbank, Migrationen und Dokumentmodell
 
-**Status:** ✅ implemented mit offenen Betriebsdetails.
+**Status:** âœ… implemented mit offenen Betriebsdetails.
 
 **Ziel:** Schema fuer Dokumente, Versionen, Tags, Chunks und spaetere Mehrbenutzerfaehigkeit.
 
 ### Ergebnis
 
-- ✅ Workspaces und Users vorbereitet.
-- ✅ Documents und DocumentVersions implementiert.
-- ✅ Chunks implementiert.
-- ✅ Categories, Tags und DocumentTags implementiert.
-- ✅ Chat- und Analyse-Grundtabellen vorbereitet.
-- ✅ DB-Healthcheck vorhanden.
-- ✅ Alembic ist gesetztes Migrationstool.
+- âœ… Workspaces und Users vorbereitet.
+- âœ… Documents und DocumentVersions implementiert.
+- âœ… Chunks implementiert.
+- âœ… Categories, Tags und DocumentTags implementiert.
+- âœ… Chat- und Analyse-Grundtabellen vorbereitet.
+- âœ… DB-Healthcheck vorhanden.
+- âœ… Alembic ist gesetztes Migrationstool.
 
 ### Offen
 
@@ -475,15 +439,15 @@ Erlaubte Typen:
 
 ### Implementiert
 
-- ✅ Parser-Interface.
-- ✅ TXT- und MD-Parser.
-- ✅ DOCX-Parser.
-- ✅ DOC-Parser via LibreOffice-Konvertierung.
-- ✅ PDF-Parser ohne OCR.
-- ✅ Markdown-Normalizer.
-- ✅ Chunking.
-- ✅ Import erzeugt Dokument, Version und Chunks.
-- ✅ Duplicate Detection und DB-seitige Duplicate Protection.
+- âœ… Parser-Interface.
+- âœ… TXT- und MD-Parser.
+- âœ… DOCX-Parser.
+- âœ… DOC-Parser via LibreOffice-Konvertierung.
+- âœ… PDF-Parser ohne OCR.
+- âœ… Markdown-Normalizer.
+- âœ… Chunking.
+- âœ… Import erzeugt Dokument, Version und Chunks.
+- âœ… Duplicate Detection und DB-seitige Duplicate Protection.
 
 ### Nicht implementiert
 
@@ -647,32 +611,32 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 
 ## Paket 5 - Dokument-Read-API und Datenkonsistenz vor Retrieval
 
-**Status:** ✅ implemented.
+**Status:** âœ… implemented.
 
 **Ziel:** Dokumente stabil lesbar machen und API-Stabilitaet herstellen, bevor M3 Suche/Retrieval startet.
 
 ### Implementiert
 
-- ✅ `GET /documents`.
-- ✅ `GET /documents/{document_id}`.
-- ✅ `GET /documents/{document_id}/versions`.
-- ✅ `GET /documents/{document_id}/chunks`.
-- ✅ `POST /documents/import` stabilisiert.
-- ✅ Pydantic Response Models.
-- ✅ Service-/Repository-Trennung fuer Read-Pfade.
-- ✅ Keine direkte DB-Nutzung im Dokument-Router fuer Read-Endpunkte.
-- ✅ Importstatus.
-- ✅ Normalisierte Chunk-Source-Anchors.
-- ✅ DB Unique Constraint fuer Duplicate Protection.
-- ✅ Deterministisches Duplicate Handling.
-- ✅ Einheitlicher API-Fehlerstandard.
-- ✅ Unit-, API- und optionale Integrationstests.
-- ✅ API-Vertrag und ADR.
+- âœ… `GET /documents`.
+- âœ… `GET /documents/{document_id}`.
+- âœ… `GET /documents/{document_id}/versions`.
+- âœ… `GET /documents/{document_id}/chunks`.
+- âœ… `POST /documents/import` stabilisiert.
+- âœ… Pydantic Response Models.
+- âœ… Service-/Repository-Trennung fuer Read-Pfade.
+- âœ… Keine direkte DB-Nutzung im Dokument-Router fuer Read-Endpunkte.
+- âœ… Importstatus.
+- âœ… Normalisierte Chunk-Source-Anchors.
+- âœ… DB Unique Constraint fuer Duplicate Protection.
+- âœ… Deterministisches Duplicate Handling.
+- âœ… Einheitlicher API-Fehlerstandard.
+- âœ… Unit-, API- und optionale Integrationstests.
+- âœ… API-Vertrag und ADR.
 
 ### Akzeptanzstatus
 
-- ✅ Paket 5 wird historisch als fachlich umgesetzt beschrieben. Quelle: `reports/current/masterplan_status.json`.
-- ✅ Paket 5 ist technisch als Abschluss-Gate verifiziert.
+- âœ… Paket 5 wird historisch als fachlich umgesetzt beschrieben. Quelle: `reports/current/masterplan_status.json`.
+- âœ… Paket 5 ist technisch als Abschluss-Gate verifiziert.
 - Restpunkte sind als technische Schulden dokumentiert:
   - `/api/v1/documents` Alias fehlt.
   - Import-Persistenz nutzt teilweise direkten `psycopg`-Zugriff.
@@ -680,15 +644,15 @@ M5 bleibt blockiert, solange M4a, M4b und M4c ihre Ziel-Gates nicht erreichen.
 
 ### Abschlussnachweis
 
-- ✅ Standardlauf verifiziert: `42 passed, 1 skipped`.
-- ✅ PostgreSQL-Integrationslauf verifiziert: `6 passed`.
-- ✅ Ruecklauf fuer beruehrte Read-/Import-Pfade verifiziert: `19 passed`.
-- ✅ PostgreSQL-Benchmark auf Referenzdaten verifiziert:
+- âœ… Standardlauf verifiziert: `42 passed, 1 skipped`.
+- âœ… PostgreSQL-Integrationslauf verifiziert: `6 passed`.
+- âœ… Ruecklauf fuer beruehrte Read-/Import-Pfade verifiziert: `19 passed`.
+- âœ… PostgreSQL-Benchmark auf Referenzdaten verifiziert:
   - `GET /documents = 3.1ms`
   - `GET /documents/{id} = 3.4ms`
   - `GET /documents/{id}/chunks = 2.1ms`
-- ✅ Finale Paketbewertung: `96/100`.
-- ✅ Finale Entscheidung: `nicht abgeschlossen`.
+- âœ… Finale Paketbewertung: `96/100`.
+- âœ… Finale Entscheidung: `nicht abgeschlossen`.
 
 ---
 
@@ -876,11 +840,11 @@ Weiterhin offen ausserhalb M3a:
 
 - PostgreSQL-Fulltextsuche ueber Chunk-Inhalt.
 - Ranking-Baseline ueber native Rank-Funktion wie `ts_rank`.
-- Sortierung primär nach `rank DESC`.
+- Sortierung primÃ¤r nach `rank DESC`.
 - Sekundaere Sortierung fuer Stabilitaet ueber Dokumentzeitstempel und Chunk-Position.
 - Kein komplexes Re-Ranking in M3b.
 
-### Datenmodelländerungen
+### DatenmodellÃ¤nderungen
 
 - Volltextindex oder TSVECTOR-basierter Suchpfad fuer `document_chunks.content`.
 - Keine Embedding-Tabellen.
@@ -908,12 +872,12 @@ Weiterhin offen ausserhalb M3a:
 
 ### Aktueller Abschlussstand
 
-- ✅ `GET /api/v1/search/chunks` ist implementiert.
-- ✅ PostgreSQL-FTS-Ranking-Baseline ist implementiert.
-- ✅ Migration fuer `search_vector` und `GIN`-Index ist vorhanden.
-- ✅ GUI-Suche auf `/documents` ist implementiert.
-- ✅ Lade-, Leer- und Fehlerzustaende fuer Suche sind sichtbar.
-- ✅ Failure-Mode-Matrix und minimales Evaluation-Dataset sind dokumentiert.
+- âœ… `GET /api/v1/search/chunks` ist implementiert.
+- âœ… PostgreSQL-FTS-Ranking-Baseline ist implementiert.
+- âœ… Migration fuer `search_vector` und `GIN`-Index ist vorhanden.
+- âœ… GUI-Suche auf `/documents` ist implementiert.
+- âœ… Lade-, Leer- und Fehlerzustaende fuer Suche sind sichtbar.
+- âœ… Failure-Mode-Matrix und minimales Evaluation-Dataset sind dokumentiert.
 - PostgreSQL-Integrationsnachweis fuer echte Suchtreffer und Filterung ist vorhanden.
 - Ranking-Regressionstest fuer stabile Reihenfolge ist vorhanden.
 
@@ -964,14 +928,14 @@ Weiterhin offen ausserhalb M3a:
 
 ### Aktueller Abschlussstand
 
-- ✅ Prompt-Vertrag fuer dokumentbasierte Antworten ist dokumentiert.
-- ✅ Context Builder ist implementiert.
-- ✅ Prompt Builder ist implementiert.
-- ✅ Citation Mapper ist implementiert.
-- ✅ Insufficient-Context-Policy ist implementiert.
-- ✅ Chat-Session-, Message- und Citation-Persistenz ist implementiert.
-- ✅ Frontend-Chatseite ist implementiert.
-- ✅ Fokustests fuer die neuen M3c-Bausteine sind vorhanden.
+- âœ… Prompt-Vertrag fuer dokumentbasierte Antworten ist dokumentiert.
+- âœ… Context Builder ist implementiert.
+- âœ… Prompt Builder ist implementiert.
+- âœ… Citation Mapper ist implementiert.
+- âœ… Insufficient-Context-Policy ist implementiert.
+- âœ… Chat-Session-, Message- und Citation-Persistenz ist implementiert.
+- âœ… Frontend-Chatseite ist implementiert.
+- âœ… Fokustests fuer die neuen M3c-Bausteine sind vorhanden.
 - Chat-HTTP-API fuer Sessions und Messages ist implementiert.
 - Message API ist mit `RagChatService` verdrahtet.
 - End-to-End-RAG-Flow ueber echten API-Pfad ist mit Fake LLM getestet.
@@ -1012,7 +976,7 @@ Weiterhin offen ausserhalb M3a:
 
 ## M4 - Produktisierung und Betriebsfaehigkeit
 
-**Status:** ✅ nicht abgeschlossen (2026-05-11). Quelle: `reports/current/masterplan_status.json`.
+**Status:** âœ… nicht abgeschlossen (2026-05-11). Quelle: `reports/current/masterplan_status.json`.
 
 **Ziel:** Aus dem funktionalen lokalen Wissenssystem ein belastbares Produkt fuer den lokalen Betrieb machen. M4 fuehrt keine neue Intelligenz-Schicht ein, sondern haertet Betrieb, Qualitaet, Sicherheit, Isolation, Lifecycle und Dokumentation auf Basis der nicht abgeschlossenen M3-Fundamente.
 
@@ -1094,14 +1058,14 @@ RC-3-Hardening-Nachweis (2026-05-08):
 
 | Komponente | Status |
 |---|---|
-| Advisory Lock Service (5 Scopes) | ✅ implementiert |
-| `pg_try_advisory_xact_lock` transaction-scoped | ✅ implementiert |
-| Lifecycle-Lock in `DocumentLifecycleService` | ✅ integriert |
-| Reindex-Lock in `SearchIndexRebuildService` | ✅ integriert |
-| Job-Claim-Lock in `BackgroundJobService` | ✅ integriert |
-| Dead-Letter-Replay mit Job-Replay-Lock | ✅ implementiert |
-| `POST /api/v1/admin/jobs/{job_id}/replay` | ✅ implementiert |
-| source_status Live-Lookup fuer Chat Citations | ✅ implementiert |
+| Advisory Lock Service (5 Scopes) | âœ… implementiert |
+| `pg_try_advisory_xact_lock` transaction-scoped | âœ… implementiert |
+| Lifecycle-Lock in `DocumentLifecycleService` | âœ… integriert |
+| Reindex-Lock in `SearchIndexRebuildService` | âœ… integriert |
+| Job-Claim-Lock in `BackgroundJobService` | âœ… integriert |
+| Dead-Letter-Replay mit Job-Replay-Lock | âœ… implementiert |
+| `POST /api/v1/admin/jobs/{job_id}/replay` | âœ… implementiert |
+| source_status Live-Lookup fuer Chat Citations | âœ… implementiert |
 | postgres_truth-Suite | vorhanden unter `backend/tests/postgres_truth/` |
 | Letzter beweisbarer Lauf | nur mit gesetzter `TEST_DATABASE_URL` und beigefuegtem aktuellem Report |
 | Ergebnisregel | kein statisches `nicht gruen` ohne aktuellen Report |
@@ -1127,7 +1091,7 @@ M4e Restore-Truth-Nachweis am 2026-05-11:
 - Geprueft wurden Workspaces, Dokumente, Chunks, Chat-Sessions, Citations, Queue-Jobs, Search-Paritaet und Lifecycle-Paritaet.
 - Ergebnis: kein nachweisbarer Datenverlust im geprueften Scope, keine nachweisbare Drift im Restore-Ziel.
 - Referenzen:
-  - `reports/restore_truth_report.md`
+  - `reports/current/m4e_backup_restore_truth.json`
   - `docs/runbooks/backup-restore.md`
   - `docs/runbooks/disaster-recovery.md`
 
@@ -1224,7 +1188,7 @@ Regel:
 Aktueller M4c-Befund:
 
 - Backend-Lifecycle-, Soft-Delete- und Citation-Slices sind fachlich implementiert; ob der PostgreSQL-Truth-Nachweis aktuell nicht gruen ist, muss aus `reports/current/m4_truth_report.json` gelesen und mit `scripts/validate_m4_truth_gate.py` geprueft werden.
-- source_status Live-Lookup liefert `active|archived|deleted|missing` direkt aus der Datenbank — Chaos-Test verifiziert Zustandsuebergaenge.
+- source_status Live-Lookup liefert `active|archived|deleted|missing` direkt aus der Datenbank â€” Chaos-Test verifiziert Zustandsuebergaenge.
 - Advisory-Lock-, Crash-, M4-Truth- und weitere PostgreSQL-Nachweise liegen als `postgres_truth`-Suite vor; der konkrete Status muss aus einem aktuellen Report kommen.
 - Search-, Reindex-, Crash- und Chaos-Nachweise gegen PostgreSQL sind nur mit gesetzter `TEST_DATABASE_URL` belastbar.
 - Admin- und Diagnoseansicht sind als read-only Diagnostics real vorhanden; Replay-Endpoint ist implementiert; weitergehende Reparatur-, Cleanup- und Backup-Aktionen sind nicht freigegeben.
@@ -1350,17 +1314,17 @@ Sprint-Regeln:
 
 | Ticket | Titel | Status | Reihenfolge | Check | Done-Definition |
 |---|---|---|---|---|---|
-| T1 | Truth-Gate Repro sichern | ✅ done | 1 | `pytest -m postgres_truth tests/postgres_truth -q` | `errors = 0`, `failures = 0`, `skipped = 0`, `exit_code = 0` |
-| T2 | Truth-Errors sofort schliessen | ✅ done | 2 | neue `errors` isolieren | kein offener Infrastruktur-, Schema-, Loader- oder Import-Error |
-| T3 | Deterministische Failures schliessen | ✅ done | 3 | rote Assertions vor weiterer Sprintarbeit beheben | keine offenen deterministischen Testfailures |
-| T4 | Recovery-/Queue-Flakiness pruefen | ✅ done | 4 | Replay-, Dead-Letter- und Claim-Slices mehrfach laufen lassen | keine intermittierenden Race-/Timing-Ausfaelle |
-| T5 | M4e-Minimal final absichern | ✅ done | 5 | `backup create`, `backup validate`, `backup restore`, `search rebuild-index` | lokaler Restore auf leere PostgreSQL-DB nachgewiesen, `reindex_result` explizit belegt |
-| T6 | Observability-Luecken schliessen | ✅ done | 6 | Backup/Restore/Reindex/Lifecycle/Retrieval-Events pruefen | kritische M4-Pfade haben belastbare Events ohne blinde Stellen |
-| T7 | Auth/Workspace-Endzustand absichern | ✅ done | 7 | Login, Logout, Bootstrap, Route-Guard, Fremdworkspace-Mutation | vorhandener Produktfluss ist durch Tests und reale Request-Kontexte hart belegt |
-| T8 | Lifecycle/Retrieval PostgreSQL E2E | ✅ done | 8 | Lifecycle, Reindex, Search, Retrieval unter realer PostgreSQL-Testumgebung | archivierte/geloeschte Inhalte werden fuer neue Antworten nicht mehr retrievt |
-| T9 | Browsernahe Stabilitaetskanten pruefen | ✅ done | 9 | bestehende Frontend-Slices fuer Auth/Lifecycle/Diagnostics pruefen | keine offene UI-Regressionskante im bestehenden Scope |
-| T10 | Completion Matrix einfrieren | ✅ done | 10 | Matrix gegen Report, Tests und Code abgleichen | keine unbelegten `NO_GO`, `nicht PASS`, `nicht abgeschlossen`-Aussagen |
-| T11 | Finaldoku nach Teststatus | ✅ done | 11 | Masterplan, Status, Freigabefassung, Runbooks synchronisieren | alle Quellen sind widerspruchsfrei und nur auf blockierender Evidenz aufgebaut |
+| T1 | Truth-Gate Repro sichern | âœ… done | 1 | `pytest -m postgres_truth tests/postgres_truth -q` | `errors = 0`, `failures = 0`, `skipped = 0`, `exit_code = 0` |
+| T2 | Truth-Errors sofort schliessen | âœ… done | 2 | neue `errors` isolieren | kein offener Infrastruktur-, Schema-, Loader- oder Import-Error |
+| T3 | Deterministische Failures schliessen | âœ… done | 3 | rote Assertions vor weiterer Sprintarbeit beheben | keine offenen deterministischen Testfailures |
+| T4 | Recovery-/Queue-Flakiness pruefen | âœ… done | 4 | Replay-, Dead-Letter- und Claim-Slices mehrfach laufen lassen | keine intermittierenden Race-/Timing-Ausfaelle |
+| T5 | M4e-Minimal final absichern | âœ… done | 5 | `backup create`, `backup validate`, `backup restore`, `search rebuild-index` | lokaler Restore auf leere PostgreSQL-DB nachgewiesen, `reindex_result` explizit belegt |
+| T6 | Observability-Luecken schliessen | âœ… done | 6 | Backup/Restore/Reindex/Lifecycle/Retrieval-Events pruefen | kritische M4-Pfade haben belastbare Events ohne blinde Stellen |
+| T7 | Auth/Workspace-Endzustand absichern | âœ… done | 7 | Login, Logout, Bootstrap, Route-Guard, Fremdworkspace-Mutation | vorhandener Produktfluss ist durch Tests und reale Request-Kontexte hart belegt |
+| T8 | Lifecycle/Retrieval PostgreSQL E2E | âœ… done | 8 | Lifecycle, Reindex, Search, Retrieval unter realer PostgreSQL-Testumgebung | archivierte/geloeschte Inhalte werden fuer neue Antworten nicht mehr retrievt |
+| T9 | Browsernahe Stabilitaetskanten pruefen | âœ… done | 9 | bestehende Frontend-Slices fuer Auth/Lifecycle/Diagnostics pruefen | keine offene UI-Regressionskante im bestehenden Scope |
+| T10 | Completion Matrix einfrieren | âœ… done | 10 | Matrix gegen Report, Tests und Code abgleichen | keine unbelegten `NO_GO`, `nicht PASS`, `nicht abgeschlossen`-Aussagen |
+| T11 | Finaldoku nach Teststatus | âœ… done | 11 | Masterplan, Status, Freigabefassung, Runbooks synchronisieren | alle Quellen sind widerspruchsfrei und nur auf blockierender Evidenz aufgebaut |
 
 Abnahmekriterien fuer den Sprint:
 
@@ -1396,7 +1360,7 @@ Kurzscope:
 
 - lokales Benutzerkonto
 - Login
-- Session-basierte Authentifizierung als Primärpfad
+- Session-basierte Authentifizierung als PrimÃ¤rpfad
 - Workspace-Zugriffspruefung
 - API-Guards
 - Frontend Login Screen
@@ -1490,7 +1454,7 @@ Statuslogik:
   - Offene Observability-Luecken aus M4 bleiben bekannte M5-Eingangsschulden.
 - Truth Reports
   - `reports/current/m4_truth_report.json` bleibt formaler Wahrheitsanker fuer Kernstabilitaet.
-  - `reports/restore_truth_report.md` bleibt Referenz fuer Wiederherstellbarkeit und Nachweisgrenze.
+  - `reports/current/m4e_backup_restore_truth.json` bleibt Referenz fuer Wiederherstellbarkeit und Nachweisgrenze.
 - Queue Recovery
   - M5 baut auf M4b/M4c-Nachweisen fuer Retry-, Replay- und Recovery-Stabilitaet auf.
   - Cleanup- und Langzeitbetrieb duerfen Queue-Konsistenz nicht unterlaufen.
@@ -1541,7 +1505,7 @@ Statuslogik:
 Dokumentationsregel:
 
 - Alle genannten Dateien beschreiben aktuell nur Vorbereitung, Statuslogik und spaetere Nachweisanker.
-- Keine dieser Dateien darf ohne neuen Nachweislauf eine Implementierung, einen aktiven Betrieb oder ein grünes M5-Gate behaupten.
+- Keine dieser Dateien darf ohne neuen Nachweislauf eine Implementierung, einen aktiven Betrieb oder ein gruÌˆnes M5-Gate behaupten.
 
 ### M5 Risikomatrix
 
@@ -1589,7 +1553,7 @@ Ziel:
 | Regel | Beschreibung | Einstufung |
 |---|---|---|
 | Dokument ohne Version = Fehler | Jedes fachlich vorhandene Dokument muss mindestens eine referenzierbare `document_version` besitzen. Dokumente ohne Version gelten als inkonsistent. | Fehler |
-| Version ohne Chunks = Fehler ausser `failed import` | Jede normale Version muss mindestens einen Chunk besitzen. Ausnahme: Dokumente im Importfehlerpfad duerfen temporär Versionen ohne verwertbare Chunks aufweisen, wenn der Zustand fachlich als fehlgeschlagener Import markiert ist. | Fehler |
+| Version ohne Chunks = Fehler ausser `failed import` | Jede normale Version muss mindestens einen Chunk besitzen. Ausnahme: Dokumente im Importfehlerpfad duerfen temporÃ¤r Versionen ohne verwertbare Chunks aufweisen, wenn der Zustand fachlich als fehlgeschlagener Import markiert ist. | Fehler |
 | Chunk ohne `source_anchor` = Fehler | Jeder Chunk muss einen fachlich nutzbaren `source_anchor` besitzen. Fehlende oder leere Anker sind ein Data-Quality-Fehler. | Fehler |
 | orphaned chunks = Fehler | Chunks ohne gueltige referenzierte Version oder ohne gueltiges referenziertes Dokument sind inkonsistent. | Fehler |
 | orphaned versions = Fehler | Versionen ohne gueltiges referenziertes Dokument sind inkonsistent. | Fehler |
@@ -1830,7 +1794,7 @@ Regeln:
 |---|---:|---|
 | Data Quality | 25 % | Datenqualitaet ist die Grundlage fuer Search, Retrieval, Cleanup, Restore und alle spaeteren M5-Bewertungen. Wenn die Basisdaten inkonsistent sind, sind nachgelagerte Signale nur begrenzt vertrauenswuerdig. |
 | Drift | 20 % | Drift zwischen Soll- und Laufzeitzustand ist der naechstwichtigste Fruehindikator fuer fachliche und technische Erosion. Search-, Lifecycle- und Snapshot-Drift wirken direkt auf Wahrheitsgehalt. |
-| Queue Health | 15 % | Queue-Stabilitaet bestimmt, ob Import, Recovery und Betriebsprozesse ueberhaupt verlässlich weiterlaufen. Ein Stau wirkt schnell systemweit, ist aber etwas indirekter als Basisdaten- oder Driftfehler. |
+| Queue Health | 15 % | Queue-Stabilitaet bestimmt, ob Import, Recovery und Betriebsprozesse ueberhaupt verlÃ¤sslich weiterlaufen. Ein Stau wirkt schnell systemweit, ist aber etwas indirekter als Basisdaten- oder Driftfehler. |
 | Search/Retrieval Health | 15 % | Retrieval-Qualitaet ist fuer M3c/M4-RAG zentral. Sie haengt jedoch teilweise bereits von Data Quality und Drift ab und wird deshalb bewusst nicht hoeher als diese gewichtet. |
 | Backup Freshness | 10 % | Backup-Frische ist fuer Wiederherstellbarkeit entscheidend, aber kein permanentes Live-Signal jeder einzelnen Nutzerinteraktion. |
 | Error Rate | 10 % | Fehlerquote zeigt operative Instabilitaet schnell an, ist aber ohne Daten- und Driftkontext allein nicht ausreichend fuer Systemreife. |
@@ -1966,15 +1930,15 @@ Pruefprinzip:
 
 ## 7. Naechste sequenzielle Schritte
 
-1. ✅ Paket-5-Aenderungen committen.
+1. âœ… Paket-5-Aenderungen committen.
 2. Optionalen `/api/v1/documents`-Alias implementieren, falls M3 direkt versionierte Pfade verwenden soll.
-3. ✅ PostgreSQL-Integrationstests fuer Paket-5-Read-API in CI oder lokalem Standardlauf absichern.
+3. âœ… PostgreSQL-Integrationstests fuer Paket-5-Read-API in CI oder lokalem Standardlauf absichern.
 4. Offene M3a-Testluecken fuer finalen GUI-Abschluss schliessen.
-5. ✅ PostgreSQL-Integrationsnachweis fuer M3b-Suchtreffer, Filterung und Ranking ergaenzen.
-6. ✅ Ranking-Regressionstest fuer M3b einfuehren.
-7. ✅ Benutzerkonzept und Workspace-Isolation fuer M4 fachlich und technisch festziehen.
-8. ✅ Upload-GUI, Diagnoseansicht, Observability sowie Backup/Restore fuer M4 spezifizieren und priorisieren.
-9. ✅ M4 auf der verifizierten M3-Grundlage als Produktisierungsphase starten.
+5. âœ… PostgreSQL-Integrationsnachweis fuer M3b-Suchtreffer, Filterung und Ranking ergaenzen.
+6. âœ… Ranking-Regressionstest fuer M3b einfuehren.
+7. âœ… Benutzerkonzept und Workspace-Isolation fuer M4 fachlich und technisch festziehen.
+8. âœ… Upload-GUI, Diagnoseansicht, Observability sowie Backup/Restore fuer M4 spezifizieren und priorisieren.
+9. âœ… M4 auf der verifizierten M3-Grundlage als Produktisierungsphase starten.
 
 ---
 
@@ -2006,3 +1970,7 @@ Pruefprinzip:
 - [M4b Upload-GUI](docs/m4b-upload-gui.md)
 - [Definition of Done: Paket 5](docs/paket-5-definition-of-done.md)
 - [ADR: Dokument-Read-API und Datenkonsistenz vor Retrieval](docs/adr/0003-document-read-api-before-retrieval.md)
+
+
+
+

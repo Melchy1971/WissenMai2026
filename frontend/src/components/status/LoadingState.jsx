@@ -1,3 +1,3 @@
-export function LoadingState({ label = 'Lade Daten...' }) {
-  return <div className="state-card">{label}</div>;
+export function LoadingState({ label = 'Lade Daten...', testId = null }) {
+  return <div className="state-card" {...(testId ? { 'data-testid': testId } : {})}>{label}</div>;
 }

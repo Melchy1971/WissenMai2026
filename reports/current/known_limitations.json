@@ -1,0 +1,24 @@
+{
+  "report_schema_version": 1,
+  "report_name": "known_limitations",
+  "generated_by": "manual_current_status_input",
+  "timestamp": "2026-05-29T06:45:00+00:00",
+  "source": "reports/current/masterplan_status.json",
+  "limitations": [
+    {
+      "id": "KL-M5-OPS-001",
+      "category": "M5 implementation blocker",
+      "bereich": "M4e Operations",
+      "beschreibung": "M5 Implementierung bleibt NO-GO, bis M4e/Operations explizit freigegeben sind.",
+      "blockiert_gate": [],
+      "risiko": "M5-Implementierung wuerde ohne Operations-Freigabe ueber den validierten M4-Backend-RC hinausgehen.",
+      "workaround": "M5-Vorbereitung erlauben, aber Implementierung bis zur expliziten M4e/Operations-Freigabe blockieren.",
+      "zielphase": "M5 Operations",
+      "review_datum": "2026-05-29",
+      "sources": [
+        "reports/current/m4_backend_release_candidate.json",
+        "reports/current/m4e_backup_restore_truth.json"
+      ]
+    }
+  ]
+}

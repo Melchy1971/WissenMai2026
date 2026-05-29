@@ -68,6 +68,20 @@ test.describe('05 Upload flow', () => {
     );
   });
 
+  test('rejects an unsupported file type', async ({ authedPage }) => {
+    await authedPage.getByTestId('upload-file-input').setInputFiles({
+      name: 'gui-truth-unsupported.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('not a supported document type'),
+    });
+
+    await authedPage.getByTestId('upload-submit').click();
+
+    await expect(authedPage.getByTestId('upload-error')).toContainText('Fehlercode: UNSUPPORTED_FILE_TYPE', {
+      timeout: 10_000,
+    });
+  });
+
   test('polls job status and surfaces parser failure', async ({ authedPage }) => {
     await authedPage.getByTestId('upload-file-input').setInputFiles({
       name: 'gui-truth-broken.pdf',
@@ -88,7 +102,9 @@ test.describe('05 Upload flow', () => {
     });
     await authedPage.getByTestId('upload-submit').click();
     await expect(authedPage.getByTestId('upload-job-status')).toBeVisible({ timeout: 5_000 });
-    await expect(authedPage.getByTestId('upload-error')).toContainText('Fehlercode: OCR_REQUIRED', { timeout: 30_000 });
+    await expect(authedPage.getByTestId('upload-ocr-required')).toContainText('Fehlercode: OCR_REQUIRED', {
+      timeout: 30_000,
+    });
   });
 
   test('surfaces FILE_TOO_LARGE without creating a successful import', async ({ authedPage }) => {
@@ -99,10 +115,33 @@ test.describe('05 Upload flow', () => {
     try {
       await authedPage.getByTestId('upload-file-input').setInputFiles(tooLargePath);
       await authedPage.getByTestId('upload-submit').click();
-      await expect(authedPage.getByTestId('upload-error')).toContainText('Fehlercode: FILE_TOO_LARGE', { timeout: 30_000 });
-      await expect(authedPage.getByTestId('upload-error')).toContainText('Technischer Code: VALIDATION_ERROR');
+      await expect(authedPage.getByTestId('upload-file-too-large')).toContainText('Fehlercode: FILE_TOO_LARGE', {
+        timeout: 30_000,
+      });
+      await expect(authedPage.getByTestId('upload-file-too-large')).toContainText('Technischer Code: VALIDATION_ERROR');
     } finally {
       fs.rmSync(tooLargePath, { force: true });
     }
+  });
+
+  test('shows duplicate upload as existing document', async ({ authedPage }) => {
+    test.setTimeout(60_000);
+    const content = `# GUI Truth Duplicate Upload\n\nsame content ${Date.now()}`;
+
+    async function uploadDuplicateCandidate() {
+      await authedPage.getByTestId('upload-file-input').setInputFiles({
+        name: 'gui-truth-duplicate.txt',
+        mimeType: 'text/plain',
+        buffer: Buffer.from(content),
+      });
+      await authedPage.getByTestId('upload-submit').click();
+      await expect(authedPage.getByTestId('upload-success')).toBeVisible({ timeout: 30_000 });
+    }
+
+    await uploadDuplicateCandidate();
+    await uploadDuplicateCandidate();
+
+    await expect(authedPage.getByTestId('upload-success')).toContainText('DUPLICATE_DOCUMENT', { timeout: 30_000 });
+    await expect(authedPage.getByTestId('upload-success')).toContainText(/bereits vorhanden/i);
   });
 });

@@ -305,6 +305,55 @@ def test_selected_report_markers_detects_multiple_marker_expression() -> None:
     assert selected == {"m4a_auth_truth", "m4b_upload_queue_truth"}
 
 
+def test_m4_split_marker_args_expand_single_marker_to_all_m4_splits() -> None:
+    pytest_args = split_reports._expand_m4_split_marker_args([
+        "backend/tests",
+        "-m",
+        "m4b_upload_queue_truth",
+        "-q",
+    ])
+
+    selected = split_reports._selected_report_markers(pytest_args)
+
+    assert selected == set(split_reports.M4_SPLIT_REPORT_MARKERS)
+
+
+def test_m4_split_selected_run_writes_all_current_m4_reports(tmp_path: Path) -> None:
+    collected_by_marker = {
+        marker: [f"tests/postgres_truth/{marker}.py::test_ok"]
+        for marker in split_reports.M4_SPLIT_REPORT_MARKERS
+    }
+    outcomes = {
+        test_id: split_reports.TestOutcome(status="passed", nodeid=test_id)
+        for test_ids in collected_by_marker.values()
+        for test_id in test_ids
+    }
+    reports = split_reports.build_split_reports(
+        collected_by_marker=collected_by_marker,
+        outcomes=outcomes,
+        collect_errors=[],
+        exit_code=0,
+        test_database_url_set=True,
+        timestamp="2026-05-29T08:00:00+00:00",
+    )
+    pytest_args = split_reports._expand_m4_split_marker_args(["-m", "m4b_upload_queue_truth"])
+    selected = split_reports._selected_report_markers(pytest_args)
+    assert selected is not None
+
+    written = [split_reports.write_marker_report(marker, reports, tmp_path) for marker in sorted(selected)]
+
+    assert sorted(path.name for path in written) == [
+        "m4a_auth_truth.json",
+        "m4b_upload_queue_truth.json",
+        "m4c_lifecycle_retrieval_truth.json",
+        "m4e_backup_restore_truth.json",
+    ]
+    for marker in split_reports.M4_SPLIT_REPORT_MARKERS:
+        payload = json.loads((tmp_path / f"{marker}.json").read_text(encoding="utf-8"))
+        assert payload["status"] == "PASS"
+        assert payload["collected"] == 1
+
+
 def test_with_default_test_target_prepends_target_for_marker_only_args() -> None:
     pytest_args = split_reports._with_default_test_target(["-m", "m4c_lifecycle_retrieval_truth", "-q"])
 

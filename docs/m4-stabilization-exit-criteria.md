@@ -1,4 +1,4 @@
-# M4 Stabilization Sprint — Exit Criteria
+﻿# M4 Stabilization Sprint â€” Exit Criteria
 
 Stand: 2026-05-11
 
@@ -11,7 +11,7 @@ Der verbindliche Report ist `reports/current/m4_truth_report.json`.
 
 ## 1. PostgreSQL Truth Suite
 
-Quelle: `reports/current/m4_truth_report.json` — Felder `passed`, `failed`, `errors`, `skipped`, `collected`, `pytest_exit_code`, `test_database_url_set`
+Quelle: `reports/current/m4_truth_report.json` â€” Felder `passed`, `failed`, `errors`, `skipped`, `collected`, `pytest_exit_code`, `test_database_url_set`
 
 | Bedingung | Pflichtwert | Beschreibung |
 |---|---|---|
@@ -22,13 +22,13 @@ Quelle: `reports/current/m4_truth_report.json` — Felder `passed`, `failed`, `e
 | `passed` | `== collected` | Jeder gesammelte Test muss bestanden haben | Quelle: `reports/current/masterplan_status.json`.
 | `pytest_exit_code` | `0` | Pytest-Prozess muss sauber beenden |
 
-Verletzung einer dieser Bedingungen → `M4 Stabilization Gate = FAIL`.
+Verletzung einer dieser Bedingungen â†’ `M4 Stabilization Gate = FAIL`.
 
 ---
 
 ## 2. Gate Scores
 
-Quelle: `reports/current/m4_truth_report.json` — Feld `gate_scores`
+Quelle: `reports/current/m4_truth_report.json` â€” Feld `gate_scores`
 
 Der Gate Score pro Marker wird berechnet als:
 `(Anzahl bestandene Tests mit diesem Marker / Anzahl gesammelte Tests mit diesem Marker) * 100`
@@ -40,7 +40,7 @@ Der Gate Score pro Marker wird berechnet als:
 | M4c | `@pytest.mark.m4c_gate` | >= 90% | Lifecycle, Search/Chat-Retrieval-Konsistenz |
 | M4d | `@pytest.mark.m4d_gate` | >= 85% | Read-only Diagnostics (kein mutierender Admin-Pfad) |
 
-Liegt der Score eines Gates unter dem Schwellenwert → `M4 Stabilization Gate = FAIL`.
+Liegt der Score eines Gates unter dem Schwellenwert â†’ `M4 Stabilization Gate = FAIL`.
 
 Fehlen Tests fuer `m4d_gate` vollstaendig, erzeugt der Validator eine Warnung.
 Fuer M4a, M4b und M4c ist eine leere Markergruppe ein harter Fehler.
@@ -49,7 +49,7 @@ Fuer M4a, M4b und M4c ist eine leere Markergruppe ein harter Fehler.
 
 ## 3. RC-Blocker
 
-Quelle: `reports/current/m4_truth_report.json` — Feld `rc_blockers_open`
+Quelle: `reports/current/m4_truth_report.json` â€” Feld `rc_blockers_open`
 
 Jeder RC-Blocker ist einem kanonischen Testfall zugeordnet. Ein Blocker gilt als offen, wenn sein kanonischer Test nicht in `passed_tests` enthalten ist (fehlgeschlagen, uebersprungen oder nicht gelaufen).
 
@@ -60,7 +60,7 @@ Jeder RC-Blocker ist einem kanonischen Testfall zugeordnet. Ein Blocker gilt als
 | Dead-Letter Replay Verlust | `test_chaos_dead_letter_replay_blocks_concurrent_session` |
 | source_status Inkonsistenz | `test_chaos_source_status_live_lookup_reflects_lifecycle_transitions` |
 
-Jeder offene RC-Blocker → `M4 Stabilization Gate = FAIL`.
+Jeder offene RC-Blocker â†’ `M4 Stabilization Gate = FAIL`.
 
 ---
 
@@ -70,7 +70,7 @@ Diese Bedingungen werden nicht automatisch geprueft, muessen aber vor M4-Freigab
 
 | Bedingung | Pruefung |
 |---|---|
-| Keine unbelegten gruenen Aussagen in Doku und Masterplan | Manuell: alle ✅-Eintraege muessen auf einen gruenen Truth-Test oder einen Code-Nachweis zeigen |
+| Keine unbelegten gruenen Aussagen in Doku und Masterplan | Manuell: alle âœ…-Eintraege muessen auf einen gruenen Truth-Test oder einen Code-Nachweis zeigen |
 | Masterplan referenziert `reports/current/m4_truth_report.json` | Manuell: Abschnitt "Aktueller Scope-Stand" nennt Commit-Hash und Zeitpunkt des letzten gruenen Runs |
 | `docs/m4-m5-freigabefassung.md` ist aktuell | Manuell: der Stand muss mit dem letzten Report uebereinstimmen |
 
@@ -101,13 +101,13 @@ scripts\validate-m4-truth-gate.ps1
 Ausgabe bei Erfolg:
 ```
 M4 Stabilization Gate = PASS
-Alle Exit-Kriterien erfüllt. M5-Freigabe kann geprüft werden.
+Alle Exit-Kriterien erfÃ¼llt. M5-Freigabe kann geprÃ¼ft werden.
 ```
 
 Ausgabe bei Fehler:
 ```
 M4 Stabilization Gate = FAIL
-  N Exit-Kriterien nicht erfüllt:
+  N Exit-Kriterien nicht erfÃ¼llt:
   - [truth] failed must be 0, got 2
   - [gate_scores] M4a: 88.0% < 95.0%
   - [rc_blocker] offen: Dead-Letter Replay Verlust
@@ -126,8 +126,8 @@ Jeder Validator-Lauf erzeugt:
 | `historische PostgreSQL-Truth-Archivkopie` | Unveraenderte Archivkopie dieses Laufs |
 | `reports/current/m4_truth_report.json` | Zeiget immer auf den letzten Lauf |
 | `reports/current/m4_truth_report.json` | Flat-Kopie fuer Rueckwaertskompatibilitaet |
-| `reports/postgres_truth_report.md` | Lesbare Zusammenfassung mit Gate Scores und RC-Blockern |
-| `reports/postgres_truth_delta.md` | Vergleich gegen den vorherigen Lauf (Regression/Improvement) |
+| `reports/current/m4_truth_report.json` | Lesbare Zusammenfassung mit Gate Scores und RC-Blockern |
+| `reports/current/m4_truth_report.json` | Vergleich gegen den vorherigen Lauf (Regression/Improvement) |
 
 Eine M4-Freigabe darf nur auf Basis eines Laufs mit:
 - `test_database_url_set: true`
@@ -135,3 +135,5 @@ Eine M4-Freigabe darf nur auf Basis eines Laufs mit:
 - Zeitpunkt nicht aelter als 24 Stunden vor der Freigabeentscheidung
 
 ausgesprochen werden.
+
+

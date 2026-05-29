@@ -1,4 +1,4 @@
-# M5 Observability
+﻿# M5 Observability
 
 Stand: 2026-05-13
 
@@ -34,7 +34,7 @@ Die maschinenlesbare Definition liegt in `backend/app/observability/m5_metrics.p
 | `m5_retry_frequency` | `background_jobs.attempts`, Retry-/Replay-Audit | je Workspace, Job-Typ, Ergebnis und Zeitfenster | Pflicht: genau eine `workspace_id` |
 | `m5_dead_letter_growth` | Queue-Aging-Report Feld `dead_letter_growth_24h` | je Workspace, 24h-Fenster | Pflicht: genau eine `workspace_id`; Ursache nur als Fehlerklasse |
 | `m5_drift_score` | Drift-/Entropy-Report, Data-Quality-Checks | je Workspace und Drift-Art; global nur als aggregierte Summary | Workspace-Events einzeln, globale Summary ohne `workspace_id` |
-| `m5_retrieval_quality_trend` | `reports/m5_retrieval/latest.json` und versionierte Reports | global gegen Golden Dataset; optional workspace-sliced nur ohne Querytext | Global default; workspace-sliced nur mit anonymisierten Counts |
+| `m5_retrieval_quality_trend` | `reports/current/masterplan_status.json` und versionierte Reports | global gegen Golden Dataset; optional workspace-sliced nur ohne Querytext | Global default; workspace-sliced nur mit anonymisierten Counts |
 | `m5_backup_freshness_seconds` | Backup-Manifest, Verify-/Restore-Report | global letzter erfolgreich verifizierter Backup-Zeitpunkt | Global: `workspace_id = null` |
 | `m5_restore_success_rate` | Restore-Truth-/Verify-Reports | global 7d/30d Erfolgsquote | Global: `workspace_id = null` |
 | `m5_cleanup_impact` | Cleanup Dry-Run Report, Cleanup-Governance-Report | je Workspace, Cleanup-Typ und Schutzstatus | Pflicht: genau eine `workspace_id`, ausser globaler Report-Cleanup |
@@ -72,9 +72,9 @@ Neues Snapshot-Event fuer laengere Trendanalyse:
   "snapshot_id": "20260513T080000Z",
   "generated_at": "2026-05-13T08:00:00Z",
   "source_reports": {
-    "longrun": "reports/m5_longrun/latest.json",
-    "retrieval": "reports/m5_retrieval/latest.json",
-    "entropy": "reports/m5_entropy/latest.json"
+    "longrun": "reports/current/masterplan_status.json",
+    "retrieval": "reports/current/masterplan_status.json",
+    "entropy": "reports/current/masterplan_status.json"
   },
   "status": "watch",
   "windows": ["current", "24h", "7d", "30d"],
@@ -257,9 +257,9 @@ Anzeigen:
 - Metrikdefinitionen: `backend/app/observability/m5_metrics.py`
 - Strukturierte Logs: `backend/app/observability/logging.py`
 - Metrik-Snapshots: `geplanter M5-Observability-Report`, spaeter versionierte Snapshots unter `reports/m5_observability/`
-- Longrun Quelle: `reports/m5_longrun/latest.json`
-- Retrieval Quelle: `reports/m5_retrieval/latest.json`
-- Entropy Quelle: `reports/m5_entropy/latest.json`
+- Longrun Quelle: `reports/current/masterplan_status.json`
+- Retrieval Quelle: `reports/current/masterplan_status.json`
+- Entropy Quelle: `reports/current/masterplan_status.json`
 - Drift Repair Regeln: `docs/runbooks/m5-drift-repair-strategy.md`
 
 ## Gate-Bezug
@@ -272,3 +272,4 @@ Observability darf nur als `pass` gelten, wenn:
 - Workspace-Metriken genau eine `workspace_id` tragen
 - globale Metriken keine `workspace_id` tragen
 - Dashboard-Status aus Reports oder strukturierten Events abgeleitet wird, nicht aus manueller Einschaetzung
+

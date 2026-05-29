@@ -1,4 +1,4 @@
-# Backend
+﻿# Backend
 
 FastAPI-Anwendung fuer Wissensbasis V1.
 
@@ -162,7 +162,7 @@ $env:TEST_DATABASE_URL="postgresql://..."
 Der Lauf schreibt:
 
 - `reports/current/m4_truth_report.json`
-- `reports/postgres_truth_report.md`
+- `reports/current/m4_truth_report.json`
 
 Unit-Tests benoetigen keine Datenbankverbindung und laufen ohne Konfiguration durch.
 Integrationstests, die PostgreSQL erfordern, sind mit `@pytest.mark.postgres` markiert.
@@ -170,7 +170,7 @@ Sie werden im Standard-`pytest`-Lauf uebersprungen, wenn `TEST_DATABASE_URL` nic
 
 ### Postgres-Tests lokal ausfuehren
 
-**Option 1 — dedizierte Test-Datenbank per Docker Compose (empfohlen):**
+**Option 1 â€” dedizierte Test-Datenbank per Docker Compose (empfohlen):**
 
 ```bash
 # Einmalig starten (Projektverzeichnis, nicht backend/)
@@ -186,7 +186,7 @@ cd ..
 docker compose -f docker-compose.test.yml down
 ```
 
-**Option 2 — vorhandene PostgreSQL-Instanz:**
+**Option 2 â€” vorhandene PostgreSQL-Instanz:**
 
 ```bash
 cd backend
@@ -258,3 +258,4 @@ Datenbankabhaengigkeit.
 - Mehrbenutzerfaehigkeit ist nur ueber Workspace-/User-Felder vorbereitet.
 - Keine Vektorsuche.
 - Keine Speicherung von Quelldateien ausserhalb abgeleiteter Inhalte und Metadaten.
+

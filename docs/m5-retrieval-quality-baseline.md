@@ -1,4 +1,4 @@
-# M5 Retrieval Quality Baseline
+﻿# M5 Retrieval Quality Baseline
 
 Status: implementiert als wiederholbarer Benchmark-Runner.
 
@@ -31,12 +31,12 @@ python -m app.cli m5 retrieval-benchmark --set-baseline
 Reports:
 
 - `historische M5-Retrieval-Archivkopie`
-- `reports/m5_retrieval/latest.json`
-- `reports/m5_retrieval_summary.md`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
 - `historische M5-Retrieval-Regression-Archivkopie`
-- `reports/m5_retrieval_regression/latest.json`
-- `reports/m5_retrieval_regression/baseline.json`
-- `reports/m5_retrieval_regression_summary.md`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
 
 ## Golden Dataset
 
@@ -75,7 +75,7 @@ Der Benchmark enthaelt Golden Queries fuer:
 Regression Detection vergleicht jeden aktuellen Lauf gegen:
 
 1. absolute Schwellenwerte
-2. die gespeicherte Baseline in `reports/m5_retrieval_regression/baseline.json`
+2. die gespeicherte Baseline in `reports/current/masterplan_status.json`
 
 Regression Threshold:
 
@@ -102,3 +102,4 @@ Die Baseline darf nur mit `--set-baseline` aktualisiert werden. Eine Baseline-Ak
 ## Stop-Regel
 
 Der Benchmark ist `failed`, wenn eine Metrik die Schwelle unterschreitet, Missing Context Rate die Obergrenze ueberschreitet, die Baseline-Regression groesser als `0.05` ist oder wenn archivierte/geloeschte Chunks in Search oder neuem Chat Retrieval erscheinen.
+

@@ -1,20 +1,20 @@
-# System Invariant Registry
+﻿# System Invariant Registry
 
 Stand: 2026-05-13
 
 ## Ziel
 
-Eine Invariante ist eine Bedingung, die zu jedem Zeitpunkt gilt — vor und nach jeder Operation, vor und nach jeder Migration, vor und nach jedem Restore. Verletzungen sind keine Warnungen: sie sind Gate-Blocker.
+Eine Invariante ist eine Bedingung, die zu jedem Zeitpunkt gilt â€” vor und nach jeder Operation, vor und nach jeder Migration, vor und nach jedem Restore. Verletzungen sind keine Warnungen: sie sind Gate-Blocker.
 
-Diese Registry ist die einzige kanonische Quelle für Systeminvarianten. Sie verweist auf Tests und Gates, aber ist selbst nicht Gate — nur die maschinenlesbaren Reports sind Gate.
+Diese Registry ist die einzige kanonische Quelle fÃ¼r Systeminvarianten. Sie verweist auf Tests und Gates, aber ist selbst nicht Gate â€” nur die maschinenlesbaren Reports sind Gate.
 
 Verwandte Dokumente:
 
-- `docs/data-model-invariants.md` — INV-001 bis INV-020: Dokumentmodell (Document, DocumentVersion, Chunk)
-- `docs/operational-truth-governance.md` — Gate-Policies und Truth-Quellen
-- `docs/retrieval-stability-contract.md` — Retrieval-Vertragsgarantien
-- `docs/controlled-failure-philosophy.md` — Fehlerprinzipien und Recovery
-- `docs/audit-trail-schema.md` — Audit-Trail-Pflichten
+- `docs/data-model-invariants.md` â€” INV-001 bis INV-020: Dokumentmodell (Document, DocumentVersion, Chunk)
+- `docs/operational-truth-governance.md` â€” Gate-Policies und Truth-Quellen
+- `docs/retrieval-stability-contract.md` â€” Retrieval-Vertragsgarantien
+- `docs/controlled-failure-philosophy.md` â€” Fehlerprinzipien und Recovery
+- `docs/audit-trail-schema.md` â€” Audit-Trail-Pflichten
 
 ---
 
@@ -23,25 +23,25 @@ Verwandte Dokumente:
 | Klasse | Bedeutung | Gate-Implikation |
 |---|---|---|
 | CRITICAL | Verletzung erzeugt Datenverlust, Datenleak oder Systemkorruption | Merge-Blocker; sofortiger Stop aller mutativen Operationen |
-| HIGH | Verletzung untergräbt Betriebsgarantien ohne sofortigen Datenverlust | Merge-Blocker; keine Weiterentwicklung bis Fix |
-| MEDIUM | Verletzung beeinträchtigt Qualität oder Vollständigkeit | Follow-up-Pflicht im selben Sprint |
+| HIGH | Verletzung untergrÃ¤bt Betriebsgarantien ohne sofortigen Datenverlust | Merge-Blocker; keine Weiterentwicklung bis Fix |
+| MEDIUM | Verletzung beeintrÃ¤chtigt QualitÃ¤t oder VollstÃ¤ndigkeit | Follow-up-Pflicht im selben Sprint |
 
 ---
 
 ## 2. Dokumentmodell-Invarianten (Referenz)
 
-Die Invarianten INV-001 bis INV-020 sind vollständig in `docs/data-model-invariants.md` definiert. Hier nur die Kurzreferenz für die Klassen-Zuordnung:
+Die Invarianten INV-001 bis INV-020 sind vollstÃ¤ndig in `docs/data-model-invariants.md` definiert. Hier nur die Kurzreferenz fÃ¼r die Klassen-Zuordnung:
 
 | ID | Kurzbeschreibung | Klasse | DB-Absicherung |
 |---|---|---|---|
 | INV-001 | Lesbares Dokument hat min. eine Version | HIGH | teilweise |
 | INV-002 | `current_version_id` zeigt auf eigene Version | HIGH | teilweise |
-| INV-003 | Version gehört genau einem Dokument | HIGH | ja |
+| INV-003 | Version gehÃ¶rt genau einem Dokument | HIGH | ja |
 | INV-004 | `version_number` eindeutig pro Dokument | HIGH | ja |
 | INV-005 | Versionnummern positiv und monoton | MEDIUM | teilweise |
 | INV-006 | `content_hash` eindeutig pro Workspace | HIGH | ja |
-| INV-007 | Chunk gehört genau einer Version | HIGH | ja |
-| INV-008 | Chunk gehört zum gleichen Dokument wie seine Version | HIGH | ja |
+| INV-007 | Chunk gehÃ¶rt genau einer Version | HIGH | ja |
+| INV-008 | Chunk gehÃ¶rt zum gleichen Dokument wie seine Version | HIGH | ja |
 | INV-009 | `chunk_index` eindeutig pro Version | HIGH | ja |
 | INV-010 | Chunk-Positionen nicht negativ, stabil sortierbar | MEDIUM | ja |
 | INV-011 | Chunk-Anker eindeutig pro Version | HIGH | ja |
@@ -50,7 +50,7 @@ Die Invarianten INV-001 bis INV-020 sind vollständig in `docs/data-model-invari
 | INV-014 | `source_anchor` folgt normalisiertem Schema | MEDIUM | Service |
 | INV-015 | `import_status` aus erlaubter Wertemenge | HIGH | ja |
 | INV-016 | `parsed`/`chunked` Dokumente haben aktuelle Version | HIGH | Service |
-| INV-017 | `failed`/`pending` dürfen ohne Version existieren | — | Konvention |
+| INV-017 | `failed`/`pending` dÃ¼rfen ohne Version existieren | â€” | Konvention |
 | INV-018 | `updated_at >= created_at` | MEDIUM | fehlt |
 | INV-019 | `version.created_at >= document.created_at` | MEDIUM | fehlt |
 | INV-020 | `markdown_hash` nicht leer | MEDIUM | ja |
@@ -61,12 +61,12 @@ Die Invarianten INV-001 bis INV-020 sind vollständig in `docs/data-model-invari
 
 ### INV-021: Archivierte Dokumente erscheinen nie in neuen Retrieval-Ergebnissen
 
-**Beschreibung**: Search und Chat Retrieval dürfen keine Chunks liefern, deren Dokument `lifecycle_status = 'archived'` oder `is_searchable = FALSE` hat. Historische Citations auf archivierte Dokumente bleiben gültig, erzeugen aber keine neuen Treffer.
+**Beschreibung**: Search und Chat Retrieval dÃ¼rfen keine Chunks liefern, deren Dokument `lifecycle_status = 'archived'` oder `is_searchable = FALSE` hat. Historische Citations auf archivierte Dokumente bleiben gÃ¼ltig, erzeugen aber keine neuen Treffer.
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
-- `reports/m5_retrieval/latest.json`: `lifecycle_exclusion_violations = 0`
+- `reports/current/masterplan_status.json`: `lifecycle_exclusion_violations = 0`
 - postgres_truth: `test_m4c_lifecycle_retrieval_truth.py::test_m4c_archive_excludes_document_from_search_restore_reactivates`
 
 **Truth-Test**:
@@ -76,22 +76,22 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_m4c_lifecycle_retriev
 Gate-Bedingung: `lifecycle_exclusion_violations = 0`; jeder Wert > 0 blockiert Merge.
 
 **Repair-Strategie**:
-1. Drift-Report auswerten: `stale_rate` und `orphan_rate` prüfen
+1. Drift-Report auswerten: `stale_rate` und `orphan_rate` prÃ¼fen
 2. `ReindexGovernanceService.run_governed_reindex()` mit Scope `workspace`
 3. Post-Reindex: `lifecycle_ok = true` im Reindex-Audit
-4. Retrieval-Benchmark erneut ausführen: `lifecycle_exclusion_violations = 0`
+4. Retrieval-Benchmark erneut ausfÃ¼hren: `lifecycle_exclusion_violations = 0`
 
 ---
 
-### INV-022: Gelöschte Dokumente erscheinen nie neu
+### INV-022: GelÃ¶schte Dokumente erscheinen nie neu
 
-**Beschreibung**: Dokumente mit `lifecycle_status = 'deleted'` oder `deleted_at IS NOT NULL` erscheinen weder in Search noch in Chat Retrieval. `deleted`-Dokumente können nicht reaktiviert werden (kein `deleted → active`-Übergang außer über expliziten Restore aus Backup).
+**Beschreibung**: Dokumente mit `lifecycle_status = 'deleted'` oder `deleted_at IS NOT NULL` erscheinen weder in Search noch in Chat Retrieval. `deleted`-Dokumente kÃ¶nnen nicht reaktiviert werden (kein `deleted â†’ active`-Ãœbergang auÃŸer Ã¼ber expliziten Restore aus Backup).
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
 - postgres_truth: `test_m4c_lifecycle_retrieval_truth.py`
-- `test_cleanup_governance_truth.py`: Cleanup schützt aktive Daten
+- `test_cleanup_governance_truth.py`: Cleanup schÃ¼tzt aktive Daten
 
 **Truth-Test**:
 ```
@@ -100,17 +100,17 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_cleanup_governance_tr
 ```
 
 **Repair-Strategie**:
-1. Wenn gelöschtes Dokument in Search erscheint: sofortiger Reindex-Lauf
+1. Wenn gelÃ¶schtes Dokument in Search erscheint: sofortiger Reindex-Lauf
 2. Wenn `deleted_at IS NOT NULL` aber `is_searchable = TRUE`: Repair-Migration Klasse C
-3. `test_m4c_lifecycle_retrieval_truth.py` muss nach Repair grün sein Quelle: `reports/current/masterplan_status.json`.
+3. `test_m4c_lifecycle_retrieval_truth.py` muss nach Repair grÃ¼n sein Quelle: `reports/current/masterplan_status.json`.
 
 ---
 
 ### INV-023: Retrieval-Ergebnisse sind workspace-isoliert
 
-**Beschreibung**: Kein Search- oder Chat-Retrieval-Ergebnis darf Chunks aus einem anderen Workspace liefern. Die Workspace-Grenze ist eine Sicherheitsgrenze, nicht nur eine Filterpräferenz.
+**Beschreibung**: Kein Search- oder Chat-Retrieval-Ergebnis darf Chunks aus einem anderen Workspace liefern. Die Workspace-Grenze ist eine Sicherheitsgrenze, nicht nur eine FilterprÃ¤ferenz.
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
 - postgres_truth: `test_m4a_auth_workspace_truth.py::test_m4a_user_a_cannot_search_workspace_b`
@@ -120,23 +120,23 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_cleanup_governance_tr
 ```
 pytest -m postgres_truth backend/tests/postgres_truth/test_m4a_auth_workspace_truth.py
 ```
-Gate-Bedingung: alle Workspace-Isolation-Tests grün; kein Cross-Workspace-Leak. Quelle: `reports/current/masterplan_status.json`.
+Gate-Bedingung: alle Workspace-Isolation-Tests grÃ¼n; kein Cross-Workspace-Leak. Quelle: `reports/current/masterplan_status.json`.
 
-**Repair-Strategie**: Cross-Workspace-Leak ist ein Sicherheitsvorfall. Keine Code-Änderung ohne Security Review. Gate bleibt `blocked` bis vollständige Root-Cause-Analyse abgeschlossen ist. Quelle: `reports/current/masterplan_status.json`.
+**Repair-Strategie**: Cross-Workspace-Leak ist ein Sicherheitsvorfall. Keine Code-Ã„nderung ohne Security Review. Gate bleibt `blocked` bis vollstÃ¤ndige Root-Cause-Analyse abgeschlossen ist. Quelle: `reports/current/masterplan_status.json`.
 
 ---
 
 ### INV-024: Search und Chat verwenden dieselbe fachliche Sichtbarkeit
 
-**Beschreibung**: Chat darf keine Chunks zitieren, die Search für dieselbe Query und denselben Workspace wegen Lifecycle oder Isolation ausschließt. Unterschiedliche Ranking-Logik ist erlaubt; unterschiedliche Sichtbarkeit ist verboten.
+**Beschreibung**: Chat darf keine Chunks zitieren, die Search fÃ¼r dieselbe Query und denselben Workspace wegen Lifecycle oder Isolation ausschlieÃŸt. Unterschiedliche Ranking-Logik ist erlaubt; unterschiedliche Sichtbarkeit ist verboten.
 
-**Kritikalität**: HIGH
+**KritikalitÃ¤t**: HIGH
 
 **Nachweisquelle**:
-- `reports/m5_retrieval/latest.json`: Feld `search_chat_divergence_violations`
+- `reports/current/masterplan_status.json`: Feld `search_chat_divergence_violations`
 - `docs/retrieval-stability-contract.md` Abschnitt 1.7
 
-**Truth-Test**: kein dedizierter postgres_truth-Test; wird über Retrieval-Benchmark-Regression abgedeckt.
+**Truth-Test**: kein dedizierter postgres_truth-Test; wird Ã¼ber Retrieval-Benchmark-Regression abgedeckt.
 
 **Repair-Strategie**: Lifecycle-Filter in Chat-Retrieval-Pfad gegen Search-Pfad abgleichen; Divergenz dokumentieren oder beheben.
 
@@ -146,9 +146,9 @@ Gate-Bedingung: alle Workspace-Isolation-Tests grün; kein Cross-Workspace-Leak.
 
 ### INV-025: Citation-Snapshots bleiben stabil
 
-**Beschreibung**: Einmal erstellte Citations dürfen nicht nachträglich verändert werden. `chat_citations.quote_preview`, `chunk_id`, `source_anchor` und `document_id` sind nach dem Schreiben unveränderlich. Auch wenn das referenzierte Dokument archiviert oder gelöscht wird, bleibt die Citation-Zeile unverändert.
+**Beschreibung**: Einmal erstellte Citations dÃ¼rfen nicht nachtrÃ¤glich verÃ¤ndert werden. `chat_citations.quote_preview`, `chunk_id`, `source_anchor` und `document_id` sind nach dem Schreiben unverÃ¤nderlich. Auch wenn das referenzierte Dokument archiviert oder gelÃ¶scht wird, bleibt die Citation-Zeile unverÃ¤ndert.
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
 - postgres_truth: `test_citation_longevity_truth.py::test_longevity_clean_state_ok`
@@ -163,18 +163,18 @@ Gate-Bedingung: `deleted_not_marked_count = 0`; `total_drift_count = 0`.
 **Repair-Strategie**:
 1. Longevity-Report auswerten: `deleted_not_marked` und `restored_not_marked`
 2. `source_status`-Lookup neu synchronisieren (read-only, keine Mutation der Citation)
-3. Jede Schemaänderung an `chat_citations` ist Klasse D
+3. Jede SchemaÃ¤nderung an `chat_citations` ist Klasse D
 
 ---
 
 ### INV-026: `source_status`-Lookup ist korrekt und aktuell
 
-**Beschreibung**: `chat_citations.source_status` reflektiert den Live-Zustand des referenzierten Dokuments (`active`, `archived`, `deleted`, `missing`). Der Wert darf sich ändern — aber nur durch den autorisierten Citation-Longevity-Service, nie durch direkte UPDATE-Statements.
+**Beschreibung**: `chat_citations.source_status` reflektiert den Live-Zustand des referenzierten Dokuments (`active`, `archived`, `deleted`, `missing`). Der Wert darf sich Ã¤ndern â€” aber nur durch den autorisierten Citation-Longevity-Service, nie durch direkte UPDATE-Statements.
 
-**Kritikalität**: HIGH
+**KritikalitÃ¤t**: HIGH
 
 **Nachweisquelle**:
-- `test_citation_longevity_truth.py`: Testsequenz archive → delete → restore
+- `test_citation_longevity_truth.py`: Testsequenz archive â†’ delete â†’ restore
 - `m5_orphan_growth_rate`: Wachstum von orphan Citations
 
 **Truth-Test**:
@@ -182,7 +182,7 @@ Gate-Bedingung: `deleted_not_marked_count = 0`; `total_drift_count = 0`.
 pytest -m postgres_truth backend/tests/postgres_truth/test_citation_longevity_truth.py -k "archived or deleted or restored"
 ```
 
-**Repair-Strategie**: `CitationLongevityAuditService.run_audit()` ausführen; Report auswerten; kein direktes UPDATE auf `chat_citations.source_status`.
+**Repair-Strategie**: `CitationLongevityAuditService.run_audit()` ausfÃ¼hren; Report auswerten; kein direktes UPDATE auf `chat_citations.source_status`.
 
 ---
 
@@ -190,9 +190,9 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_citation_longevity_tr
 
 ### INV-027: Kein Job wird mehr als einmal verarbeitet
 
-**Beschreibung**: Ein Job im Zustand `running` wird von genau einem Worker beansprucht. Advisory-Lock-Mechanismus verhindert parallele Verarbeitung desselben Jobs. Ein Job, der abgeschlossen ist (`completed`, `failed`, `dead_letter`), wird nicht erneut gestartet — nur ein expliziter Replay erzeugt einen neuen Job. Quelle: `reports/current/masterplan_status.json`.
+**Beschreibung**: Ein Job im Zustand `running` wird von genau einem Worker beansprucht. Advisory-Lock-Mechanismus verhindert parallele Verarbeitung desselben Jobs. Ein Job, der abgeschlossen ist (`completed`, `failed`, `dead_letter`), wird nicht erneut gestartet â€” nur ein expliziter Replay erzeugt einen neuen Job. Quelle: `reports/current/masterplan_status.json`.
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
 - postgres_truth: `test_m4b_upload_queue_truth.py`
@@ -205,7 +205,7 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_m4_crash_recovery_tru
 ```
 
 **Repair-Strategie**:
-1. Advisory-Lock-State prüfen: kein Lock-Leak nach Crash
+1. Advisory-Lock-State prÃ¼fen: kein Lock-Leak nach Crash
 2. `running`-Jobs mit abgelaufenem Timeout identifizieren
 3. Recovery-Pfad aus `docs/controlled-failure-philosophy.md` Abschnitt 3.1 (Advisory-Lock-Recovery)
 
@@ -213,9 +213,9 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_m4_crash_recovery_tru
 
 ### INV-028: Dead-Letter-Jobs werden nicht still ignoriert
 
-**Beschreibung**: Jeder Job, der die maximale Retry-Anzahl erreicht, wechselt deterministisch nach `dead_letter`. `dead_letter`-Jobs verbleiben sichtbar in der Queue und erzeugen ein Audit-Event. Sie werden nicht gelöscht, bis ein expliziter Replay oder eine explizite Archivierung erfolgt.
+**Beschreibung**: Jeder Job, der die maximale Retry-Anzahl erreicht, wechselt deterministisch nach `dead_letter`. `dead_letter`-Jobs verbleiben sichtbar in der Queue und erzeugen ein Audit-Event. Sie werden nicht gelÃ¶scht, bis ein expliziter Replay oder eine explizite Archivierung erfolgt.
 
-**Kritikalität**: HIGH
+**KritikalitÃ¤t**: HIGH
 
 **Nachweisquelle**:
 - `m5_dead_letter_growth`: Wachstum > 0 = Warnsignal
@@ -227,15 +227,15 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_m4_crash_recovery_tru
 pytest -m postgres_truth backend/tests/postgres_truth/test_queue_aging_truth.py -k "dead_letter"
 ```
 
-**Repair-Strategie**: Replay via Admin-API mit explizitem Audit-Event; nie direkt `DELETE FROM background_jobs WHERE status = 'dead_letter'` ohne Replay-Prüfung.
+**Repair-Strategie**: Replay via Admin-API mit explizitem Audit-Event; nie direkt `DELETE FROM background_jobs WHERE status = 'dead_letter'` ohne Replay-PrÃ¼fung.
 
 ---
 
 ### INV-029: Queue-Jobs sind workspace-isoliert
 
-**Beschreibung**: Ein User kann keine Jobs anderer Workspaces lesen, starten oder replayen. Die Workspace-Grenze gilt auch für Queue-Zugriff via Admin-API.
+**Beschreibung**: Ein User kann keine Jobs anderer Workspaces lesen, starten oder replayen. Die Workspace-Grenze gilt auch fÃ¼r Queue-Zugriff via Admin-API.
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
 - `test_m4a_auth_workspace_truth.py::test_m4a_user_a_cannot_read_or_replay_workspace_b_queue_job`
@@ -245,37 +245,37 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_queue_aging_truth.py 
 pytest -m postgres_truth backend/tests/postgres_truth/test_m4a_auth_workspace_truth.py -k "queue"
 ```
 
-**Repair-Strategie**: Wie INV-023 — Cross-Workspace-Leak ist Sicherheitsvorfall.
+**Repair-Strategie**: Wie INV-023 â€” Cross-Workspace-Leak ist Sicherheitsvorfall.
 
 ---
 
 ## 6. Workspace-Isolations-Invarianten
 
-### INV-030: Workspace-Grenzen gelten für alle Datenzugriffe
+### INV-030: Workspace-Grenzen gelten fÃ¼r alle Datenzugriffe
 
-**Beschreibung**: Dokumente, Versionen, Chunks, Jobs, Chat-Sessions und Citations sind an eine `workspace_id` gebunden. Kein API-Endpunkt darf workspace-fremde Daten zurückgeben. Manipulierte `X-Workspace-Id`-Header werden als verboten behandelt.
+**Beschreibung**: Dokumente, Versionen, Chunks, Jobs, Chat-Sessions und Citations sind an eine `workspace_id` gebunden. Kein API-Endpunkt darf workspace-fremde Daten zurÃ¼ckgeben. Manipulierte `X-Workspace-Id`-Header werden als verboten behandelt.
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
-- postgres_truth: vollständige `test_m4a_auth_workspace_truth.py`-Suite
+- postgres_truth: vollstÃ¤ndige `test_m4a_auth_workspace_truth.py`-Suite
 - `test_m4a_auth_workspace_truth.py::test_m4a_manipulated_x_workspace_id_is_forbidden`
 
 **Truth-Test**:
 ```
 pytest -m postgres_truth backend/tests/postgres_truth/test_m4a_auth_workspace_truth.py
 ```
-Gate-Bedingung: alle 11 Tests grün; kein Skip. Quelle: `reports/current/masterplan_status.json`.
+Gate-Bedingung: alle 11 Tests grÃ¼n; kein Skip. Quelle: `reports/current/masterplan_status.json`.
 
-**Repair-Strategie**: Sicherheitsvorfall-Protokoll; kein Merge bis vollständige Isolation-Analyse abgeschlossen.
+**Repair-Strategie**: Sicherheitsvorfall-Protokoll; kein Merge bis vollstÃ¤ndige Isolation-Analyse abgeschlossen.
 
 ---
 
-### INV-031: Admin-Aktionen erfordern explizite Workspace-Zugehörigkeit
+### INV-031: Admin-Aktionen erfordern explizite Workspace-ZugehÃ¶rigkeit
 
-**Beschreibung**: Admin-Endpunkte, die workspace-scoped Daten mutieren, benötigen explizite Workspace-Verifizierung (Admin- oder Owner-Rolle im betroffenen Workspace). Globale Admin-Aktionen dürfen workspace-scoped Daten nur aggregiert, nie im Klartext zurückgeben.
+**Beschreibung**: Admin-Endpunkte, die workspace-scoped Daten mutieren, benÃ¶tigen explizite Workspace-Verifizierung (Admin- oder Owner-Rolle im betroffenen Workspace). Globale Admin-Aktionen dÃ¼rfen workspace-scoped Daten nur aggregiert, nie im Klartext zurÃ¼ckgeben.
 
-**Kritikalität**: HIGH
+**KritikalitÃ¤t**: HIGH
 
 **Nachweisquelle**:
 - `test_m4a_auth_workspace_truth.py::test_m4a_admin_diagnostics_without_admin_role_is_forbidden`
@@ -285,7 +285,7 @@ Gate-Bedingung: alle 11 Tests grün; kein Skip. Quelle: `reports/current/masterp
 pytest -m postgres_truth backend/tests/postgres_truth/test_m4a_auth_workspace_truth.py -k "admin"
 ```
 
-**Repair-Strategie**: Auth-Gate in Admin-Endpunkt nachrüsten; kein Merge ohne bestandenen Auth-Gate-Test.
+**Repair-Strategie**: Auth-Gate in Admin-Endpunkt nachrÃ¼sten; kein Merge ohne bestandenen Auth-Gate-Test.
 
 ---
 
@@ -293,9 +293,9 @@ pytest -m postgres_truth backend/tests/postgres_truth/test_m4a_auth_workspace_tr
 
 ### INV-032: Restore erzeugt keine verwaisten Daten
 
-**Beschreibung**: Nach einem vollständigen Restore in eine leere Zieldatenbank existieren keine Orphan-Chunks (Chunks ohne Version), keine Orphan-Versionen (Versionen ohne Dokument) und keine verwaisten Citations (Citations mit ungültigem Dokument- oder Chunk-Verweis).
+**Beschreibung**: Nach einem vollstÃ¤ndigen Restore in eine leere Zieldatenbank existieren keine Orphan-Chunks (Chunks ohne Version), keine Orphan-Versionen (Versionen ohne Dokument) und keine verwaisten Citations (Citations mit ungÃ¼ltigem Dokument- oder Chunk-Verweis).
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
 - Restore-Truth-Report: `orphan_chunks = 0`, `orphan_versions = 0`, `orphan_citations = 0`
@@ -310,22 +310,22 @@ python scripts/validate_restore_truth.py
 Gate-Bedingung: `verify_backup()` gibt OK; INV-001 bis INV-020 gelten nach Restore.
 
 **Repair-Strategie**:
-1. Orphan-Chunks: `ReindexGovernanceService` nach Restore ausführen
+1. Orphan-Chunks: `ReindexGovernanceService` nach Restore ausfÃ¼hren
 2. Orphan-Versionen: Daten-Inventar mit `migration_document_repairs`-Logik
-3. Orphan-Citations: `CitationLongevityAuditService` nach Restore ausführen
-4. Falls Orphans persistieren: Backup-Manifest auf Vollständigkeit prüfen
+3. Orphan-Citations: `CitationLongevityAuditService` nach Restore ausfÃ¼hren
+4. Falls Orphans persistieren: Backup-Manifest auf VollstÃ¤ndigkeit prÃ¼fen
 
 ---
 
 ### INV-033: Alembic-Head nach Restore konsistent
 
-**Beschreibung**: Nach `alembic upgrade head` auf einer Restore-Ziel-DB existiert genau ein Alembic-Head (kein Split-Head). Migrations-Chain ist lückenlos vom ältesten unterstützten Backup bis zum aktuellen Head.
+**Beschreibung**: Nach `alembic upgrade head` auf einer Restore-Ziel-DB existiert genau ein Alembic-Head (kein Split-Head). Migrations-Chain ist lÃ¼ckenlos vom Ã¤ltesten unterstÃ¼tzten Backup bis zum aktuellen Head.
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
-- `reports/current/m4_truth_report.json`: `alembic_heads` enthält genau eine Revision
-- `alembic heads` gibt genau eine Zeile zurück
+- `reports/current/m4_truth_report.json`: `alembic_heads` enthÃ¤lt genau eine Revision
+- `alembic heads` gibt genau eine Zeile zurÃ¼ck
 
 **Truth-Test**:
 ```
@@ -339,11 +339,11 @@ Gate-Bedingung: `alembic_heads` im Report = 1 Eintrag; `failed = 0`.
 
 ---
 
-### INV-034: Backup-Manifest ist vollständig und verifiziert
+### INV-034: Backup-Manifest ist vollstÃ¤ndig und verifiziert
 
-**Beschreibung**: Ein Backup gilt nur als valide, wenn das Manifest alle restore-relevanten Artefakte enthält (DB-Dump, technische Dateien, `alembic_heads`) und `verify_backup()` `ok = true` zurückgibt. Ein unverifiziertes Backup ist kein valides Backup.
+**Beschreibung**: Ein Backup gilt nur als valide, wenn das Manifest alle restore-relevanten Artefakte enthÃ¤lt (DB-Dump, technische Dateien, `alembic_heads`) und `verify_backup()` `ok = true` zurÃ¼ckgibt. Ein unverifiziertes Backup ist kein valides Backup.
 
-**Kritikalität**: HIGH
+**KritikalitÃ¤t**: HIGH
 
 **Nachweisquelle**:
 - `m5_backup_freshness_seconds`: Alter seit `verified_at`
@@ -357,34 +357,34 @@ Gate-Bedingung: `alembic_heads` im Report = 1 Eintrag; `failed = 0`.
 
 ## 8. Entropy- und Drift-Invarianten
 
-### INV-035: `STALE_RATE_MAX` und `ORPHAN_RATE_MAX` nicht überschritten
+### INV-035: `STALE_RATE_MAX` und `ORPHAN_RATE_MAX` nicht Ã¼berschritten
 
-**Beschreibung**: Der Anteil staler Index-Einträge (`is_searchable = TRUE` für archivierte/gelöschte Dokumente) und verwaister Chunks darf die konfigurierten Schwellen nicht dauerhaft überschreiten.
+**Beschreibung**: Der Anteil staler Index-EintrÃ¤ge (`is_searchable = TRUE` fÃ¼r archivierte/gelÃ¶schte Dokumente) und verwaister Chunks darf die konfigurierten Schwellen nicht dauerhaft Ã¼berschreiten.
 
-**Kritikalität**: HIGH
+**KritikalitÃ¤t**: HIGH
 
 **Nachweisquelle**:
-- `reports/m5_entropy/latest.json`: `stale_rate`, `orphan_rate`
+- `reports/current/masterplan_status.json`: `stale_rate`, `orphan_rate`
 - `test_entropy_truth.py`
 
 **Truth-Test**:
 ```
 pytest -m postgres_truth backend/tests/postgres_truth/test_entropy_truth.py
 ```
-Gate-Bedingung: `stale_rate ≤ STALE_RATE_MAX`; `orphan_rate ≤ ORPHAN_RATE_MAX`; `retrieval_coverage ≥ RETRIEVAL_COVERAGE_MIN`.
+Gate-Bedingung: `stale_rate â‰¤ STALE_RATE_MAX`; `orphan_rate â‰¤ ORPHAN_RATE_MAX`; `retrieval_coverage â‰¥ RETRIEVAL_COVERAGE_MIN`.
 
-**Repair-Strategie**: `ReindexGovernanceService` für stale entries; Cleanup-Dry-Run für Orphans; beide mit Audit-Trail.
+**Repair-Strategie**: `ReindexGovernanceService` fÃ¼r stale entries; Cleanup-Dry-Run fÃ¼r Orphans; beide mit Audit-Trail.
 
 ---
 
 ### INV-036: `RETRIEVAL_COVERAGE_MIN` eingehalten
 
-**Beschreibung**: Mindestens `RETRIEVAL_COVERAGE_MIN = 0.85` aller aktiven, nicht-archivierten Dokument-Chunks müssen searchable sein (`is_searchable = TRUE`). Unterschreitung bedeutet systemische Indexkorruption.
+**Beschreibung**: Mindestens `RETRIEVAL_COVERAGE_MIN = 0.85` aller aktiven, nicht-archivierten Dokument-Chunks mÃ¼ssen searchable sein (`is_searchable = TRUE`). Unterschreitung bedeutet systemische Indexkorruption.
 
-**Kritikalität**: CRITICAL
+**KritikalitÃ¤t**: CRITICAL
 
 **Nachweisquelle**:
-- `reports/m5_entropy/latest.json`: `retrieval_coverage`
+- `reports/current/masterplan_status.json`: `retrieval_coverage`
 - `test_entropy_truth.py`
 
 **Truth-Test**:
@@ -392,7 +392,7 @@ Gate-Bedingung: `stale_rate ≤ STALE_RATE_MAX`; `orphan_rate ≤ ORPHAN_RATE_MA
 pytest -m postgres_truth backend/tests/postgres_truth/test_entropy_truth.py -k "coverage"
 ```
 
-**Repair-Strategie**: Vollständiger Reindex über `ReindexGovernanceService`; Lifecycle-Inkonsistenz-Check im Post-Reindex-Report; Retrieval-Benchmark nach Repair.
+**Repair-Strategie**: VollstÃ¤ndiger Reindex Ã¼ber `ReindexGovernanceService`; Lifecycle-Inkonsistenz-Check im Post-Reindex-Report; Retrieval-Benchmark nach Repair.
 
 ---
 
@@ -468,7 +468,7 @@ npx playwright test --config=playwright.config.js tests/gui_truth/test_11_state_
 | Invariante | Gate | Pflichttest | Stop-Signal |
 |---|---|---|---|
 | INV-021 | Retrieval-Gate | `test_m4c_lifecycle_retrieval_truth.py` | `lifecycle_exclusion_violations > 0` |
-| INV-022 | Retrieval-Gate | `test_m4c_lifecycle_retrieval_truth.py` | gelöschtes Dokument in Search |
+| INV-022 | Retrieval-Gate | `test_m4c_lifecycle_retrieval_truth.py` | gelÃ¶schtes Dokument in Search |
 | INV-023 | Auth/Isolation-Gate | `test_m4a_auth_workspace_truth.py` | Cross-Workspace-Daten in Response |
 | INV-024 | Retrieval-Gate | Retrieval-Benchmark | `search_chat_divergence_violations > 0` |
 | INV-025 | Citation-Gate | `test_citation_longevity_truth.py` | `total_drift_count > 0` |
@@ -493,16 +493,17 @@ npx playwright test --config=playwright.config.js tests/gui_truth/test_11_state_
 ## 11. Kurzcheckliste
 
 ```
-[ ] INV-001 bis INV-020 (data-model-invariants.md) nach jeder Migration geprüft
+[ ] INV-001 bis INV-020 (data-model-invariants.md) nach jeder Migration geprÃ¼ft
 [ ] INV-021/022 (Retrieval-Filterung): lifecycle_exclusion_violations = 0
-[ ] INV-023/029/030 (Workspace-Isolation): alle Isolation-Tests grün
-[ ] INV-025/026 (Citation-Stabilität): total_drift_count = 0
+[ ] INV-023/029/030 (Workspace-Isolation): alle Isolation-Tests grÃ¼n
+[ ] INV-025/026 (Citation-StabilitÃ¤t): total_drift_count = 0
 [ ] INV-027 (Queue-Idempotenz): kein Doppelverarbeitungs-Signal
 [ ] INV-028 (Dead-Letter): dead_letter_growth = 0 oder mit Audit
 [ ] INV-032 (Restore-Orphans): orphan_count = 0 nach Restore
 [ ] INV-033 (Alembic-Head): genau 1 Head nach Restore
-[ ] INV-035/036 (Entropy): stale_rate/orphan_rate ≤ Max; coverage ≥ 0.85
+[ ] INV-035/036 (Entropy): stale_rate/orphan_rate â‰¤ Max; coverage â‰¥ 0.85
 [ ] INV-037 bis INV-040 (GUI-State): kein Ghost-Workspace, kein Fake-Empty-State, kein FORBIDDEN-Retry
-[ ] Alle CRITICAL-Invarianten vor jedem Milestone-Gate geprüft
+[ ] Alle CRITICAL-Invarianten vor jedem Milestone-Gate geprÃ¼ft
 [ ] Neue Invarianten bei neuen Features in diese Registry eingetragen
 ```
+

@@ -1,4 +1,4 @@
-# M5 Data Aging & Entropy Audit
+﻿# M5 Data Aging & Entropy Audit
 
 Ziel dieses Audits ist die fruehe Erkennung langsamer Degeneration in langlaufenden M5-Systemen. Der Audit nutzt die aktuelle Longrun-Simulation und Retrieval-Baseline als Evidenzquellen und trennt harte Messwerte von offenen Residualrisiken.
 
@@ -12,8 +12,8 @@ python -m app.cli m5 entropy-audit
 Der Lauf erzeugt:
 
 - `historische M5-Entropy-Archivkopie`
-- `reports/m5_entropy/latest.json`
-- `reports/m5_entropy_audit.md`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
 
 ## Entropie-Kategorien
 
@@ -45,3 +45,4 @@ Aktueller Audit-Status wird aus den Kategorien abgeleitet:
 - M5-Gate auf `stale_index_growth=0`, `orphan_growth=0`, `lifecycle_exclusion_violations=0` und erfolgreiche Restore-Verifikation haerten.
 - Report-Deltas ueber Zeit speichern, damit langsame Degeneration vor Schwellwertverletzung sichtbar wird.
 - Fuer `duplicate growth` zusaetzlich eine Live-DB-Cardinality-Pruefung nachziehen; Golden Queries allein beweisen nur die Retrieval-/Policy-Seite.
+

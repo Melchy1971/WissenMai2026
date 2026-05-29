@@ -328,6 +328,22 @@ export const ERROR_STATE_CATALOG = {
     retry: false,
     logging: { level: 'info', event: 'gui_duplicate_detected' },
   },
+  REINDEX_RUNNING: {
+    title: 'Neuindizierung aktiv',
+    message: 'Der Such-Index wird gerade neu aufgebaut. Suche und Abruf sind voruebergehend eingeschraenkt.',
+    technicalCode: 'REINDEX_RUNNING',
+    allowedAction: 'Spaeter erneut versuchen',
+    retry: true,
+    logging: { level: 'warn', event: 'gui_reindex_running' },
+  },
+  QUEUE_DEGRADED: {
+    title: 'Verarbeitungs-Queue eingeschraenkt',
+    message: 'Die Verarbeitungs-Queue ist aktuell eingeschraenkt. Neue Imports koennen verzoegert werden.',
+    technicalCode: 'QUEUE_DEGRADED',
+    allowedAction: 'Spaeter erneut versuchen',
+    retry: true,
+    logging: { level: 'warn', event: 'gui_queue_degraded' },
+  },
 };
 
 export function getErrorState(code) {

@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 Stand: 2026-05-19
 
@@ -19,7 +19,7 @@ Stand: 2026-05-19
 
 ### Added
 
-- `reports/current/m3a_release_candidate.json` und `reports/m3a_final_gate_report.md` dokumentieren das finale M3a-Gate.
+- `reports/current/m3a_release_candidate.json` und `reports/current/m3a_release_candidate.json` dokumentieren das finale M3a-Gate.
 
 ### Findings
 
@@ -55,7 +55,7 @@ Stand: 2026-05-19
 
 ### Changed
 
-- `scripts/validate_m3a_gate.py` bewertet `postgres_truth_report.json` nicht mehr als M3a-Gate-Regel.
+- `scripts/validate_m3a_gate.py` bewertet `m4_truth_report.json` nicht mehr als M3a-Gate-Regel.
 - Neue M3a-Backend-Minimum-Regel: echte API erreichbar, echte DB aktiv, Contract Tests gruen und relevante M3a-/GUI-Endpunktflows im Frontend Truth belegt.
 - `docs/m3a-gate-policy.md` trennt M3a Frontend Truth, M4 Backend Truth und M5 Operational Truth.
 - `masterplan.md`, `docs/status.md`, `docs/frontend.md`, `docs/api.md` und `docs/operational-truth-governance.md` dokumentieren die reduzierte Fehlkopplung.
@@ -192,7 +192,7 @@ Historischer Eintrag: Diese Freigabe ist durch die M3a/M4 Gesamt-Reconciliation 
 ### Findings
 
 - `reports/current/m4_truth_report.json` ist vollstaendig gruen (`33/33`, `failed = 0`, `errors = 0`, `skipped = 0`).
-- `reports/restore_truth_report.md` dokumentiert einen echten Restore-Truth-Test mit Gesamtstatus `PASS`.
+- `reports/current/m4e_backup_restore_truth.json` dokumentiert einen echten Restore-Truth-Test mit Gesamtstatus `PASS`.
 - M4 ist fuer den lokalen Produktbetrieb technisch abgeschlossen.
 - M5 Vorbereitung ist erlaubt.
 - M5 Implementierung ist durch das formale Transition Gate erlaubt, aber nicht pauschal als gestartet zu dokumentieren.
@@ -440,7 +440,7 @@ Historischer Eintrag: Diese Freigabe ist durch die M3a/M4 Gesamt-Reconciliation 
 - `DocumentRepository.get_documents()` nutzt korrelierte Scalar-Subqueries statt Full-Table-Aggregationen.
 - `DocumentRepository` typisiert ID-Filter jetzt backend-kompatibel fuer SQLite und PostgreSQL-UUID-Spalten.
 - `DocumentImportPersistenceService` fuehrt den Dokumentstatus jetzt constraint-kompatibel ueber `pending -> parsed -> chunked`.
-- `masterplan.md` markiert umgesetzte Punkte sichtbar mit `✅`.
+- `masterplan.md` markiert umgesetzte Punkte sichtbar mit `âœ…`.
 - Status-, API- und Datenmodell-Dokumentation wurden mit dem Code- und Migrationsstand synchronisiert.
 - Paket-5-Abschlussbewertung ist dokumentiert: `96/100`.
 
@@ -559,3 +559,4 @@ Historischer Eintrag: Diese Freigabe ist durch die M3a/M4 Gesamt-Reconciliation 
 - stabile Chat-HTTP-API im Backend
 - integrierter Antwortpfad ueber Retrieval, Prompting, Policy, LLM und Citations
 - API- und Integrationsnachweise fuer diesen produktiven Pfad
+

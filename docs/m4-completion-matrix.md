@@ -1,4 +1,4 @@
-# Masterplan Completion Matrix
+﻿# Masterplan Completion Matrix
 
 Stand: 2026-05-19
 
@@ -11,7 +11,7 @@ Massgebliche Quellen:
 - `reports/current/gate_hierarchy_result.json`
 - `reports/current/frontend_full_suite_staged_report.json`
 - `reports/current/m4_truth_report.json`
-- `reports/restore_truth_report.md`
+- `reports/current/m4e_backup_restore_truth.json`
 - `docs/m4-gesamt-reconciliation.md`
 - `masterplan.md`
 
@@ -36,7 +36,7 @@ Massgebliche Quellen:
 | M4c Lifecycle/Retrieval | Markergruppe ueber Schwelle | BLOCKED durch M4 Backend Truth | `reports/current/m4_truth_report.json` |
 | M4d Diagnostics read-only | real vorhandener Slice | dokumentierbar, aber kein M4-Gesamtabschluss | `docs/m4-gesamt-reconciliation.md` |
 | M4d Diagnostics full | bewusst nicht freigegeben | blockiert | `docs/m4-gesamt-reconciliation.md` |
-| M4e Backup/Restore minimal | Entscheidung und Restore-Nachweis dokumentiert | PASS als Dokumentationspunkt, nicht als Gesamtfreigabe | `reports/restore_truth_report.md` |
+| M4e Backup/Restore minimal | Entscheidung und Restore-Nachweis dokumentiert | PASS als Dokumentationspunkt, nicht als Gesamtfreigabe | `reports/current/m4e_backup_restore_truth.json` |
 | M5 Systemreife | auf M4-Abschluss angewiesen | No-Go | `docs/m4-gesamt-reconciliation.md` |
 
 ## Aktuelle Schlussfolgerung
@@ -46,3 +46,4 @@ Massgebliche Quellen:
 - M4 bleibt blockiert.
 - M4 Gesamtabschluss ist `No-Go`.
 - M5 Vorbereitung/Implementierung darf nicht mehr aus dem historischen 2026-05-11-PASS abgeleitet werden.
+

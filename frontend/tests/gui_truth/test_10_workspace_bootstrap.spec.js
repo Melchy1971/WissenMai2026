@@ -187,7 +187,7 @@ test.describe('10 Workspace bootstrap — 06 state reset on switch', () => {
 
     // No search results or search-in-progress state should linger from previous workspace
     await expect(multiWorkspacePage.locator('.state-card--loading').filter({ hasText: 'Suchtreffer' })).not.toBeVisible();
-    await expect(multiWorkspacePage.locator('.search-result-list')).not.toBeVisible();
+    await expect(multiWorkspacePage.getByTestId('search-results')).not.toBeVisible();
   });
 
   test('upload area is idle after workspace switch', async ({ multiWorkspacePage }) => {

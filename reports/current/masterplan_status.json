@@ -1,273 +1,157 @@
 {
-  "report_schema_version": 2,
+  "report_schema_version": 3,
   "report_name": "masterplan_status",
-  "generated_by": "masterplan_status_engine_v2",
-  "generated_at": "2026-05-28T08:16:43.943529+00:00",
+  "generated_by": "masterplan_status_engine_v3",
+  "generated_at": "2026-05-29T06:47:07.638355+00:00",
   "authority": {
-    "source_of_truth": "machine_artifacts",
+    "source_of_truth": "reports/current release-candidate artifacts",
     "manual_status_override_allowed": false,
-    "rule": "Status wird ausschliesslich aus Validator-Artefakten abgeleitet. Manuelle Overrides sind nicht zulaessig.",
-    "engine_version": 2
+    "engine_version": 3,
+    "rule": "M3a and M4 status are derived from RC reports; M5 implementation requires explicit M4e/Operations release."
   },
   "inputs": {
-    "report_dir": "H:\\WissenMai2026\\reports\\current",
     "current_reports": {
-      "frontend_full_suite_staged_report.json": {
+      "m3a_release_candidate.json": {
         "available": true,
-        "report_name": "frontend_full_suite_staged",
-        "status": "PASS",
+        "report_name": "m3a_release_candidate",
+        "status": "FAIL",
         "result": null,
-        "collected": 100,
-        "passed": 100,
-        "failed": 0,
+        "decision": "NO-GO",
+        "collected": 5,
+        "passed": 4,
+        "failed": 1,
         "errors": 0,
         "skipped": 0,
-        "exit_code": 0,
-        "timestamp": "2026-05-28T07:04:38.521681+00:00",
-        "stale": false
+        "exit_code": 1,
+        "timestamp": "2026-05-26T08:11:36.043971Z"
       },
-      "m4a_auth_truth.json": {
+      "m4_backend_release_candidate.json": {
         "available": true,
-        "report_name": "m4a_auth_truth",
+        "report_name": "m4_backend_release_candidate",
         "status": "PASS",
-        "result": null,
-        "collected": 43,
-        "passed": 43,
-        "failed": 0,
-        "errors": 0,
-        "skipped": 0,
-        "exit_code": 0,
-        "timestamp": "2026-05-28T07:38:49.032209+00:00",
-        "stale": false
-      },
-      "m4b_upload_queue_truth.json": {
-        "available": true,
-        "report_name": "m4b_upload_queue_truth",
-        "status": "PASS",
-        "result": null,
-        "collected": 48,
-        "passed": 48,
-        "failed": 0,
-        "errors": 0,
-        "skipped": 0,
-        "exit_code": 0,
-        "timestamp": "2026-05-28T07:38:49.032209+00:00",
-        "stale": false
-      },
-      "m4c_lifecycle_retrieval_truth.json": {
-        "available": true,
-        "report_name": "m4c_lifecycle_retrieval_truth",
-        "status": "PASS",
-        "result": null,
-        "collected": 2,
-        "passed": 2,
-        "failed": 0,
-        "errors": 0,
-        "skipped": 0,
-        "exit_code": 0,
-        "timestamp": "2026-05-28T07:38:49.032209+00:00",
-        "stale": false
-      },
-      "m4e_backup_restore_truth.json": {
-        "available": true,
-        "report_name": "m4e_backup_restore_truth",
-        "status": "PASS",
-        "result": null,
-        "collected": 9,
-        "passed": 9,
-        "failed": 0,
-        "errors": 0,
-        "skipped": 0,
-        "exit_code": 0,
-        "timestamp": "2026-05-28T07:38:49.032209+00:00",
-        "stale": false
-      },
-      "m4_truth_report.json": {
-        "available": true,
-        "report_name": "m4_truth_report",
-        "status": "PASS",
-        "result": null,
+        "result": "PASS",
+        "decision": "GO",
         "collected": 102,
         "passed": 102,
         "failed": 0,
         "errors": 0,
         "skipped": 0,
         "exit_code": 0,
-        "timestamp": "2026-05-28T07:42:19.606805Z",
-        "stale": false
+        "timestamp": "2026-05-29T06:38:24.711878+00:00"
       },
       "documentation_truth_lint.json": {
         "available": true,
+        "report_name": "documentation_truth_lint",
+        "status": "PASS",
+        "result": "PASS",
+        "decision": null,
+        "collected": null,
+        "passed": null,
+        "failed": null,
+        "errors": null,
+        "skipped": null,
+        "exit_code": 0,
+        "timestamp": "2026-05-29T06:46:48.724293+00:00"
+      },
+      "known_limitations.json": {
+        "available": true,
         "error": null,
-        "stale": false,
-        "timestamp": "2026-05-28T07:54:30.846587+00:00"
+        "total": 1,
+        "blocking": 0,
+        "blocking_ids": [],
+        "operations_explicitly_released": false,
+        "operations_open_ids": [
+          "KL-M5-OPS-001"
+        ]
       }
-    },
-    "gate_hierarchy_evaluated": false,
-    "regression_baseline_loaded": false
+    }
   },
   "overall": {
-    "status": "pass",
-    "progress_percent": 100.0,
-    "release_allowed": true,
-    "blocker_count": 0,
-    "gate_hierarchy_result": "PASS"
+    "status": "blocked",
+    "progress_percent": 55,
+    "release_allowed": false,
+    "blocker_count": 1
   },
   "phases": {
     "m3a": {
       "id": "m3a",
       "label": "M3a Frontend Foundation",
-      "status": "gate_passed",
-      "decision": "GO",
-      "gate_id": "m3a_frontend_full_suite_gate",
-      "gate_status": "PASS",
-      "source": "reports/current/frontend_full_suite_staged_report.json",
-      "blockers": [],
-      "report_summaries": {
-        "frontend_full_suite_staged_report.json": {
-          "available": true,
-          "report_name": "frontend_full_suite_staged",
-          "status": "PASS",
-          "result": null,
-          "collected": 100,
-          "passed": 100,
-          "failed": 0,
-          "errors": 0,
-          "skipped": 0,
-          "exit_code": 0,
-          "timestamp": "2026-05-28T07:04:38.521681+00:00",
-          "stale": false
+      "status": "blocked",
+      "decision": "NO_GO",
+      "gate_id": "m3a_release_candidate_gate",
+      "gate_status": "FAIL",
+      "source": "reports/current/m3a_release_candidate.json",
+      "blockers": [
+        {
+          "id": "m3a_rc_not_pass",
+          "type": "release_candidate",
+          "severity": "blocking",
+          "detail": "m3a_release_candidate.json must be PASS/GO",
+          "source": "reports/current/m3a_release_candidate.json"
         }
-      }
+      ]
     },
     "m4": {
       "id": "m4",
-      "label": "M4 Stabilization",
+      "label": "M4 Backend",
       "status": "gate_passed",
       "decision": "GO",
-      "gate_id": "m4_overall_gate",
+      "gate_id": "m4_backend_release_candidate_gate",
       "gate_status": "PASS",
-      "source": "reports/current/m4_truth_report.json",
-      "blockers": [],
-      "report_summaries": {
-        "m4a_auth_truth.json": {
-          "available": true,
-          "report_name": "m4a_auth_truth",
-          "status": "PASS",
-          "result": null,
-          "collected": 43,
-          "passed": 43,
-          "failed": 0,
-          "errors": 0,
-          "skipped": 0,
-          "exit_code": 0,
-          "timestamp": "2026-05-28T07:38:49.032209+00:00",
-          "stale": false
-        },
-        "m4b_upload_queue_truth.json": {
-          "available": true,
-          "report_name": "m4b_upload_queue_truth",
-          "status": "PASS",
-          "result": null,
-          "collected": 48,
-          "passed": 48,
-          "failed": 0,
-          "errors": 0,
-          "skipped": 0,
-          "exit_code": 0,
-          "timestamp": "2026-05-28T07:38:49.032209+00:00",
-          "stale": false
-        },
-        "m4c_lifecycle_retrieval_truth.json": {
-          "available": true,
-          "report_name": "m4c_lifecycle_retrieval_truth",
-          "status": "PASS",
-          "result": null,
-          "collected": 2,
-          "passed": 2,
-          "failed": 0,
-          "errors": 0,
-          "skipped": 0,
-          "exit_code": 0,
-          "timestamp": "2026-05-28T07:38:49.032209+00:00",
-          "stale": false
-        },
-        "m4e_backup_restore_truth.json": {
-          "available": true,
-          "report_name": "m4e_backup_restore_truth",
-          "status": "PASS",
-          "result": null,
-          "collected": 9,
-          "passed": 9,
-          "failed": 0,
-          "errors": 0,
-          "skipped": 0,
-          "exit_code": 0,
-          "timestamp": "2026-05-28T07:38:49.032209+00:00",
-          "stale": false
-        },
-        "m4_truth_report.json": {
-          "available": true,
-          "report_name": "m4_truth_report",
-          "status": "PASS",
-          "result": null,
-          "collected": 102,
-          "passed": 102,
-          "failed": 0,
-          "errors": 0,
-          "skipped": 0,
-          "exit_code": 0,
-          "timestamp": "2026-05-28T07:42:19.606805Z",
-          "stale": false
-        }
-      }
+      "source": "reports/current/m4_backend_release_candidate.json",
+      "blockers": []
     },
-    "m5": {
-      "id": "m5",
-      "label": "M5 Start",
+    "m5_preparation": {
+      "id": "m5_preparation",
+      "label": "M5 Vorbereitung",
       "status": "gate_passed",
       "decision": "GO",
-      "gate_id": "m5_start_gate",
+      "gate_id": "m5_preparation_gate",
       "gate_status": "PASS",
-      "source": "reports/current/masterplan_status.json",
-      "blockers": [],
-      "report_summaries": {}
+      "source": "reports/current/m4_backend_release_candidate.json",
+      "blockers": []
+    },
+    "m5_implementation": {
+      "id": "m5_implementation",
+      "label": "M5 Implementierung",
+      "status": "blocked",
+      "decision": "NO_GO",
+      "gate_id": "m5_implementation_gate",
+      "gate_status": "FAIL",
+      "source": "reports/current/known_limitations.json",
+      "blockers": [
+        {
+          "id": "m5_implementation_no_go_until_m4e_operations_release",
+          "type": "dependency",
+          "severity": "blocking",
+          "detail": "M5 Implementierung bleibt NO_GO bis ein expliziter M4e/Operations-Release-Report vorliegt",
+          "source": "reports/current/known_limitations.json"
+        }
+      ]
     }
   },
   "gate_hierarchy": {
-    "result": "PASS",
+    "result": "FAIL",
     "gates": {
-      "m3a_frontend_full_suite_gate": {
+      "m3a_release_candidate_gate": {
+        "status": "FAIL",
+        "blockers": [
+          "m3a_release_candidate.json must be PASS/GO"
+        ]
+      },
+      "m4_backend_release_candidate_gate": {
         "status": "PASS",
         "blockers": []
       },
-      "m4a_gate": {
+      "m5_preparation_gate": {
         "status": "PASS",
         "blockers": []
       },
-      "m4b_gate": {
-        "status": "PASS",
-        "blockers": []
-      },
-      "m4c_gate": {
-        "status": "PASS",
-        "blockers": []
-      },
-      "m4e_gate": {
-        "status": "PASS",
-        "blockers": []
-      },
-      "m4_crosscutting_gate": {
-        "status": "PASS",
-        "blockers": []
-      },
-      "m4_overall_gate": {
-        "status": "PASS",
-        "blockers": []
-      },
-      "m5_start_gate": {
-        "status": "PASS",
-        "blockers": []
+      "m5_implementation_gate": {
+        "status": "FAIL",
+        "blockers": [
+          "M5 Implementierung bleibt NO_GO bis ein expliziter M4e/Operations-Release-Report vorliegt"
+        ]
       }
     }
   },
@@ -279,12 +163,38 @@
     "source": "reports/current/documentation_truth_lint.json"
   },
   "known_limitations": {
-    "total": 0,
+    "source": "reports/current/known_limitations.json",
+    "total": 1,
     "blocking": 0,
-    "source": "H:\\WissenMai2026\\docs\\known_limitations.json",
-    "used_for_current_status": false
+    "blocking_ids": [],
+    "operations_explicitly_released": false,
+    "operations_open_ids": [
+      "KL-M5-OPS-001"
+    ]
   },
-  "blockers": [],
-  "timestamp": "2026-05-28T08:16:43.943529+00:00",
-  "exit_code": 0
+  "m5": {
+    "preparation_allowed": true,
+    "implementation_allowed": false,
+    "implementation_decision": "NO_GO",
+    "implementation_blockers": [
+      {
+        "id": "m5_implementation_no_go_until_m4e_operations_release",
+        "type": "dependency",
+        "severity": "blocking",
+        "detail": "M5 Implementierung bleibt NO_GO bis ein expliziter M4e/Operations-Release-Report vorliegt",
+        "source": "reports/current/known_limitations.json"
+      }
+    ]
+  },
+  "blockers": [
+    {
+      "id": "m3a_rc_not_pass",
+      "type": "release_candidate",
+      "severity": "blocking",
+      "detail": "m3a_release_candidate.json must be PASS/GO",
+      "source": "reports/current/m3a_release_candidate.json"
+    }
+  ],
+  "timestamp": "2026-05-29T06:47:07.638355+00:00",
+  "exit_code": 1
 }

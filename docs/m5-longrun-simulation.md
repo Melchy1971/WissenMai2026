@@ -1,4 +1,4 @@
-# M5 Longrun Simulation
+﻿# M5 Longrun Simulation
 
 Status: implementiert als beschleunigte Betriebs-Simulation.
 
@@ -16,8 +16,8 @@ python -m app.cli m5 longrun-simulation --cycles 28 --restore-every 7
 Reports:
 
 - `historische M5-Longrun-Archivkopie`
-- `reports/m5_longrun/latest.json`
-- `reports/m5_longrun_summary.md`
+- `reports/current/masterplan_status.json`
+- `reports/current/masterplan_status.json`
 
 ## Simulationsmodell
 
@@ -42,3 +42,4 @@ Reports:
 - `pass`: keine Stop-Kriterien und keine Warnungen.
 - `degraded`: keine Stop-Kriterien, aber Warnungen.
 - `failed`: mindestens ein Stop-Kriterium verletzt.
+

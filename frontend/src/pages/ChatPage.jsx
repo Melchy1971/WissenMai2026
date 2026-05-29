@@ -208,11 +208,11 @@ export function ChatPage() {
   }
 
   if (sessionsState.status === 'loading') {
-    return <LoadingState label="Chat-Sessions werden geladen..." />;
+    return <LoadingState label="Chat-Sessions werden geladen..." testId="chat-loading" />;
   }
 
   if (sessionsState.status === 'error' && sessionsState.items.length === 0) {
-    return <ErrorState error={sessionsState.error} />;
+    return <ErrorState error={sessionsState.error} testId="chat-error" />;
   }
 
   return (
@@ -239,8 +239,16 @@ export function ChatPage() {
             disabled={!activeSessionId}
           />
 
-          {detailState.status === 'loading' ? <LoadingState label="Nachrichtenverlauf wird geladen..." /> : null}
-          {detailState.status === 'error' ? <ErrorState error={detailState.error} /> : null}
+          {detailState.status === 'loading' ? <LoadingState label="Nachrichtenverlauf wird geladen..." testId="chat-loading" /> : null}
+          {detailState.status === 'error' ? (
+            detailState.error?.code === 'INSUFFICIENT_CONTEXT' ? (
+              <div data-testid="chat-insufficient-context">
+                <ErrorState error={detailState.error} testId="chat-error" />
+              </div>
+            ) : (
+              <ErrorState error={detailState.error} testId="chat-error" />
+            )
+          ) : null}
           {detailState.status === 'idle' && sessionsState.items.length === 0 ? (
             <EmptyState
               title="Keine Chat-Sitzungen vorhanden"

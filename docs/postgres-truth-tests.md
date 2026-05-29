@@ -1,4 +1,4 @@
-# PostgreSQL Truth Tests
+﻿# PostgreSQL Truth Tests
 
 Die PostgreSQL Truth-Test-Suite ist der harte Nachweis fuer kritische M4-Flows gegen echte PostgreSQL-Transaktionen. SQLite-, In-Memory- oder Mock-basierte Tests gelten fuer diese Bereiche nicht als ausreichender Sicherheitsnachweis.
 
@@ -13,7 +13,7 @@ Aktueller Code-Stand:
 - Die Suite liegt unter `backend/tests/postgres_truth/test_*.py`.
 - Collection- und Laufzahlen fuer M4-Gates muessen aus `reports/current/m4_truth_report.json` kommen.
 - Ob die Suite gruen ist, darf nur aus einem aktuellen JSON-Testreport mit gesetzter `TEST_DATABASE_URL` behauptet werden.
-- `reports/postgres_truth_report.md` ist nur eine menschenlesbare Begleitansicht und keine M4-Gate-Quelle.
+- `reports/current/m4_truth_report.json` ist nur eine menschenlesbare Begleitansicht und keine M4-Gate-Quelle.
 
 Abgedeckte Bereiche:
 
@@ -92,7 +92,7 @@ Alle neuen Marker sind in `backend/pyproject.toml` registriert:
 ```toml
 "queue_aging: Queue Aging and Starvation Detection truth tests"
 "reindex_governance: Reindex Governance safety constraints and audit trail truth tests"
-"citation_longevity: Citation Longevity Audit — long-term snapshot stability truth tests"
+"citation_longevity: Citation Longevity Audit â€” long-term snapshot stability truth tests"
 "cleanup_governance: Cleanup Governance safety constraints and audit trail truth tests"
 "m5_cleanup: M5 Cleanup process truth tests"
 "entropy: Long-term entropy and system aging detection truth tests"
@@ -150,7 +150,7 @@ Die Tests verwenden echte SQLAlchemy-/psycopg-Verbindungen gegen PostgreSQL. Feh
 Jeder Lauf schreibt zwei Artefakte:
 
 - `reports/current/m4_truth_report.json`
-- `reports/postgres_truth_report.md`
+- `reports/current/m4_truth_report.json`
 
 Die einzige automatisierbare und freigaberelevante M4-Gate-Quelle ist:
 
@@ -197,3 +197,4 @@ Fuer M5 gilt zusaetzlich:
 
 - Data Quality, Drift Detection, Cleanup Dry Run, Health Score und Backup Freshness muessen in derselben Truth-Logik verankert werden.
 - Ein gruener SQLite- oder Mock-Lauf ist fuer M5 nur ein Entwicklerhinweis, kein Betriebs- oder Freigabenachweis.
+

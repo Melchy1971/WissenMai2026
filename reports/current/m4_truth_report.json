@@ -4,7 +4,7 @@
   "report_name": "m4_truth_report",
   "gate": "m4_crosscutting_gate",
   "status": "PASS",
-  "timestamp": "2026-05-28T07:42:19.606805Z",
+  "timestamp": "2026-05-29T06:38:18.679088Z",
   "environment": "local",
   "report_type": "truth",
   "collected": 102,
@@ -33,7 +33,7 @@
       "gate": "m4a",
       "path": "reports/current/m4a_auth_truth.json",
       "available": true,
-      "timestamp": "2026-05-28T07:38:49.032209+00:00",
+      "timestamp": "2026-05-29T06:27:59.342852+00:00",
       "status": "PASS",
       "collected": 43,
       "passed": 43,
@@ -49,7 +49,7 @@
       "gate": "m4b",
       "path": "reports/current/m4b_upload_queue_truth.json",
       "available": true,
-      "timestamp": "2026-05-28T07:38:49.032209+00:00",
+      "timestamp": "2026-05-29T06:27:59.342852+00:00",
       "status": "PASS",
       "collected": 48,
       "passed": 48,
@@ -65,7 +65,7 @@
       "gate": "m4c",
       "path": "reports/current/m4c_lifecycle_retrieval_truth.json",
       "available": true,
-      "timestamp": "2026-05-28T07:38:49.032209+00:00",
+      "timestamp": "2026-05-29T06:27:59.342852+00:00",
       "status": "PASS",
       "collected": 2,
       "passed": 2,
@@ -81,7 +81,7 @@
       "gate": "m4e",
       "path": "reports/current/m4e_backup_restore_truth.json",
       "available": true,
-      "timestamp": "2026-05-28T07:38:49.032209+00:00",
+      "timestamp": "2026-05-29T06:27:59.342852+00:00",
       "status": "PASS",
       "collected": 9,
       "passed": 9,
@@ -100,5 +100,5 @@
     "gate_passed": true,
     "go_no_go": "GO"
   },
-  "commit_hash": "0d59bcb78"
+  "commit_hash": "6eba23a5c"
 }

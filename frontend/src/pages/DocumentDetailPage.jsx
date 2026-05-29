@@ -110,16 +110,16 @@ export function DocumentDetailPage() {
         </div>
         <div className="search-bar__actions">
           {state.document.lifecycleStatus.kind === 'active' ? (
-            <button type="button" className="button-secondary" onClick={handleArchive} disabled={mutationState.status === 'loading'}>
+            <button type="button" className="button-secondary" data-testid="document-archive" onClick={handleArchive} disabled={mutationState.status === 'loading'}>
               Dokument archivieren
             </button>
           ) : null}
           {state.document.lifecycleStatus.kind === 'archived' ? (
-            <button type="button" className="button-secondary" onClick={handleRestore} disabled={mutationState.status === 'loading'}>
+            <button type="button" className="button-secondary" data-testid="document-restore" onClick={handleRestore} disabled={mutationState.status === 'loading'}>
               Dokument wiederherstellen
             </button>
           ) : null}
-          <button type="button" onClick={handleDelete} disabled={mutationState.status === 'loading'}>
+          <button type="button" data-testid="document-delete" onClick={handleDelete} disabled={mutationState.status === 'loading'}>
             Dokument loeschen
           </button>
         </div>
@@ -133,7 +133,7 @@ export function DocumentDetailPage() {
         </p>
         <p>Delete ist destruktiv und fuehrt in der GUI nur einen Soft-Delete aus.</p>
       </div>
-      {mutationState.status === 'error' ? <ErrorState error={mutationState.error} /> : null}
+      {mutationState.status === 'error' ? <div data-testid="lifecycle-error"><ErrorState error={mutationState.error} /></div> : null}
       <DocumentMetaCard document={state.document} />
       <div className="detail-grid">
         <VersionList items={state.document.versions} />

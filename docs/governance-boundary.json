@@ -1,4 +1,4 @@
-{
+﻿{
   "version": 1,
   "model": "governance_boundary",
   "authority": {
@@ -12,12 +12,12 @@
       "purpose": "M3a prueft GUI Foundation, API-Erreichbarkeit, Frontend-Truth, GUI-Chaos und Contract-Kompatibilitaet im M3a-Scope.",
       "gate": "m3a_gate",
       "blocking_reports": [
-        "reports/m3a_truth_report.json",
-        "reports/frontend_truth_report.json",
-        "reports/gui_truth/latest.json",
-        "reports/gui_truth/gui_chaos_suite_report.json",
-        "reports/contract_test_report.json",
-        "reports/m3a_gate_result.json"
+        "reports/current/m3a_frontend_truth.json",
+        "reports/current/frontend_full_suite_staged_report.json",
+        "reports/current/frontend_full_suite_staged_report.json",
+        "reports/current/frontend_full_suite_staged_report.json",
+        "reports/current/frontend_full_suite_staged_report.json",
+        "reports/current/m3a_release_candidate.json"
       ],
       "blocking_markers": [
         "m3a_truth",
@@ -39,12 +39,12 @@
       "purpose": "M4 prueft Produktisierung, Stabilisierung, Auth/Workspace, Upload/Queue, Lifecycle/Retrieval und Backup/Restore-Minimalpfad.",
       "gate": "m4_overall_gate",
       "blocking_reports": [
-        "reports/m4_truth_report.json",
-        "reports/m4a_auth_truth_report.json",
-        "reports/m4b_upload_queue_truth_report.json",
-        "reports/m4c_lifecycle_retrieval_truth_report.json",
-        "reports/m4e_backup_restore_truth_report.json",
-        "reports/gate_hierarchy_result.json"
+        "reports/current/m4_truth_report.json",
+        "reports/current/m4a_auth_truth.json",
+        "reports/current/m4b_upload_queue_truth.json",
+        "reports/current/m4c_lifecycle_retrieval_truth.json",
+        "reports/current/m4e_backup_restore_truth.json",
+        "reports/current/gate_hierarchy_result.json"
       ],
       "blocking_markers": [
         "m4_truth",
@@ -73,8 +73,8 @@
       "purpose": "M5 prueft Langzeitbetrieb, Drift, Entropy, Betriebsreife und Governance nach bestandenem M4-Gesamtgate.",
       "gate": "m5_start_gate",
       "blocking_reports": [
-        "reports/m5_truth_report.json",
-        "reports/gate_hierarchy_result.json"
+        "reports/current/masterplan_status.json",
+        "reports/current/gate_hierarchy_result.json"
       ],
       "blocking_markers": [
         "m5_truth",
@@ -90,8 +90,8 @@
       "purpose": "Operational Governance bewertet Governance-Truth erst nach M5-Start.",
       "gate": "operational_governance_gate",
       "blocking_reports": [
-        "reports/governance_truth_report.json",
-        "reports/gate_hierarchy_result.json"
+        "reports/current/masterplan_status.json",
+        "reports/current/gate_hierarchy_result.json"
       ],
       "blocking_markers": [
         "governance_truth"
@@ -327,3 +327,5 @@
     }
   }
 }
+
+

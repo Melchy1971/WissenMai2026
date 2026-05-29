@@ -1,25 +1,25 @@
-# Audit Trail Schema
+﻿# Audit Trail Schema
 
 Stand: 2026-05-13
 
 ## Ziel
 
-Jede auditpflichtige Aktion hinterlässt ein vollständiges, maschinenlesbares Protokoll. Der Audit-Trail ist keine optionale Begleitdokumentation — er ist Governance-Pflicht und Gate-Voraussetzung für alle mutativen Operationen.
+Jede auditpflichtige Aktion hinterlÃ¤sst ein vollstÃ¤ndiges, maschinenlesbares Protokoll. Der Audit-Trail ist keine optionale Begleitdokumentation â€” er ist Governance-Pflicht und Gate-Voraussetzung fÃ¼r alle mutativen Operationen.
 
 Verwandte Dokumente:
 
-- `docs/controlled-failure-philosophy.md` — Fehlerprinzipien und Recovery
-- `docs/operational-truth-governance.md` — Truth-Quellen und Gate-Policies
-- `docs/architecture-change-governance.md` — Change-Control-Prozess
-- `backend/app/observability/logging.py` — `log_event`-Implementierung
-- `backend/app/services/reindex_governance.py` — Reindex-Audit-Referenzimplementierung
-- `backend/app/services/cleanup_governance.py` — Cleanup-Audit-Referenzimplementierung
+- `docs/controlled-failure-philosophy.md` â€” Fehlerprinzipien und Recovery
+- `docs/operational-truth-governance.md` â€” Truth-Quellen und Gate-Policies
+- `docs/architecture-change-governance.md` â€” Change-Control-Prozess
+- `backend/app/observability/logging.py` â€” `log_event`-Implementierung
+- `backend/app/services/reindex_governance.py` â€” Reindex-Audit-Referenzimplementierung
+- `backend/app/services/cleanup_governance.py` â€” Cleanup-Audit-Referenzimplementierung
 
 ---
 
 ## 1. Auditpflichtige Ereignistypen
 
-Die folgenden Operationen sind ohne vollständigen Audit-Trail verboten:
+Die folgenden Operationen sind ohne vollstÃ¤ndigen Audit-Trail verboten:
 
 | Nr. | Ereignis | Scope |
 |---|---|---|
@@ -32,30 +32,30 @@ Die folgenden Operationen sind ohne vollständigen Audit-Trail verboten:
 | A7 | Schema-Migration | Global |
 | A8 | Admin-Aktion | Workspace / Global |
 
-Eine Operation ohne Audit-Event ist ein Governance-Verstoß und gilt als blockierend für das zugehörige Gate.
+Eine Operation ohne Audit-Event ist ein Governance-VerstoÃŸ und gilt als blockierend fÃ¼r das zugehÃ¶rige Gate.
 
 ---
 
 ## 2. Basis-Audit-Schema
 
-Jedes Audit-Event muss alle Pflichtfelder enthalten. Fehlende Pflichtfelder machen das Event ungültig.
+Jedes Audit-Event muss alle Pflichtfelder enthalten. Fehlende Pflichtfelder machen das Event ungÃ¼ltig.
 
 ### 2.1 Pflichtfelder
 
 ```json
 {
-  "event_name": "string — kanonischer Eventname, z.B. reindex_governance_started",
+  "event_name": "string â€” kanonischer Eventname, z.B. reindex_governance_started",
   "event_version": "1",
-  "timestamp": "ISO 8601 UTC — Zeitpunkt des Events",
-  "correlation_id": "UUID — verbindet Start-, Abschluss- und Fehler-Events einer Operation",
+  "timestamp": "ISO 8601 UTC â€” Zeitpunkt des Events",
+  "correlation_id": "UUID â€” verbindet Start-, Abschluss- und Fehler-Events einer Operation",
   "actor": {
     "type": "system | admin | migration | scheduler",
-    "id": "string — User-ID, Job-ID oder 'system'",
-    "role": "string — owner | admin | system | migration"
+    "id": "string â€” User-ID, Job-ID oder 'system'",
+    "role": "string â€” owner | admin | system | migration"
   },
-  "workspace_id": "string | null — null nur bei globalen Operationen",
-  "operation": "string — Operationstyp, z.B. reindex | cleanup | restore",
-  "operation_scope": "string — full | workspace | document | global",
+  "workspace_id": "string | null â€” null nur bei globalen Operationen",
+  "operation": "string â€” Operationstyp, z.B. reindex | cleanup | restore",
+  "operation_scope": "string â€” full | workspace | document | global",
   "status": "started | completed | failed | rolled_back",
   "state_before": {},
   "state_after": {},
@@ -66,15 +66,15 @@ Jedes Audit-Event muss alle Pflichtfelder enthalten. Fehlende Pflichtfelder mach
 
 ### 2.2 Felddefinitionen
 
-**`correlation_id`**: UUID, generiert beim Start der Operation. Alle Events einer Operation (Start, Abschluss, Fehler) tragen dieselbe `correlation_id`. Ermöglicht vollständige Rekonstruktion einer Operationskette.
+**`correlation_id`**: UUID, generiert beim Start der Operation. Alle Events einer Operation (Start, Abschluss, Fehler) tragen dieselbe `correlation_id`. ErmÃ¶glicht vollstÃ¤ndige Rekonstruktion einer Operationskette.
 
-**`actor`**: Wer hat die Operation ausgelöst?
+**`actor`**: Wer hat die Operation ausgelÃ¶st?
 - `system`: automatischer Scheduler oder Governance-Service
 - `admin`: menschliche Admin-Aktion via API
 - `migration`: Alembic-Migration
 - `scheduler`: Hintergrund-Worker
 
-**`state_before` / `state_after`**: maschinenlesbarer Zustandsschnappschuss vor und nach der Operation. Format ist operationsspezifisch (Abschnitt 3). Beide Felder sind Pflicht; fehlt `state_after` bei Fehlern, muss `state_after: null` mit Begründung im `error`-Feld dokumentiert sein.
+**`state_before` / `state_after`**: maschinenlesbarer Zustandsschnappschuss vor und nach der Operation. Format ist operationsspezifisch (Abschnitt 3). Beide Felder sind Pflicht; fehlt `state_after` bei Fehlern, muss `state_after: null` mit BegrÃ¼ndung im `error`-Feld dokumentiert sein.
 
 **`error`**: null bei Erfolg. Bei Fehler:
 ```json
@@ -89,10 +89,10 @@ Jedes Audit-Event muss alle Pflichtfelder enthalten. Fehlende Pflichtfelder mach
 
 ### 2.3 Verbotene Felder
 
-Audit-Events dürfen nie enthalten:
+Audit-Events dÃ¼rfen nie enthalten:
 - Dokumenttext, Chunk-Inhalt, Query-Text
-- Passwörter, API-Tokens, Secrets
-- Freie Nutzeridentitäten in aggregierten Events
+- PasswÃ¶rter, API-Tokens, Secrets
+- Freie NutzeridentitÃ¤ten in aggregierten Events
 - Stack-Traces in Produktions-Audit-Logs
 
 ---
@@ -168,7 +168,7 @@ Kanonische Events: `cleanup_governance_started`, `cleanup_governance_completed`
 }
 ```
 
-**Sonderregel**: `dry_run: true` in `result` bedeutet keine Datenmutation ist erfolgt. Ein Cleanup-Audit mit `dry_run: false` und `blocked_count > 0` ist ein Governance-Verstoß.
+**Sonderregel**: `dry_run: true` in `result` bedeutet keine Datenmutation ist erfolgt. Ein Cleanup-Audit mit `dry_run: false` und `blocked_count > 0` ist ein Governance-VerstoÃŸ.
 
 ### A3: Restore
 
@@ -253,7 +253,7 @@ Kanonische Events: `lifecycle_transition_completed`, `lifecycle_transition_faile
     "archived_at": "2026-05-13T10:00:00Z"
   },
   "result": {
-    "transition": "active → archived",
+    "transition": "active â†’ archived",
     "citation_impact": "existing citations remain valid",
     "index_cleanup_triggered": true
   },
@@ -261,7 +261,7 @@ Kanonische Events: `lifecycle_transition_completed`, `lifecycle_transition_faile
 }
 ```
 
-**Sonderregel**: Jeder Lifecycle-Wechsel außerhalb des Lifecycle-Service ist verboten. Das Audit-Event ist die Verifikation, dass der Wechsel über den autorisierten Pfad lief.
+**Sonderregel**: Jeder Lifecycle-Wechsel auÃŸerhalb des Lifecycle-Service ist verboten. Das Audit-Event ist die Verifikation, dass der Wechsel Ã¼ber den autorisierten Pfad lief.
 
 ### A6: Drift Repair
 
@@ -286,7 +286,7 @@ Kanonische Events: `drift_repair_started`, `drift_repair_completed`
   "result": {
     "repair_type": "reindex + orphan_cleanup",
     "duration_ms": 8420,
-    "report_ref": "reports/m5_entropy/20260513_100000.json"
+    "report_ref": "reports/archive/m5_entropy/20260513_100000.json"
   },
   "error": null
 }
@@ -357,7 +357,7 @@ Kanonische Events: `admin_action_started`, `admin_action_completed`, `admin_acti
 }
 ```
 
-**Sonderregel**: Mutierende Admin-Aktionen ohne vorherigen Dry-Run-Pass sind ein Governance-Verstoß. Das Audit-Event muss `dry_run_completed_first: true` oder `dry_run: true` ausweisen. Quelle: `reports/current/masterplan_status.json`.
+**Sonderregel**: Mutierende Admin-Aktionen ohne vorherigen Dry-Run-Pass sind ein Governance-VerstoÃŸ. Das Audit-Event muss `dry_run_completed_first: true` oder `dry_run: true` ausweisen. Quelle: `reports/current/masterplan_status.json`.
 
 ---
 
@@ -365,28 +365,28 @@ Kanonische Events: `admin_action_started`, `admin_action_completed`, `admin_acti
 
 ### 4.1 Aufbewahrungsfristen
 
-| Ereignistyp | Minimale Retention | Begründung |
+| Ereignistyp | Minimale Retention | BegrÃ¼ndung |
 |---|---|---|
-| Reindex | 90 Tage | Drift-Trend-Analyse über Quartale |
+| Reindex | 90 Tage | Drift-Trend-Analyse Ã¼ber Quartale |
 | Cleanup | 365 Tage | Destructive Operationen brauchen langen Audit-Horizont |
-| Restore | unbegrenzt | DR-Nachweise müssen dauerhaft nachvollziehbar sein |
+| Restore | unbegrenzt | DR-Nachweise mÃ¼ssen dauerhaft nachvollziehbar sein |
 | Dead-Letter Replay | 90 Tage | Fehler-Muster-Analyse |
 | Lifecycle-Wechsel | 365 Tage | Historische Citations referenzieren Lifecycle-Zustand |
-| Drift Repair | 90 Tage | Trend-Analyse über Quartale |
+| Drift Repair | 90 Tage | Trend-Analyse Ã¼ber Quartale |
 | Schema-Migration | unbegrenzt | Migrations-Historie ist Teil der DB-Wahrheit |
 | Admin-Aktion | 365 Tage | Compliance und Change-Nachvollziehbarkeit |
 
 ### 4.2 Retention-Invarianten
 
-- Audit-Events dürfen nicht gelöscht werden, solange eine offene `correlation_id` existiert (kein abgeschlossenes End-Event).
-- Audit-Events zu Schema-Migrationen und Restore-Operationen sind permanent — keine automatische Löschung.
-- Cleanup-Audit-Events dürfen nicht durch denselben Cleanup-Prozess gelöscht werden, den sie protokollieren.
+- Audit-Events dÃ¼rfen nicht gelÃ¶scht werden, solange eine offene `correlation_id` existiert (kein abgeschlossenes End-Event).
+- Audit-Events zu Schema-Migrationen und Restore-Operationen sind permanent â€” keine automatische LÃ¶schung.
+- Cleanup-Audit-Events dÃ¼rfen nicht durch denselben Cleanup-Prozess gelÃ¶scht werden, den sie protokollieren.
 - Historische Citations referenzieren Lifecycle-Wechsel-Events; deren Retention darf nicht unter 365 Tage sinken.
 
 ### 4.3 Archivierung
 
 - Events nach Ablauf der aktiven Retention wandern in Kalt-Archiv (append-only).
-- Kalt-Archiv-Events dürfen gelesen, aber nicht modifiziert werden.
+- Kalt-Archiv-Events dÃ¼rfen gelesen, aber nicht modifiziert werden.
 - Archiv-Zugriff wird selbst als Audit-Event protokolliert.
 
 ---
@@ -395,19 +395,19 @@ Kanonische Events: `admin_action_started`, `admin_action_completed`, `admin_acti
 
 ### 5.1 Operationskette
 
-Eine vollständige Operation besteht aus mindestens zwei Events:
+Eine vollstÃ¤ndige Operation besteht aus mindestens zwei Events:
 
 ```
 correlation_id: "abc-123"
-  → event: reindex_governance_started  (status: started)
-  → event: reindex_governance_completed (status: completed | failed | rolled_back)
+  â†’ event: reindex_governance_started  (status: started)
+  â†’ event: reindex_governance_completed (status: completed | failed | rolled_back)
 ```
 
 Eine `correlation_id` ohne End-Event nach Timeout ist ein offener Fehlerfall und wird als `blocked` gewertet.
 
 ### 5.2 Verschachtelte Operationen
 
-Wenn eine Admin-Aktion eine Reindex-Operation auslöst, erhält die Reindex-Operation eine eigene `correlation_id`, die mit der Admin-Aktions-ID verknüpft ist:
+Wenn eine Admin-Aktion eine Reindex-Operation auslÃ¶st, erhÃ¤lt die Reindex-Operation eine eigene `correlation_id`, die mit der Admin-Aktions-ID verknÃ¼pft ist:
 
 ```json
 {
@@ -416,7 +416,7 @@ Wenn eine Admin-Aktion eine Reindex-Operation auslöst, erhält die Reindex-Oper
 }
 ```
 
-`parent_correlation_id` ist optional aber empfohlen für alle automatisch ausgelösten Operationen.
+`parent_correlation_id` ist optional aber empfohlen fÃ¼r alle automatisch ausgelÃ¶sten Operationen.
 
 ### 5.3 Fehlende End-Events
 
@@ -432,13 +432,13 @@ Wenn ein Start-Event existiert, aber kein End-Event nach dem konfigurierten Time
 
 | Gate | Bedingung |
 |---|---|
-| Cleanup-Gate | vollständiger Cleanup-Audit mit `blocked_count = 0` und `dry_run`-Event vor Mutation |
-| Reindex-Gate | vollständiger Reindex-Audit mit `drift_delta ≤ 0` und `lifecycle_ok = true` |
-| Restore-Gate | vollständiger Restore-Audit mit `verify_passed = true` und `truth_smoke_status = pass` |
-| Migration-Gate | vollständiger Migration-Audit mit `postgres_truth_status = pass` |
-| Admin-Aktion-Gate | vollständiger Admin-Audit mit `safety_gate_passed = true` |
+| Cleanup-Gate | vollstÃ¤ndiger Cleanup-Audit mit `blocked_count = 0` und `dry_run`-Event vor Mutation |
+| Reindex-Gate | vollstÃ¤ndiger Reindex-Audit mit `drift_delta â‰¤ 0` und `lifecycle_ok = true` |
+| Restore-Gate | vollstÃ¤ndiger Restore-Audit mit `verify_passed = true` und `truth_smoke_status = pass` |
+| Migration-Gate | vollstÃ¤ndiger Migration-Audit mit `postgres_truth_status = pass` |
+| Admin-Aktion-Gate | vollstÃ¤ndiger Admin-Audit mit `safety_gate_passed = true` |
 
-Fehlt ein Audit-Event für eine abgeschlossene Gate-Operation, ist der Gate-Status `unknown`, nicht `pass`.
+Fehlt ein Audit-Event fÃ¼r eine abgeschlossene Gate-Operation, ist der Gate-Status `unknown`, nicht `pass`.
 
 ---
 
@@ -452,7 +452,7 @@ Fehlt ein Audit-Event für eine abgeschlossene Gate-Operation, ist der Gate-Stat
 | Schema-Migrations-Audit | Alembic-Migrations-Header | Pflicht-Header-Format aus `schema-evolution-safety-model.md` |
 | Actor-Kontext | API-Layer | `actor`-Feld aus Auth-Session in alle Governance-Aufrufe injizieren |
 
-**Offene Lücke**: Das `actor`-Feld ist in den bestehenden Services (`reindex_governance.py`, `cleanup_governance.py`) noch nicht implementiert — `log_event()` enthält aktuell kein `actor`-Argument. Jede neue auditpflichtige Operation muss `actor` als Pflichtfeld übergeben; bestehende Services brauchen ein Follow-up-Issue.
+**Offene LÃ¼cke**: Das `actor`-Feld ist in den bestehenden Services (`reindex_governance.py`, `cleanup_governance.py`) noch nicht implementiert â€” `log_event()` enthÃ¤lt aktuell kein `actor`-Argument. Jede neue auditpflichtige Operation muss `actor` als Pflichtfeld Ã¼bergeben; bestehende Services brauchen ein Follow-up-Issue.
 
 ---
 
@@ -460,8 +460,8 @@ Fehlt ein Audit-Event für eine abgeschlossene Gate-Operation, ist der Gate-Stat
 
 ```
 [ ] Alle 8 auditpflichtigen Ereignistypen haben Start- und End-Event
-[ ] Jedes Event enthält correlation_id, actor, timestamp, workspace_id
-[ ] state_before und state_after für jede Operation vorhanden
+[ ] Jedes Event enthÃ¤lt correlation_id, actor, timestamp, workspace_id
+[ ] state_before und state_after fÃ¼r jede Operation vorhanden
 [ ] error-Feld bei Fehler gesetzt; null bei Erfolg
 [ ] Keine verbotenen Felder (Dokumenttext, Tokens, Secrets)
 [ ] Retention-Fristen je Eventtyp eingehalten
@@ -469,5 +469,6 @@ Fehlt ein Audit-Event für eine abgeschlossene Gate-Operation, ist der Gate-Stat
 [ ] Mutierende Admin-Aktionen: dry_run_completed_first = true
 [ ] Cleanup-Mutation: blocked_count = 0 im Audit nachgewiesen
 [ ] Schema-Migration: postgres_truth_status = pass im Audit
-[ ] Audit-Events nicht durch denselben Prozess löschbar, den sie protokollieren
+[ ] Audit-Events nicht durch denselben Prozess lÃ¶schbar, den sie protokollieren
 ```
+

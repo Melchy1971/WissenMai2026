@@ -7,29 +7,34 @@ export function ChatMessageThread({ items }) {
           <h3>Nachrichten</h3>
         </div>
       </div>
-      <ul className="stack-list">
+      <ul className="stack-list" data-testid="chat-message-list">
         {items.map((item) => (
-          <li key={item.id} className={`stack-list__item stack-list__item--block chat-message chat-message--${item.role}`}>
+          <li
+            key={item.id}
+            className={`stack-list__item stack-list__item--block chat-message chat-message--${item.role}`}
+            data-testid={item.role === 'assistant' ? 'chat-answer' : undefined}
+          >
             <div className="chat-message__header">
               <strong>{item.role === 'user' ? 'Frage' : 'Antwort'}</strong>
               <span className="state-card__meta">{item.createdAtLabel}</span>
             </div>
             <p className="chat-message__content">{item.content}</p>
             {item.confidence && item.confidence.sufficientContext === false ? (
-              <div className="chat-warning">
+              <div className="chat-warning" data-testid="chat-insufficient-context">
                 <strong>Zu wenig Kontext</strong>
                 <p>Die Antwort wurde als unzureichend belegt markiert.</p>
                 <p className="state-card__meta">Max Score: {item.confidence.retrievalScoreMaxLabel} · Avg Score: {item.confidence.retrievalScoreAvgLabel}</p>
               </div>
             ) : null}
             {Array.isArray(item.citations) && item.citations.length > 0 ? (
-              <div className="chat-citations">
+              <div className="chat-citations" data-testid="chat-citations">
                 <p className="panel__eyebrow">Quellen</p>
                 <ul className="stack-list">
                   {item.citations.map((citation) => (
                     <li key={`${item.id}-${citation.chunkId}`} className="stack-list__item stack-list__item--block chat-citation-card">
                       <p><strong>{citation.documentTitle}</strong></p>
                       <p className="state-card__meta">Chunk: {citation.chunkId} · {citation.sourceAnchorLabel}</p>
+                      <p className="state-card__meta">Source Status: {citation.sourceStatus}</p>
                       <p>{citation.quotePreview}</p>
                     </li>
                   ))}

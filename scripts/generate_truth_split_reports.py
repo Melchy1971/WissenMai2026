@@ -40,6 +40,14 @@ REPORT_PATHS = {
     "m4e_backup_restore_truth": CURRENT_DIR / "m4e_backup_restore_truth.json",
 }
 
+M4_SPLIT_REPORT_MARKERS = (
+    "m4a_auth_truth",
+    "m4b_upload_queue_truth",
+    "m4c_lifecycle_retrieval_truth",
+    "m4e_backup_restore_truth",
+)
+M4_SPLIT_MARKEXPR = " or ".join(M4_SPLIT_REPORT_MARKERS)
+
 REPORT_FORMAT_VERSION = 1
 REPORT_SCHEMA_VERSION = 1
 
@@ -320,6 +328,31 @@ def _selected_report_markers(pytest_args: list[str]) -> set[str] | None:
     return selected or None
 
 
+def _expand_m4_split_marker_args(pytest_args: list[str]) -> list[str]:
+    selected = _selected_report_markers(pytest_args)
+    if not selected or not selected.intersection(M4_SPLIT_REPORT_MARKERS):
+        return pytest_args
+
+    for index, arg in enumerate(pytest_args):
+        if arg == "-m" and index + 1 < len(pytest_args):
+            marker_expression = pytest_args[index + 1]
+            expanded = list(pytest_args)
+            expanded[index + 1] = f"({marker_expression}) or ({M4_SPLIT_MARKEXPR})"
+            return expanded
+        if arg.startswith("-m="):
+            marker_expression = arg.split("=", 1)[1]
+            expanded = list(pytest_args)
+            expanded[index] = f"-m=({marker_expression}) or ({M4_SPLIT_MARKEXPR})"
+            return expanded
+        if arg.startswith("--markexpr="):
+            marker_expression = arg.split("=", 1)[1]
+            expanded = list(pytest_args)
+            expanded[index] = f"--markexpr=({marker_expression}) or ({M4_SPLIT_MARKEXPR})"
+            return expanded
+
+    return pytest_args
+
+
 def _has_explicit_test_target(pytest_args: list[str]) -> bool:
     skip_next = False
     for arg in pytest_args:
@@ -404,6 +437,7 @@ def main(argv: list[str] | None = None) -> int:
         pytest_args = _default_pytest_args()
     else:
         pytest_args = _with_default_test_target(pytest_args)
+    pytest_args = _expand_m4_split_marker_args(pytest_args)
 
     exit_code, reports, duration = generate_split_reports(pytest_args)
     selected_markers = _selected_report_markers(pytest_args)

@@ -1,4 +1,4 @@
-# GUI PR Review Checklist
+﻿# GUI PR Review Checklist
 
 Stand: 2026-05-18
 
@@ -57,13 +57,13 @@ Verbindliche Bezugsdokumente:
 - Nutzt der PR den zentralen API-Client statt eigener Fetch-Sonderwege?
 - Nutzt der PR Request-Ticketing, Cancellation und Snapshot-Schutz bei async Writes?
 - Nutzt der PR ViewModel-/Presenter-Mapping fuer nichttriviale Response-zu-UI-Ableitungen?
-- Hält der PR Cache-Governance mit `source_timestamp` oder `source_version` ein, wenn Cache betroffen ist?
+- HÃ¤lt der PR Cache-Governance mit `source_timestamp` oder `source_version` ein, wenn Cache betroffen ist?
 
 ### 7. Tests und Nachweise
 
 - Gibt es einen passenden Test oder Report fuer den geaenderten GUI-Slice?
 - Wurde kein fokussierter Testlauf als Full-GUI-Nachweis ueberdehnt?
-- Wenn der PR produktionsnahe Aussagen trifft: gibt es einen aktuellen `frontend_truth_report.json` oder einen klar begrenzten Scope-Hinweis?
+- Wenn der PR produktionsnahe Aussagen trifft: gibt es einen aktuellen `frontend_full_suite_staged_report.json` oder einen klar begrenzten Scope-Hinweis?
 - Widerspricht der PR nicht dem Contract-Report oder einem aktuellen Gate-Report?
 
 ## Harte Review-Stopper
@@ -75,7 +75,7 @@ Ein GUI-PR darf nicht als freigabefaehig bewertet werden, wenn mindestens eines 
 - async Response kann ohne Ticket-/Snapshot-Pruefung aktuellen State ueberschreiben
 - Workspace-Isolation ist gebrochen oder nicht nachgewiesen
 - Auth-, Forbidden- oder Recovery-Pfad ist unklar oder unsichtbar
-- lokaler Testgrünstand wird benutzt, um roten Truth- oder Gate-Status zu relativieren
+- lokaler TestgruÌˆnstand wird benutzt, um roten Truth- oder Gate-Status zu relativieren
 - der PR fuehrt eine neue lokale Sonderabstraktion ein, obwohl dafuer bereits ein zentraler Mechanismus existiert
 
 ## Review-Entscheidung

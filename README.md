@@ -1,4 +1,4 @@
-# Wissensbasis V1
+﻿# Wissensbasis V1
 
 Wissensbasis V1 ist die Startarchitektur fuer eine lokale GUI mit remote angebundener Datenbank, versionierten Dokumentinhalten und klar abgegrenztem V1-Scope.
 
@@ -34,23 +34,16 @@ Der aktuelle Stand bildet bewusst die V1-Startstruktur und Architekturentscheidu
 
 ## Aktueller Freigabestand
 
-Fuer den aktuell zulaessigen Dokumentationsstand zu M4 und M5 gilt die kompakte Freigabefassung in `docs/m4-m5-freigabefassung.md`.
+Der aktuelle Gate-Status wird nicht manuell in dieser Datei gepflegt. Verbindlich sind `reports/current/masterplan_status.json` und der daraus erzeugte Abschnitt `docs/generated/status_section.md`.
 
-Kurzstand am 2026-05-07:
-
-- M4 ist nicht technisch stabilisiert.
-- M4 Hardening Score: `74/100`.
-- M4d ist nur read-only beschrieben. Quelle: `reports/current/masterplan_status.json`.
-- M5 bleibt blockiert.
-
-erreichbare PostgreSQL-Datenbank.
+M3a, M4 und M5 sind getrennte Gates: M3a wird ueber die Frontend-Full-Suite bewertet, M4 ueber die aktuellen M4-Split-Reports plus `reports/current/m4_truth_report.json`, und M5 ueber das M5-Start-Gate aus `reports/current/masterplan_status.json`.
 
 ## Backend-Setup & Bootstrap (Stand 2026-05-26)
 
 ### Bootstrap-Reihenfolge (empfohlen)
 
 1. `.env` laden (inkl. Seed Credentials, siehe unten)
-2. DB-Verbindung prüfen
+2. DB-Verbindung prÃ¼fen
 3. Alembic-Migrationen (`upgrade head`)
 4. Auth-Seed (`backend/scripts/seed_auth.py`)
 5. Auth Bootstrap Guard (`scripts/check_auth_bootstrap.py`)
@@ -65,18 +58,18 @@ Automatisiert per:
 
 Optionale Flags: `-SkipSeed`, `-SkipSmoke`, `-DryRun` (siehe docs/operations.md)
 
-### Benötigte Umgebungsvariablen
+### BenÃ¶tigte Umgebungsvariablen
 
-- `APP_ENV`: Laufzeitumgebung, lokal standardmäßig `local`.
-- `DATABASE_URL`: PostgreSQL-Verbindungsstring für Remote-DB, z. B. `postgresql+psycopg://user:password@host:5432/dbname`.
-- `TEST_DATABASE_URL`: PostgreSQL-Verbindungsstring für Integrationstests.
-- `DEFAULT_WORKSPACE_ID`, `DEFAULT_USER_ID`: vorbereitete IDs für V1 Single-User.
+- `APP_ENV`: Laufzeitumgebung, lokal standardmÃ¤ÃŸig `local`.
+- `DATABASE_URL`: PostgreSQL-Verbindungsstring fÃ¼r Remote-DB, z. B. `postgresql+psycopg://user:password@host:5432/dbname`.
+- `TEST_DATABASE_URL`: PostgreSQL-Verbindungsstring fÃ¼r Integrationstests.
+- `DEFAULT_WORKSPACE_ID`, `DEFAULT_USER_ID`: vorbereitete IDs fÃ¼r V1 Single-User.
 - **Seed Credentials:**
 	- `SEED_ADMIN_LOGIN` (Default: `admin@localhost`)
 	- `SEED_ADMIN_PASSWORD` (Default: `change-me`)
 	- `SEED_WORKSPACE_NAME` (Default: `Default Workspace`)
 
-> **Warnung (lokale Entwicklung):** `.env` enthält das Klartext-Passwort. Niemals `.env` committen! In produktiver Dokumentation keine Klartext-Credentials angeben.
+> **Warnung (lokale Entwicklung):** `.env` enthÃ¤lt das Klartext-Passwort. Niemals `.env` committen! In produktiver Dokumentation keine Klartext-Credentials angeben.
 
 Alle Seed-Skripte lesen diese ENV-Variablen. Legacy-Keys werden als Fallback akzeptiert, aber nicht mehr gesetzt.
 
@@ -90,9 +83,9 @@ Set-Location H:\WissenMai2026
 
 ### Auth Bootstrap Guard
 
-Nach dem Seed prüft `scripts/check_auth_bootstrap.py` Login und Workspace-Isolation. Fehler führen zu Exit != 0 und Report in `reports/current/m4a_auth_truth.json`.
+Nach dem Seed prÃ¼ft `scripts/check_auth_bootstrap.py` Login und Workspace-Isolation. Fehler fÃ¼hren zu Exit != 0 und Report in `reports/current/m4a_auth_truth.json`.
 
-Einzeln ausführen:
+Einzeln ausfÃ¼hren:
 
 ```powershell
 python scripts/check_auth_bootstrap.py --no-start-api
@@ -100,19 +93,16 @@ python scripts/check_auth_bootstrap.py --no-start-api
 
 ### Runtime Connectivity Gate
 
-`scripts/validate_runtime_connectivity_gate.py` prüft 9 Kernchecks (DB, Alembic, Seed, Health, Login, Auth, Workspace, Frontend, API). Score >= 95 % = nicht PASS (M3a grün), darunter = FAIL (blockiert M3a/M4). Quelle: `reports/current/masterplan_status.json`.
+`scripts/validate_runtime_connectivity_gate.py` prueft DB, Alembic, Seed, Health, Login, Auth, Workspace, Frontend und API. Der aktuelle Gate-Status wird aus `reports/current/masterplan_status.json` gelesen.
 
 ```powershell
 python scripts/validate_runtime_connectivity_gate.py
 ```
 
-Letzter Run (2026-05-26): **9/9 = 100 % → nicht PASS** Quelle: `reports/current/masterplan_status.json`.
-
 ### Statusmatrix (M3a/M4)
 
-- M3a Frontend Foundation: nicht abgeschlossen, Score 100 % (siehe aktuelle Reports). Quelle: `reports/current/masterplan_status.json`.
-- M4 Backend: blockiert, da PostgreSQL Truth Report rot ist (16 failed, 2 errors).
-- M4d Diagnostics: nur read-only beschrieben, keine mutierenden Admin-Aktionen. Quelle: `reports/current/masterplan_status.json`.
+- Aktuelle Statusmatrix: `docs/generated/status_section.md`.
+- Maschinenlesbare Quelle: `reports/current/masterplan_status.json`.
 
 Weitere Details: siehe `docs/status.md`, `docs/operations.md`, `docs/security.md`.
 
@@ -147,7 +137,7 @@ $env:TEST_DATABASE_URL="postgresql+psycopg://appuser:<password>@85.215.131.200:5
 .\scripts\run-postgres-truth.ps1
 ```
 
-Die Reports landen in `reports/current/m4_truth_report.json` und `reports/postgres_truth_report.md`.
+Die Reports landen in `reports/current/m4_truth_report.json` und `reports/current/m4_truth_report.json`.
 
 Bekannte Einschraenkung:
 
@@ -167,3 +157,4 @@ npm install
 - [V1-Scope, Nicht-Ziele und vorbereitete Mehrbenutzerfaehigkeit](h:\WissenMai2026\docs\adr\0002-v1-scope-and-boundaries.md)
 
 Die aelteren Kurzfassungen unter `docs/adr/0001-tech-stack.md` und `docs/adr/0002-v1-scope.md` existieren weiterhin, die aktuellen Paket-1-Referenzen zeigen jedoch auf die ausfuehrlichen V1-ADRs.
+

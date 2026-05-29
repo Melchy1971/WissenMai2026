@@ -1,4 +1,4 @@
-# Hartes Abschluss-Gate: Paket 5
+﻿# Hartes Abschluss-Gate: Paket 5
 
 Stand: 2026-05-04
 
@@ -6,7 +6,7 @@ Hinweis zum Dokumentstatus:
 
 - Dieses Dokument beschreibt das historische Abschluss-Gate fuer Paket 5.
 - Es ist weiterhin als M3-Basis relevant, aber keine aktuelle Quelle fuer M4/M5-Freigabeentscheidungen.
-- Fuer den aktuellen M4/M5-Stand sind `docs/m4-m5-freigabefassung.md`, `reports/current/m4_truth_report.json`, `reports/restore_truth_report.md` und `masterplan.md` massgeblich.
+- Fuer den aktuellen M4/M5-Stand sind `docs/m4-m5-freigabefassung.md`, `reports/current/m4_truth_report.json`, `reports/current/m4e_backup_restore_truth.json` und `masterplan.md` massgeblich.
 
 Dieses Gate bewertet, ob Paket 5 freigegeben werden darf. Code, Tests und Migrationen sind die Ground Truth.
 
@@ -189,3 +189,4 @@ Ein Paket darf nur als `freigegeben` markiert werden, wenn alle folgenden Beding
 - Keine offenen Blocker.
 - Alle skipped Tests haben eine dokumentierte, akzeptierte Begruendung.
 - Dokumentation enthaelt keine Features, die nicht im Code existieren.
+

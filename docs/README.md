@@ -1,4 +1,4 @@
-# Dokumentation
+﻿# Dokumentation
 
 Dokumentationsbereich fuer Architektur-, Entscheidungs- und Betriebswissen der Wissensbasis.
 
@@ -27,7 +27,7 @@ Wichtige Runbooks im aktuellen Stand:
 
 Die kompakte Freigabefassung fuer den aktuell zulaessigen M4/M5-Dokumentationsstand steht in `docs/m4-m5-freigabefassung.md`.
 
-Der aktuelle echte Restore-Truth-Nachweis steht in [reports/restore_truth_report.md](H:/WissenMai2026/reports/restore_truth_report.md).
+Der aktuelle echte Restore-Truth-Nachweis steht in [reports/current/m4e_backup_restore_truth.json](H:/WissenMai2026/reports/current/m4e_backup_restore_truth.json).
 
 Das Release-Candidate-Modell fuer Zwischenstatus zwischen Entwicklung und abgeschlossen steht in `docs/release-candidate-model.md`; die maschinenlesbare Quelle ist `docs/release-candidate-model.json`.
 
@@ -44,7 +44,7 @@ Sie ist die bevorzugte Kurzreferenz fuer:
 
 Die folgenden Dokumente bilden den Vorbereitungsrahmen fuer M5. Sie beschreiben aktuell nur Statuslogik, Konzepte und spaetere Nachweisanker.
 
-Sie duerfen nicht als Beleg fuer einen gestarteten M5-Betrieb, eine laufende Implementierung oder ein grünes M5-Gate gelesen werden.
+Sie duerfen nicht als Beleg fuer einen gestarteten M5-Betrieb, eine laufende Implementierung oder ein gruÌˆnes M5-Gate gelesen werden.
 
 - [docs/data-quality.md](H:/WissenMai2026/docs/data-quality.md): Vorbereitungsrahmen fuer M5 Data Quality
 - [docs/drift.md](H:/WissenMai2026/docs/drift.md): Vorbereitungsrahmen fuer M5 Drift Detection
@@ -88,3 +88,4 @@ Die folgenden Dokumente bilden das vollstaendige Governance-Framework fuer langf
 - [docs/system-invariant-registry.md](H:/WissenMai2026/docs/system-invariant-registry.md): Zentrale Registry aller System-Invarianten INV-001 bis INV-036 mit Beschreibung, Criticality, Nachweispflicht und Reparaturpfad
 - [docs/long-term-governance-review.md](H:/WissenMai2026/docs/long-term-governance-review.md): Bewertung der 8 Governance-Bereiche (fragmentiert bis systemisch kontrolliert) mit Lueckenanalyse und Langzeitrisiken
 - [docs/long-term-architecture-strategy.md](H:/WissenMai2026/docs/long-term-architecture-strategy.md): Mehrjaehrige Architekturstrategie mit 7 strategischen Zielen, 10 No-Go-Verletzungen, Pflicht-Refactoring-Triggern und Feature-Stop-Bedingungen
+

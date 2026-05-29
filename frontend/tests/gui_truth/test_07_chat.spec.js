@@ -18,93 +18,135 @@ async function createPreparedChatSession(page, title) {
   return response.json();
 }
 
+async function openPreparedSession(page, title) {
+  const session = await createPreparedChatSession(page, title);
+  await page.goto(`/chat/${session.id}`);
+  await expect(page).toHaveURL(new RegExp(`/chat/${session.id}$`), { timeout: 10_000 });
+  await expect(page.getByTestId('chat-submit')).toBeEnabled({ timeout: 10_000 });
+  return session;
+}
+
+async function askQuestion(page, question, sessionId) {
+  await page.getByTestId('chat-input').fill(question);
+  const [response] = await Promise.all([
+    page.waitForResponse((candidate) => (
+      candidate.request().method() === 'POST'
+      && candidate.url().includes(`/api/v1/chat/sessions/${sessionId}/messages`)
+    )),
+    page.getByTestId('chat-submit').click(),
+  ]);
+  return response;
+}
+
 test.describe('07 Chat flow', () => {
-  test('shows chat page heading and workspace context', async ({ authedPage }) => {
+  test('chat page is visible with stable controls', async ({ authedPage }) => {
     const workspaceId = process.env.TRUTH_WORKSPACE_ID;
     await authedPage.goto('/chat');
     await expect(authedPage.getByTestId('chat-page')).toBeVisible({ timeout: 10_000 });
     await expect(authedPage.getByText(`Workspace: ${workspaceId}`)).toBeVisible();
+    await expect(authedPage.getByTestId('chat-new-session')).toBeVisible();
+    await expect(authedPage.getByTestId('chat-input')).toBeVisible();
+    await expect(authedPage.getByTestId('chat-submit')).toBeVisible();
   });
 
-  test('shows empty chat state or session list', async ({ authedPage }) => {
-    await authedPage.goto('/chat');
-
-    // Either no sessions exist (empty state) or there are existing sessions
-    await authedPage.waitForTimeout(3_000);
-    const hasError = await authedPage.locator('.state-card--error').isVisible().catch(() => false);
-    expect(hasError).toBe(false);
-  });
-
-  test('shows chat composer form', async ({ authedPage }) => {
-    await authedPage.goto('/chat');
-    // Wait for loading to finish
-    await expect(authedPage.locator('.state-card--error')).not.toBeVisible({ timeout: 10_000 });
-    await expect(authedPage.locator('input[type="text"]')).toBeVisible({ timeout: 5_000 });
-    await expect(authedPage.getByTestId('chat-layout')).toBeVisible();
-  });
-
-  test('navigation from documents to chat preserves workspace context', async ({ authedPage }) => {
-    const workspaceId = process.env.TRUTH_WORKSPACE_ID;
-    // Start on documents
-    await expect(authedPage.getByText(`Workspace: ${workspaceId}`)).toBeVisible();
-    // Navigate to chat
-    await authedPage.getByRole('link', { name: 'Chat' }).click();
-    await expect(authedPage.getByRole('heading', { name: 'Dokumentgestuetzter Chat' })).toBeVisible({ timeout: 10_000 });
-    await expect(authedPage.getByText(`Workspace: ${workspaceId}`)).toBeVisible();
-  });
-
-  test('creates a chat session through the real API', async ({ authedPage }) => {
+  test('creates a new chat session through the UI', async ({ authedPage }) => {
     const title = `GUI Truth Chat ${Date.now()}`;
     await authedPage.goto('/chat');
-    await authedPage.getByLabel('Titel der Sitzung').fill(title);
-    await authedPage.getByRole('button', { name: 'Neue Sitzung' }).click();
+    await authedPage.getByTestId('chat-session-title').fill(title);
+    await authedPage.getByTestId('chat-new-session').click();
 
     await expect(authedPage.getByText(title)).toBeVisible({ timeout: 10_000 });
     await expect(authedPage).toHaveURL(/\/chat\/.+/);
   });
 
-  test('posts a question and renders an answer with citations', async ({ authedPage }) => {
-    const title = `GUI Truth Citation Chat ${Date.now()}`;
-    const session = await createPreparedChatSession(authedPage, title);
-    await authedPage.goto(`/chat/${session.id}`);
-    await expect(authedPage).toHaveURL(new RegExp(`/chat/${session.id}$`), { timeout: 10_000 });
-
-    await authedPage.getByLabel('Frage').fill(
-      'GUI Truth Active Document truthneedle active knowledge base content deterministic citations supporting text',
+  test('posts a question through the real API', async ({ authedPage }) => {
+    const session = await openPreparedSession(authedPage, `GUI Truth Question Chat ${Date.now()}`);
+    const response = await askQuestion(
+      authedPage,
+      'GUI Truth Active Document truthneedle active knowledge base content',
+      session.id,
     );
-    const [response] = await Promise.all([
-      authedPage.waitForResponse((candidate) => (
-        candidate.request().method() === 'POST'
-        && candidate.url().includes(`/api/v1/chat/sessions/${session.id}/messages`)
-      )),
-      authedPage.getByRole('button', { name: 'Frage senden' }).click(),
-    ]);
 
     expect(response.status()).toBe(201);
-    const payload = await response.json();
-    expect(payload.role).toBe('assistant');
-    expect(Array.isArray(payload.citations)).toBe(true);
-    expect(payload.citations.length).toBeGreaterThan(0);
-    expect(payload.citations[0]?.document_title).toBe('GUI Truth Active Document');
+    await expect(authedPage.getByTestId('chat-message-list')).toContainText('GUI Truth Active Document truthneedle');
   });
 
-  test('insufficient context is rendered as a controlled error state', async ({ authedPage }) => {
-    const title = `GUI Truth No Context Chat ${Date.now()}`;
-    const session = await createPreparedChatSession(authedPage, title);
-    await authedPage.goto(`/chat/${session.id}`);
-    await expect(authedPage).toHaveURL(new RegExp(`/chat/${session.id}$`), { timeout: 10_000 });
+  test('renders an assistant answer', async ({ authedPage }) => {
+    const session = await openPreparedSession(authedPage, `GUI Truth Answer Chat ${Date.now()}`);
+    const response = await askQuestion(
+      authedPage,
+      'GUI Truth Active Document truthneedle active knowledge base content deterministic citations supporting text',
+      session.id,
+    );
 
-    await authedPage.getByLabel('Frage').fill('nohitneedle-frontend-truth-without-context');
-    const [response] = await Promise.all([
-      authedPage.waitForResponse((candidate) => (
-        candidate.request().method() === 'POST'
-        && candidate.url().includes(`/api/v1/chat/sessions/${session.id}/messages`)
-      )),
-      authedPage.getByRole('button', { name: 'Frage senden' }).click(),
-    ]);
+    expect(response.status()).toBe(201);
+    await expect(authedPage.getByTestId('chat-answer')).toBeVisible({ timeout: 10_000 });
+    await expect(authedPage.getByTestId('chat-answer')).not.toHaveText('');
+  });
+
+  test('renders citations for grounded answers', async ({ authedPage }) => {
+    const session = await openPreparedSession(authedPage, `GUI Truth Citation Chat ${Date.now()}`);
+    const response = await askQuestion(
+      authedPage,
+      'GUI Truth Active Document truthneedle active knowledge base content deterministic citations supporting text',
+      session.id,
+    );
+    const payload = await response.json();
+
+    expect(response.status()).toBe(201);
+    expect(payload.citations.length).toBeGreaterThan(0);
+    await expect(authedPage.getByTestId('chat-citations')).toContainText('GUI Truth Active Document', { timeout: 10_000 });
+  });
+
+  test('renders citation source_status', async ({ authedPage }) => {
+    const session = await openPreparedSession(authedPage, `GUI Truth Source Status Chat ${Date.now()}`);
+    const response = await askQuestion(
+      authedPage,
+      'GUI Truth Active Document truthneedle active knowledge base content deterministic citations supporting text',
+      session.id,
+    );
+    const payload = await response.json();
+
+    expect(response.status()).toBe(201);
+    expect(payload.citations[0]?.source_status).toBe('active');
+    await expect(authedPage.getByTestId('chat-citations')).toContainText('Source Status: active', { timeout: 10_000 });
+  });
+
+  test('renders insufficient_context as controlled error state', async ({ authedPage }) => {
+    const session = await openPreparedSession(authedPage, `GUI Truth No Context Chat ${Date.now()}`);
+    const response = await askQuestion(authedPage, 'nohitneedle-frontend-truth-without-context', session.id);
 
     expect(response.status()).toBe(422);
+    await expect(authedPage.getByTestId('chat-insufficient-context')).toContainText('Fehlercode: INSUFFICIENT_CONTEXT', {
+      timeout: 10_000,
+    });
+  });
+
+  test('archived and deleted sources are not used in new retrieval', async ({ authedPage }) => {
+    const session = await openPreparedSession(authedPage, `GUI Truth Lifecycle Filter Chat ${Date.now()}`);
+    const response = await askQuestion(
+      authedPage,
+      'GUI Truth Active Document truthneedle active knowledge base content deterministic citations supporting text',
+      session.id,
+    );
     const payload = await response.json();
-    expect(payload.error?.code).toBe('INSUFFICIENT_CONTEXT');
+
+    expect(response.status()).toBe(201);
+    expect(payload.citations.length).toBeGreaterThan(0);
+    expect(payload.citations.every((citation) => citation.source_status === 'active')).toBe(true);
+    expect(payload.citations.some((citation) => citation.document_title === 'GUI Truth Archived Document')).toBe(false);
+    expect(payload.citations.some((citation) => citation.document_title === 'GUI Truth Deleted Document')).toBe(false);
+    await expect(authedPage.getByTestId('chat-citations')).not.toContainText('GUI Truth Archived Document');
+    await expect(authedPage.getByTestId('chat-citations')).not.toContainText('GUI Truth Deleted Document');
+  });
+
+  test('chat API error is visible', async ({ authedPage }) => {
+    const session = await openPreparedSession(authedPage, `GUI Truth API Error Chat ${Date.now()}`);
+    await authedPage.route(`**/api/v1/chat/sessions/${session.id}/messages`, (route) => route.abort('failed'));
+
+    await authedPage.getByTestId('chat-input').fill('truthneedle');
+    await authedPage.getByTestId('chat-submit').click();
+
+    await expect(authedPage.getByTestId('chat-error')).toContainText('Fehlercode: API_UNREACHABLE', { timeout: 10_000 });
   });
 });
