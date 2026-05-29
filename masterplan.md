@@ -97,15 +97,25 @@ Zwischen Entwicklung und nicht abgeschlossen gilt ab sofort das Release-Candidat
 
 ---
 
-## 3. M4e Operations Scope
 
-Siehe maschinenlesbaren Scope-Report (docs/m4e-operations-scope.md, falls vorhanden) und aktuelle Reports unter reports/current/.
+## 3. Data Quality Architektur & M5a Gate
+
+Alle Aussagen, Status und Gates werden ausschließlich aus maschinenlesbaren Reports abgeleitet:
+
+- Data Quality Architektur: Siehe docs/data-quality.md und data_quality_report_generator.py
+- Findings-Modell: Siehe DataQualityFinding (models/data_quality.py)
+- Quality Score: Siehe quality_score.py und data_quality_report.json
+- APIs: Siehe OpenAPI und API-Implementierung (data-quality Endpunkte)
+- Dashboard: Siehe React-Komponenten, HeroUI, Telekom CI
+- M5a Gate: Siehe reports/current/m5a_data_quality_gate.json (Go/No-Go, Score)
+
+Manuelle Statuswerte, Prozentangaben oder Freigaben sind nicht zulässig. Alle Gate- und Statusentscheidungen werden maschinell getroffen und dokumentiert.
 
 ---
 
 ## 4. M5 Readiness
 
-Siehe m5_gate_assessment.json und m5_readiness_assessment.json (NO-GO, Blocker: M5 Entropy/Drift-Blocker, fehlende Pflicht-Artefakte, Governance-Restriktionen). Details siehe Known Limitations und Gate-Matrix.
+Siehe m5_gate_assessment.json und m5_readiness_assessment.json. Details siehe Known Limitations und Gate-Matrix.
 
 ---
 
