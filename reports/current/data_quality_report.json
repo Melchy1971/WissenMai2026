@@ -1,0 +1,8 @@
+{
+  "report_schema_version": 1,
+  "report_name": "data_quality_report",
+  "generated_by": "run_data_quality_cli",
+  "status": "NOT_RUN",
+  "note": "Kein Run ausgefuehrt. Report wird durch 'python scripts/run_data_quality.py --workspace <id>' erzeugt.",
+  "generated_at": "2026-06-01T09:33:03.369289+00:00"
+}

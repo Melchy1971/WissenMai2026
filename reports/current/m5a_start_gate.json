@@ -2,31 +2,25 @@
   "report_schema_version": 1,
   "report_name": "m5a_start_gate",
   "gate": "m5a_start_gate",
-  "status": "FAIL",
-  "result": "FAIL",
-  "timestamp": "2026-06-01T07:29:19.451388+00:00",
+  "status": "PASS",
+  "result": "PASS",
+  "timestamp": "2026-06-01T08:41:13.099732+00:00",
   "environment": "local",
   "report_type": "gate",
   "collected": 12,
-  "passed": 11,
-  "failed": 1,
+  "passed": 12,
+  "failed": 0,
   "errors": 0,
   "skipped": 0,
-  "exit_code": 1,
-  "blockers": [
-    {
-      "id": "m5a_documentation_truth_lint_failed",
-      "severity": "blocking",
-      "reason": "reports/current/documentation_truth_lint.json is FAIL with 37 errors and 2 warnings; M5a implementation start remains NO-GO until documentation truth is clean."
-    }
-  ],
-  "source_command": "reports/current/m5a_start_gate.json",
+  "exit_code": 0,
+  "blockers": [],
+  "source_command": "python scripts/generate_m5a_start_gate.py",
   "generated_by": "gate_validator",
   "decision": {
-    "go_no_go": "NO_GO",
-    "result": "NO_GO",
-    "m5a_implementation_start_allowed": false,
-    "planning_only": true
+    "go_no_go": "GO",
+    "result": "GO",
+    "m5a_implementation_start_allowed": true,
+    "planning_only": false
   },
   "inputs": [
     "docs/m5-preparation.md",
@@ -65,16 +59,16 @@
     {
       "id": "documentation_truth_lint_pass",
       "label": "Documentation Truth Lint PASS",
-      "passed": false,
+      "passed": true,
       "source": "reports/current/documentation_truth_lint.json",
-      "evidence": "status=FAIL, errors=37, warnings=2"
+      "evidence": "status=PASS, errors=0"
     },
     {
       "id": "m5a_data_quality_scope_defined",
       "label": "Data Quality Scope vorhanden",
       "passed": true,
       "source": "docs/m5-preparation.md",
-      "evidence": "Section 1.1 defines Data Quality responsibilities; docs/data-quality.md defines the M5 Data Quality architecture."
+      "evidence": "Section defines Data Quality responsibilities; docs/data-quality.md defines the M5 Data Quality architecture."
     },
     {
       "id": "m5a_data_quality_report_schema_defined",
@@ -130,7 +124,7 @@
     "m5a_preparation_artifacts_complete": true,
     "scope_criteria_passed": 8,
     "scope_criteria_failed": 0,
-    "precondition_failed": "documentation_truth_lint_pass",
-    "decision_reason": "All requested M5a preparation-scope checks are present, but current documentation truth lint is FAIL. Implementation start is therefore blocked; planning remains allowed."
+    "precondition_failed": null,
+    "decision_reason": "All M5a gate criteria passed. Implementation start allowed."
   }
 }

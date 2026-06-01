@@ -1,0 +1,80 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5a_metadata_detector_gate",
+  "gate": "m5a_metadata_detector_gate",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-01T09:44:30.450456+00:00",
+  "environment": "local_sqlite",
+  "status": "PASS",
+  "result": "PASS",
+  "collected": 11,
+  "passed": 11,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "score": 100.0,
+  "score_threshold": 90.0,
+  "decision": {
+    "go_no_go": "GO",
+    "m5a_metadata_detector_allowed": true
+  },
+  "criteria": [
+    {
+      "id": "c1",
+      "label": "MQ-1 leerer Titel erkannt",
+      "passed": true
+    },
+    {
+      "id": "c2",
+      "label": "MQ-2 fehlende Tags erkannt",
+      "passed": true
+    },
+    {
+      "id": "c3",
+      "label": "MQ-3 fehlende Kategorie erkannt",
+      "passed": true
+    },
+    {
+      "id": "c4",
+      "label": "MQ-4 fehlender Dokumenttyp erkannt",
+      "passed": true
+    },
+    {
+      "id": "c5",
+      "label": "MQ-5 fehlende Zusammenfassung erkannt",
+      "passed": true
+    },
+    {
+      "id": "c6",
+      "label": "Kein False Positive bei vollstaendigen Metadaten",
+      "passed": true
+    },
+    {
+      "id": "c7",
+      "label": "Nur aktive Dokumente geprueft",
+      "passed": true
+    },
+    {
+      "id": "c8",
+      "label": "Workspace Isolation",
+      "passed": true
+    },
+    {
+      "id": "c9",
+      "label": "Keine Dokumentmutation",
+      "passed": true
+    },
+    {
+      "id": "c10",
+      "label": "Finding-Shape Runner-kompatibel",
+      "passed": true
+    },
+    {
+      "id": "c11",
+      "label": "Runner integriert MetadataQualityDetector",
+      "passed": true
+    }
+  ],
+  "blockers": []
+}

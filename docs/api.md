@@ -1015,6 +1015,23 @@ Alle Chat/RAG-Fehler verwenden das gleiche Standardformat:
 - Chat-Assistant-Antworten mit `content`, `citations`, `confidence`
 - Standardisiertes Fehlerformat `error.code`, `error.message`, `error.details`
 
+## M5a Data Quality API (implementiert)
+
+Stand: `reports/current/m5a_duplicate_detector_gate.json` (GO, Score 100/100).
+
+Alle Endpunkte unter `/api/v1/data-quality/`. Auth erforderlich. Workspace-Isolation. Read-only.
+
+- `GET /api/v1/data-quality/runs` — paginierte Run-Liste (`limit`, `offset`)
+- `GET /api/v1/data-quality/runs/{run_id}` — Run-Detail mit `finding_counts` je Typ
+- `GET /api/v1/data-quality/findings` — paginierte Findings, Filter: `severity`, `finding_type`, `document_id`, `run_id`
+- `GET /api/v1/data-quality/summary` — Workspace-Zusammenfassung: `latest_run_id`, `latest_quality_score`, `total_runs`, `total_findings`, `findings_by_severity`, `findings_by_type`
+
+Kein POST, kein PATCH, kein DELETE. Keine Repair-, Merge- oder Cleanup-Aktionen ueber die API.
+
+Schemas: `app/schemas/data_quality.py`. Router: `app/api/v1/data_quality.py`, eingetragen in `app/api/v1/router.py`.
+
+---
+
 ## Offene Punkte
 
 - Der Alias `/api/v1/documents` ist weiter nicht implementiert.

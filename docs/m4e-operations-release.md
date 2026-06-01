@@ -166,8 +166,8 @@ Cleanup, Reindex, Repair und Restore duerfen nicht ohne expliziten Freigabepfad 
 
 ## Gate-Entscheidung
 
-Gate-Status: **PASS** (9/9 Regeln erfuellt)
-M5-Implementierung: **GO** (alle Voraussetzungen erfuellt)
+Gate-Status: PASS (9/9 Regeln erfuellt, siehe `reports/current/m4e_operations_release_gate.json`)
+M5-Implementierung: GO (alle Voraussetzungen erfuellt, siehe `reports/current/m4e_operations_release_gate.json`)
 
 Gate-Report: `reports/current/m4e_operations_release_gate.json`
 

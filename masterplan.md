@@ -7,13 +7,13 @@
 <!-- BEGIN GENERATED MASTERPLAN STATUS v3 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-06-01T07:46:51.064756+00:00`
+Stand: `2026-06-01T09:36:04.914182+00:00`
 Engine: `masterplan_status_engine_v3`
 
-Gesamtstatus: `BLOCKED`
-Fortschritt: `35%`
-Release-Freigabe: `nein`
-Blocker: `3`
+Gesamtstatus: `pass`
+Fortschritt: `100%`
+Release-Freigabe: `ja`
+Blocker: `0`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
 
@@ -21,34 +21,20 @@ Blocker: `3`
 
 | Phase | Status | Entscheidung | Gate | Gate-Status |
 |---|---|---|---|---|
-| M3a Frontend Foundation | `blocked` | `NO_GO` | `m3a_release_candidate_gate` | `FAIL` |
+| M3a Frontend Foundation | `gate_passed` | `GO` | `m3a_release_candidate_gate` | `PASS` |
 | M4 Backend | `gate_passed` | `GO` | `m4_backend_release_candidate_gate` | `PASS` |
-| M5 Vorbereitung | `blocked` | `NO_GO` | `m5_preparation_gate` | `FAIL` |
-| M5 Implementierung | `blocked` | `NO_GO` | `m5_implementation_gate` | `FAIL` |
-| M5a Data Quality | `blocked` | `NO_GO` | `m5a_start_gate` | `FAIL` |
-
-### M5
-
-- Statusmodell: `BLOCKED`
-- Vorbereitung erlaubt: `nein`
-- Slice-Start erlaubt: `nein`
-- Implementierung erlaubt: `nein`
-- Implementierungsentscheidung: `NO_GO`
+| M5 Vorbereitung | `gate_passed` | `GO` | `m5_preparation_gate` | `PASS` |
+| M5 Implementierung | `gate_passed` | `GO` | `m5_implementation_gate` | `PASS` |
+| M5a Data Quality | `gate_passed` | `GO` | `m5a_start_gate` | `PASS` |
 
 ### Dokumentations-Lint
 
-- Ergebnis: `PASS`
+- Ergebnis: `—`
 - Errors: `0`  Warnings: `0`
 
 ### Blocker
 
-- `m3a_rc_stale`: M3a RC is STALE: mandatory input reports are newer than the RC. Regenerate with: python scripts/generate_m3a_release_candidate.py (documentation_truth_lint_newer_than_rc (2026-06-01T07:46:15.936859+00:00 > 2026-05-29T08:51:25.441334+00:00))
-- `m3a_rc_not_pass`: m3a_release_candidate.json must be PASS/GO and not stale.
-- `m5_assessment_implementation_contradiction`: m5_gate_assessment allows implementation without a valid slice start gate.
-
-### M5-Implementierungsblocker
-
-- `m5_assessment_implementation_contradiction`: m5_gate_assessment allows implementation without a valid slice start gate. Quelle: `reports/current/m5_gate_assessment.json`.
+- Keine aktiven Blocker.
 
 <!-- END GENERATED MASTERPLAN STATUS v3 -->
 
@@ -61,6 +47,7 @@ Boundary v3:
 - M4 wird durch reports/current/m4_backend_release_candidate.json bewertet.
 - M5-Vorbereitung wird durch reports/current/m4e_operations_release_report.json bewertet.
 - M5-Implementierung braucht ein Slice-Start-Gate wie reports/current/m5a_start_gate.json.
+- M5a Duplicate Detector Slice wird durch reports/current/m5a_duplicate_detector_gate.json bewertet.
 
 ---
 **Stand:** 2026-05-29
@@ -1778,76 +1765,3 @@ Pruefprinzip:
 - Alle M5-Truth-Tests laufen gegen echte PostgreSQL-Transaktionen.
 - Jeder M5-Bereich braucht einen maschinenlesbaren Nachweis im Truth-Report.
 - Dokumentierte M5-Konzepte ohne erfolgreiche Truth-Tests bleiben Planungsstand und gelten nicht als betriebliche Reife.
-
-#### Gate-Regeln
-
-- M5-Tests zaehlen nur mit echter PostgreSQL-DB.
-- `TEST_DATABASE_URL` ist Pflicht fuer jeden freigaberelevanten M5-Truth-Lauf.
-- SQLite, In-Memory oder Mock-basierte Laeufe gelten fuer M5 nur als Fast Feedback.
-- Fast-Feedback-Ergebnisse duerfen lokale Entwicklung beschleunigen, aber nie ein M5-Gate setzen.
-- Ein M5-Gate darf nur anhand aktueller PostgreSQL-Reports zu den Bereichen `data_quality`, `drift_detection`, `cleanup_dry_run`, `health_score` und `backup_freshness` bewertet werden.
-- Skips bei gesetzter `TEST_DATABASE_URL`, Migrationsfehler, Setup-Fehler oder einzelne M5-Truth-Bloecke muessen in aktuellen Reports bewertet werden.
-- M5-Dokumentationsaussagen duerfen nur den Status behaupten, der durch den aktuellen PostgreSQL-Truth-Report belegbar ist.
-
----
-
-## M6 - Erweiterte Betriebsautomatisierung
-
-**Status:** missing.
-
-**Ziel:** Weitergehende Betriebsautomatisierung nach der M4-Produktisierung, falls ueber den lokalen belastbaren Zielzustand hinaus weitere Automatisierung noetig wird.
-
-### Tasks
-
-- weitergehende Automatisierung fuer Backups, Rotation und externe Speicher.
-- erweiterte Betriebs-Healthchecks und wiederkehrende Verifikation.
-- optionales Betriebsrunbook fuer erhoehte Wiederherstellungs- und Wartungsanforderungen.
-
-### Akzeptanzkriterien
-
-- Zusaetzliche Betriebsautomatisierung geht ueber den in M4 erreichten lokalen Produktisierungsstand hinaus.
-
----
-
-## 7. Naechste sequenzielle Schritte
-
-1. âœ… Paket-5-Aenderungen committen.
-2. Optionalen `/api/v1/documents`-Alias implementieren, falls M3 direkt versionierte Pfade verwenden soll.
-3. âœ… PostgreSQL-Integrationstests fuer Paket-5-Read-API in CI oder lokalem Standardlauf absichern.
-4. Offene M3a-Testluecken fuer finalen GUI-Abschluss schliessen.
-5. âœ… PostgreSQL-Integrationsnachweis fuer M3b-Suchtreffer, Filterung und Ranking ergaenzen.
-6. âœ… Ranking-Regressionstest fuer M3b einfuehren.
-7. âœ… Benutzerkonzept und Workspace-Isolation fuer M4 fachlich und technisch festziehen.
-8. âœ… Upload-GUI, Diagnoseansicht, Observability sowie Backup/Restore fuer M4 spezifizieren und priorisieren.
-9. âœ… M4 auf der verifizierten M3-Grundlage als Produktisierungsphase starten.
-
----
-
-## 8. Risiken und Gegenmassnahmen
-
-| Risiko | Auswirkung | Gegenmassnahme |
-|---|---|---|
-| OCR fehlt | gescannte PDFs sind fuer Suche/Chat nicht nutzbar | `OCR_REQUIRED` sichtbar halten, OCR als eigenes Paket planen |
-| Parser-Qualitaet uneinheitlich | schlechte Chunks oder Quellenanker | Parser-Metriken und Format-spezifische Tests ergaenzen |
-| Quellenpositionen unvollstaendig | Zitate koennen grob bleiben | `source_anchor` weiter anreichern, Legacy sauber kennzeichnen |
-| GUI startet vor stabilem API-Gate | UI koppelt gegen instabile Backend-Vertraege | GUI-Start nur anhand aktueller Gate-Reports und des generierten Maschinenstatus bewerten |
-| `/api/v1/documents` Alias fehlt | M3 koennte spaeter auf unversionierten Pfad koppeln | Alias vor M3-Clientbindung implementieren |
-| Import-Persistenz nutzt direkten `psycopg` | uneinheitliche DB-Schicht | nach Paket 5 in Repository-/Session-Struktur ueberfuehren |
-| PostgreSQL-Tests optional | DB-spezifische Fehler koennen unbemerkt bleiben | `TEST_DATABASE_URL` in CI setzen |
-| Allgemeiner Chat halluziniert | falsche Antworten | M3c-Quellenpflicht beibehalten, M4-Provider nur hinter Policy und Citation-Gate betreiben |
-| Remote-DB-Latenz | langsame Suche/Importe | Indizes, Projektionen, Pagination und Batch-Strategien |
-
----
-
-## 9. Referenzdokumente
-
-- [Projektstatus](docs/status.md)
-- [Datenmodell V1](docs/data-model.md)
-- [V1 Dokument-API Contract](docs/api/v1-document-api-contract.md)
-- [M3b Retrieval Foundation](docs/m3b-retrieval-foundation.md)
-- [M3a GUI Implementierungsplan](docs/m3a-implementation-plan.md)
-- [M3a GUI ViewModels](docs/m3a-viewmodels.md)
-- [M4a Authentifizierung und Workspace-Isolation](docs/m4a-auth-workspace-isolation.md)
-- [M4b Upload-GUI](docs/m4b-upload-gui.md)
-- [Definition of Done: Paket 5](docs/paket-5-definition-of-done.md)
-- [ADR: Dokument-Read-API und Datenkonsistenz vor Retrieval](docs/adr/0003-document-read-api-before-retrieval.md)

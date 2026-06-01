@@ -231,6 +231,20 @@ Nicht als M3a-Blocker bewertet:
 - Enterprise-Rollenmodell
 - vollstaendige M4a-Backend-Hardening-Freigabe
 
+## M5a Data Quality Dashboard (implementiert)
+
+Stand: `reports/current/m5a_duplicate_detector_gate.json` (GO, Score 100/100).
+
+Route `/data-quality`. Zeigt: letzter Run, Quality-Score, Findings nach Severity und Typ, Findings-Tabelle mit Filtern (`severity`, `finding_type`) und Pagination.
+
+Implementiert in: `frontend/src/features/data-quality/DataQualityDashboard.jsx`, `useDataQuality.js`, `api/dataQuality.js`, `pages/DataQualityPage.jsx`.
+
+Regeln: read-only. Keine Repair-, Delete- oder Merge-Buttons. Workspace-scoped. Alle relevanten Elemente haben `data-testid`.
+
+Gate-Report: `reports/current/m5a_duplicate_detector_gate.json`.
+
+---
+
 ## Fazit
 
-Der Frontend-Schnitt deckt Dokumente, Suche, Chat sowie erste M4-Produktisierungs-Slices fuer Upload, Lifecycle und read-only Diagnostics ab. M3a Frontend Foundation ist durch `reports/current/m3a_release_candidate.json` (PASS/GO) abgeschlossen. M4 Backend RC ist ebenfalls PASS/GO; aktueller Gesamtstatus siehe `reports/current/masterplan_status.json`. M4d ist im Frontend nur read-only vorbereitet; Reparatur-, Reindex-, Cleanup- und Backup-Aktionen sind nicht Teil eines freigegebenen UI-Scope.
+Der Frontend-Schnitt deckt Dokumente, Suche, Chat, erste M4-Produktisierungs-Slices (Upload, Lifecycle, Diagnostics) sowie das M5a Data Quality Dashboard ab. M3a Frontend Foundation ist durch `reports/current/m3a_release_candidate.json` (PASS/GO) abgeschlossen. M4 Backend RC ist ebenfalls PASS/GO; aktueller Gesamtstatus siehe `reports/current/masterplan_status.json`. M4d ist im Frontend nur read-only vorbereitet; Reparatur-, Reindex-, Cleanup- und Backup-Aktionen sind nicht Teil eines freigegebenen UI-Scope.

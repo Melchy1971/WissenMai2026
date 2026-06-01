@@ -1,9 +1,9 @@
 {
   "report_schema_version": 1,
   "report_name": "m3a_release_candidate",
-  "generated_by": "gate_validator",
-  "timestamp": "2026-05-29T08:51:25.441334+00:00",
-  "generated_at": "2026-05-29T08:51:25.441334+00:00",
+  "generated_by": "generate_m3a_release_candidate",
+  "timestamp": "2026-06-01T09:44:37.687128+00:00",
+  "generated_at": "2026-06-01T09:44:37.687128+00:00",
   "version": 3,
   "release_candidate": "M3a",
   "gate": "m3a",
@@ -91,7 +91,7 @@
         "errors": 0,
         "warnings": 0,
         "exit_code": 0,
-        "timestamp": "2026-05-29T07:39:35.308253+00:00"
+        "timestamp": "2026-06-01T09:44:35.909744+00:00"
       }
     },
     {
@@ -115,9 +115,9 @@
     "input_timestamps": {
       "frontend_full_suite_staged_report": "2026-05-28T10:28:30.000000+00:00",
       "report_truth_preflight": "2026-05-29T06:38:24.591859+00:00",
-      "documentation_truth_lint": "2026-05-29T07:39:35.308253+00:00"
+      "documentation_truth_lint": "2026-06-01T09:44:35.909744+00:00"
     },
-    "rc_timestamp": "2026-05-29T08:51:25.441334+00:00",
+    "rc_timestamp": "2026-06-01T09:44:37.687128+00:00",
     "precondition_violations": []
   },
   "blockers": [],
@@ -127,5 +127,5 @@
   "errors": 0,
   "skipped": 0,
   "exit_code": 0,
-  "commit_hash": "4af77abd0"
+  "commit_hash": "de7497349"
 }

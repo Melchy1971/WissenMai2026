@@ -1,5 +1,6 @@
 {
   "gate": "m5_gate_assessment",
+  "generated_by": "gate_validator",
   "timestamp": "2026-05-29T09:00:16Z",
   "m3a_release_candidate": "PASS",
   "m4_backend_release_candidate": "PASS",

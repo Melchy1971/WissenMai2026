@@ -11,7 +11,8 @@ Rules enforced:
 from __future__ import annotations
 
 import argparse
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
+UTC = timezone.utc
 import json
 import re
 from pathlib import Path

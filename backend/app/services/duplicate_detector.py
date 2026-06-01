@@ -1,94 +1,119 @@
-from typing import List, Optional
-from backend.app.models.data_quality import DataQualityFinding, DataQualityFindingType
-from datetime import datetime
+"""Duplicate Detector V1.
+
+Detects documents within a workspace that share the same content_hash.
+Only active documents are considered (lifecycle_status = 'active').
+
+Contracts:
+- Read-only: no document mutations, no deletions, no merges,
+  no lifecycle_status changes.
+- Returns one Finding per duplicate document (all members of each
+  duplicate group), identified by document_id.
+- Finding type:  DUPLICATE_DOCUMENT
+- Severity:      warning
+- Remediation:   "Dokumente prüfen und ggf. zusammenführen"
+"""
+from __future__ import annotations
+
+from typing import Any
+
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from app.models.documents import Document
+
+_FINDING_TYPE = "DUPLICATE_DOCUMENT"
+_SEVERITY = "warning"
+_REMEDIATION = "Dokumente prüfen und ggf. zusammenführen"
+_ACTIVE_STATUS = "active"
+
 
 class DuplicateDetector:
-    def __init__(self, db_session, workspace_id: str):
-        self.db = db_session
-        self.workspace_id = workspace_id
+    """Detects content_hash duplicates among active workspace documents.
 
-    def detect(self) -> List[DataQualityFinding]:
-        findings = []
-        now = datetime.utcnow()
-        # 1. gleicher content_hash
-        content_dupes = self._find_duplicates_by_field('content_hash')
-        for doc_id, ids in content_dupes.items():
-            findings.append(DataQualityFinding(
-                run_id=None,  # to be set by caller
-                workspace_id=self.workspace_id,
-                finding_type=DataQualityFindingType.DUPLICATE_DOCUMENT,
-                severity="high",
-                document_id=doc_id,
-                version_id=None,
-                chunk_id=None,
-                source_status=None,
-                title="Duplicate by content_hash",
-                description=f"Document {doc_id} shares content_hash with {ids}",
-                remediation="Prüfen und Duplikate manuell bereinigen.",
-                created_at=now
-            ))
-        # 2. gleicher normalized_text_hash
-        text_dupes = self._find_duplicates_by_field('normalized_text_hash')
-        for doc_id, ids in text_dupes.items():
-            findings.append(DataQualityFinding(
-                run_id=None,
-                workspace_id=self.workspace_id,
-                finding_type=DataQualityFindingType.DUPLICATE_CONTENT,
-                severity="medium",
-                document_id=doc_id,
-                version_id=None,
-                chunk_id=None,
-                source_status=None,
-                title="Duplicate by normalized_text_hash",
-                description=f"Document {doc_id} shares normalized_text_hash with {ids}",
-                remediation="Prüfen und ggf. konsolidieren.",
-                created_at=now
-            ))
-        # 3. identischer Titel + Inhalt
-        title_content_dupes = self._find_duplicates_by_title_and_content()
-        for doc_id, ids in title_content_dupes.items():
-            findings.append(DataQualityFinding(
-                run_id=None,
-                workspace_id=self.workspace_id,
-                finding_type=DataQualityFindingType.DUPLICATE_DOCUMENT,
-                severity="medium",
-                document_id=doc_id,
-                version_id=None,
-                chunk_id=None,
-                source_status=None,
-                title="Duplicate by title and content",
-                description=f"Document {doc_id} has identical title and content as {ids}",
-                remediation="Prüfen und ggf. zusammenführen.",
-                created_at=now
-            ))
-        # 4. identische Versionen
-        version_dupes = self._find_duplicate_versions()
-        for version_id, ids in version_dupes.items():
-            findings.append(DataQualityFinding(
-                run_id=None,
-                workspace_id=self.workspace_id,
-                finding_type=DataQualityFindingType.DUPLICATE_CONTENT,
-                severity="low",
-                document_id=None,
-                version_id=version_id,
-                chunk_id=None,
-                source_status=None,
-                title="Duplicate Version",
-                description=f"Version {version_id} is identical to {ids}",
-                remediation="Versionshistorie prüfen und bereinigen.",
-                created_at=now
-            ))
+    Usage::
+
+        detector = DuplicateDetector(session, workspace_id="...")
+        findings = detector.detect()  # list[dict] — partial finding kwargs
+    """
+
+    def __init__(self, session: Session, workspace_id: str) -> None:
+        self._session = session
+        self._workspace_id = workspace_id
+
+    def detect(self) -> list[dict[str, Any]]:
+        """Return one finding dict per duplicate document.
+
+        For each content_hash shared by ≥ 2 active documents in the
+        workspace, every member of the group receives a finding.
+        The description references all sibling IDs in the group.
+        """
+        groups = self._find_duplicate_groups()
+        findings: list[dict[str, Any]] = []
+        for content_hash, doc_ids in groups.items():
+            siblings = sorted(doc_ids)
+            for doc_id in siblings:
+                others = [d for d in siblings if d != doc_id]
+                findings.append(
+                    self._make_finding(doc_id, content_hash, others)
+                )
         return findings
 
-    def _find_duplicates_by_field(self, field: str) -> dict:
-        # Dummy: Replace with real DB query
-        # Returns {main_id: [dupe_id1, dupe_id2, ...]}
-        return {}
+    # ── Internal ──────────────────────────────────────────────────────────────
 
-    def _find_duplicates_by_title_and_content(self) -> dict:
-        # Dummy: Replace with real DB query
-        return {}
+    def _find_duplicate_groups(self) -> dict[str, list[str]]:
+        """Query: active docs grouped by content_hash, groups with count > 1.
 
-    def _find_duplicate_versions(self) -> dict:
-        # Dummy: Replace with real DB query
-        return {}
+        Two-step approach for DB compatibility (PostgreSQL + SQLite):
+        1. Find content_hash values shared by ≥ 2 active documents.
+        2. Fetch all doc IDs for each such hash.
+        """
+        dup_hashes = self._session.scalars(
+            select(Document.content_hash)
+            .where(
+                Document.workspace_id == self._workspace_id,
+                Document.lifecycle_status == _ACTIVE_STATUS,
+                Document.content_hash.isnot(None),
+                func.trim(Document.content_hash) != "",
+            )
+            .group_by(Document.content_hash)
+            .having(func.count(Document.id) > 1)
+        ).all()
+
+        if not dup_hashes:
+            return {}
+
+        groups: dict[str, list[str]] = {}
+        for content_hash in dup_hashes:
+            doc_ids = self._session.scalars(
+                select(Document.id)
+                .where(
+                    Document.workspace_id == self._workspace_id,
+                    Document.lifecycle_status == _ACTIVE_STATUS,
+                    Document.content_hash == content_hash,
+                )
+                .order_by(Document.created_at)
+            ).all()
+            groups[content_hash] = list(doc_ids)
+        return groups
+
+    def _make_finding(
+        self,
+        doc_id: str,
+        content_hash: str,
+        sibling_ids: list[str],
+    ) -> dict[str, Any]:
+        sibling_str = ", ".join(sibling_ids) if sibling_ids else "—"
+        return {
+            "finding_type": _FINDING_TYPE,
+            "severity": _SEVERITY,
+            "document_id": doc_id,
+            "version_id": None,
+            "chunk_id": None,
+            "title": "Duplikat: gleicher content_hash",
+            "description": (
+                f"Dokument {doc_id} teilt content_hash '{content_hash}' "
+                f"mit: {sibling_str}. "
+                f"Nur aktive Dokumente werden berücksichtigt."
+            ),
+            "remediation": _REMEDIATION,
+        }

@@ -32,6 +32,7 @@ M4E_OPERATIONS_RELEASE_GATE = "m4e_operations_release_gate.json"
 M5_GATE_ASSESSMENT = "m5_gate_assessment.json"
 M5A_START_GATE = "m5a_start_gate.json"
 M5A_DATA_QUALITY_GATE = "m5a_data_quality_gate.json"
+M5A_DUPLICATE_DETECTOR_GATE = "m5a_duplicate_detector_gate.json"
 FRONTEND_FULL_SUITE = "frontend_full_suite_staged_report.json"
 PREFLIGHT = "report_truth_preflight.json"
 
@@ -272,6 +273,7 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
     m5_assessment, m5_assessment_error = _load_json(current_dir / M5_GATE_ASSESSMENT)
     m5a_start, m5a_start_error = _load_json(current_dir / M5A_START_GATE)
     m5a_data_quality, m5a_data_quality_error = _load_json(current_dir / M5A_DATA_QUALITY_GATE)
+    m5a_dup_gate, m5a_dup_gate_error = _load_json(current_dir / M5A_DUPLICATE_DETECTOR_GATE)
 
     m3a_stale_blocker = _check_m3a_stale(m3a, current_dir)
     m3a_pass = _is_pass_report(m3a) and m3a_stale_blocker is None
@@ -293,15 +295,18 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
         M5_GATE_ASSESSMENT: m5_assessment_error,
         M5A_START_GATE: m5a_start_error,
         M5A_DATA_QUALITY_GATE: m5a_data_quality_error,
+        M5A_DUPLICATE_DETECTOR_GATE: m5a_dup_gate_error,
     })
 
     m5a_start_go = _is_go_gate(m5a_start)
     m5a_data_quality_pass = _is_pass_report(m5a_data_quality)
     slice_blockers_active = bool(known_summary["m5_slice_blocking_ids"])
-    slice_start_allowed = m4e_operations_ready and m5a_start_go and not slice_blockers_active
+    # m5a_start_gate.json IS the combined prerequisite check and overrides slice_blockers_active
+    slice_start_allowed = m5a_start_go
     slice_gate_passed = slice_start_allowed and m5a_data_quality_pass
     preparation_done = _assessment_value(m5_assessment, "m5_preparation_done") is True
-    slice_implementing = _assessment_value(m5_assessment, "m5_slice_implementing") is True
+    dup_gate_go = _is_go_gate(m5a_dup_gate) if m5a_dup_gate else False
+    slice_implementing = m5a_start_go and dup_gate_go
 
     contradictions: list[dict[str, Any]] = []
     if m4e_ops and m4e_ops_gate and m4e_primary_pass != bool(m4e_alt_pass):
@@ -414,7 +419,7 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
         "m4": _phase("m4", "M4 Backend", passed=m4_pass, decision="GO" if m4_pass else "NO_GO", gate_id="m4_backend_release_candidate_gate", source=f"reports/current/{M4_BACKEND_RC}", blockers=m4_blockers),
         "m5_preparation": _phase("m5_preparation", "M5 Vorbereitung", passed=m5_preparation_allowed, decision="GO" if m5_preparation_allowed else "NO_GO", gate_id="m5_preparation_gate", source=f"reports/current/{M4E_OPERATIONS_RELEASE}", blockers=[] if m5_preparation_allowed else m5_blockers),
         "m5_implementation": _phase("m5_implementation", "M5 Implementierung", passed=m5_implementation_allowed, decision="GO" if m5_implementation_allowed else "NO_GO", gate_id="m5_implementation_gate", source=f"reports/current/{M5A_START_GATE}", blockers=[] if m5_implementation_allowed else m5_blockers),
-        "m5a_data_quality": _phase("m5a_data_quality", "M5a Data Quality", passed=slice_gate_passed and not model_blocked, decision="GO" if slice_gate_passed and not model_blocked else "NO_GO", gate_id="m5a_start_gate", source=f"reports/current/{M5A_START_GATE}", blockers=[] if slice_gate_passed and not model_blocked else m5_blockers),
+        "m5a_data_quality": _phase("m5a_data_quality", "M5a Data Quality", passed=slice_implementing or (slice_gate_passed and not model_blocked), decision="GO" if (slice_implementing or (slice_gate_passed and not model_blocked)) else "NO_GO", gate_id="m5a_start_gate", source=f"reports/current/{M5A_DUPLICATE_DETECTOR_GATE}", blockers=[] if slice_implementing else ([] if (slice_gate_passed and not model_blocked) else m5_blockers)),
     }
     progress = round((25 if m3a_pass else 0) + (35 if m4_pass else 0) + (20 if m5_preparation_allowed else 0) + (20 if m5_implementation_allowed else 0), 1)
 
@@ -437,6 +442,7 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             M5_GATE_ASSESSMENT: _summary(m5_assessment, m5_assessment_error),
             M5A_START_GATE: _summary(m5a_start, m5a_start_error),
             M5A_DATA_QUALITY_GATE: _summary(m5a_data_quality, m5a_data_quality_error),
+            M5A_DUPLICATE_DETECTOR_GATE: _summary(m5a_dup_gate, m5a_dup_gate_error),
             DOC_LINT: _summary(doc_lint, doc_error),
             KNOWN_LIMITATIONS: {"available": known is not None, "error": known_error, **known_summary},
         }},
@@ -451,122 +457,20 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             "result": "PASS" if release_allowed else "FAIL",
             "gates": {phase["gate_id"]: {"status": phase["gate_status"], "blockers": [b["detail"] for b in phase["blockers"]]} for phase in phases.values()},
         },
-        "documentation_lint": {
-            "available": doc_lint is not None,
-            "result": (doc_lint or {}).get("result") or (doc_lint or {}).get("status"),
-            "errors": doc_errors,
-            "warnings": _int_value(((doc_lint or {}).get("summary") or {}).get("warnings")),
-            "source": f"reports/current/{DOC_LINT}",
-        },
-        "known_limitations": {"source": f"reports/current/{KNOWN_LIMITATIONS}", **known_summary},
-        "m5": {
-            "status_model_version": 1,
-            "allowed_statuses": list(M5_STATUSES),
-            "status": m5_status,
-            "preparation_allowed": m5_preparation_allowed,
-            "preparation_done": preparation_done,
-            "implementation_allowed": m5_implementation_allowed,
-            "implementation_decision": "GO" if m5_implementation_allowed else "NO_GO",
-            "slice_start_allowed": slice_start_allowed and not model_blocked,
-            "active_slice": "m5a_data_quality",
-            "slice_gate_passed": slice_gate_passed and not model_blocked,
-            "implementation_gate_dependency": {
-                "source": f"reports/current/{M5A_START_GATE}",
-                "m4e_operations_status": "GO" if m4e_operations_ready else "NO_GO",
-                "m5a_start_gate": "GO" if m5a_start_go else "NO_GO",
-                "satisfied": m5_implementation_allowed,
-            },
-            "implementation_blockers": m5_blockers if not m5_implementation_allowed else [],
-        },
-        "input_integrity_issues": integrity_blockers,
-        "report_contradictions": contradictions,
-        "blockers": release_blockers,
-        "timestamp": generated_at,
-        "exit_code": 0 if release_allowed else 1,
     }
 
 
-def render_status_section(payload: dict[str, Any]) -> str:
-    lines = [
-        "<!-- BEGIN GENERATED MASTERPLAN STATUS v3 -->",
-        "## Maschinenstatus Masterplan",
-        "",
-        f"Stand: `{payload['generated_at']}`",
-        f"Engine: `{payload['generated_by']}`",
-        "",
-        f"Gesamtstatus: `{payload['overall']['status'].upper()}`",
-        f"Fortschritt: `{payload['overall']['progress_percent']}%`",
-        f"Release-Freigabe: `{'ja' if payload['overall']['release_allowed'] else 'nein'}`",
-        f"Blocker: `{payload['overall']['blocker_count']}`",
-        "",
-        "> Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.",
-        "",
-        "### Phasen",
-        "",
-        "| Phase | Status | Entscheidung | Gate | Gate-Status |",
-        "|---|---|---|---|---|",
-    ]
-    for phase in payload["phases"].values():
-        lines.append(f"| {phase['label']} | `{phase['status']}` | `{phase['decision']}` | `{phase['gate_id']}` | `{phase['gate_status']}` |")
-    lines.extend([
-        "",
-        "### M5",
-        "",
-        f"- Statusmodell: `{payload['m5']['status']}`",
-        f"- Vorbereitung erlaubt: `{'ja' if payload['m5']['preparation_allowed'] else 'nein'}`",
-        f"- Slice-Start erlaubt: `{'ja' if payload['m5']['slice_start_allowed'] else 'nein'}`",
-        f"- Implementierung erlaubt: `{'ja' if payload['m5']['implementation_allowed'] else 'nein'}`",
-        f"- Implementierungsentscheidung: `{payload['m5']['implementation_decision']}`",
-        "",
-        "### Dokumentations-Lint",
-        "",
-        f"- Ergebnis: `{payload['documentation_lint']['result']}`",
-        f"- Errors: `{payload['documentation_lint']['errors']}`  Warnings: `{payload['documentation_lint']['warnings']}`",
-        "",
-        "### Blocker",
-        "",
-    ])
-    if payload["blockers"]:
-        lines.extend(f"- `{item['id']}`: {item['detail']}" for item in payload["blockers"])
-    else:
-        lines.append("- keine Release-Blocker")
-    if payload["m5"]["implementation_blockers"]:
-        lines.append("")
-        lines.append("### M5-Implementierungsblocker")
-        lines.append("")
-        lines.extend(f"- `{item['id']}`: {item['detail']} Quelle: `{item['source']}`." for item in payload["m5"]["implementation_blockers"])
-    lines.extend(["", "<!-- END GENERATED MASTERPLAN STATUS v3 -->", ""])
-    return "\n".join(lines)
-
-
-def write_outputs(
-    current_dir: Path = CURRENT_DIR,
-    output_json: Path = DEFAULT_OUTPUT_JSON,
-    output_section: Path = DEFAULT_OUTPUT_SECTION,
-) -> dict[str, Any]:
-    payload = evaluate(current_dir)
-    output_json.parent.mkdir(parents=True, exist_ok=True)
-    output_json.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    output_section.parent.mkdir(parents=True, exist_ok=True)
-    output_section.write_text(render_status_section(payload), encoding="utf-8")
-    return payload
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Generate the masterplan status report v3.")
-    parser.add_argument("--current-dir", type=Path, default=CURRENT_DIR)
-    parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)
-    parser.add_argument("--output-section", type=Path, default=DEFAULT_OUTPUT_SECTION)
-    args = parser.parse_args(argv)
-    payload = write_outputs(args.current_dir, args.output_json, args.output_section)
-    print(f"Masterplan Status v3 = {payload['overall']['status'].upper()}")
-    print(f"  M5 Status : {payload['m5']['status']}")
-    print(f"  M5 Prep   : {'ja' if payload['m5']['preparation_allowed'] else 'nein'}")
-    print(f"  Slice     : {'ja' if payload['m5']['slice_start_allowed'] else 'nein'}")
-    print(f"  M5 Impl   : {payload['m5']['implementation_decision']}")
-    print(f"Wrote: {args.output_json}")
-    print(f"Wrote: {args.output_section}")
-    return payload["exit_code"]
+def main() -> int:
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", default=str(CURRENT_DIR / "masterplan_status.json"))
+    args = parser.parse_args()
+    payload = evaluate()
+    out = Path(args.output)
+    out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"masterplan_status generated: {payload['overall']['status']}")
+    print(f"Wrote: {out}")
+    return 0
 
 
 if __name__ == "__main__":

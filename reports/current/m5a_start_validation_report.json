@@ -1,0 +1,119 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5a_start_validation_report",
+  "gate": "m5a_start_gate",
+  "status": "FAIL",
+  "result": "NO_GO",
+  "timestamp": "2026-06-01T08:00:00+00:00",
+  "generated_by": "gate_validator",
+  "environment": "local",
+  "report_type": "validation",
+  "source_file": "reports/current/m5a_start_gate.json",
+  "decision": {
+    "go_no_go": "NO_GO",
+    "m5a_implementation_start_allowed": false,
+    "planning_only": true
+  },
+  "validation_summary": {
+    "total_conditions": 9,
+    "passed": 6,
+    "failed": 3,
+    "blockers_count": 3
+  },
+  "conditions": [
+    {
+      "id": "valid_json",
+      "label": "Gültiges JSON",
+      "passed": true,
+      "evidence": "m5a_start_gate.json ist syntaktisch valides JSON. Kein ParseError."
+    },
+    {
+      "id": "status_go",
+      "label": "status = GO",
+      "passed": false,
+      "severity": "blocking",
+      "evidence": "Tatsächlicher Wert: status=\"FAIL\", go_no_go=\"NO_GO\". Bedingung nicht erfüllt."
+    },
+    {
+      "id": "generated_by_gate_validator",
+      "label": "generated_by = gate_validator",
+      "passed": true,
+      "evidence": "generated_by=\"gate_validator\" vorhanden."
+    },
+    {
+      "id": "timestamp_newer_than_m5_preparation",
+      "label": "timestamp aktueller als M5 Preparation Package",
+      "passed": true,
+      "evidence": "Gate-Timestamp: 2026-06-01T07:29:19+00:00. M5 Preparation Package (docs/m5-preparation.md) Stand: 2026-05-29. Gate ist 3 Tage jünger. Bedingung erfüllt."
+    },
+    {
+      "id": "m3a_release_candidate_pass",
+      "label": "m3a_release_candidate = PASS",
+      "passed": true,
+      "evidence": "Gate-Kriterium m3a_release_candidate_go: passed=true, evidence=\"status=PASS, decision=GO\".",
+      "caveat": "report_integrity_pre_m5a.json meldet m3a_release_candidate als stale (RIPM5A-004). Separate Blocker-Bedingung unter report_integrity_pre_m5a."
+    },
+    {
+      "id": "m4_backend_release_candidate_pass",
+      "label": "m4_backend_release_candidate = PASS",
+      "passed": true,
+      "evidence": "Gate-Kriterium m4_backend_release_candidate_go: passed=true, evidence=\"status=PASS, decision=GO\"."
+    },
+    {
+      "id": "m4e_operations_release_gate_pass",
+      "label": "m4e_operations_release_gate = PASS",
+      "passed": true,
+      "evidence": "Gate-Kriterium m4e_operations_release_go: passed=true, evidence=\"status=PASS, decision=GO\"."
+    },
+    {
+      "id": "documentation_truth_lint_pass",
+      "label": "documentation_truth_lint = PASS",
+      "passed": false,
+      "severity": "blocking",
+      "evidence": "Gate-Kriterium documentation_truth_lint_pass: passed=false. reports/current/documentation_truth_lint.json: status=FAIL, errors=37, warnings=2."
+    },
+    {
+      "id": "report_integrity_pre_m5a_pass",
+      "label": "report_integrity_pre_m5a = PASS",
+      "passed": false,
+      "severity": "blocking",
+      "evidence": "reports/current/report_integrity_pre_m5a.json: status=FAIL, 4 von 6 Kriterien fehlgeschlagen. Kriterium ist nicht in m5a_start_gate.json-Criteria enthalten — fehlende Integration ist selbst ein Defekt.",
+      "sub_findings": [
+        "RIPM5A-001: frontend_fullsuite_reactivation_decision.json — invalid JSON (JSONDecodeError line 17)",
+        "RIPM5A-002: operations_selftest_report.json — leere Datei",
+        "RIPM5A-003: reindex_recovery_report.json — leere Datei",
+        "RIPM5A-004: m3a_release_candidate.json — als stale markiert (masterplan_status.json)",
+        "RIPM5A-005: m5_gate_assessment.json — Gate-Artefakt ohne generated_by"
+      ]
+    }
+  ],
+  "blockers": [
+    {
+      "id": "B-001",
+      "condition": "status_go",
+      "severity": "blocking",
+      "reason": "m5a_start_gate.json hat status=FAIL, nicht GO. Das Gate selbst hat nicht bestanden."
+    },
+    {
+      "id": "B-002",
+      "condition": "documentation_truth_lint_pass",
+      "severity": "blocking",
+      "reason": "documentation_truth_lint.json ist FAIL mit 37 Fehlern und 2 Warnungen. Muss sauber sein vor M5a-Start."
+    },
+    {
+      "id": "B-003",
+      "condition": "report_integrity_pre_m5a_pass",
+      "severity": "blocking",
+      "reason": "report_integrity_pre_m5a.json ist FAIL: 3 invalid/leere JSON-Dateien in reports/current/, 1 staler PASS-Report, 1 Gate-Artefakt ohne generated_by. Zusätzlich ist dieses Kriterium nicht im Gate selbst verankert."
+    }
+  ],
+  "required_actions_before_m5a": [
+    "documentation_truth_lint.json auf PASS bringen: alle 37 Fehler und 2 Warnungen beheben",
+    "reports/current/frontend_fullsuite_reactivation_decision.json: JSON-Syntaxfehler in Zeile 17 beheben",
+    "reports/current/operations_selftest_report.json: leere Datei — neu generieren oder entfernen",
+    "reports/current/reindex_recovery_report.json: leere Datei — neu generieren oder entfernen",
+    "reports/current/m3a_release_candidate.json: Stale-Status klären (documentation_truth_lint ist jünger)",
+    "reports/current/m5_gate_assessment.json: generated_by-Feld ergänzen",
+    "m5a_start_gate.json neu generieren nachdem alle Blocker behoben — Gate muss status=GO und go_no_go=GO liefern"
+  ]
+}

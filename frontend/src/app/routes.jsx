@@ -6,6 +6,7 @@ import { AppShell } from './AppShell.jsx';
 import { ErrorState } from '../components/status/ErrorState.jsx';
 import { LoadingState } from '../components/status/LoadingState.jsx';
 import { AdminDiagnosticsPage } from '../pages/AdminDiagnosticsPage.jsx';
+import { DataQualityPage } from '../pages/DataQualityPage.jsx';
 import { ChatPage } from '../pages/ChatPage.jsx';
 import { DocumentDetailPage } from '../pages/DocumentDetailPage.jsx';
 import { DocumentsPage } from '../pages/DocumentsPage.jsx';
@@ -65,6 +66,7 @@ export function AppRoutes() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/chat/:id" element={<ChatPage />} />
         <Route path="/admin/diagnostics" element={<AdminDiagnosticsPage />} />
+        <Route path="/data-quality" element={<DataQualityPage />} />
       </Route>
     </Routes>
   );
