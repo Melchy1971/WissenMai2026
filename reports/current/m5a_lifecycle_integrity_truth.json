@@ -1,0 +1,20 @@
+{
+    "report_schema_version":  1,
+    "report_name":  "m5a_lifecycle_integrity_truth",
+    "gate":  "m5a_lifecycle_integrity_truth",
+    "status":  "PASS",
+    "timestamp":  "2026-06-01T12:01:47.8519999Z",
+    "environment":  "local",
+    "report_type":  "truth",
+    "collected":  7,
+    "passed":  7,
+    "failed":  0,
+    "errors":  0,
+    "skipped":  0,
+    "exit_code":  0,
+    "blockers":  [
+
+                 ],
+    "source_command":  ".\\\\backend\\\\.venv\\\\Scripts\\\\python.exe -m pytest backend/tests/postgres_truth/test_m5a_lifecycle_integrity_truth.py -q",
+    "generated_by":  "gate_validator"
+}

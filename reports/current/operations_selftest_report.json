@@ -1,0 +1,81 @@
+{
+    "report_type":  "truth",
+    "generated_by":  "gate_validator",
+    "checks":  [
+                   {
+                       "output":  "psql : Die Benennung \"psql\" wurde nicht als Name eines Cmdlet, einer Funktion, \r\neiner Skriptdatei oder eines ausführbaren Programms erkannt. Überprüfen Sie \r\ndie Schreibweise des Namens, oder ob der Pfad korrekt ist (sofern enthalten), \r\nund wiederholen Sie den Vorgang.\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:28 Zeichen:17\r\n+     $pgResult = psql -U appuser -d wissen2026 -c \"SELECT 1;\" 2\u003e\u00261\r\n+                 ~~~~\r\n    + CategoryInfo          : ObjectNotFound: (psql:String) [], CommandNotFoun \r\n   dException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n\r\n",
+                       "id":  "PostgreSQL",
+                       "passed":  false
+                   },
+                   {
+                       "output":  "20260601_0018 (head)\r\n\r\n",
+                       "id":  "AlembicHead",
+                       "passed":  true
+                   },
+                   {
+                       "output":  "psql : Die Benennung \"psql\" wurde nicht als Name eines Cmdlet, einer Funktion, \r\neiner Skriptdatei oder eines ausführbaren Programms erkannt. Überprüfen Sie \r\ndie Schreibweise des Namens, oder ob der Pfad korrekt ist (sofern enthalten), \r\nund wiederholen Sie den Vorgang.\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:40 Zeichen:19\r\n+     $userResult = psql -U appuser -d wissen2026 -c \"SELECT * FROM use ...\r\n+                   ~~~~\r\n    + CategoryInfo          : ObjectNotFound: (psql:String) [], CommandNotFoun \r\n   dException\r\n    + FullyQualifiedErrorId : CommandNotFoundException\r\n \r\n\r\n",
+                       "id":  "SeedUser",
+                       "passed":  false
+                   },
+                   {
+                       "output":  "Invoke-RestMethod : Die zugrunde liegende Verbindung wurde geschlossen: Die \r\nVerbindung wurde unerwartet getrennt..\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:46 Zeichen:20\r\n+ ... ginResult = Invoke-RestMethod -Uri \"http://localhost:8000/api/auth/lo ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:Htt \r\n   pWebRequest) [Invoke-RestMethod], WebException\r\n    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShe \r\n   ll.Commands.InvokeRestMethodCommand\r\n \r\n\r\n",
+                       "id":  "Login",
+                       "passed":  false
+                   },
+                   {
+                       "output":  "Invoke-RestMethod : Die zugrunde liegende Verbindung wurde geschlossen: Die \r\nVerbindung wurde unerwartet getrennt..\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:52 Zeichen:21\r\n+ ... lthResult = Invoke-RestMethod -Uri \"http://localhost:8000/health\" -Me ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:Htt \r\n   pWebRequest) [Invoke-RestMethod], WebException\r\n    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShe \r\n   ll.Commands.InvokeRestMethodCommand\r\n \r\n\r\n",
+                       "id":  "BackendHealth",
+                       "passed":  false
+                   },
+                   {
+                       "output":  "200\r\n\r\n",
+                       "id":  "Frontend",
+                       "passed":  true
+                   },
+                   {
+                       "output":  "Invoke-RestMethod : Die zugrunde liegende Verbindung wurde geschlossen: Die \r\nVerbindung wurde unerwartet getrennt..\r\nIn H:\\WissenMai2026\\scripts\\operations_selftest.ps1:64 Zeichen:21\r\n+ ... rchResult = Invoke-RestMethod -Uri \"http://localhost:8000/api/search? ...\r\n+                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:Htt \r\n   pWebRequest) [Invoke-RestMethod], WebException\r\n    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShe \r\n   ll.Commands.InvokeRestMethodCommand\r\n \r\n\r\n",
+                       "id":  "Search",
+                       "passed":  false
+                   },
+                   {
+                       "output":  "Backup completed\r\n\r\n",
+                       "id":  "Backup",
+                       "passed":  true
+                   },
+                   {
+                       "output":  "Restore completed\r\n\r\n",
+                       "id":  "Restore",
+                       "passed":  true
+                   },
+                   {
+                       "output":  "Reindex completed\r\n\r\n",
+                       "id":  "Reindex",
+                       "passed":  true
+                   }
+               ],
+    "report_schema_version":  1,
+    "decision":  {
+                     "result":  "NO_GO",
+                     "go_no_go":  "NO_GO"
+                 },
+    "blockers":  [
+                     {
+                         "reason":  "Mindestens ein Selftest-Check ist fehlgeschlagen.",
+                         "id":  "operations_selftest_not_green",
+                         "severity":  "blocking"
+                     }
+                 ],
+    "exit_code":  1,
+    "status":  "BLOCKED",
+    "report_name":  "operations_selftest_report",
+    "gate":  "operations_selftest_report",
+    "failed":  5,
+    "source_command":  "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/operations_selftest.ps1",
+    "skipped":  0,
+    "passed":  5,
+    "collected":  10,
+    "timestamp":  "2026-06-01T13:24:21.7728634+02:00",
+    "errors":  0,
+    "result":  "BLOCKED",
+    "environment":  "local"
+}

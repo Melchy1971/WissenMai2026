@@ -7,13 +7,13 @@
 <!-- BEGIN GENERATED MASTERPLAN STATUS v3 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-06-01T09:36:04.914182+00:00`
+Stand: `2026-06-01T12:33:16.165472+00:00`
 Engine: `masterplan_status_engine_v3`
 
-Gesamtstatus: `pass`
-Fortschritt: `100%`
-Release-Freigabe: `ja`
-Blocker: `0`
+Gesamtstatus: `PARTIAL_PASS`
+Fortschritt: `90%`
+Release-Freigabe: `nein`
+Blocker: `1`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
 
@@ -24,17 +24,18 @@ Blocker: `0`
 | M3a Frontend Foundation | `gate_passed` | `GO` | `m3a_release_candidate_gate` | `PASS` |
 | M4 Backend | `gate_passed` | `GO` | `m4_backend_release_candidate_gate` | `PASS` |
 | M5 Vorbereitung | `gate_passed` | `GO` | `m5_preparation_gate` | `PASS` |
-| M5 Implementierung | `gate_passed` | `GO` | `m5_implementation_gate` | `PASS` |
-| M5a Data Quality | `gate_passed` | `GO` | `m5a_start_gate` | `PASS` |
+| M5 Implementierung | `in_progress` | `NO_GO` | `m5_implementation_gate` | `IN_PROGRESS` |
+| M5a Data Quality | `gate_partial_pass` | `NO_GO` | `m5a_data_quality_gate` | `PARTIAL_PASS` |
 
 ### Dokumentations-Lint
 
-- Ergebnis: `—`
+- Ergebnis: `PASS`
 - Errors: `0`  Warnings: `0`
 
 ### Blocker
 
-- Keine aktiven Blocker.
+- M5 Implementierung ist nicht global PASS, solange m5a_data_quality_gate nicht PASS ist.
+- M5a Data Quality gate is not PASS.
 
 <!-- END GENERATED MASTERPLAN STATUS v3 -->
 
@@ -47,7 +48,8 @@ Boundary v3:
 - M4 wird durch reports/current/m4_backend_release_candidate.json bewertet.
 - M5-Vorbereitung wird durch reports/current/m4e_operations_release_report.json bewertet.
 - M5-Implementierung braucht ein Slice-Start-Gate wie reports/current/m5a_start_gate.json.
-- M5a Duplicate Detector Slice wird durch reports/current/m5a_duplicate_detector_gate.json bewertet.
+- M5a-Slice-Gates (z. B. duplicate_detector, metadata_detector) bewerten nur den jeweiligen Slice.
+- M5a Data Quality ist erst PASS, wenn alle Pflicht-Slice-Gates PASS sind und reports/current/m5a_data_quality_gate.json PASS meldet.
 
 ---
 **Stand:** 2026-05-29
@@ -110,6 +112,9 @@ Alle Aussagen, Status und Gates werden ausschließlich aus maschinenlesbaren Rep
 - M5a Gate: Siehe reports/current/m5a_data_quality_gate.json (Go/No-Go, Score)
 - M5a Start-Gate: Siehe reports/current/m5a_start_gate.json. Wenn dieses Gate nicht `GO` meldet, bleibt M5a auf Vorbereitung beschraenkt.
 - Duplicate Detector Slice: Siehe reports/current/m5a_duplicate_detector_gate.json. Es gibt keine Cleanup- oder Repair-Freigabe; Findings bleiben read-only.
+- Metadata Detector Slice: Siehe reports/current/m5a_metadata_detector_gate.json.
+- Slice-Regel: Ein Slice-Gate `PASS` bedeutet nur, dass dieser Slice abgeschlossen ist.
+- Gesamtregel M5a: `m5a_data_quality_gate` darf nur `PASS` sein, wenn alle Pflicht-Slices gruen sind; bei `NOT_RUN` oder fehlenden Pflicht-Slices bleibt M5a `BLOCKED`.
 
 Manuelle Statuswerte, Prozentangaben oder Freigaben sind nicht zulässig. Alle Gate- und Statusentscheidungen werden maschinell getroffen und dokumentiert.
 

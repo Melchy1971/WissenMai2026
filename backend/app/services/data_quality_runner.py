@@ -24,6 +24,7 @@ from sqlalchemy.orm import Session
 from app.models.data_quality import DataQualityFinding, DataQualityRun
 from app.models.documents import Chunk, Document, DocumentVersion
 from app.services.duplicate_detector import DuplicateDetector
+from app.services.lifecycle_integrity_detector import LifecycleIntegrityDetector
 from app.services.metadata_quality_detector import MetadataQualityDetector
 
 
@@ -296,6 +297,7 @@ class DataQualityRunner:
         detectors: list[Detector] = [
             DuplicateDetector(self._session, self._workspace_id),
             MetadataQualityDetector(self._session, self._workspace_id),
+            LifecycleIntegrityDetector(self._session, self._workspace_id),
             OrphanChunkDetector(self._session, self._workspace_id),
             EmptyChunkDetector(self._session, self._workspace_id),
             InvalidLifecycleDetector(self._session, self._workspace_id),

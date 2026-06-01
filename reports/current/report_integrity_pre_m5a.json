@@ -2,156 +2,114 @@
   "report_schema_version": 1,
   "report_name": "report_integrity_pre_m5a",
   "gate": "report_integrity_pre_m5a",
-  "status": "FAIL",
-  "result": "FAIL",
-  "timestamp": "2026-06-01T07:52:00+00:00",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-01T12:15:00+00:00",
   "environment": "local",
   "report_type": "gate",
-  "collected": 6,
-  "passed": 2,
-  "failed": 4,
+  "status": "BLOCKED",
+  "result": "BLOCKED",
+  "collected": 8,
+  "passed": 6,
+  "failed": 2,
   "errors": 0,
   "skipped": 0,
   "exit_code": 1,
   "source_command": "pre_m5a_report_integrity_scan",
-  "generated_by": "gate_validator",
   "decision": {
     "go_no_go": "NO_GO",
     "result": "NO_GO",
     "m5a_start_allowed": false
   },
-  "summary": {
-    "reports_current_json_total": 34,
-    "reports_current_json_valid": 31,
-    "reports_current_json_invalid": 3,
-    "stale_pass_reports": 1,
-    "implementation_contradictions": 0,
-    "gate_reports_without_generated_by": 1,
-    "root_level_report_source_refs": 0,
-    "root_level_report_files_present": 3,
-    "decision_reason": "M5a start remains NO-GO because active reports/current contains invalid JSON, a stale PASS release candidate, and a gate artifact without generated_by."
-  },
   "criteria": [
     {
+      "id": "operations_selftest_report_valid_json",
+      "label": "operations_selftest_report.json gueltig",
+      "passed": true,
+      "source": "reports/current/operations_selftest_report.json",
+      "evidence": "valid JSON"
+    },
+    {
+      "id": "reindex_recovery_report_valid_json",
+      "label": "reindex_recovery_report.json gueltig",
+      "passed": true,
+      "source": "reports/current/reindex_recovery_report.json",
+      "evidence": "valid JSON"
+    },
+    {
+      "id": "data_quality_report_valid_json",
+      "label": "data_quality_report.json gueltig",
+      "passed": true,
+      "source": "reports/current/data_quality_report.json",
+      "evidence": "valid JSON"
+    },
+    {
+      "id": "data_quality_not_not_run",
+      "label": "data_quality_report ist nicht NOT_RUN",
+      "passed": true,
+      "source": "reports/current/data_quality_report.json",
+      "evidence": "status=completed"
+    },
+    {
+      "id": "m5a_start_validation_report_valid_json",
+      "label": "m5a_start_validation_report.json gueltig",
+      "passed": true,
+      "source": "reports/current/m5a_start_validation_report.json",
+      "evidence": "valid JSON"
+    },
+    {
       "id": "reports_current_json_valid",
-      "label": "Alle reports/current/*.json gueltig",
-      "passed": false,
-      "source": "reports/current/*.json",
-      "evidence": "31/34 JSON files parsed successfully."
-    },
-    {
-      "id": "no_invalid_json",
-      "label": "Keine invalid JSON",
-      "passed": false,
-      "source": "reports/current/*.json",
-      "evidence": "Invalid JSON found in frontend_fullsuite_reactivation_decision.json, operations_selftest_report.json and reindex_recovery_report.json."
-    },
-    {
-      "id": "no_stale_pass_reports",
-      "label": "Keine stale PASS-Reports",
-      "passed": false,
-      "source": "reports/current/masterplan_status.json",
-      "evidence": "masterplan_status.json reports m3a_rc_stale for reports/current/m3a_release_candidate.json."
-    },
-    {
-      "id": "no_implementation_allowed_no_go_contradiction",
-      "label": "Kein Widerspruch implementation_allowed true + decision NO-GO",
+      "label": "Alle geprueften Reports sind syntaktisch valides JSON",
       "passed": true,
-      "source": "reports/current/*.json",
-      "evidence": "No parsed report contains implementation_allowed=true together with NO_GO/FAIL/BLOCKED decision in the same object."
+      "source": "reports/current/operations_selftest_report.json, reports/current/reindex_recovery_report.json, reports/current/data_quality_report.json, reports/current/m5a_start_validation_report.json, reports/current/m5a_data_quality_gate.json",
+      "evidence": "5/5 valid JSON"
     },
     {
-      "id": "no_gate_without_generated_by",
-      "label": "Kein Gate ohne generated_by",
+      "id": "no_start_validation_vs_total_gate_contradiction",
+      "label": "Kein Widerspruch: Start-Validation FAIL vs Gesamtgate PASS",
       "passed": false,
-      "source": "reports/current/m5_gate_assessment.json",
-      "evidence": "m5_gate_assessment.json has gate=m5_gate_assessment but no generated_by field."
+      "source": "reports/current/m5a_start_validation_report.json, reports/current/m5a_data_quality_gate.json",
+      "evidence": "start_validation=FAIL/NO_GO, total_gate=PASS/GO"
     },
     {
-      "id": "no_root_level_reports_as_source",
-      "label": "Keine Root-Level Reports als Quelle",
-      "passed": true,
-      "source": "reports/current/*.json",
-      "evidence": "No parsed current report references root-level report JSON files as an active source."
+      "id": "slice_pass_not_equivalent_total_pass",
+      "label": "Slice-PASS ersetzt kein Gesamtgate-PASS",
+      "passed": false,
+      "source": "reports/current/m5a_data_quality_gate.json",
+      "evidence": "Gesamtgate darf bei vorhandenem Start-Validation-Blocker nicht PASS sein"
     }
   ],
+  "invalid_reports": [],
   "findings": [
     {
       "id": "RIPM5A-001",
       "severity": "blocking",
-      "rule": "invalid_json",
-      "file": "reports/current/frontend_fullsuite_reactivation_decision.json",
-      "detail": "JSONDecodeError: Expecting ',' delimiter: line 17 column 5 (char 458)."
+      "rule": "contradictory_gate_state",
+      "file": "reports/current/m5a_data_quality_gate.json",
+      "detail": "m5a_data_quality_gate.json ist PASS/GO, obwohl m5a_start_validation_report.json FAIL/NO_GO meldet."
     },
     {
       "id": "RIPM5A-002",
       "severity": "blocking",
-      "rule": "invalid_json",
-      "file": "reports/current/operations_selftest_report.json",
-      "detail": "JSONDecodeError: Expecting value: line 1 column 1 (char 0); file is empty."
-    },
-    {
-      "id": "RIPM5A-003",
-      "severity": "blocking",
-      "rule": "invalid_json",
-      "file": "reports/current/reindex_recovery_report.json",
-      "detail": "JSONDecodeError: Expecting value: line 1 column 1 (char 0); file is empty."
-    },
-    {
-      "id": "RIPM5A-004",
-      "severity": "blocking",
-      "rule": "stale_pass_report",
-      "file": "reports/current/m3a_release_candidate.json",
-      "detail": "masterplan_status.json reports m3a_rc_stale because documentation_truth_lint is newer than the M3a RC."
-    },
-    {
-      "id": "RIPM5A-005",
-      "severity": "blocking",
-      "rule": "gate_without_generated_by",
-      "file": "reports/current/m5_gate_assessment.json",
-      "detail": "Report has gate=m5_gate_assessment but no generated_by field."
-    },
-    {
-      "id": "RIPM5A-006",
-      "severity": "warning",
-      "rule": "root_level_report_file_present",
-      "file": "operations_selftest_report.json",
-      "detail": "Root-level report-like JSON file exists. It is not referenced as an active source by parsed reports/current JSON files."
-    },
-    {
-      "id": "RIPM5A-007",
-      "severity": "warning",
-      "rule": "root_level_report_file_present",
-      "file": "retrieval_quality_schema.json",
-      "detail": "Root-level report-like JSON file exists. It is not referenced as an active source by parsed reports/current JSON files."
-    },
-    {
-      "id": "RIPM5A-008",
-      "severity": "warning",
-      "rule": "root_level_report_file_present",
-      "file": "temp_selftest_backup.json",
-      "detail": "Root-level report-like JSON file exists. It is not referenced as an active source by parsed reports/current JSON files."
+      "rule": "slice_vs_total_gate_equivalence_forbidden",
+      "file": "reports/current/m5a_data_quality_gate.json",
+      "detail": "Slice-Erfuellung darf Gesamtgate nicht automatisch auf PASS setzen; bestehende Blocker muessen Gesamtgate blockieren."
     }
   ],
-  "inputs": [
-    "reports/current/*.json",
-    "root-level *.json"
-  ],
+  "summary": {
+    "reports_checked": 6,
+    "reports_valid_json": 6,
+    "invalid_reports_count": 0,
+    "empty_reports_count": 0,
+    "not_run_reports_count": 0,
+    "contradictions_count": 2,
+    "decision_reason": "No invalid/empty JSON, but contradictory gate state detected; M5a overall must be blocked."
+  },
+  "blocker": "contradictory_gate_state",
   "blockers": [
     {
-      "id": "invalid_current_json",
+      "id": "contradictory_gate_state",
       "severity": "blocking",
-      "reason": "reports/current contains invalid JSON files."
-    },
-    {
-      "id": "stale_pass_report",
-      "severity": "blocking",
-      "reason": "reports/current/m3a_release_candidate.json is currently flagged stale by masterplan_status.json."
-    },
-    {
-      "id": "gate_without_generated_by",
-      "severity": "blocking",
-      "reason": "reports/current/m5_gate_assessment.json is a gate artifact without generated_by."
+      "reason": "M5a Gesamtgate widerspricht m5a_start_validation_report und ist daher nicht vertrauenswuerdig."
     }
   ]
 }

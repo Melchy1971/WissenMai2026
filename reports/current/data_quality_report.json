@@ -2,7 +2,13 @@
   "report_schema_version": 1,
   "report_name": "data_quality_report",
   "generated_by": "run_data_quality_cli",
-  "status": "NOT_RUN",
-  "note": "Kein Run ausgefuehrt. Report wird durch 'python scripts/run_data_quality.py --workspace <id>' erzeugt.",
-  "generated_at": "2026-06-01T09:33:03.369289+00:00"
+  "generated_at": "2026-06-01T12:27:23.703851+00:00",
+  "run_id": "c3cc1c80-5908-4bb3-a3ce-25e4cba8aaf9",
+  "workspace_id": "00000000-0000-0000-0000-000000000001",
+  "status": "completed",
+  "started_at": "2026-06-01T12:27:23.670539+00:00",
+  "finished_at": "2026-06-01T12:27:23.699700+00:00",
+  "total_findings": 0,
+  "quality_score": 100.0,
+  "findings": []
 }

@@ -18,6 +18,7 @@ from app.services.data_quality_runner import (
     DataQualityRunner,
     EmptyChunkDetector,
     InvalidLifecycleDetector,
+    LifecycleIntegrityDetector,
     MissingMetadataDetector,
     OrphanChunkDetector,
     RunResult,
@@ -158,6 +159,31 @@ class TestSkeletonDetectors:
 # ---------------------------------------------------------------------------
 
 class TestDataQualityRunnerLifecycle:
+    @pytest.mark.m3a_truth
+    def test_run_includes_lifecycle_integrity_detector_findings(self, session, engine):
+        wid = _workspace_id()
+        _seed_workspace(session, wid)
+
+        with patch.object(
+            LifecycleIntegrityDetector,
+            "detect",
+            return_value=[
+                {
+                    "finding_type": "RETRIEVAL_RISK",
+                    "severity": "warning",
+                    "document_id": str(uuid.uuid4()),
+                    "version_id": None,
+                    "chunk_id": None,
+                    "title": "Active document not retrievable",
+                    "description": "simulated lifecycle integrity finding",
+                    "remediation": "reconcile searchability",
+                }
+            ],
+        ):
+            result = DataQualityRunner.from_session(session, wid).run()
+
+        assert any(f["finding_type"] == "RETRIEVAL_RISK" for f in result.findings)
+
     def test_run_creates_completed_run(self, session, engine):
         wid = _workspace_id()
         _seed_workspace(session, wid)

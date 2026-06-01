@@ -108,7 +108,12 @@ def _write_report(data: dict, output: Path) -> None:
         "generated_at": datetime.now(UTC).isoformat(),
         **data,
     }
-    output.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    tmp_output = output.with_suffix(output.suffix + ".tmp")
+    tmp_output.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    parsed = json.loads(tmp_output.read_text(encoding="utf-8"))
+    if not isinstance(parsed, dict):
+        raise ValueError("Generated data_quality_report payload must be a JSON object")
+    tmp_output.replace(output)
     print(f"[OK]    Report written: {output}")
 
 

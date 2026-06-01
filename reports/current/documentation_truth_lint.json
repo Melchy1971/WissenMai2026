@@ -2,17 +2,17 @@
   "report_schema_version": 1,
   "report_name": "documentation_truth_lint",
   "generated_by": "documentation_truth_linter",
-  "timestamp": "2026-06-01T09:44:35.909744+00:00",
+  "timestamp": "2026-06-01T12:02:30.102862+00:00",
   "result": "PASS",
   "status": "PASS",
   "summary": {
-    "files_scanned": 125,
+    "files_scanned": 126,
     "total_findings": 0,
     "errors": 0,
     "warnings": 0,
     "by_rule": {}
   },
-  "masterplan_source": "/sessions/ecstatic-wizardly-wright/mnt/WissenMai2026/reports/current/masterplan_status.json",
+  "masterplan_source": "H:\\WissenMai2026\\reports\\current\\masterplan_status.json",
   "findings": [],
   "fixes": [],
   "exit_code": 0

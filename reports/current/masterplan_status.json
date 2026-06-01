@@ -2,7 +2,7 @@
   "report_schema_version": 3,
   "report_name": "masterplan_status",
   "generated_by": "masterplan_status_engine_v3",
-  "generated_at": "2026-06-01T09:44:37.967886+00:00",
+  "generated_at": "2026-06-01T12:33:16.165472+00:00",
   "authority": {
     "source_of_truth": "reports/current release-candidate and gate artifacts",
     "manual_status_override_allowed": false,
@@ -104,17 +104,17 @@
       "m5a_data_quality_gate.json": {
         "available": true,
         "report_name": "m5a_data_quality_gate",
-        "gate": "M5A_DATA_QUALITY",
-        "status": "BLOCKED",
-        "result": "BLOCKED",
+        "gate": "m5a_data_quality_gate",
+        "status": "PARTIAL_PASS",
+        "result": "PARTIAL_PASS",
         "decision": "NO_GO",
-        "collected": 0,
-        "passed": 0,
-        "failed": 0,
-        "errors": 1,
+        "collected": 9,
+        "passed": 8,
+        "failed": 1,
+        "errors": 0,
         "skipped": 0,
         "exit_code": 1,
-        "timestamp": "2026-06-01T07:31:20.490971+00:00"
+        "timestamp": "2026-06-01T12:29:35.105502+00:00"
       },
       "m5a_duplicate_detector_gate.json": {
         "available": true,
@@ -131,6 +131,21 @@
         "exit_code": 0,
         "timestamp": "2026-06-01T09:28:52.011721+00:00"
       },
+      "m5a_metadata_detector_gate.json": {
+        "available": true,
+        "report_name": "m5a_metadata_detector_gate",
+        "gate": "m5a_metadata_detector_gate",
+        "status": "PASS",
+        "result": "PASS",
+        "decision": "GO",
+        "collected": 11,
+        "passed": 11,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "timestamp": "2026-06-01T09:44:30.450456+00:00"
+      },
       "documentation_truth_lint.json": {
         "available": true,
         "report_name": "documentation_truth_lint",
@@ -144,7 +159,7 @@
         "errors": null,
         "skipped": null,
         "exit_code": 0,
-        "timestamp": "2026-06-01T09:44:35.909744+00:00"
+        "timestamp": "2026-06-01T12:02:30.102862+00:00"
       },
       "known_limitations.json": {
         "available": true,
@@ -167,10 +182,36 @@
     }
   },
   "overall": {
-    "status": "pass",
-    "progress_percent": 100,
-    "release_allowed": true,
-    "blocker_count": 0
+    "status": "partial_pass",
+    "progress_percent": 90,
+    "release_allowed": false,
+    "blocker_count": 1
+  },
+  "m5a_gate_logic": {
+    "start_gate": {
+      "report": "reports/current/m5a_start_gate.json",
+      "go": true
+    },
+    "slice_gates": {
+      "duplicate_detector": {
+        "report": "reports/current/m5a_duplicate_detector_gate.json",
+        "pass": true
+      },
+      "metadata_detector": {
+        "report": "reports/current/m5a_metadata_detector_gate.json",
+        "pass": true
+      }
+    },
+    "required_slices_all_pass": true,
+    "data_quality_gate": {
+      "report": "reports/current/m5a_data_quality_gate.json",
+      "pass": false,
+      "status": "PARTIAL_PASS",
+      "effective_status": "PARTIAL_PASS",
+      "not_run": false
+    },
+    "overall_m5a_pass": false,
+    "rule": "M5a ist PARTIAL_PASS oder BLOCKED, solange m5a_data_quality_gate nicht PASS ist; globale M5-Freigabe erst bei M5a PASS."
   },
   "phases": {
     "m3a": {
@@ -206,26 +247,42 @@
     "m5_implementation": {
       "id": "m5_implementation",
       "label": "M5 Implementierung",
-      "status": "gate_passed",
-      "decision": "GO",
+      "status": "in_progress",
+      "decision": "NO_GO",
       "gate_id": "m5_implementation_gate",
-      "gate_status": "PASS",
+      "gate_status": "IN_PROGRESS",
       "source": "reports/current/m5a_start_gate.json",
-      "blockers": []
+      "blockers": [
+        {
+          "id": "m5_implementation_global_not_pass",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "M5 Implementierung ist nicht global PASS, solange m5a_data_quality_gate nicht PASS ist.",
+          "source": "reports/current/m5a_data_quality_gate.json"
+        }
+      ]
     },
     "m5a_data_quality": {
       "id": "m5a_data_quality",
       "label": "M5a Data Quality",
-      "status": "gate_passed",
-      "decision": "GO",
-      "gate_id": "m5a_start_gate",
-      "gate_status": "PASS",
-      "source": "reports/current/m5a_duplicate_detector_gate.json",
-      "blockers": []
+      "status": "gate_partial_pass",
+      "decision": "NO_GO",
+      "gate_id": "m5a_data_quality_gate",
+      "gate_status": "PARTIAL_PASS",
+      "source": "reports/current/m5a_data_quality_gate.json",
+      "blockers": [
+        {
+          "id": "m5a_data_quality_gate_not_pass",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "M5a Data Quality gate is not PASS.",
+          "source": "reports/current/m5a_data_quality_gate.json"
+        }
+      ]
     }
   },
   "gate_hierarchy": {
-    "result": "PASS",
+    "result": "FAIL",
     "gates": {
       "m3a_release_candidate_gate": {
         "status": "PASS",
@@ -240,12 +297,16 @@
         "blockers": []
       },
       "m5_implementation_gate": {
-        "status": "PASS",
-        "blockers": []
+        "status": "IN_PROGRESS",
+        "blockers": [
+          "M5 Implementierung ist nicht global PASS, solange m5a_data_quality_gate nicht PASS ist."
+        ]
       },
-      "m5a_start_gate": {
-        "status": "PASS",
-        "blockers": []
+      "m5a_data_quality_gate": {
+        "status": "PARTIAL_PASS",
+        "blockers": [
+          "M5a Data Quality gate is not PASS."
+        ]
       }
     }
   }

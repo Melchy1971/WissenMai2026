@@ -1,0 +1,33 @@
+{
+  "report_schema_version": 1,
+  "report_name": "reindex_recovery_report",
+  "gate": "reindex_recovery_report",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-01T11:32:50.149515+00:00",
+  "environment": "local",
+  "report_type": "truth",
+  "status": "BLOCKED",
+  "result": "BLOCKED",
+  "collected": 1,
+  "passed": 0,
+  "failed": 0,
+  "errors": 1,
+  "skipped": 0,
+  "exit_code": 2,
+  "blockers": [
+    {
+      "id": "reindex_recovery_truth_not_executed",
+      "severity": "blocking",
+      "reason": "No valid legacy reindex report available. Run pytest for test_m4e_reindex_recovery_truth.py and regenerate."
+    }
+  ],
+  "source_command": "pytest -q backend/tests/postgres_truth/test_m4e_reindex_recovery_truth.py",
+  "decision": {
+    "go_no_go": "NO_GO",
+    "result": "NO_GO"
+  },
+  "inputs": {
+    "legacy_reindex": "reindex_recovery_report.json",
+    "legacy_retrieval": "retrieval_validation_report.json"
+  }
+}

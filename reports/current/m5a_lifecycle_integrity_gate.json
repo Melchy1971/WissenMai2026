@@ -1,0 +1,112 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5a_lifecycle_integrity_gate",
+  "gate": "m5a_lifecycle_integrity_gate",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-01T12:01:58.267848+00:00",
+  "environment": "local",
+  "report_type": "gate",
+  "status": "PASS",
+  "result": "PASS",
+  "collected": 10,
+  "passed": 10,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "score": 100.0,
+  "score_threshold": 90.0,
+  "blockers": [],
+  "source_command": "python scripts/generate_m5a_lifecycle_integrity_gate.py",
+  "decision": {
+    "go_no_go": "GO",
+    "result": "GO",
+    "m5a_lifecycle_integrity_allowed": true
+  },
+  "inputs": {
+    "duplicate_gate": "reports/current/m5a_duplicate_detector_gate.json",
+    "metadata_gate": "reports/current/m5a_metadata_detector_gate.json",
+    "data_quality_report": "reports/current/data_quality_report.json",
+    "truth_report": "reports/current/m5a_lifecycle_integrity_truth.json",
+    "detector_file": "backend/app/services/lifecycle_integrity_detector.py",
+    "runner_file": "backend/app/services/data_quality_runner.py",
+    "unit_tests": "backend/tests/test_lifecycle_integrity_detector.py",
+    "postgres_truth_tests": "backend/tests/postgres_truth/test_m5a_lifecycle_integrity_truth.py"
+  },
+  "criteria": [
+    {
+      "id": "c1",
+      "label": "Duplicate Detector PASS (Voraussetzung)",
+      "passed": true,
+      "source": "reports/current/m5a_duplicate_detector_gate.json",
+      "evidence": "PASS"
+    },
+    {
+      "id": "c2",
+      "label": "Metadata Detector PASS (Voraussetzung)",
+      "passed": true,
+      "source": "reports/current/m5a_metadata_detector_gate.json",
+      "evidence": "PASS"
+    },
+    {
+      "id": "c3",
+      "label": "Data Quality Run ausfuehrbar (completed)",
+      "passed": true,
+      "source": "reports/current/data_quality_report.json",
+      "evidence": "completed"
+    },
+    {
+      "id": "c4",
+      "label": "LifecycleIntegrityDetector implementiert",
+      "passed": true,
+      "source": "backend/app/services/lifecycle_integrity_detector.py",
+      "evidence": "exists"
+    },
+    {
+      "id": "c5",
+      "label": "Runner integriert LifecycleIntegrityDetector",
+      "passed": true,
+      "source": "backend/app/services/data_quality_runner.py",
+      "evidence": "integration_found"
+    },
+    {
+      "id": "c6",
+      "label": "Unit-Tests fuer LifecycleIntegrityDetector vorhanden",
+      "passed": true,
+      "source": "backend/tests/test_lifecycle_integrity_detector.py",
+      "evidence": "present"
+    },
+    {
+      "id": "c7",
+      "label": "PostgreSQL Truth-Tests fuer Lifecycle Slice vorhanden",
+      "passed": true,
+      "source": "backend/tests/postgres_truth/test_m5a_lifecycle_integrity_truth.py",
+      "evidence": "present"
+    },
+    {
+      "id": "c8",
+      "label": "Checks 1-4 (Search/Retrieval Lifecycle) implementiert",
+      "passed": true,
+      "source": "backend/app/services/lifecycle_integrity_detector.py",
+      "evidence": "implemented"
+    },
+    {
+      "id": "c9",
+      "label": "Check 5 (source_status Konsistenz) implementiert",
+      "passed": true,
+      "source": "backend/app/services/lifecycle_integrity_detector.py",
+      "evidence": "implemented"
+    },
+    {
+      "id": "c10",
+      "label": "PostgreSQL Truth-Lauf fuer Lifecycle Slice PASS",
+      "passed": true,
+      "source": "reports/current/m5a_lifecycle_integrity_truth.json",
+      "evidence": "PASS"
+    }
+  ],
+  "summary": {
+    "rule": "PASS requires all prerequisites PASS, lifecycle detector and tests implemented, and PostgreSQL truth execution PASS.",
+    "overall_m5a_lifecycle_integrity_pass": true
+  }
+}

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql as pg
 
 revision: str = "20260601_0018"
 down_revision: str | None = "20260508_0014"
@@ -27,18 +28,24 @@ depends_on = None
 def upgrade() -> None:
     # ── Enum type ────────────────────────────────────────────────────────────
     op.execute("""
-        CREATE TYPE dq_finding_type AS ENUM (
-            'DUPLICATE_DOCUMENT',
-            'DUPLICATE_CONTENT',
-            'EMPTY_DOCUMENT',
-            'EMPTY_CHUNK',
-            'ORPHAN_CHUNK',
-            'ORPHAN_VERSION',
-            'MISSING_METADATA',
-            'INVALID_SOURCE_STATUS',
-            'INVALID_LIFECYCLE',
-            'RETRIEVAL_RISK'
-        )
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'dq_finding_type') THEN
+                CREATE TYPE dq_finding_type AS ENUM (
+                    'DUPLICATE_DOCUMENT',
+                    'DUPLICATE_CONTENT',
+                    'EMPTY_DOCUMENT',
+                    'EMPTY_CHUNK',
+                    'ORPHAN_CHUNK',
+                    'ORPHAN_VERSION',
+                    'MISSING_METADATA',
+                    'INVALID_SOURCE_STATUS',
+                    'INVALID_LIFECYCLE',
+                    'RETRIEVAL_RISK'
+                );
+            END IF;
+        END
+        $$;
     """)
 
     # ── data_quality_runs ────────────────────────────────────────────────────
@@ -88,7 +95,20 @@ def upgrade() -> None:
         ),
         sa.Column(
             "finding_type",
-            sa.Enum(name="dq_finding_type", create_type=False),
+            pg.ENUM(
+                'DUPLICATE_DOCUMENT',
+                'DUPLICATE_CONTENT',
+                'EMPTY_DOCUMENT',
+                'EMPTY_CHUNK',
+                'ORPHAN_CHUNK',
+                'ORPHAN_VERSION',
+                'MISSING_METADATA',
+                'INVALID_SOURCE_STATUS',
+                'INVALID_LIFECYCLE',
+                'RETRIEVAL_RISK',
+                name="dq_finding_type",
+                create_type=False,
+            ),
             nullable=False,
         ),
         sa.Column("severity", sa.String(16), nullable=False),

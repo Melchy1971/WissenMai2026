@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-01T08:01:04.008456Z",
-  "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026",
+  "generated_at": "2026-06-01T12:27:18.873175Z",
+  "database_url": "postgresql://testuser:***@localhost:5433/wissen_test",
   "status": "success",
   "seeded": {
     "workspace": {

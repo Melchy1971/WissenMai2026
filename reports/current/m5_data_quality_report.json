@@ -1,0 +1,73 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5_data_quality_report",
+  "gate": "m5_data_quality_report",
+  "generated_by": "m5_data_quality_report_generator",
+  "timestamp": "2026-06-01T11:12:49.739722+00:00",
+  "environment": "local",
+  "report_type": "truth",
+  "status": "PASS",
+  "result": "PASS",
+  "collected": 1,
+  "passed": 1,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "blockers": [],
+  "source_command": "python scripts/generate_m5_data_quality_report.py",
+  "workspace_id": "00000000-0000-0000-0000-000000000001",
+  "run_id": "7bfbbde7-79b3-4066-8751-7e94b518d7b7",
+  "run_status": "completed",
+  "started_at": "2026-06-01T11:12:49.544414+00:00",
+  "finished_at": "2026-06-01T11:12:49.704801+00:00",
+  "total_findings": 4,
+  "quality_score": 92.0,
+  "findings": [
+    {
+      "finding_type": "MISSING_METADATA",
+      "severity": "warning",
+      "document_id": "7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad",
+      "version_id": "06f22a96-5144-464e-9f70-a40c0a683e1f",
+      "chunk_id": null,
+      "title": "Fehlende Tags",
+      "description": "Dokument 7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad (Version 06f22a96-5144-464e-9f70-a40c0a683e1f) hat kein 'tags'-Feld in den Versions-Metadaten oder das Feld ist leer.",
+      "remediation": "Tags in den Dokumentmetadaten ergaenzen. Keine automatische Befuellung."
+    },
+    {
+      "finding_type": "MISSING_METADATA",
+      "severity": "warning",
+      "document_id": "7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad",
+      "version_id": "06f22a96-5144-464e-9f70-a40c0a683e1f",
+      "chunk_id": null,
+      "title": "Fehlende Kategorie",
+      "description": "Dokument 7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad (Version 06f22a96-5144-464e-9f70-a40c0a683e1f) hat kein 'category'-Feld in den Versions-Metadaten oder das Feld ist leer.",
+      "remediation": "Kategorie in den Dokumentmetadaten ergaenzen. Keine automatische Befuellung."
+    },
+    {
+      "finding_type": "MISSING_METADATA",
+      "severity": "warning",
+      "document_id": "7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad",
+      "version_id": "06f22a96-5144-464e-9f70-a40c0a683e1f",
+      "chunk_id": null,
+      "title": "Fehlender Dokumenttyp",
+      "description": "Dokument 7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad (Version 06f22a96-5144-464e-9f70-a40c0a683e1f) hat kein 'doc_type'-Feld in den Versions-Metadaten oder das Feld ist leer.",
+      "remediation": "Dokumenttyp in den Metadaten ergaenzen. Keine automatische Befuellung."
+    },
+    {
+      "finding_type": "MISSING_METADATA",
+      "severity": "info",
+      "document_id": "7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad",
+      "version_id": "06f22a96-5144-464e-9f70-a40c0a683e1f",
+      "chunk_id": null,
+      "title": "Fehlende Zusammenfassung",
+      "description": "Dokument 7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad (Version 06f22a96-5144-464e-9f70-a40c0a683e1f) hat kein 'summary'-Feld in den Versions-Metadaten oder das Feld ist leer.",
+      "remediation": "Zusammenfassung in den Metadaten ergaenzen. Keine automatische Befuellung."
+    }
+  ],
+  "decision": {
+    "go_no_go": "GO",
+    "result": "GO",
+    "score_threshold": 80.0
+  }
+}

@@ -9,13 +9,16 @@ Alle Aussagen, Status und Gates werden ausschliesslich aus maschinenlesbaren Rep
 - Dashboard: Siehe `frontend/src/features/data-quality/DataQualityDashboard.jsx`
 - M5a Start-Gate: Siehe `reports/current/m5a_start_gate.json`
 - Duplicate Detector Gate: Siehe `reports/current/m5a_duplicate_detector_gate.json`
+- Metadata Detector Gate: Siehe `reports/current/m5a_metadata_detector_gate.json`
+- M5a Gesamtgate: Siehe `reports/current/m5a_data_quality_gate.json`
+- M5a Lifecycle Integrity Slice Gate: Siehe `reports/current/m5a_lifecycle_integrity_gate.json`
 - CLI: `python scripts/run_data_quality.py --workspace <id>`
 
 ## M5a Start-Gate
 
 `reports/current/m5a_start_gate.json` entscheidet, ob M5a ueber Vorbereitung hinausgehen darf. Status: `GO`. Implementierungsstart ist freigegeben.
 
-## Implementierter Scope (M5a Duplicate Detector Slice)
+## Implementierter Scope (M5a Slice 1, 2 und 3 in Umsetzung)
 
 ### Datenmodell (Minimal)
 
@@ -39,6 +42,49 @@ Erkennt Dokumente mit gleichem `content_hash` innerhalb eines Workspace. Nur akt
 Remediation: `"Dokumente prüfen und ggf. zusammenführen"`. Keine automatische Reparatur.
 
 **Einschraenkung:** `UniqueConstraint(workspace_id, content_hash)` in der `documents`-Tabelle verhindert in einer schema-konformen DB das Auftreten neuer Duplikate. Der Detector ist fuer historische Daten und Import-Edge-Cases ausgelegt.
+
+### Metadata Quality Detector V1 (Slice 2)
+
+Implementierung: `backend/app/services/metadata_quality_detector.py`
+
+Regeln:
+
+- MQ-1: leerer/Whitespace-Titel → `MISSING_METADATA` (error)
+- MQ-2: fehlende/leere `tags` → `MISSING_METADATA` (warning)
+- MQ-3: fehlende/leere `category` → `MISSING_METADATA` (warning)
+- MQ-4: fehlende/leere `doc_type` → `MISSING_METADATA` (warning)
+- MQ-5: fehlende/leere `summary` → `MISSING_METADATA` (info)
+
+Invarianten:
+
+- read-only, keine Dokumentmutation
+- workspace-scoped
+- nur aktive Dokumente (`lifecycle_status = active`)
+- MQ-2..5 nur bei gesetzter `current_version_id`
+
+Nachweise:
+
+- Unit: `backend/tests/test_metadata_quality_detector.py`
+- PostgreSQL Truth: `backend/tests/postgres_truth/test_m5a_metadata_quality_truth.py`
+- Gate: `reports/current/m5a_metadata_detector_gate.json` (`PASS`, 11/11 Kriterien)
+
+### Lifecycle Integrity Detector V1 (Slice 3)
+
+Implementierung: `backend/app/services/lifecycle_integrity_detector.py`
+
+Abgedeckte Pruefungen:
+
+- archived Dokumente nicht in Search
+- deleted Dokumente nicht in Search
+- active Dokumente auffindbar
+- archived/deleted nicht im neuen Retrieval
+- lifecycle_status konsistent mit citation source_status
+
+Nachweise:
+
+- Unit: `backend/tests/test_lifecycle_integrity_detector.py`
+- PostgreSQL Truth: `backend/tests/postgres_truth/test_m5a_lifecycle_integrity_truth.py`
+- Slice Gate: `reports/current/m5a_lifecycle_integrity_gate.json` (`PASS`, 10/10 Kriterien)
 
 ### Runner
 
@@ -91,6 +137,7 @@ Nicht in diesem Slice und ohne separate Governance ausser Scope:
 
 ## Gate-Bezug
 
-Duplicate Detector Gate: `reports/current/m5a_duplicate_detector_gate.json`. Gilt als PASS bei Score >= 90 (8/8 Kriterien).
-
-Ausstehend bis PostgreSQL-Truth-Lauf: `operations_selftest_report.json` und `reindex_recovery_report.json` benoetigen laufenden System-Stack.
+- Duplicate Detector Slice: `reports/current/m5a_duplicate_detector_gate.json` = `PASS`.
+- Metadata Detector Slice: `reports/current/m5a_metadata_detector_gate.json` = `PASS`.
+- Lifecycle Integrity Slice: `reports/current/m5a_lifecycle_integrity_gate.json` = `PASS`.
+- M5a Gesamtgate: `reports/current/m5a_data_quality_gate.json` bleibt formal an den Data-Quality-Run (`data_quality_report.json`) und Integritaetsreports (`report_integrity_pre_m5a.json`, plus operations/reindex laut Gate-Regel) gebunden.

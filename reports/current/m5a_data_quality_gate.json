@@ -1,42 +1,107 @@
 {
   "report_schema_version": 1,
   "report_name": "m5a_data_quality_gate",
-  "gate": "M5A_DATA_QUALITY",
-  "status": "BLOCKED",
-  "result": "BLOCKED",
-  "timestamp": "2026-06-01T07:31:20.490971+00:00",
+  "gate": "m5a_data_quality_gate",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-01T12:29:35.105502+00:00",
   "environment": "local",
   "report_type": "gate",
-  "collected": 0,
-  "passed": 0,
-  "failed": 0,
-  "errors": 1,
+  "status": "PARTIAL_PASS",
+  "result": "PARTIAL_PASS",
+  "collected": 9,
+  "passed": 8,
+  "failed": 1,
+  "errors": 0,
   "skipped": 0,
   "exit_code": 1,
-  "blockers": [
-    {
-      "id": "invalid_previous_report",
-      "severity": "blocking",
-      "reason": "The previous reports/current/m5a_data_quality_gate.json was invalid JSON and was archived before replacement."
-    },
-    {
-      "id": "m5a_not_gate_passed",
-      "severity": "blocking",
-      "reason": "M5a Data Quality is not gate-passed."
-    }
-  ],
-  "source_command": "manual replacement after archiving invalid current report",
-  "generated_by": "gate_validator",
-  "reason": "invalid_previous_report",
+  "blockers": [],
+  "source_command": "python scripts/generate_m5a_data_quality_gate.py",
   "decision": {
     "go_no_go": "NO_GO",
     "result": "NO_GO",
     "m5a_gate_passed": false,
-    "m5a_maximum_state": "startfähig only after m5a_start_gate GO"
+    "m5a_gate_partial_pass": true,
+    "m5a_start_gate_pass": true,
+    "required_slices_all_pass": true,
+    "data_quality_report_state": "COMPLETED",
+    "global_m5_release_allowed": false,
+    "no_invalid_json_reports": true
   },
-  "archived_invalid_report": "reports/archive/m5a/invalid/m5a_data_quality_gate.invalid.20260601T073120Z.json",
-  "notes": [
-    "M5a is not gate-passed.",
-    "M5a can be at most startfähig after reports/current/m5a_start_gate.json is GO; this report does not grant implementation or slice gate pass."
-  ]
+  "inputs": {
+    "start_gate": "reports/current/m5a_start_gate.json",
+    "duplicate_slice_gate": "reports/current/m5a_duplicate_detector_gate.json",
+    "metadata_slice_gate": "reports/current/m5a_metadata_detector_gate.json",
+    "data_quality_report": "reports/current/data_quality_report.json",
+    "documentation_truth_lint": "reports/current/documentation_truth_lint.json",
+    "report_integrity_pre_m5a": "reports/current/report_integrity_pre_m5a.json"
+  },
+  "criteria": [
+    {
+      "id": "m5a_start_gate_go",
+      "label": "M5a Start Gate PASS",
+      "passed": true,
+      "source": "reports/current/m5a_start_gate.json",
+      "evidence": "PASS"
+    },
+    {
+      "id": "m5a_duplicate_detector_slice_pass",
+      "label": "M5a Duplicate Detector Slice PASS",
+      "passed": true,
+      "source": "reports/current/m5a_duplicate_detector_gate.json",
+      "evidence": "PASS"
+    },
+    {
+      "id": "m5a_metadata_detector_slice_pass",
+      "label": "M5a Metadata Detector Slice PASS",
+      "passed": true,
+      "source": "reports/current/m5a_metadata_detector_gate.json",
+      "evidence": "PASS"
+    },
+    {
+      "id": "m5a_data_quality_report_ran",
+      "label": "M5a Data Quality Report vollstaendig ausgefuehrt",
+      "passed": true,
+      "source": "reports/current/data_quality_report.json",
+      "evidence": "COMPLETED"
+    },
+    {
+      "id": "partial_pass_duplicate_and_metadata",
+      "label": "Duplicate PASS + Metadata PASS = PARTIAL_PASS",
+      "passed": true,
+      "source": "reports/current/m5a_duplicate_detector_gate.json, reports/current/m5a_metadata_detector_gate.json",
+      "evidence": "true"
+    },
+    {
+      "id": "full_pass_requires_completed_run",
+      "label": "Gesamt-PASS nur bei vollstaendigem Data Quality Run",
+      "passed": true,
+      "source": "reports/current/data_quality_report.json",
+      "evidence": "COMPLETED"
+    },
+    {
+      "id": "report_integrity_supports_no_invalid_json",
+      "label": "report_integrity_pre_m5a bestaetigt keine invalid JSON Reports",
+      "passed": true,
+      "source": "reports/current/report_integrity_pre_m5a.json",
+      "evidence": "reports_current_json_valid=true"
+    },
+    {
+      "id": "documentation_truth_lint_pass",
+      "label": "documentation_truth_lint ist PASS",
+      "passed": true,
+      "source": "reports/current/documentation_truth_lint.json",
+      "evidence": "PASS"
+    },
+    {
+      "id": "report_integrity_gate_pass",
+      "label": "report_integrity_pre_m5a ist PASS",
+      "passed": false,
+      "source": "reports/current/report_integrity_pre_m5a.json",
+      "evidence": "NOT_PASS"
+    }
+  ],
+  "summary": {
+    "rule": "Duplicate PASS + Metadata PASS => PARTIAL_PASS; Gesamt-PASS nur bei vollstaendigem Data Quality Run; invalid JSON oder NOT_RUN => BLOCKED; keine globale M5-Freigabe.",
+    "overall_m5a_data_quality_pass": false
+  }
 }
