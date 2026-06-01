@@ -28,19 +28,25 @@
     }
   ],
   "assessment": {
-      "m5_preparation_allowed": true,
-      "m5_implementation_allowed": true,
-      "blockers": [
-        {
-          "id": "KL-M5-002",
-          "description": "M5 Entropy/Drift-Blocker: Kein produktiver M5-Slice darf als freigegeben gelten, bevor der Truth-Block des jeweiligen Slices grün ist."
-        }
-      ],
-      "residual_risks": [
-        "M5 Entropy/Drift-Blocker (KL-M5-002)",
-        "Weitere Restrisiken können nicht ausgeschlossen werden, solange die vollständigen Release-Candidate-Reports fehlen."
-      ],
-      "source": "known_limitations.json"
+    "m5_preparation_allowed": true,
+    "m5_implementation_allowed": true,
+    "m5_slice_start_allowed": false,
+    "blockers": [
+      {
+        "id": "KL-M5-T-001",
+        "description": "Slice-Blocker: Kein M5-Slice darf produktiv gehen, bevor der Truth-Block des jeweiligen Slices grün ist. Pflichtartefakte pro Slice erforderlich."
+      },
+      {
+        "id": "KL-M5-T-002",
+        "description": "Slice-Blocker: Retrieval-Baseline, Cleanup Dry-Run und Truth-Block pro Slice fehlen. Slice-Start bleibt NO-GO."
+      }
+    ],
+    "residual_risks": [
+      "Slice-Blocker verhindern Slice-Start, nicht aber die Gesamt-M5-Implementierung.",
+      "Weitere Restrisiken können nicht ausgeschlossen werden, solange die vollständigen Release-Candidate-Reports fehlen."
+    ],
+    "source": "known_limitations.json"
   },
-  "decision": "NO-GO"
+  "decision": "GO",
+  "note": "M5-Implementierung ist grundsätzlich erlaubt (GO), aber jeder Slice-Start bleibt NO-GO, solange Pflichtartefakte pro Slice fehlen."
 }
