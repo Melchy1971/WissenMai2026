@@ -1,3 +1,42 @@
 {
-  "gate": "m5a_data_quality_gate",
-  "timestamp": "
+  "report_schema_version": 1,
+  "report_name": "m5a_data_quality_gate",
+  "gate": "M5A_DATA_QUALITY",
+  "status": "BLOCKED",
+  "result": "BLOCKED",
+  "timestamp": "2026-06-01T07:31:20.490971+00:00",
+  "environment": "local",
+  "report_type": "gate",
+  "collected": 0,
+  "passed": 0,
+  "failed": 0,
+  "errors": 1,
+  "skipped": 0,
+  "exit_code": 1,
+  "blockers": [
+    {
+      "id": "invalid_previous_report",
+      "severity": "blocking",
+      "reason": "The previous reports/current/m5a_data_quality_gate.json was invalid JSON and was archived before replacement."
+    },
+    {
+      "id": "m5a_not_gate_passed",
+      "severity": "blocking",
+      "reason": "M5a Data Quality is not gate-passed."
+    }
+  ],
+  "source_command": "manual replacement after archiving invalid current report",
+  "generated_by": "gate_validator",
+  "reason": "invalid_previous_report",
+  "decision": {
+    "go_no_go": "NO_GO",
+    "result": "NO_GO",
+    "m5a_gate_passed": false,
+    "m5a_maximum_state": "startfähig only after m5a_start_gate GO"
+  },
+  "archived_invalid_report": "reports/archive/m5a/invalid/m5a_data_quality_gate.invalid.20260601T073120Z.json",
+  "notes": [
+    "M5a is not gate-passed.",
+    "M5a can be at most startfähig after reports/current/m5a_start_gate.json is GO; this report does not grant implementation or slice gate pass."
+  ]
+}

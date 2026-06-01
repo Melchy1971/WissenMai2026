@@ -1,57 +1,140 @@
 {
   "report_schema_version": 1,
   "report_name": "final_status_report",
-  "report_type": "status_snapshot",
+  "gate": "final_pre_m5_status_refresh",
+  "status": "FAIL",
+  "environment": "local",
+  "report_type": "gate",
+  "collected": 3,
+  "passed": 2,
+  "failed": 1,
+  "errors": 0,
+  "skipped": 0,
+  "source_command": "final Pre-M5 Status Refresh",
   "generated_by": "gate_validator",
-  "generated_at": "2026-05-29T09:16:44.856644+00:00",
+  "generated_at": "2026-06-01T06:57:38.5227218Z",
+  "timestamp": "2026-06-01T06:57:38.5227218Z",
+  "status_generation_engine": "final_pre_m5_status_refresh",
+  "blockers": [
+    {
+      "id": "M5A-INPUT-001",
+      "severity": "blocking",
+      "detail": "reports/current/m5a_start_gate.json is missing."
+    },
+    {
+      "id": "M5A-INPUT-002",
+      "severity": "blocking",
+      "detail": "reports/current/m5a_data_quality_gate.json is invalid JSON."
+    },
+    {
+      "id": "KL-M5-T-001",
+      "severity": "blocking",
+      "detail": "M5 Truth-Block is not green for productive slice start."
+    },
+    {
+      "id": "KL-M5-T-002",
+      "severity": "blocking",
+      "detail": "M5 slice prerequisite artifacts are missing."
+    }
+  ],
   "authority": {
-    "source_of_truth": "reports/current release-candidate artifacts",
+    "source_of_truth": [
+      "reports/current/m3a_release_candidate.json",
+      "reports/current/m4_backend_release_candidate.json",
+      "reports/current/m4e_operations_release_gate.json",
+      "reports/current/m5_gate_assessment.json",
+      "reports/current/m5a_start_gate.json",
+      "reports/current/m5a_data_quality_gate.json",
+      "reports/current/known_limitations.json",
+      "reports/current/documentation_truth_lint.json"
+    ],
     "manual_override_allowed": false
   },
   "inputs": {
-    "masterplan_status": {
-      "path": "reports/current/masterplan_status.json",
-      "status": "pass",
-      "timestamp": "2026-05-29T09:16:14.457490+00:00"
-    },
     "m3a_release_candidate": {
       "path": "reports/current/m3a_release_candidate.json",
       "status": "PASS",
-      "decision": "GO"
+      "decision": "GO",
+      "passed": 5,
+      "collected": 5,
+      "timestamp": "2026-05-29T08:51:25.441334+00:00"
     },
     "m4_backend_release_candidate": {
       "path": "reports/current/m4_backend_release_candidate.json",
       "status": "PASS",
       "decision": "GO",
-      "passed": 102
+      "passed": 102,
+      "collected": 102,
+      "timestamp": "2026-05-29T06:38:24.711878+00:00"
     },
     "m4e_operations_release_gate": {
       "path": "reports/current/m4e_operations_release_gate.json",
       "status": "PASS",
       "decision": "GO",
       "passed": 9,
-      "collected": 9
+      "collected": 9,
+      "timestamp": "2026-05-29T09:02:52.923591+00:00"
+    },
+    "m5_gate_assessment": {
+      "path": "reports/current/m5_gate_assessment.json",
+      "decision": "GO",
+      "m5_preparation_allowed": true,
+      "m5_implementation_allowed": true,
+      "m5_slice_start_allowed": false,
+      "timestamp": "2026-05-29T09:00:16Z"
+    },
+    "m5a_start_gate": {
+      "path": "reports/current/m5a_start_gate.json",
+      "available": false,
+      "status": "missing"
+    },
+    "m5a_data_quality_gate": {
+      "path": "reports/current/m5a_data_quality_gate.json",
+      "available": false,
+      "status": "invalid_json",
+      "detail": "File ends inside the timestamp string and cannot be parsed."
     },
     "known_limitations": {
       "path": "reports/current/known_limitations.json",
-      "active": 4,
+      "total": 6,
+      "open": 4,
+      "deferred": 2,
+      "blocking": 3,
       "m5_slice_blockers": [
         "KL-M5-T-001",
         "KL-M5-T-002"
+      ],
+      "operational_governance_blockers": [
+        "KL-GOV-001"
       ]
     },
     "documentation_truth_lint": {
       "path": "reports/current/documentation_truth_lint.json",
       "status": "PASS",
-      "errors": 0
-    },
-    "pre_m5_decision_report": {
-      "path": "reports/current/pre_m5_decision_report.json",
-      "m5_gate_decision": "GO",
-      "m5_effective": "NO-GO"
+      "errors": 0,
+      "warnings": 0,
+      "timestamp": "2026-05-29T07:39:35.308253+00:00"
     }
   },
-  "status": {
+  "clear_decision": {
+    "m5_vorbereitung": {
+      "decision": "GO",
+      "allowed": true,
+      "why": "M3a RC, M4 Backend RC, documentation lint, and M5 gate assessment are green for preparation."
+    },
+    "m5a_start": {
+      "decision": "NO-GO",
+      "allowed": false,
+      "why": "M5a start cannot be proven: m5a_start_gate.json is missing, m5a_data_quality_gate.json is invalid JSON, and the M5 slice blockers remain open."
+    },
+    "m5_implementierung": {
+      "decision": "GO",
+      "allowed": true,
+      "why": "The M4e Operations Release Gate is PASS/GO with 9/9 rules passed and m5_gate_assessment allows M5 implementation.",
+      "constraint": "This does not authorize M5a/Slice start or productive activation."
+    }
+  },
+  "phase_status": {
     "m3a_frontend_foundation": {
       "gate": "PASS",
       "decision": "GO",
@@ -63,107 +146,93 @@
       "source": "reports/current/m4_backend_release_candidate.json",
       "evidence": "102/102 tests passed"
     },
+    "m4e_operations": {
+      "gate": "PASS",
+      "decision": "GO",
+      "source": "reports/current/m4e_operations_release_gate.json",
+      "evidence": "9/9 operations rules passed"
+    },
     "m5_vorbereitung": {
       "gate": "PASS",
       "decision": "GO",
-      "preparation_package": "vollstaendig",
-      "docs": [
-        "docs/m5-preparation.md",
-        "docs/data-quality.md",
-        "docs/drift.md",
-        "docs/cleanup.md",
-        "docs/health-score.md",
-        "docs/m5-retrieval-quality-baseline.md"
-      ],
-      "source": "reports/current/masterplan_status.json"
+      "source": "reports/current/m5_gate_assessment.json",
+      "preparation_package": "vollstaendig"
     },
-    "m5_implementierung": {
-      "gate": "GO",
-      "effective_decision": "NO-GO",
-      "reason": "Slice-Start erfordert Truth-Block gruen, Retrieval-Baseline und Cleanup Dry-Run. Keines dieser Artefakte existiert.",
-      "m4e_operations_release_gate": {
-        "status": "PASS",
-        "gate_rule": "M5 Implementierung bleibt NO-GO, solange m4e_operations_release_gate nicht PASS ist.",
-        "gate_rule_satisfied": true,
-        "source": "reports/current/m4e_operations_release_gate.json",
-        "rules_passed": "9/9",
-        "note": "Gate-Bedingung ist erfuellt. Effektives NO-GO kommt aus Slice-Level-Blockern."
-      },
-      "active_slice_blockers": [
+    "m5a_start": {
+      "gate": "FAIL",
+      "decision": "NO-GO",
+      "source": [
+        "reports/current/m5a_start_gate.json",
+        "reports/current/m5a_data_quality_gate.json",
+        "reports/current/known_limitations.json"
+      ],
+      "blockers": [
+        {
+          "id": "M5A-INPUT-001",
+          "description": "reports/current/m5a_start_gate.json is missing."
+        },
+        {
+          "id": "M5A-INPUT-002",
+          "description": "reports/current/m5a_data_quality_gate.json is invalid JSON and cannot establish a PASS/GO state."
+        },
         {
           "id": "KL-M5-T-001",
-          "beschreibung": "15 M5 Entropy-/Drift-Truth-Failures in aktueller PostgreSQL-Truth-Suite. Kein M5-Slice darf produktiv gehen, bevor sein ",
-          "blocks_gate": [
-            "m5_truth_gate"
-          ]
+          "description": "M5 Truth-Block must be green before a productive slice start."
         },
         {
           "id": "KL-M5-T-002",
-          "beschreibung": "Vor Start jedes M5-Slices fehlen drei Pflicht-Artefakte: (1) Retrieval-Baseline, (2) Cleanup Dry-Run mit blocked_count=0",
-          "blocks_gate": [
-            "m5_slice_start_gate"
-          ]
+          "description": "Required slice artifacts are missing: retrieval baseline, cleanup dry-run with blocked_count=0, and green PostgreSQL truth block."
         }
+      ]
+    },
+    "m5_implementierung": {
+      "gate": "PASS",
+      "decision": "GO",
+      "effective_scope": "implementation work only",
+      "source": [
+        "reports/current/m4e_operations_release_gate.json",
+        "reports/current/m5_gate_assessment.json"
       ],
-      "missing_artifacts": [
-        {
-          "id": "PRE-ART-01",
-          "artifact": "Retrieval-Baseline",
-          "command": "python -m app.cli m5 retrieval-benchmark --set-baseline",
-          "report_target": "reports/current/m5_retrieval_baseline.json",
-          "required_before": "erstem Retrieval-Benchmark-Lauf",
-          "status": "missing",
-          "scope": "global"
-        },
-        {
-          "id": "PRE-ART-02",
-          "artifact": "Cleanup Dry-Run mit blocked_count = 0",
-          "command": "python -m app.cli m5 cleanup-dry-run --workspace <id>",
-          "report_target": "reports/current/m5_cleanup_dry_run_report.json",
-          "required_before": "jedem Cleanup-Lauf",
-          "status": "missing",
-          "scope": "per-slice"
-        },
-        {
-          "id": "PRE-ART-03",
-          "artifact": "PostgreSQL-Truth-Block data_quality gruen",
-          "command": "pytest --pg tests/truth/m5/ -k data_quality",
-          "report_target": "reports/current/m5_data_quality_truth.json",
-          "required_before": "Aktivierung Data-Quality-Slice",
-          "status": "missing",
-          "scope": "slice: data_quality"
-        },
-        {
-          "id": "PRE-ART-04",
-          "artifact": "PostgreSQL-Truth-Block drift_detection gruen",
-          "command": "pytest --pg tests/truth/m5/ -k drift_detection",
-          "report_target": "reports/current/m5_drift_truth.json",
-          "required_before": "Aktivierung Drift-Detection-Slice",
-          "status": "missing",
-          "scope": "slice: drift_detection"
-        },
-        {
-          "id": "PRE-ART-05",
-          "artifact": "PostgreSQL-Truth-Block cleanup_dry_run gruen",
-          "command": "pytest --pg tests/truth/m5/ -k cleanup_dry_run",
-          "report_target": "reports/current/m5_cleanup_truth.json",
-          "required_before": "Aktivierung Cleanup-Slice",
-          "status": "missing",
-          "scope": "slice: cleanup_dry_run"
-        },
-        {
-          "id": "PRE-ART-06",
-          "artifact": "PostgreSQL-Truth-Block health_score gruen",
-          "command": "pytest --pg tests/truth/m5/ -k health_score",
-          "report_target": "reports/current/m5_health_score_truth.json",
-          "required_before": "Aktivierung Health-Score-Slice",
-          "status": "missing",
-          "scope": "slice: health_score"
-        }
-      ],
-      "source": "reports/current/pre_m5_decision_report.json"
+      "note": "Implementation may proceed, but M5a/Slice start remains NO-GO."
     }
   },
+  "missing_or_invalid_artifacts": [
+    {
+      "id": "M5A-INPUT-001",
+      "artifact": "M5a Start Gate",
+      "path": "reports/current/m5a_start_gate.json",
+      "status": "missing",
+      "required_before": "M5a Start"
+    },
+    {
+      "id": "M5A-INPUT-002",
+      "artifact": "M5a Data Quality Gate",
+      "path": "reports/current/m5a_data_quality_gate.json",
+      "status": "invalid_json",
+      "required_before": "M5a Start"
+    },
+    {
+      "id": "PRE-ART-01",
+      "artifact": "Retrieval-Baseline",
+      "report_target": "reports/current/m5_retrieval_baseline.json",
+      "status": "missing",
+      "required_before": "first M5 retrieval benchmark or slice start"
+    },
+    {
+      "id": "PRE-ART-02",
+      "artifact": "Cleanup Dry-Run with blocked_count = 0",
+      "report_target": "reports/current/m5_cleanup_dry_run_report.json",
+      "status": "missing",
+      "required_before": "each cleanup-capable slice"
+    },
+    {
+      "id": "PRE-ART-03",
+      "artifact": "Green PostgreSQL Truth-Block for M5a data_quality",
+      "report_target": "reports/current/m5_data_quality_truth.json",
+      "status": "missing_or_unproven",
+      "required_before": "M5a Data-Quality activation"
+    }
+  ],
   "documentation_lint": {
     "status": "PASS",
     "errors": 0,
@@ -173,12 +242,13 @@
   "summary": {
     "m3a": "PASS/GO",
     "m4_backend": "PASS/GO",
+    "m4e_operations": "PASS/GO",
     "m5_vorbereitung": "GO",
-    "m5_implementierung_gate": "GO",
-    "m5_implementierung_effective": "NO-GO",
-    "m5_blocker": "M4e Operations Release Gate (Bedingung erfuellt) + 2 Slice-Level-Blocker",
+    "m5a_start": "NO-GO",
+    "m5_implementierung": "GO",
+    "effective_result": "M5 implementation may proceed; M5a/Slice start is blocked.",
     "documentation_lint": "PASS",
-    "preparation_package": "vollstaendig"
+    "blocking_reason": "M5a start gate missing, M5a data-quality gate invalid, and M5 slice-level blockers remain open."
   },
   "exit_code": 1
 }

@@ -23,7 +23,7 @@ Dieses Runbook beschreibt die wichtigsten Wiederherstellungsmaßnahmen für typi
 5. PostgreSQL starten
 
 **Validierung:**
-- `operations_selftest.ps1` ausführen, alle Checks müssen PASS sein
+- `operations_selftest.ps1` ausführen; Ergebnis anhand `reports/current/operations_selftest_report.json` bewerten
 
 ---
 
@@ -45,7 +45,7 @@ Dieses Runbook beschreibt die wichtigsten Wiederherstellungsmaßnahmen für typi
 4. Alembic Migrationen prüfen (`alembic heads`)
 
 **Validierung:**
-- Seed User vorhanden, Login möglich, Selftest PASS
+- Seed User und Login anhand `reports/current/operations_selftest_report.json` bewerten
 
 ---
 
@@ -105,7 +105,7 @@ Dieses Runbook beschreibt die wichtigsten Wiederherstellungsmaßnahmen für typi
 2. Backup-Integrität regelmäßig prüfen (`validate_backup`)
 
 **Validierung:**
-- Restore mit anderem Backup erfolgreich, Selftest PASS
+- Restore mit anderem Backup anhand `reports/current/operations_selftest_report.json` bewerten
 
 ---
 
@@ -126,7 +126,7 @@ Dieses Runbook beschreibt die wichtigsten Wiederherstellungsmaßnahmen für typi
 3. Logs auf Fehler prüfen
 
 **Validierung:**
-- Daten vorhanden, Selftest PASS
+- Datenbestand anhand `reports/current/operations_selftest_report.json` bewerten
 
 ---
 
@@ -146,7 +146,7 @@ Dieses Runbook beschreibt die wichtigsten Wiederherstellungsmaßnahmen für typi
 2. Bei Fehler: Restore und Reindex wiederholen
 
 **Validierung:**
-- Suche funktioniert, Selftest PASS
+- Suche anhand `reports/current/operations_selftest_report.json` bewerten
 
 ---
 
@@ -209,7 +209,7 @@ Dieses Runbook beschreibt die wichtigsten Wiederherstellungsmaßnahmen für typi
 3. Backend neu starten
 
 **Validierung:**
-- Login erfolgreich, Selftest PASS
+- Login anhand `reports/current/operations_selftest_report.json` bewerten
 
 ---
 

@@ -4,7 +4,7 @@ Stand: 2026-05-29
 
 ## Status
 
-- Phase: Vorbereitung abgeschlossen
+- Phase: Vorbereitung laut `reports/current/m5a_start_gate.json` bewertet
 - Implementierung: nicht gestartet
 - Freigabestatus: kein produktiver Betrieb bis PostgreSQL-Truth-Block `drift_detection` gruen
 - Drift Detection bleibt im ersten M5-Slice read-only
@@ -98,6 +98,6 @@ Repair ist explizit ausgelöst, nie automatisch.
 ## Implementierungsanker
 
 - CLI: `python -m app.cli m5 drift-check --workspace <id>`
-- Report-Ziel: `reports/current/m5_drift_report.json`
+- Geplantes Report-Artefakt: `m5_drift_report.json`
 - Repair-Strategie: `docs/runbooks/m5-drift-repair-strategy.md`
 - Truth-Test-Block: `drift_detection`

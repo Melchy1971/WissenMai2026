@@ -75,12 +75,36 @@ def test_collected_must_be_positive_except_informational() -> None:
             exit_code=0,
         )
     )
+    assert "empty_collected" not in _codes(
+        _valid_report(
+            status="BLOCKED",
+            result="BLOCKED",
+            collected=0,
+            passed=0,
+            failed=0,
+            errors=1,
+            skipped=0,
+            exit_code=1,
+        )
+    )
 
 
 def test_counts_must_be_consistent() -> None:
     report = _valid_report(collected=3, passed=1, failed=0, errors=0, skipped=0)
 
     assert "inconsistent_counts" in _codes(report)
+    assert "inconsistent_counts" not in _codes(
+        _valid_report(
+            status="BLOCKED",
+            result="BLOCKED",
+            collected=0,
+            passed=0,
+            failed=0,
+            errors=1,
+            skipped=0,
+            exit_code=1,
+        )
+    )
 
 
 def test_missing_generated_by_is_invalid() -> None:

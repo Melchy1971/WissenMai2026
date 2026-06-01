@@ -4,17 +4,17 @@ Stand: 2026-05-29
 
 ## Statusgrundlage
 
-- M3a RC: GO (`m3a_release_candidate_gate`: PASS) — `reports/current/m3a_release_candidate.json`
-- M4 Backend RC: GO (`m4_backend_release_candidate_gate`: PASS) — `reports/current/m4_backend_release_candidate.json`
-- M5 Vorbereitung: Gate PASS, Entscheidung GO
-- M5 Implementierung: Gate PASS / Effektiver Status: **NO-GO**
-- Quelle: `reports/current/masterplan_status.json`, Engine v3, Stand 2026-05-29
+- M3a RC: siehe `reports/current/m3a_release_candidate.json`
+- M4 Backend RC: siehe `reports/current/m4_backend_release_candidate.json`
+- M4e Operations Release: siehe `reports/current/m4e_operations_release_gate.json`
+- M5a Start-Gate: siehe `reports/current/m5a_start_gate.json`
+- Gesamtstatus: siehe `reports/current/masterplan_status.json`
 
-Das Gate ist freigegeben. Die Implementierung ist dennoch NO-GO, solange folgende aktive Blocker nicht behoben sind:
+M5a bleibt vorbereitet, wenn `reports/current/m5a_start_gate.json` keine `GO`-Entscheidung meldet. Implementierungsslices duerfen erst nach eigenem Slice-Start-Gate starten.
 
 | Blocker | Beschreibung |
 |---|---|
-| KL-M5-002 | 15 M5 Truth-Failures unbehoben — kein Slice darf produktiv gehen ohne grünen Truth-Block |
+| KL-M5-002 | Truth-Abweichungen werden ueber Reports unter `reports/current/` bewertet; kein Slice darf produktiv gehen ohne passenden Truth-Block |
 | KL-M5-003 | Operational Governance Gate erst nach M5-Start blockierend bewerten |
 | KL-M5-004 | Pflicht-Artefakte fehlen: Retrieval-Baseline, Cleanup Dry-Run, Truth-Block je Slice |
 
@@ -90,11 +90,11 @@ Folgende Bereiche werden in M5 bewusst nicht implementiert:
 
 | ID | Bereich | Risiko | Schwere | Mitigationsstrategie |
 |---|---|---|---|---|
-| R-M5-01 | M5 Truth Failures | 15 M5 Entropy-/Drift-Failures in aktueller PostgreSQL-Truth-Suite | hoch | M5-Fehler isoliert reparieren nach M4 PASS; kein M5-Gate ohne grüne M5-Truth-Suite |
+| R-M5-01 | M5 Truth Failures | Aktuelle Truth-Abweichungen werden ueber Reports unter `reports/current/` bewertet | hoch | M5-Fehler isoliert reparieren; kein M5-Gate ohne erfolgreich bewertete M5-Truth-Suite |
 | R-M5-02 | Cleanup | Dry-Run-Logik erkennt protected Entities nicht vollständig | mittel | `blocked_count > 0` als Stop-Kriterium; keine produktive Ausführung ohne manuellen Review |
-| R-M5-03 | Drift Detection | Drift ohne Repair-Pfad führt zu wachsender Divergenz zwischen DB und Index | mittel | Drift bleibt read-only bis Repair-Runbook freigegeben; Reindex ist workspace-scoped |
+| R-M5-03 | Drift Detection | Drift ohne Repair-Pfad fuehrt zu wachsender Divergenz zwischen DB und Index | mittel | Drift bleibt read-only bis ein Repair-Runbook per Report referenziert ist; Reindex ist workspace-scoped |
 | R-M5-04 | Retrieval Regression | Chunking- oder Normalisierungsänderungen können Silent Regressions erzeugen | mittel | Pflichtauslöser für Retrieval-Benchmark nach jeder Chunking-Änderung |
-| R-M5-05 | Health Score False Green | Score-Berechnung ohne reale Messgrundlage gibt falsche Sicherheit | hoch | Score darf erst als betrieblich berichtet werden, wenn PostgreSQL-Truth den Block `health_score` grün belegt |
+| R-M5-05 | Health Score ohne Evidenz | Score-Berechnung ohne reale Messgrundlage gibt falsche Sicherheit | hoch | Score darf erst als betrieblich berichtet werden, wenn ein aktueller Report den PostgreSQL-Truth-Block `health_score` bewertet |
 | R-M5-06 | Citation Drift | Archivierte oder gelöschte Chunks erscheinen in neuen Retrieval-Ergebnissen | hoch | Lifecycle-Exclusion-Violations = 0 als hartes Stop-Kriterium im Longrun-Benchmark |
 | R-M5-07 | Backup/Restore | Restore nach Reindex ohne Qualitätsprüfung führt zu unerkannter Retrieval-Degradation | mittel | Retrieval-Benchmark ist Pflichtauslöser nach `--trigger restore` |
 | R-M5-08 | Observability Lücken | Metriken ohne aktuelle Quelle erzeugen `unknown`-Status statt `ok` | niedrig | Dashboard-Statusableitung nur aus maschinenlesbaren, aktuellen Reports |
@@ -212,7 +212,7 @@ Pflichtauslöser: Reindex, Restore, Cleanup, Chunking-Änderung.
 
 ## 10. Startbedingungen für M5 Implementierung
 
-M5-Implementierung ist Gate-freigegeben. Vor Start jedes M5-Slices müssen folgende Bedingungen erfüllt sein:
+M5-Implementierung wird ueber `reports/current/m5a_start_gate.json` und slice-spezifische Gate-Reports bewertet. Vor Start jedes M5-Slices muessen folgende Bedingungen erfuellt sein:
 
 | Bedingung | Nachweispfad | Pflicht |
 |---|---|---|
@@ -222,7 +222,7 @@ M5-Implementierung ist Gate-freigegeben. Vor Start jedes M5-Slices müssen folge
 | Retrieval-Baseline vorhanden | `python -m app.cli m5 retrieval-benchmark --set-baseline` ausgeführt | ja, vor erstem Benchmark-Lauf |
 | Dry-Run vor produktivem Cleanup | Cleanup Dry-Run Report vorhanden, `blocked_count = 0` | ja, vor jedem Cleanup-Lauf |
 | Drift Detection read-only | kein Auto-Repair ohne freigegebenes Runbook | ja |
-| Health Score hat reale Messgrundlage | PostgreSQL-Truth-Block `health_score` grün | ja, vor Score-Reporting |
+| Health Score hat reale Messgrundlage | PostgreSQL-Truth-Block `health_score` durch aktuellen Report bewertet | ja, vor Score-Reporting |
 | Kein sensitives Logging | Logging-Review gegen Verbotsliste in `docs/m5-observability.md` | ja |
 
 Ein Slice gilt als implementierungsbereit, wenn sein Truth-Test-Block im aktuellen PostgreSQL-Truth-Report grün ist.

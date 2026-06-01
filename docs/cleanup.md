@@ -4,9 +4,9 @@ Stand: 2026-05-29
 
 ## Status
 
-- Phase: Vorbereitung abgeschlossen
+- Phase: Vorbereitung laut `reports/current/m5a_start_gate.json` bewertet
 - Implementierung: nicht gestartet
-- Freigabestatus: Dry-Run-Konzept freigegeben; produktiver Mutationspfad explizit deferred
+- Freigabestatus: ausschliesslich aus `reports/current/m5a_start_gate.json` und spaeteren Slice-Gates ableiten
 - Cleanup gilt in M5 ausschließlich als Dry-Run-Planungs- und Bewertungsbereich
 
 ---
@@ -89,5 +89,5 @@ Stand: 2026-05-29
 ## Implementierungsanker
 
 - CLI (Dry-Run): `python -m app.cli m5 cleanup-dry-run --workspace <id>`
-- Report-Ziel: `reports/current/m5_cleanup_dry_run_report.json`
+- Geplantes Report-Artefakt: `m5_cleanup_dry_run_report.json`
 - Truth-Test-Block: `cleanup_dry_run`

@@ -12,6 +12,8 @@ Quelle: `reports/current/known_limitations.json`
 
 Gesamt: 6 | Aktiv: 4 | Behoben: 0
 
+Aktuelle M5a-Einordnung: `reports/current/m5a_start_gate.json` entscheidet, ob M5a ueber Vorbereitung hinausgehen darf. Ohne `GO` bleibt M5a vorbereitet; `reports/current/m5a_data_quality_gate.json` und `reports/current/m5a_duplicate_detector_gate.json` duerfen dann keine Implementierungsfreigabe ersetzen.
+
 ### KL-M5-T-001
 
 **Status:** `open`  |  **Kategorie:** M5 blocker  |  **Zielphase:** M5
@@ -61,4 +63,3 @@ Der Alias /api/v1/documents ist nicht durchgaengig verfuegbar; Pfade nutzen teil
 ---
 
 ## Behobene Limitations
-

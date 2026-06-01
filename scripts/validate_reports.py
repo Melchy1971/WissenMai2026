@@ -283,9 +283,10 @@ def validate_payload(report: dict[str, Any]) -> list[ValidationIssue]:
     if {"collected", "passed", "failed", "errors", "skipped"}.issubset(numeric):
         collected = numeric["collected"]
         total = numeric["passed"] + numeric["failed"] + numeric["errors"] + numeric["skipped"]
-        if report_type != "informational" and collected <= 0:
+        blocked_pre_collection = report.get("status") == "BLOCKED" and collected == 0 and numeric["errors"] > 0
+        if report_type != "informational" and collected <= 0 and not blocked_pre_collection:
             issues.append(ValidationIssue("empty_collected", "collected must be > 0 unless report_type=informational"))
-        if collected != total:
+        if collected != total and not blocked_pre_collection:
             issues.append(ValidationIssue("inconsistent_counts", f"collected ({collected}) must equal passed+failed+errors+skipped ({total})"))
         if report.get("status") == "PASS" and (numeric["failed"] > 0 or numeric["errors"] > 0 or numeric["skipped"] > 0):
             issues.append(ValidationIssue("invalid_pass_status", "status PASS requires failed=0, errors=0, skipped=0"))

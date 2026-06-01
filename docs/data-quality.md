@@ -9,6 +9,14 @@ Alle Aussagen, Status und Gates werden ausschließlich aus maschinenlesbaren Rep
 - APIs: Siehe OpenAPI, API-Implementierung (data-quality Endpunkte)
 - Dashboard: Siehe React-Komponenten, HeroUI, Telekom CI
 - M5a Gate: Siehe reports/current/m5a_data_quality_gate.json (Go/No-Go, Score)
+- M5a Start-Gate: Siehe reports/current/m5a_start_gate.json.
+- Duplicate Detector Slice: Siehe reports/current/m5a_duplicate_detector_gate.json.
+
+## M5a Start-Gate Einordnung
+
+Laut `reports/current/m5a_start_gate.json` bleibt M5a auf Vorbereitung beschraenkt, solange die dortige Entscheidung nicht `GO` ist. Fehlende oder blockierende Artefakte werden ausschliesslich in diesem Report und im aktuellen Dokumentationsaudit `reports/current/documentation_truth_lint.json` bewertet.
+
+Wenn das Start-Gate spaeter `GO` meldet, ist der erste Implementierungsslice der Duplicate Detector. Dieser Slice darf nur read-only Findings erzeugen. Cleanup-, Merge- oder Repair-Actions bleiben ausser Scope und brauchen separate Governance.
 
 ## Report-Format
 
@@ -36,10 +44,8 @@ Data-Quality-Gate (M5a) gilt als PASS, wenn alle Pflichtkomponenten vorhanden un
 
 ---
 
-# documentation_truth_lint PASS
-
 ## Implementierungsanker
 
 - CLI: `python -m app.cli m5 data-quality-check --workspace <id>`
-- Report-Ziel: `reports/current/m5_data_quality_report.json`
+- Geplantes Report-Artefakt: `m5_data_quality_report.json`
 - Truth-Test-Block: `data_quality`

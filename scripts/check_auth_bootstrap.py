@@ -416,15 +416,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-failed else 1
-    finally:
-        if api_process is not None:
-            api_process.terminate()
-            try:
-                api_process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                api_process.kill()
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

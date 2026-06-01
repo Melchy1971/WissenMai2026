@@ -412,7 +412,9 @@ export function DocumentsPage() {
       ) : state.status === 'error' ? (
         <ErrorState error={state.error} testId="auth-error" />
       ) : state.items.length === 0 ? (
-        <EmptyState title="Keine Dokumente vorhanden" message="Fuer diesen Workspace liegen aktuell keine Dokumente vor." />
+        <div data-testid="document-list">
+          <EmptyState title="Keine Dokumente vorhanden" message="Fuer diesen Workspace liegen aktuell keine Dokumente vor." />
+        </div>
       ) : (
         <div data-testid="document-list">
           <DocumentTable items={state.items} />

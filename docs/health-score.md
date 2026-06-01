@@ -4,7 +4,7 @@ Stand: 2026-05-29
 
 ## Status
 
-- Phase: Vorbereitung abgeschlossen
+- Phase: Vorbereitung laut `reports/current/m5a_start_gate.json` bewertet
 - Implementierung: nicht gestartet
 - Freigabestatus: kein betrieblicher Score ohne reale Messgrundlage und PostgreSQL-Truth-Nachweis
 - Die Existenz einer Formel ist kein Nachweis einer laufenden Berechnung
@@ -63,7 +63,7 @@ Score-Formel: `sum(weight_i * component_score_i)`, alle Komponenten normalisiert
 
 Score darf erst als betrieblicher Zustand dokumentiert werden, wenn:
 - alle Quell-Reports aktuell und maschinenlesbar unter `reports/current/` verfügbar sind
-- PostgreSQL-Truth-Block `health_score` grün ist
+- PostgreSQL-Truth-Block `health_score` durch einen aktuellen Report unter `reports/current/` erfolgreich bewertet ist
 - keine Quelle `unknown` zurückgibt
 
 Fehlt eine Quelle: Komponente = `unknown`, Score = `unknown` statt `healthy`.
@@ -81,6 +81,6 @@ Fehlt eine Quelle: Komponente = `unknown`, Score = `unknown` statt `healthy`.
 ## Implementierungsanker
 
 - CLI: `python -m app.cli m5 health-score --workspace <id>`
-- Report-Ziel: `reports/current/m5_health_score_report.json`
+- Geplantes Report-Artefakt: `m5_health_score_report.json`
 - Score-Definition: `backend/app/observability/m5_metrics.py`
 - Truth-Test-Block: `health_score`

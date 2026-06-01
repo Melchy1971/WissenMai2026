@@ -32,6 +32,7 @@ def _rc(status: str = "PASS", decision: str = "GO") -> dict:
         "status": status,
         "result": status,
         "decision": {"go_no_go": decision},
+        "timestamp": "2026-05-29T08:00:00+00:00",
         "collected": 1,
         "passed": 1 if passed else 0,
         "failed": 0 if passed else 1,
@@ -46,6 +47,7 @@ def _doc_lint(errors: int = 0) -> dict:
     return {
         "status": status,
         "result": status,
+        "timestamp": "2026-05-29T08:00:00+00:00",
         "summary": {"errors": errors, "warnings": 0},
     }
 
@@ -72,6 +74,32 @@ def _operations_release(status: str = "PASS", decision: str = "GO") -> dict:
     return payload
 
 
+def _m5a_start_gate(decision: str = "GO") -> dict:
+    return {
+        "gate": "m5a_start_gate",
+        "status": "PASS" if decision == "GO" else "FAIL",
+        "decision": decision,
+        "collected": 1,
+        "passed": 1 if decision == "GO" else 0,
+        "failed": 0 if decision == "GO" else 1,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 0 if decision == "GO" else 1,
+    }
+
+
+def _m5_gate_assessment(*, implementation_allowed: bool = False, slice_start_allowed: bool = False) -> dict:
+    return {
+        "gate": "m5_gate_assessment",
+        "decision": "GO",
+        "assessment": {
+            "m5_preparation_allowed": True,
+            "m5_implementation_allowed": implementation_allowed,
+            "m5_slice_start_allowed": slice_start_allowed,
+        },
+    }
+
+
 def _write_inputs(
     report_dir: Path,
     *,
@@ -80,12 +108,20 @@ def _write_inputs(
     doc_errors: int = 0,
     operations_open: bool = False,
     operations_release: dict | None = None,
+    m5a_start_gate: dict | None = None,
+    m5_gate_assessment: dict | None = None,
 ) -> None:
     _write(report_dir / engine.M3A_RC, m3a or _rc())
     _write(report_dir / engine.M4_BACKEND_RC, m4 or _rc())
     _write(report_dir / engine.M4E_OPERATIONS_RELEASE, operations_release or _operations_release())
     _write(report_dir / engine.DOC_LINT, _doc_lint(doc_errors))
     _write(report_dir / engine.KNOWN_LIMITATIONS, _known_limitations(operations_open))
+    _write(report_dir / engine.FRONTEND_FULL_SUITE, _rc())
+    _write(report_dir / engine.PREFLIGHT, _rc())
+    if m5a_start_gate is not None:
+        _write(report_dir / engine.M5A_START_GATE, m5a_start_gate)
+    if m5_gate_assessment is not None:
+        _write(report_dir / engine.M5_GATE_ASSESSMENT, m5_gate_assessment)
 
 
 def test_v3_blocks_release_when_m3a_rc_is_not_pass(tmp_path: Path) -> None:
@@ -99,13 +135,14 @@ def test_v3_blocks_release_when_m3a_rc_is_not_pass(tmp_path: Path) -> None:
     assert payload["overall"]["release_allowed"] is False
 
 
-def test_v3_allows_m5_preparation_only_when_m4_rc_passes(tmp_path: Path) -> None:
+def test_v3_m5_preparation_depends_on_m4e_operations_not_m4_alone(tmp_path: Path) -> None:
     _write_inputs(tmp_path, m4=_rc("FAIL", "NO-GO"), operations_open=False)
 
     payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
 
     assert payload["phases"]["m4"]["decision"] == "NO_GO"
-    assert payload["m5"]["preparation_allowed"] is False
+    assert payload["m5"]["preparation_allowed"] is True
+    assert payload["m5"]["status"] == "PREPARATION_ALLOWED"
 
 
 def test_v3_keeps_m5_implementation_no_go_until_operations_release(tmp_path: Path) -> None:
@@ -115,32 +152,74 @@ def test_v3_keeps_m5_implementation_no_go_until_operations_release(tmp_path: Pat
 
     assert payload["phases"]["m3a"]["decision"] == "GO"
     assert payload["phases"]["m4"]["decision"] == "GO"
-    assert payload["m5"]["preparation_allowed"] is True
+    assert payload["m5"]["preparation_allowed"] is False
     assert payload["m5"]["implementation_allowed"] is False
     assert payload["m5"]["implementation_decision"] == "NO_GO"
+    assert payload["m5"]["status"] == "NOT_STARTED"
     assert payload["overall"]["release_allowed"] is True
 
 
-def test_v3_allows_m5_implementation_when_operations_release_is_go(tmp_path: Path) -> None:
+def test_v3_m4e_operations_go_allows_preparation_only_without_slice_gate(tmp_path: Path) -> None:
     _write_inputs(tmp_path)
 
     payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
 
     assert payload["m5"]["preparation_allowed"] is True
+    assert payload["m5"]["implementation_allowed"] is False
+    assert payload["m5"]["implementation_decision"] == "NO_GO"
+    assert payload["m5"]["status"] == "PREPARATION_ALLOWED"
+
+
+def test_v3_allows_slice_start_when_m5a_start_gate_is_go(tmp_path: Path) -> None:
+    _write_inputs(tmp_path, m5a_start_gate=_m5a_start_gate("GO"))
+
+    payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
+
+    assert payload["m5"]["status"] == "SLICE_START_ALLOWED"
+    assert payload["m5"]["slice_start_allowed"] is True
     assert payload["m5"]["implementation_allowed"] is True
-    assert payload["m5"]["implementation_decision"] == "GO"
     assert payload["phases"]["m5_implementation"]["gate_status"] == "PASS"
-    assert payload["m5"]["implementation_gate_dependency"]["operations_release_status"] == "GO"
 
 
 def test_v3_keeps_m5_implementation_no_go_for_active_known_operations_limitation(tmp_path: Path) -> None:
-    _write_inputs(tmp_path, operations_open=True)
+    _write_inputs(tmp_path, operations_open=True, m5a_start_gate=_m5a_start_gate("GO"))
 
     payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
 
     assert payload["m5"]["implementation_allowed"] is False
     assert payload["m5"]["implementation_decision"] == "NO_GO"
     assert payload["known_limitations"]["operations_open_ids"] == ["KL-NB-OPS"]
+
+
+def test_v3_blocks_m5_status_when_slice_report_json_is_invalid(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    (tmp_path / engine.M5A_DATA_QUALITY_GATE).write_text('{"gate": "m5a_data_quality_gate", "timestamp": "', encoding="utf-8")
+
+    payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
+
+    assert payload["m5"]["status"] == "BLOCKED"
+    assert payload["overall"]["release_allowed"] is False
+    assert any(item["id"] == "invalid_m5a_data_quality_gate" for item in payload["input_integrity_issues"])
+
+
+def test_v3_blocks_contradictory_m5_implementation_assessment(tmp_path: Path) -> None:
+    _write_inputs(tmp_path, m5_gate_assessment=_m5_gate_assessment(implementation_allowed=True))
+
+    payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
+
+    assert payload["m5"]["status"] == "BLOCKED"
+    assert payload["m5"]["implementation_allowed"] is False
+    assert any(item["id"] == "m5_assessment_implementation_contradiction" for item in payload["report_contradictions"])
+
+
+def test_v3_blocks_data_quality_gate_without_m5a_start_gate(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    _write(tmp_path / engine.M5A_DATA_QUALITY_GATE, _operations_release())
+
+    payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
+
+    assert payload["m5"]["status"] == "BLOCKED"
+    assert any(item["id"] == "m5a_data_quality_without_start_gate" for item in payload["report_contradictions"])
 
 
 def test_v3_doc_lint_errors_block_release(tmp_path: Path) -> None:
@@ -162,4 +241,5 @@ def test_v3_status_section_uses_v3_markers(tmp_path: Path) -> None:
     assert "<!-- BEGIN GENERATED MASTERPLAN STATUS v3 -->" in section
     assert "M5 Implementierung" in section
     assert "NO_GO" in section
+    assert "Statusmodell" in section
     assert "<!-- END GENERATED MASTERPLAN STATUS v3 -->" in section

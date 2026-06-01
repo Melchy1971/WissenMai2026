@@ -2,18 +2,19 @@
   "report_schema_version": 3,
   "report_name": "masterplan_status",
   "generated_by": "masterplan_status_engine_v3",
-  "generated_at": "2026-05-29T09:16:14.457490+00:00",
+  "generated_at": "2026-06-01T07:46:51.064756+00:00",
   "authority": {
-    "source_of_truth": "reports/current release-candidate artifacts",
+    "source_of_truth": "reports/current release-candidate and gate artifacts",
     "manual_status_override_allowed": false,
     "engine_version": 3,
-    "rule": "M3a and M4 status are derived from RC reports; M5 implementation requires PASS/GO in the explicit M4e/Operations release report."
+    "rule": "M5 uses explicit status values; M4e Operations PASS permits preparation only, while every M5 slice needs its own start gate."
   },
   "inputs": {
     "current_reports": {
       "m3a_release_candidate.json": {
         "available": true,
         "report_name": "m3a_release_candidate",
+        "gate": "m3a",
         "status": "PASS",
         "result": "PASS",
         "decision": "GO",
@@ -28,6 +29,7 @@
       "m4_backend_release_candidate.json": {
         "available": true,
         "report_name": "m4_backend_release_candidate",
+        "gate": "m4_backend_release_candidate",
         "status": "PASS",
         "result": "PASS",
         "decision": "GO",
@@ -42,6 +44,7 @@
       "m4e_operations_release_report.json": {
         "available": true,
         "report_name": "m4e_operations_release_report",
+        "gate": "m4e_operations_release",
         "status": "PASS",
         "result": "PASS",
         "decision": "GO",
@@ -53,9 +56,70 @@
         "exit_code": 0,
         "timestamp": "2026-05-29T07:36:29.870911+00:00"
       },
+      "m4e_operations_release_gate.json": {
+        "available": true,
+        "report_name": "m4e_operations_release_gate",
+        "gate": "m4e_operations_release",
+        "status": "PASS",
+        "result": "PASS",
+        "decision": "GO",
+        "collected": 9,
+        "passed": 9,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "timestamp": "2026-05-29T09:02:52.923591+00:00"
+      },
+      "m5_gate_assessment.json": {
+        "available": true,
+        "report_name": null,
+        "gate": "m5_gate_assessment",
+        "status": null,
+        "result": null,
+        "decision": "GO",
+        "collected": null,
+        "passed": null,
+        "failed": null,
+        "errors": null,
+        "skipped": null,
+        "exit_code": null,
+        "timestamp": "2026-05-29T09:00:16Z"
+      },
+      "m5a_start_gate.json": {
+        "available": true,
+        "report_name": "m5a_start_gate",
+        "gate": "m5a_start_gate",
+        "status": "FAIL",
+        "result": "FAIL",
+        "decision": "NO_GO",
+        "collected": 12,
+        "passed": 11,
+        "failed": 1,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 1,
+        "timestamp": "2026-06-01T07:29:19.451388+00:00"
+      },
+      "m5a_data_quality_gate.json": {
+        "available": true,
+        "report_name": "m5a_data_quality_gate",
+        "gate": "M5A_DATA_QUALITY",
+        "status": "BLOCKED",
+        "result": "BLOCKED",
+        "decision": "NO_GO",
+        "collected": 0,
+        "passed": 0,
+        "failed": 0,
+        "errors": 1,
+        "skipped": 0,
+        "exit_code": 1,
+        "timestamp": "2026-06-01T07:31:20.490971+00:00"
+      },
       "documentation_truth_lint.json": {
         "available": true,
         "report_name": "documentation_truth_lint",
+        "gate": null,
         "status": "PASS",
         "result": "PASS",
         "decision": null,
@@ -65,18 +129,22 @@
         "errors": null,
         "skipped": null,
         "exit_code": 0,
-        "timestamp": "2026-05-29T07:39:35.308253+00:00"
+        "timestamp": "2026-06-01T07:46:15.936859+00:00"
       },
       "known_limitations.json": {
         "available": true,
         "error": null,
         "total": 6,
-        "active": 6,
+        "active": 4,
         "blocking": 3,
         "blocking_ids": [
           "KL-M5-T-001",
           "KL-M5-T-002",
           "KL-GOV-001"
+        ],
+        "m5_slice_blocking_ids": [
+          "KL-M5-T-001",
+          "KL-M5-T-002"
         ],
         "operations_explicitly_released": true,
         "operations_open_ids": []
@@ -84,21 +152,39 @@
     }
   },
   "overall": {
-    "status": "pass",
-    "progress_percent": 100,
-    "release_allowed": true,
-    "blocker_count": 0
+    "status": "blocked",
+    "progress_percent": 35,
+    "release_allowed": false,
+    "blocker_count": 3
   },
   "phases": {
     "m3a": {
       "id": "m3a",
       "label": "M3a Frontend Foundation",
-      "status": "gate_passed",
-      "decision": "GO",
+      "status": "blocked",
+      "decision": "NO_GO",
       "gate_id": "m3a_release_candidate_gate",
-      "gate_status": "PASS",
+      "gate_status": "FAIL",
       "source": "reports/current/m3a_release_candidate.json",
-      "blockers": []
+      "blockers": [
+        {
+          "id": "m3a_rc_stale",
+          "type": "stale_guard",
+          "severity": "blocking",
+          "detail": "M3a RC is STALE: mandatory input reports are newer than the RC. Regenerate with: python scripts/generate_m3a_release_candidate.py (documentation_truth_lint_newer_than_rc (2026-06-01T07:46:15.936859+00:00 > 2026-05-29T08:51:25.441334+00:00))",
+          "source": "reports/current/m3a_release_candidate.json",
+          "stale_reasons": [
+            "documentation_truth_lint_newer_than_rc (2026-06-01T07:46:15.936859+00:00 > 2026-05-29T08:51:25.441334+00:00)"
+          ]
+        },
+        {
+          "id": "m3a_rc_not_pass",
+          "type": "release_candidate",
+          "severity": "blocking",
+          "detail": "m3a_release_candidate.json must be PASS/GO and not stale.",
+          "source": "reports/current/m3a_release_candidate.json"
+        }
+      ]
     },
     "m4": {
       "id": "m4",
@@ -113,42 +199,89 @@
     "m5_preparation": {
       "id": "m5_preparation",
       "label": "M5 Vorbereitung",
-      "status": "gate_passed",
-      "decision": "GO",
+      "status": "blocked",
+      "decision": "NO_GO",
       "gate_id": "m5_preparation_gate",
-      "gate_status": "PASS",
-      "source": "reports/current/m4_backend_release_candidate.json",
-      "blockers": []
+      "gate_status": "FAIL",
+      "source": "reports/current/m4e_operations_release_report.json",
+      "blockers": [
+        {
+          "id": "m5_assessment_implementation_contradiction",
+          "type": "report_contradiction",
+          "severity": "blocking",
+          "detail": "m5_gate_assessment allows implementation without a valid slice start gate.",
+          "source": "reports/current/m5_gate_assessment.json"
+        }
+      ]
     },
     "m5_implementation": {
       "id": "m5_implementation",
       "label": "M5 Implementierung",
-      "status": "gate_passed",
-      "decision": "GO",
+      "status": "blocked",
+      "decision": "NO_GO",
       "gate_id": "m5_implementation_gate",
-      "gate_status": "PASS",
-      "source": "reports/current/m4e_operations_release_report.json",
-      "blockers": []
+      "gate_status": "FAIL",
+      "source": "reports/current/m5a_start_gate.json",
+      "blockers": [
+        {
+          "id": "m5_assessment_implementation_contradiction",
+          "type": "report_contradiction",
+          "severity": "blocking",
+          "detail": "m5_gate_assessment allows implementation without a valid slice start gate.",
+          "source": "reports/current/m5_gate_assessment.json"
+        }
+      ]
+    },
+    "m5a_data_quality": {
+      "id": "m5a_data_quality",
+      "label": "M5a Data Quality",
+      "status": "blocked",
+      "decision": "NO_GO",
+      "gate_id": "m5a_start_gate",
+      "gate_status": "FAIL",
+      "source": "reports/current/m5a_start_gate.json",
+      "blockers": [
+        {
+          "id": "m5_assessment_implementation_contradiction",
+          "type": "report_contradiction",
+          "severity": "blocking",
+          "detail": "m5_gate_assessment allows implementation without a valid slice start gate.",
+          "source": "reports/current/m5_gate_assessment.json"
+        }
+      ]
     }
   },
   "gate_hierarchy": {
-    "result": "PASS",
+    "result": "FAIL",
     "gates": {
       "m3a_release_candidate_gate": {
-        "status": "PASS",
-        "blockers": []
+        "status": "FAIL",
+        "blockers": [
+          "M3a RC is STALE: mandatory input reports are newer than the RC. Regenerate with: python scripts/generate_m3a_release_candidate.py (documentation_truth_lint_newer_than_rc (2026-06-01T07:46:15.936859+00:00 > 2026-05-29T08:51:25.441334+00:00))",
+          "m3a_release_candidate.json must be PASS/GO and not stale."
+        ]
       },
       "m4_backend_release_candidate_gate": {
         "status": "PASS",
         "blockers": []
       },
       "m5_preparation_gate": {
-        "status": "PASS",
-        "blockers": []
+        "status": "FAIL",
+        "blockers": [
+          "m5_gate_assessment allows implementation without a valid slice start gate."
+        ]
       },
       "m5_implementation_gate": {
-        "status": "PASS",
-        "blockers": []
+        "status": "FAIL",
+        "blockers": [
+          "m5_gate_assessment allows implementation without a valid slice start gate."
+        ]
+      },
+      "m5a_start_gate": {
+        "status": "FAIL",
+        "blockers": [
+          "m5_gate_assessment allows implementation without a valid slice start gate."
+        ]
       }
     }
   },
@@ -162,30 +295,92 @@
   "known_limitations": {
     "source": "reports/current/known_limitations.json",
     "total": 6,
-    "active": 6,
+    "active": 4,
     "blocking": 3,
     "blocking_ids": [
       "KL-M5-T-001",
       "KL-M5-T-002",
       "KL-GOV-001"
     ],
+    "m5_slice_blocking_ids": [
+      "KL-M5-T-001",
+      "KL-M5-T-002"
+    ],
     "operations_explicitly_released": true,
     "operations_open_ids": []
   },
   "m5": {
-    "preparation_allowed": true,
-    "implementation_allowed": true,
-    "implementation_decision": "GO",
+    "status_model_version": 1,
+    "allowed_statuses": [
+      "NOT_STARTED",
+      "PREPARATION_ALLOWED",
+      "PREPARATION_DONE",
+      "SLICE_START_ALLOWED",
+      "SLICE_IMPLEMENTING",
+      "SLICE_GATE_PASSED",
+      "M5_IMPLEMENTATION_ALLOWED",
+      "BLOCKED"
+    ],
+    "status": "BLOCKED",
+    "preparation_allowed": false,
+    "preparation_done": false,
+    "implementation_allowed": false,
+    "implementation_decision": "NO_GO",
     "slice_start_allowed": false,
+    "active_slice": "m5a_data_quality",
+    "slice_gate_passed": false,
     "implementation_gate_dependency": {
-      "source": "reports/current/m4e_operations_release_report.json",
-      "operations_release_status": "GO",
-      "satisfied": true
+      "source": "reports/current/m5a_start_gate.json",
+      "m4e_operations_status": "GO",
+      "m5a_start_gate": "NO_GO",
+      "satisfied": false
     },
-    "implementation_blockers": [],
-    "note": "M5-Implementierung ist GO, aber Slice-Start bleibt NO-GO, solange Pflichtartefakte pro Slice fehlen."
+    "implementation_blockers": [
+      {
+        "id": "m5_assessment_implementation_contradiction",
+        "type": "report_contradiction",
+        "severity": "blocking",
+        "detail": "m5_gate_assessment allows implementation without a valid slice start gate.",
+        "source": "reports/current/m5_gate_assessment.json"
+      }
+    ]
   },
-  "blockers": [],
-  "timestamp": "2026-05-29T09:16:14.457490+00:00",
-  "exit_code": 0
+  "input_integrity_issues": [],
+  "report_contradictions": [
+    {
+      "id": "m5_assessment_implementation_contradiction",
+      "type": "report_contradiction",
+      "severity": "blocking",
+      "detail": "m5_gate_assessment allows implementation without a valid slice start gate.",
+      "source": "reports/current/m5_gate_assessment.json"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "m3a_rc_stale",
+      "type": "stale_guard",
+      "severity": "blocking",
+      "detail": "M3a RC is STALE: mandatory input reports are newer than the RC. Regenerate with: python scripts/generate_m3a_release_candidate.py (documentation_truth_lint_newer_than_rc (2026-06-01T07:46:15.936859+00:00 > 2026-05-29T08:51:25.441334+00:00))",
+      "source": "reports/current/m3a_release_candidate.json",
+      "stale_reasons": [
+        "documentation_truth_lint_newer_than_rc (2026-06-01T07:46:15.936859+00:00 > 2026-05-29T08:51:25.441334+00:00)"
+      ]
+    },
+    {
+      "id": "m3a_rc_not_pass",
+      "type": "release_candidate",
+      "severity": "blocking",
+      "detail": "m3a_release_candidate.json must be PASS/GO and not stale.",
+      "source": "reports/current/m3a_release_candidate.json"
+    },
+    {
+      "id": "m5_assessment_implementation_contradiction",
+      "type": "report_contradiction",
+      "severity": "blocking",
+      "detail": "m5_gate_assessment allows implementation without a valid slice start gate.",
+      "source": "reports/current/m5_gate_assessment.json"
+    }
+  ],
+  "timestamp": "2026-06-01T07:46:51.064756+00:00",
+  "exit_code": 1
 }

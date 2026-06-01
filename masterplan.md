@@ -7,12 +7,13 @@
 <!-- BEGIN GENERATED MASTERPLAN STATUS v3 -->
 ## Maschinenstatus Masterplan
 
-Stand: 2026-05-29
-Engine: masterplan_status_engine_v3
+Stand: `2026-06-01T07:46:51.064756+00:00`
+Engine: `masterplan_status_engine_v3`
 
-Gesamtstatus: PASS
-Release-Freigabe: ja
-Blocker: 0
+Gesamtstatus: `BLOCKED`
+Fortschritt: `35%`
+Release-Freigabe: `nein`
+Blocker: `3`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
 
@@ -20,22 +21,34 @@ Blocker: 0
 
 | Phase | Status | Entscheidung | Gate | Gate-Status |
 |---|---|---|---|---|
-| M3a Frontend Foundation | gate_passed | GO | m3a_release_candidate_gate | PASS |
-| M4 Backend | gate_passed | GO | m4_backend_release_candidate_gate | PASS |
-| M5 Vorbereitung | gate_passed | GO | m5_preparation_gate | PASS |
-| M5 Implementierung | gate_passed | GO | m5_implementation_gate | PASS |
+| M3a Frontend Foundation | `blocked` | `NO_GO` | `m3a_release_candidate_gate` | `FAIL` |
+| M4 Backend | `gate_passed` | `GO` | `m4_backend_release_candidate_gate` | `PASS` |
+| M5 Vorbereitung | `blocked` | `NO_GO` | `m5_preparation_gate` | `FAIL` |
+| M5 Implementierung | `blocked` | `NO_GO` | `m5_implementation_gate` | `FAIL` |
+| M5a Data Quality | `blocked` | `NO_GO` | `m5a_start_gate` | `FAIL` |
 
 ### M5
-- Vorbereitung erlaubt: ja
-- Implementierung erlaubt: ja
-- Implementierungsentscheidung: GO
+
+- Statusmodell: `BLOCKED`
+- Vorbereitung erlaubt: `nein`
+- Slice-Start erlaubt: `nein`
+- Implementierung erlaubt: `nein`
+- Implementierungsentscheidung: `NO_GO`
 
 ### Dokumentations-Lint
-- Ergebnis: PASS
-- Errors: 0  Warnings: 0
+
+- Ergebnis: `PASS`
+- Errors: `0`  Warnings: `0`
 
 ### Blocker
-- keine Release-Blocker
+
+- `m3a_rc_stale`: M3a RC is STALE: mandatory input reports are newer than the RC. Regenerate with: python scripts/generate_m3a_release_candidate.py (documentation_truth_lint_newer_than_rc (2026-06-01T07:46:15.936859+00:00 > 2026-05-29T08:51:25.441334+00:00))
+- `m3a_rc_not_pass`: m3a_release_candidate.json must be PASS/GO and not stale.
+- `m5_assessment_implementation_contradiction`: m5_gate_assessment allows implementation without a valid slice start gate.
+
+### M5-Implementierungsblocker
+
+- `m5_assessment_implementation_contradiction`: m5_gate_assessment allows implementation without a valid slice start gate. Quelle: `reports/current/m5_gate_assessment.json`.
 
 <!-- END GENERATED MASTERPLAN STATUS v3 -->
 
@@ -46,8 +59,8 @@ Aktuelle Gate- und Freigabeaussagen werden ausschliesslich aus maschinenlesbaren
 Boundary v3:
 - M3a wird durch reports/current/m3a_release_candidate.json bewertet.
 - M4 wird durch reports/current/m4_backend_release_candidate.json bewertet.
-- M5-Vorbereitung ist nur bei M4-RC-Entscheidung GO erlaubt.
-- M5-Implementierung wird durch reports/current/m4e_operations_release_report.json und reports/current/masterplan_status.json bewertet.
+- M5-Vorbereitung wird durch reports/current/m4e_operations_release_report.json bewertet.
+- M5-Implementierung braucht ein Slice-Start-Gate wie reports/current/m5a_start_gate.json.
 
 ---
 **Stand:** 2026-05-29
@@ -108,6 +121,8 @@ Alle Aussagen, Status und Gates werden ausschließlich aus maschinenlesbaren Rep
 - APIs: Siehe OpenAPI und API-Implementierung (data-quality Endpunkte)
 - Dashboard: Siehe React-Komponenten, HeroUI, Telekom CI
 - M5a Gate: Siehe reports/current/m5a_data_quality_gate.json (Go/No-Go, Score)
+- M5a Start-Gate: Siehe reports/current/m5a_start_gate.json. Wenn dieses Gate nicht `GO` meldet, bleibt M5a auf Vorbereitung beschraenkt.
+- Duplicate Detector Slice: Siehe reports/current/m5a_duplicate_detector_gate.json. Es gibt keine Cleanup- oder Repair-Freigabe; Findings bleiben read-only.
 
 Manuelle Statuswerte, Prozentangaben oder Freigaben sind nicht zulässig. Alle Gate- und Statusentscheidungen werden maschinell getroffen und dokumentiert.
 
@@ -171,7 +186,9 @@ Der Alias /api/v1/documents ist nicht durchgaengig verfuegbar; Pfade nutzen teil
 
 ---
 
-# documentation_truth_lint PASS
+## Documentation Truth Lint
+
+Aktueller Nachweis: `reports/current/documentation_truth_lint.json`.
 
 | RC-Status | Masterplan-Bedeutung |
 |---|---|
@@ -1834,7 +1851,3 @@ Pruefprinzip:
 - [M4b Upload-GUI](docs/m4b-upload-gui.md)
 - [Definition of Done: Paket 5](docs/paket-5-definition-of-done.md)
 - [ADR: Dokument-Read-API und Datenkonsistenz vor Retrieval](docs/adr/0003-document-read-api-before-retrieval.md)
-
-
-
-

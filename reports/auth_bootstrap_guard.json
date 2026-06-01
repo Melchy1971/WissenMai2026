@@ -1,0 +1,167 @@
+{
+  "generated_at": "2026-06-01T08:01:01.671279Z",
+  "guard": "auth_workspace_bootstrap",
+  "result": "PASS",
+  "api_base_url": "http://127.0.0.1:8000",
+  "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026",
+  "seed_login": "admin@localhost",
+  "seed_user_id": "00000000-0000-0000-0000-000000000001",
+  "seed_workspace_id": "00000000-0000-0000-0000-000000000001",
+  "expected_role": "admin",
+  "checks": [
+    {
+      "id": "database_url_configured",
+      "status": "PASS",
+      "evidence": {
+        "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026"
+      }
+    },
+    {
+      "id": "seed_auth_succeeded",
+      "status": "PASS",
+      "evidence": {
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "seed_user_exists",
+      "status": "PASS",
+      "evidence": {
+        "user": {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "login": "admin@localhost",
+          "is_active": true,
+          "is_default": true
+        }
+      }
+    },
+    {
+      "id": "user_active",
+      "status": "PASS",
+      "evidence": {
+        "user": {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "login": "admin@localhost",
+          "is_active": true,
+          "is_default": true
+        }
+      }
+    },
+    {
+      "id": "workspace_exists",
+      "status": "PASS",
+      "evidence": {
+        "workspace": {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "Default Workspace",
+          "is_default": true
+        }
+      }
+    },
+    {
+      "id": "membership_exists",
+      "status": "PASS",
+      "evidence": {
+        "membership": {
+          "id": "076a233e-5d9f-4793-bc70-b32fd5724ab7",
+          "user_id": "00000000-0000-0000-0000-000000000001",
+          "workspace_id": "00000000-0000-0000-0000-000000000001",
+          "role": "admin"
+        }
+      }
+    },
+    {
+      "id": "membership_role_admin",
+      "status": "PASS",
+      "evidence": {
+        "expected_role": "admin",
+        "membership": {
+          "id": "076a233e-5d9f-4793-bc70-b32fd5724ab7",
+          "user_id": "00000000-0000-0000-0000-000000000001",
+          "workspace_id": "00000000-0000-0000-0000-000000000001",
+          "role": "admin"
+        }
+      }
+    },
+    {
+      "id": "password_works",
+      "status": "PASS",
+      "evidence": {
+        "login": "admin@localhost",
+        "auth_error": null
+      }
+    },
+    {
+      "id": "api_reachable",
+      "status": "PASS",
+      "evidence": {
+        "api_base_url": "http://127.0.0.1:8000"
+      }
+    },
+    {
+      "id": "auth_login_endpoint_works",
+      "status": "PASS",
+      "evidence": {
+        "status": 200,
+        "error": null,
+        "response_keys": [
+          "active_workspace_id",
+          "expires_at",
+          "memberships",
+          "token",
+          "user"
+        ],
+        "active_workspace_id": "00000000-0000-0000-0000-000000000001"
+      }
+    },
+    {
+      "id": "auth_me_returns_active_workspace_id",
+      "status": "PASS",
+      "evidence": {
+        "status": 200,
+        "error": null,
+        "expected_active_workspace_id": "00000000-0000-0000-0000-000000000001",
+        "active_workspace_id": "00000000-0000-0000-0000-000000000001",
+        "response_keys": [
+          "active_workspace_id",
+          "memberships",
+          "user"
+        ]
+      }
+    }
+  ],
+  "seed_auth": {
+    "exit_code": 0,
+    "stdout_tail": "\nValidation:\nuser_id: 00000000-0000-0000-0000-000000000001\nworkspace_id: 00000000-0000-0000-0000-000000000001\nrole: admin\nis_active: True\nlogin: admin@localhost\nbootstrap_invariant: PASS\nreport: H:\\WissenMai2026\\reports\\seed_report.json\n",
+    "stderr_tail": ""
+  },
+  "database_state": {
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "login": "admin@localhost",
+      "is_active": true,
+      "is_default": true
+    },
+    "workspace": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "name": "Default Workspace",
+      "is_default": true
+    },
+    "membership": {
+      "id": "076a233e-5d9f-4793-bc70-b32fd5724ab7",
+      "user_id": "00000000-0000-0000-0000-000000000001",
+      "workspace_id": "00000000-0000-0000-0000-000000000001",
+      "role": "admin"
+    },
+    "auth_service_membership_count": 1
+  },
+  "api_started_by_guard": false,
+  "api": {
+    "login_status": 200,
+    "login_error": null,
+    "me_status": 200,
+    "me_error": null,
+    "active_workspace_id": "00000000-0000-0000-0000-000000000001"
+  },
+  "remaining_errors": []
+}

@@ -1,0 +1,136 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5a_start_gate",
+  "gate": "m5a_start_gate",
+  "status": "FAIL",
+  "result": "FAIL",
+  "timestamp": "2026-06-01T07:29:19.451388+00:00",
+  "environment": "local",
+  "report_type": "gate",
+  "collected": 12,
+  "passed": 11,
+  "failed": 1,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "blockers": [
+    {
+      "id": "m5a_documentation_truth_lint_failed",
+      "severity": "blocking",
+      "reason": "reports/current/documentation_truth_lint.json is FAIL with 37 errors and 2 warnings; M5a implementation start remains NO-GO until documentation truth is clean."
+    }
+  ],
+  "source_command": "reports/current/m5a_start_gate.json",
+  "generated_by": "gate_validator",
+  "decision": {
+    "go_no_go": "NO_GO",
+    "result": "NO_GO",
+    "m5a_implementation_start_allowed": false,
+    "planning_only": true
+  },
+  "inputs": [
+    "docs/m5-preparation.md",
+    "docs/data-quality.md",
+    "docs/drift.md",
+    "docs/cleanup.md",
+    "docs/health-score.md",
+    "docs/retrieval-quality-baseline.md",
+    "reports/current/m3a_release_candidate.json",
+    "reports/current/m4_backend_release_candidate.json",
+    "reports/current/m4e_operations_release_gate.json",
+    "reports/current/documentation_truth_lint.json"
+  ],
+  "criteria": [
+    {
+      "id": "m3a_release_candidate_go",
+      "label": "M3a Release Candidate GO",
+      "passed": true,
+      "source": "reports/current/m3a_release_candidate.json",
+      "evidence": "status=PASS, decision=GO"
+    },
+    {
+      "id": "m4_backend_release_candidate_go",
+      "label": "M4 Backend Release Candidate GO",
+      "passed": true,
+      "source": "reports/current/m4_backend_release_candidate.json",
+      "evidence": "status=PASS, decision=GO"
+    },
+    {
+      "id": "m4e_operations_release_go",
+      "label": "M4e Operations Release GO",
+      "passed": true,
+      "source": "reports/current/m4e_operations_release_gate.json",
+      "evidence": "status=PASS, decision=GO"
+    },
+    {
+      "id": "documentation_truth_lint_pass",
+      "label": "Documentation Truth Lint PASS",
+      "passed": false,
+      "source": "reports/current/documentation_truth_lint.json",
+      "evidence": "status=FAIL, errors=37, warnings=2"
+    },
+    {
+      "id": "m5a_data_quality_scope_defined",
+      "label": "Data Quality Scope vorhanden",
+      "passed": true,
+      "source": "docs/m5-preparation.md",
+      "evidence": "Section 1.1 defines Data Quality responsibilities; docs/data-quality.md defines the M5 Data Quality architecture."
+    },
+    {
+      "id": "m5a_data_quality_report_schema_defined",
+      "label": "Data Quality Report Schema vorhanden",
+      "passed": true,
+      "source": "docs/data-quality.md",
+      "evidence": "Report-Format JSON block defines report_schema_version, report_name, timestamp, metrics and findings."
+    },
+    {
+      "id": "m5a_finding_types_defined",
+      "label": "Finding Types definiert",
+      "passed": true,
+      "source": "docs/m5-preparation.md",
+      "evidence": "Hard errors, drift types and cleanup candidate types are enumerated across M5 preparation, drift and cleanup docs."
+    },
+    {
+      "id": "m5a_severity_model_defined",
+      "label": "Severity Modell definiert",
+      "passed": true,
+      "source": "docs/drift.md",
+      "evidence": "Drift severity uses warning/error; M5 preparation risk table defines severity classes."
+    },
+    {
+      "id": "m5a_read_only_api_scope_defined",
+      "label": "Read-only API Scope definiert",
+      "passed": true,
+      "source": "docs/m5-preparation.md",
+      "evidence": "Drift Detection remains read-only; M4d Admin Diagnostics remains read-only; mutating Web Admin actions are out of scope."
+    },
+    {
+      "id": "m5a_dashboard_scope_defined",
+      "label": "Dashboard Scope definiert",
+      "passed": true,
+      "source": "docs/m5-preparation.md",
+      "evidence": "Observability section defines workspace and global dashboard views; docs/data-quality.md references dashboard implementation anchors."
+    },
+    {
+      "id": "m5a_non_scope_defined",
+      "label": "Nicht-Scope definiert",
+      "passed": true,
+      "source": "docs/m5-preparation.md",
+      "evidence": "Section 2 defines M5 non-scope; component docs also define non-scope boundaries."
+    },
+    {
+      "id": "m5a_gate_rules_defined",
+      "label": "Gate-Regeln definiert",
+      "passed": true,
+      "source": "docs/data-quality.md",
+      "evidence": "Data Quality gate rule requires all required components and score threshold; retrieval baseline and cleanup docs define blocking thresholds."
+    }
+  ],
+  "summary": {
+    "m5a_preparation_artifacts_complete": true,
+    "scope_criteria_passed": 8,
+    "scope_criteria_failed": 0,
+    "precondition_failed": "documentation_truth_lint_pass",
+    "decision_reason": "All requested M5a preparation-scope checks are present, but current documentation truth lint is FAIL. Implementation start is therefore blocked; planning remains allowed."
+  }
+}

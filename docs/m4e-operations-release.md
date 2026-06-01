@@ -21,15 +21,15 @@ Dieses Gate prueft alle operativen Voraussetzungen vor dem ersten M5-Slice.
 
 | # | Regel-ID | Anforderung | Status |
 |---|---|---|---|
-| 1 | `m4e_ops_backup_createable` | Backup erzeugbar | PASS |
-| 2 | `m4e_ops_restore_verified` | Restore validiert | PASS |
-| 3 | `m4e_ops_reindex_after_restore` | Reindex nach Restore | PASS |
-| 4 | `m4e_ops_health_diagnostics_read_only` | Health/Diagnostics read-only | PASS |
-| 5 | `m4e_ops_runbook` | Recovery Runbook vorhanden | PASS |
-| 6 | `m4e_ops_auth_seed_bootstrap_documented` | Auth/Seed Bootstrap dokumentiert | PASS |
-| 7 | `m4e_ops_db_bootstrap_documented` | DB Bootstrap dokumentiert | PASS |
-| 8 | `m4e_ops_recovery_commands_documented` | Recovery-Kommandos dokumentiert | PASS |
-| 9 | `m4e_ops_no_mutating_admin_without_governance` | Keine mutierenden Adminaktionen ohne Governance | PASS |
+| 1 | `m4e_ops_backup_createable` | Backup erzeugbar | siehe Gate-Report |
+| 2 | `m4e_ops_restore_verified` | Restore validiert | siehe Gate-Report |
+| 3 | `m4e_ops_reindex_after_restore` | Reindex nach Restore | siehe Gate-Report |
+| 4 | `m4e_ops_health_diagnostics_read_only` | Health/Diagnostics read-only | siehe Gate-Report |
+| 5 | `m4e_ops_runbook` | Recovery Runbook vorhanden | siehe Gate-Report |
+| 6 | `m4e_ops_auth_seed_bootstrap_documented` | Auth/Seed Bootstrap dokumentiert | siehe Gate-Report |
+| 7 | `m4e_ops_db_bootstrap_documented` | DB Bootstrap dokumentiert | siehe Gate-Report |
+| 8 | `m4e_ops_recovery_commands_documented` | Recovery-Kommandos dokumentiert | siehe Gate-Report |
+| 9 | `m4e_ops_no_mutating_admin_without_governance` | Keine mutierenden Adminaktionen ohne Governance | siehe Gate-Report |
 
 ---
 
@@ -50,7 +50,7 @@ Ein vollstaendiger Backup-Lauf (DB-Dump + Originaldateien + Konfigurationsartefa
 
 ### 2. Restore validiert
 
-Ein Restore auf eine leere Zielumgebung muss erfolgreich abgeschlossen und gegen eine echte lokale PostgreSQL-DB verifiziert worden sein.
+Ein Restore auf eine leere Zielumgebung muss gegen eine echte lokale PostgreSQL-DB verifiziert werden. Nachweisquelle: `reports/current/m4e_operations_release_gate.json`.
 
 **Abnahmekriterien:**
 - `python -m app.cli backup restore` schliesst ohne Fehler ab

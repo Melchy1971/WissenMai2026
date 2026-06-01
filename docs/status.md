@@ -13,4 +13,6 @@ Alle Aussagen, Scores und Gates sind maschinenbasiert, keine manuellen Statuswer
 
 ---
 
-# documentation_truth_lint PASS
+## Documentation Truth Lint
+
+Aktueller Nachweis: `reports/current/documentation_truth_lint.json`.

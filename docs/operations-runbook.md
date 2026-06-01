@@ -28,7 +28,7 @@ python scripts/check_auth_bootstrap.py --no-start-api
 pytest -m postgres_truth tests/postgres_truth/test_smoke.py -vv
 ```
 
-Erst wenn alle Schritte ohne Fehler abschliessen, gilt die Intervention als abgeschlossen.
+Die Intervention endet erst nach Auswertung der zutreffenden Nachweise unter `reports/current/`, insbesondere `reports/current/operations_selftest_report.json`.
 
 ---
 
@@ -458,7 +458,7 @@ cd backend
 ```
 
 **Report-Artefakt:**
-- `reports/current/m5_drift_report.json` (Drift-Check nach Reindex)
+- Geplantes Artefakt `m5_drift_report.json` (Drift-Check nach Reindex)
 - Retrieval-Benchmark-Report (implizit durch CLI-Ausgabe)
 
 ---
@@ -479,14 +479,14 @@ Nach jeder Intervention alle zutreffenden Punkte abhaken, bevor der Normalbetrie
 - [ ] `alembic current` zeigt korrekten Head
 - [ ] Dokumentanzahl in DB entspricht Erwartung
 - [ ] Seed-Admin-Login funktioniert
-- [ ] `m4a_auth_truth.json` ist PASS, collected > 0
+- [ ] `reports/current/m4a_auth_truth.json` enthaelt den aktuellen Auth-Nachweis
 
 ### Pflicht nach Restore (Szenario 9)
 
-- [ ] Backup-Validierung war PASS vor Restore
+- [ ] Backup-Validierung wurde anhand `reports/current/m4e_backup_restore_truth.json` vor Restore bewertet
 - [ ] Zweitperson hat Restore-Entscheid bestaetigt
 - [ ] DB-Cardinality (Dokumente, Chunks, Citations) entspricht Manifest
-- [ ] `check_auth_bootstrap.py` ist PASS
+- [ ] `check_auth_bootstrap.py` wurde ueber `reports/current/m4a_auth_truth.json` bewertet
 - [ ] Reindex wurde ausgefuehrt (Szenario 10)
 
 ### Pflicht nach Reindex (Szenario 10)

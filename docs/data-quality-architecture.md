@@ -48,7 +48,7 @@
 - **Reports:**
   - Chunk-Quality-Report
 - **Gates:**
-  - Warnung ab 1%, Block ab 5% fehlerhafter Chunks
+  - Warn- und Blockschwellen werden im zugehoerigen Gate-Report dokumentiert.
 
 ## 5. Source Status Validation
 - **Datenmodell:**
