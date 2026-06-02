@@ -72,6 +72,12 @@ class InvalidQueryApiError(ApiError):
     message = "Invalid search query"
 
 
+class RequestValidationApiError(ApiError):
+    status_code = 422
+    code = "REQUEST_VALIDATION_FAILED"
+    message = "Request validation failed"
+
+
 class ChatSessionNotFoundApiError(ApiError):
     status_code = 404
     code = "CHAT_SESSION_NOT_FOUND"

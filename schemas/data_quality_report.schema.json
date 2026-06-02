@@ -1,48 +1,74 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "DataQualityReport",
+  "title": "DataQualityReportV2",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "report_schema_version": { "type": "string" },
-    "report_name": { "type": "string" },
+    "report_schema_version": { "type": "integer", "const": 2 },
+    "report_name": { "type": "string", "const": "data_quality_report" },
+    "generated_by": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
     "timestamp": { "type": "string", "format": "date-time" },
+    "run_id": { "type": "string" },
     "workspace_id": { "type": "string" },
+    "status": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" },
     "total_documents": { "type": "integer", "minimum": 0 },
-    "active_documents": { "type": "integer", "minimum": 0 },
-    "archived_documents": { "type": "integer", "minimum": 0 },
-    "deleted_documents": { "type": "integer", "minimum": 0 },
-    "duplicate_documents": { "type": "integer", "minimum": 0 },
-    "orphan_chunks": { "type": "integer", "minimum": 0 },
-    "missing_metadata": { "type": "integer", "minimum": 0 },
-    "invalid_source_status": { "type": "integer", "minimum": 0 },
-    "quality_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "total_findings": { "type": "integer", "minimum": 0 },
+    "duplicate_findings": { "type": "integer", "minimum": 0 },
+    "metadata_findings": { "type": "integer", "minimum": 0 },
+    "lifecycle_findings": { "type": "integer", "minimum": 0 },
+    "source_status_findings": { "type": "integer", "minimum": 0 },
+    "orphan_findings": { "type": "integer", "minimum": 0 },
+    "quality_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "findings_by_severity": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "findings_by_type": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
     "findings": {
       "type": "array",
       "items": {
         "type": "object",
+        "additionalProperties": true,
         "properties": {
-          "id": { "type": "string" },
+          "finding_type": { "type": "string" },
+          "severity": { "type": "string" },
+          "document_id": { "type": ["string", "null"] },
+          "version_id": { "type": ["string", "null"] },
+          "chunk_id": { "type": ["string", "null"] },
+          "title": { "type": "string" },
           "description": { "type": "string" },
-          "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
           "remediation": { "type": "string" }
         },
-        "required": ["id", "description", "severity", "remediation"]
+        "required": ["finding_type", "severity"]
       }
     }
   },
   "required": [
     "report_schema_version",
     "report_name",
+    "generated_by",
     "timestamp",
+    "run_id",
     "workspace_id",
+    "status",
+    "started_at",
+    "finished_at",
     "total_documents",
-    "active_documents",
-    "archived_documents",
-    "deleted_documents",
-    "duplicate_documents",
-    "orphan_chunks",
-    "missing_metadata",
-    "invalid_source_status",
-    "quality_score"
+    "total_findings",
+    "duplicate_findings",
+    "metadata_findings",
+    "lifecycle_findings",
+    "source_status_findings",
+    "orphan_findings",
+    "quality_score",
+    "findings_by_severity",
+    "findings_by_type",
+    "findings"
   ]
 }

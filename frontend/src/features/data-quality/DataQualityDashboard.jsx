@@ -9,6 +9,37 @@ import { mapError } from '../../view-models/mappers.js';
 
 const SEVERITY_TONE = { error: 'danger', warning: 'warning', info: 'info' };
 const SEVERITY_LABEL = { error: 'Fehler', warning: 'Warnung', info: 'Info' };
+const SCORE_CATEGORY_WEIGHTS = {
+  duplicate: 25,
+  metadata: 15,
+  lifecycle: 25,
+  source_status: 20,
+  orphan: 15,
+};
+const SCORE_CATEGORY_LABELS = {
+  duplicate: 'Duplicate',
+  metadata: 'Metadata',
+  lifecycle: 'Lifecycle',
+  source_status: 'Source Status',
+  orphan: 'Orphan Objects',
+};
+const FINDING_TYPE_CATEGORY = {
+  DUPLICATE_DOCUMENT: 'duplicate',
+  DUPLICATE_CONTENT: 'duplicate',
+  MISSING_METADATA: 'metadata',
+  EMPTY_DOCUMENT: 'metadata',
+  EMPTY_CHUNK: 'metadata',
+  INVALID_LIFECYCLE: 'lifecycle',
+  RETRIEVAL_RISK: 'lifecycle',
+  INVALID_SOURCE_STATUS: 'source_status',
+  ORPHAN_CHUNK: 'orphan',
+  ORPHAN_VERSION: 'orphan',
+  ORPHAN_CITATION: 'orphan',
+  ORPHAN_FINDING: 'orphan',
+};
+const LIFECYCLE_TYPES = ['INVALID_LIFECYCLE', 'RETRIEVAL_RISK'];
+const SOURCE_STATUS_TYPES = ['INVALID_SOURCE_STATUS'];
+const ORPHAN_TYPES = ['ORPHAN_CHUNK', 'ORPHAN_VERSION', 'ORPHAN_CITATION', 'ORPHAN_FINDING'];
 
 function severityTone(s) {
   return SEVERITY_TONE[s] || 'neutral';
@@ -41,11 +72,35 @@ function formatDate(iso) {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
+function countTypes(findingsByType = {}, types = []) {
+  return types.reduce((total, type) => total + (Number(findingsByType[type]) || 0), 0);
+}
 
-function RunSummaryCard({ summary, latestRun }) {
+function scoreBreakdown(findingsByType = {}) {
+  const counts = Object.fromEntries(
+    Object.keys(SCORE_CATEGORY_WEIGHTS).map((category) => [category, 0]),
+  );
+
+  Object.entries(findingsByType).forEach(([type, count]) => {
+    const category = FINDING_TYPE_CATEGORY[type];
+    if (category) {
+      counts[category] += Number(count) || 0;
+    }
+  });
+
+  return Object.entries(SCORE_CATEGORY_WEIGHTS).map(([category, weight]) => {
+    const count = counts[category];
+    return {
+      category,
+      label: SCORE_CATEGORY_LABELS[category],
+      count,
+      weight,
+      penalty: Number(((weight * Math.min(count, 10)) / 10).toFixed(1)),
+    };
+  });
+}
+
+function RunSummaryCard({ summary }) {
   const score = summary?.latest_quality_score;
   const tone = scoreTone(score);
   return (
@@ -158,6 +213,86 @@ function TypeBreakdown({ findingsByType = {} }) {
   );
 }
 
+function FindingCategoryCard({ testId, title, findingsByType, types }) {
+  const total = countTypes(findingsByType, types);
+  return (
+    <article className="diagnostics-card" data-testid={testId}>
+      <div className="panel__header">
+        <div>
+          <p className="panel__eyebrow">{title}</p>
+          <h3 data-testid={`${testId}-total`}>{total}</h3>
+        </div>
+      </div>
+      <dl className="meta-grid">
+        {types.map((type) => (
+          <div key={type}>
+            <dt data-testid={`${testId}-label-${type}`}>{type}</dt>
+            <dd data-testid={`${testId}-count-${type}`}>{findingsByType[type] ?? 0}</dd>
+          </div>
+        ))}
+      </dl>
+    </article>
+  );
+}
+
+function QualityScoreBreakdown({ findingsByType = {} }) {
+  const rows = scoreBreakdown(findingsByType);
+  const totalPenalty = rows.reduce((sum, row) => sum + row.penalty, 0);
+  return (
+    <article className="diagnostics-card" data-testid="dq-score-breakdown">
+      <div className="panel__header">
+        <div>
+          <p className="panel__eyebrow">Quality Score Breakdown</p>
+          <h3 data-testid="dq-score-breakdown-penalty">{totalPenalty.toFixed(1)} Punkte Abzug</h3>
+        </div>
+      </div>
+      <dl className="meta-grid">
+        {rows.map((row) => (
+          <div key={row.category} data-testid={`dq-score-breakdown-${row.category}`}>
+            <dt>{row.label}</dt>
+            <dd>
+              <span data-testid={`dq-score-breakdown-count-${row.category}`}>{row.count}</span>
+              {' / '}
+              <span data-testid={`dq-score-breakdown-weight-${row.category}`}>{row.weight}%</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </article>
+  );
+}
+
+function RunsTrend({ runs = [] }) {
+  if (runs.length === 0) {
+    return (
+      <article className="diagnostics-card" data-testid="dq-runs-trend">
+        <div className="panel__header">
+          <p className="panel__eyebrow">Trend letzte Runs</p>
+        </div>
+        <p data-testid="dq-runs-trend-empty">Keine Runs.</p>
+      </article>
+    );
+  }
+
+  return (
+    <article className="diagnostics-card" data-testid="dq-runs-trend">
+      <div className="panel__header">
+        <p className="panel__eyebrow">Trend letzte Runs</p>
+      </div>
+      <dl className="meta-grid">
+        {runs.map((run, index) => (
+          <div key={run.run_id} data-testid="dq-runs-trend-item">
+            <dt data-testid={`dq-runs-trend-date-${index}`}>{formatDate(run.started_at)}</dt>
+            <dd data-testid={`dq-runs-trend-score-${index}`}>
+              {run.quality_score != null ? run.quality_score.toFixed(1) : '-'}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </article>
+  );
+}
+
 function FindingsFilters({ filters, onFilterChange }) {
   return (
     <div className="search-bar" data-testid="dq-findings-filters">
@@ -190,6 +325,8 @@ function FindingsFilters({ filters, onFilterChange }) {
         <option value="EMPTY_DOCUMENT">Leeres Dokument</option>
         <option value="RETRIEVAL_RISK">Retrieval-Risiko</option>
         <option value="ORPHAN_VERSION">Orphan Version</option>
+        <option value="ORPHAN_CITATION">Orphan Citation</option>
+        <option value="ORPHAN_FINDING">Orphan Finding</option>
         <option value="DUPLICATE_CONTENT">Duplikat Inhalt</option>
         <option value="INVALID_SOURCE_STATUS">Ungültiger Source-Status</option>
       </select>
@@ -284,7 +421,7 @@ function FindingsTable({ findings, total, offset, pageSize, onPageChange }) {
 export function DataQualityDashboard() {
   const {
     summary,
-    latestRun,
+    recentRuns,
     findings,
     findingsTotal,
     findingsOffset,
@@ -313,11 +450,34 @@ export function DataQualityDashboard() {
     <div data-testid="dq-dashboard">
       <h1>Data Quality</h1>
 
-      <RunSummaryCard summary={summary} latestRun={latestRun} />
+      <RunSummaryCard summary={summary} />
 
       <div className="diagnostics-grid">
         <SeverityBreakdown findingsBySeverity={summary?.findings_by_severity ?? {}} />
         <TypeBreakdown findingsByType={summary?.findings_by_type ?? {}} />
+      </div>
+
+      <div className="diagnostics-grid" data-testid="dq-specialized-widgets">
+        <FindingCategoryCard
+          testId="dq-lifecycle-findings"
+          title="Lifecycle Findings"
+          findingsByType={summary?.findings_by_type ?? {}}
+          types={LIFECYCLE_TYPES}
+        />
+        <FindingCategoryCard
+          testId="dq-source-status-findings"
+          title="Source Status Findings"
+          findingsByType={summary?.findings_by_type ?? {}}
+          types={SOURCE_STATUS_TYPES}
+        />
+        <FindingCategoryCard
+          testId="dq-orphan-findings"
+          title="Orphan Findings"
+          findingsByType={summary?.findings_by_type ?? {}}
+          types={ORPHAN_TYPES}
+        />
+        <QualityScoreBreakdown findingsByType={summary?.findings_by_type ?? {}} />
+        <RunsTrend runs={recentRuns} />
       </div>
 
       <section data-testid="dq-findings-section">

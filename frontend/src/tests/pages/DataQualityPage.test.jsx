@@ -45,6 +45,35 @@ function makeRun(overrides = {}) {
   };
 }
 
+function makeRuns(overrides = {}) {
+  return {
+    items: [
+      {
+        run_id: RUN_ID,
+        workspace_id: WORKSPACE_ID,
+        status: 'completed',
+        started_at: '2026-06-01T08:00:00Z',
+        finished_at: '2026-06-01T08:01:00Z',
+        total_findings: 4,
+        quality_score: 87.5,
+        created_by: null,
+      },
+      {
+        run_id: 'run-prev',
+        workspace_id: WORKSPACE_ID,
+        status: 'completed',
+        started_at: '2026-05-31T08:00:00Z',
+        finished_at: '2026-05-31T08:01:00Z',
+        total_findings: 6,
+        quality_score: 82,
+        created_by: null,
+      },
+    ],
+    total: 2,
+    ...overrides,
+  };
+}
+
 function makeFindings(count = 2) {
   return {
     items: Array.from({ length: count }, (_, i) => ({
@@ -108,6 +137,7 @@ describe('DataQualityPage — data loaded', () => {
   beforeEach(() => {
     vi.spyOn(dqApi, 'getDataQualitySummary').mockResolvedValue(makeSummary());
     vi.spyOn(dqApi, 'getDataQualityRun').mockResolvedValue(makeRun());
+    vi.spyOn(dqApi, 'listDataQualityRuns').mockResolvedValue(makeRuns());
     vi.spyOn(dqApi, 'listDataQualityFindings').mockResolvedValue(makeFindings(2));
   });
   afterEach(() => vi.restoreAllMocks());
@@ -158,6 +188,67 @@ describe('DataQualityPage — data loaded', () => {
     expect(screen.getByTestId('dq-type-count-INVALID_LIFECYCLE').textContent).toBe('2');
   });
 
+  it('shows lifecycle findings widget', async () => {
+    dqApi.getDataQualitySummary.mockResolvedValue(
+      makeSummary({
+        findings_by_type: { INVALID_LIFECYCLE: 3, RETRIEVAL_RISK: 1 },
+      }),
+    );
+    renderPage();
+    await waitFor(() => expect(screen.getByTestId('dq-lifecycle-findings')).toBeTruthy());
+    expect(screen.getByTestId('dq-lifecycle-findings-total').textContent).toBe('4');
+    expect(screen.getByTestId('dq-lifecycle-findings-count-INVALID_LIFECYCLE').textContent).toBe('3');
+    expect(screen.getByTestId('dq-lifecycle-findings-count-RETRIEVAL_RISK').textContent).toBe('1');
+  });
+
+  it('shows source status and orphan findings widgets', async () => {
+    dqApi.getDataQualitySummary.mockResolvedValue(
+      makeSummary({
+        findings_by_type: {
+          INVALID_SOURCE_STATUS: 2,
+          ORPHAN_CHUNK: 1,
+          ORPHAN_CITATION: 2,
+          ORPHAN_FINDING: 1,
+        },
+      }),
+    );
+    renderPage();
+    await waitFor(() => expect(screen.getByTestId('dq-source-status-findings')).toBeTruthy());
+    expect(screen.getByTestId('dq-source-status-findings-total').textContent).toBe('2');
+    expect(screen.getByTestId('dq-orphan-findings-total').textContent).toBe('4');
+    expect(screen.getByTestId('dq-orphan-findings-count-ORPHAN_CITATION').textContent).toBe('2');
+  });
+
+  it('shows quality score breakdown', async () => {
+    dqApi.getDataQualitySummary.mockResolvedValue(
+      makeSummary({
+        findings_by_type: {
+          DUPLICATE_DOCUMENT: 2,
+          MISSING_METADATA: 1,
+          INVALID_LIFECYCLE: 1,
+          INVALID_SOURCE_STATUS: 1,
+          ORPHAN_CHUNK: 1,
+        },
+      }),
+    );
+    renderPage();
+    await waitFor(() => expect(screen.getByTestId('dq-score-breakdown')).toBeTruthy());
+    expect(screen.getByTestId('dq-score-breakdown-count-duplicate').textContent).toBe('2');
+    expect(screen.getByTestId('dq-score-breakdown-weight-duplicate').textContent).toBe('25%');
+    expect(screen.getByTestId('dq-score-breakdown-count-source_status').textContent).toBe('1');
+    expect(screen.getByTestId('dq-score-breakdown-weight-source_status').textContent).toBe('20%');
+  });
+
+  it('shows trend for recent runs', async () => {
+    const runsSpy = dqApi.listDataQualityRuns;
+    renderPage();
+    await waitFor(() => expect(screen.getByTestId('dq-runs-trend')).toBeTruthy());
+    expect(runsSpy).toHaveBeenCalledWith({ limit: 5, offset: 0 });
+    expect(screen.getAllByTestId('dq-runs-trend-item')).toHaveLength(2);
+    expect(screen.getByTestId('dq-runs-trend-score-0').textContent).toBe('87.5');
+    expect(screen.getByTestId('dq-runs-trend-score-1').textContent).toBe('82.0');
+  });
+
   it('renders findings table rows', async () => {
     renderPage();
     await waitFor(() => {
@@ -204,6 +295,7 @@ describe('DataQualityPage — empty', () => {
       makeSummary({ total_findings: 0, findings_by_severity: {}, findings_by_type: {} }),
     );
     vi.spyOn(dqApi, 'getDataQualityRun').mockResolvedValue(makeRun({ total_findings: 0 }));
+    vi.spyOn(dqApi, 'listDataQualityRuns').mockResolvedValue(makeRuns());
     vi.spyOn(dqApi, 'listDataQualityFindings').mockResolvedValue(makeFindings(0));
     renderPage();
     await waitFor(() => expect(screen.getByTestId('dq-findings-empty')).toBeTruthy());
@@ -215,6 +307,7 @@ describe('DataQualityPage — empty', () => {
       makeSummary({ findings_by_severity: {}, findings_by_type: {} }),
     );
     vi.spyOn(dqApi, 'getDataQualityRun').mockResolvedValue(makeRun());
+    vi.spyOn(dqApi, 'listDataQualityRuns').mockResolvedValue(makeRuns());
     vi.spyOn(dqApi, 'listDataQualityFindings').mockResolvedValue(makeFindings(0));
     renderPage();
     await waitFor(() => expect(screen.getByTestId('dq-severity-empty')).toBeTruthy());
@@ -246,6 +339,7 @@ describe('DataQualityPage — read-only', () => {
   beforeEach(() => {
     vi.spyOn(dqApi, 'getDataQualitySummary').mockResolvedValue(makeSummary());
     vi.spyOn(dqApi, 'getDataQualityRun').mockResolvedValue(makeRun());
+    vi.spyOn(dqApi, 'listDataQualityRuns').mockResolvedValue(makeRuns());
     vi.spyOn(dqApi, 'listDataQualityFindings').mockResolvedValue(makeFindings(2));
   });
   afterEach(() => vi.restoreAllMocks());
@@ -269,6 +363,7 @@ describe('DataQualityPage — filters', () => {
   it('calls API with severity filter when changed', async () => {
     vi.spyOn(dqApi, 'getDataQualitySummary').mockResolvedValue(makeSummary());
     vi.spyOn(dqApi, 'getDataQualityRun').mockResolvedValue(makeRun());
+    vi.spyOn(dqApi, 'listDataQualityRuns').mockResolvedValue(makeRuns());
     const findingsSpy = vi
       .spyOn(dqApi, 'listDataQualityFindings')
       .mockResolvedValue(makeFindings(1));
@@ -294,6 +389,7 @@ describe('DataQualityPage — pagination', () => {
   it('shows pagination when total > pageSize', async () => {
     vi.spyOn(dqApi, 'getDataQualitySummary').mockResolvedValue(makeSummary({ total_findings: 60 }));
     vi.spyOn(dqApi, 'getDataQualityRun').mockResolvedValue(makeRun());
+    vi.spyOn(dqApi, 'listDataQualityRuns').mockResolvedValue(makeRuns());
     vi.spyOn(dqApi, 'listDataQualityFindings').mockResolvedValue({
       items: makeFindings(50).items,
       total: 60,
@@ -308,6 +404,7 @@ describe('DataQualityPage — pagination', () => {
   it('does not show pagination when total <= pageSize', async () => {
     vi.spyOn(dqApi, 'getDataQualitySummary').mockResolvedValue(makeSummary());
     vi.spyOn(dqApi, 'getDataQualityRun').mockResolvedValue(makeRun());
+    vi.spyOn(dqApi, 'listDataQualityRuns').mockResolvedValue(makeRuns());
     vi.spyOn(dqApi, 'listDataQualityFindings').mockResolvedValue(makeFindings(2));
     renderPage();
     await waitFor(() => screen.getByTestId('dq-dashboard'));

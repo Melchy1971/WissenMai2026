@@ -146,6 +146,14 @@ def list_findings(
     )
 
 
+@router.delete("/findings/{finding_id}", status_code=status.HTTP_405_METHOD_NOT_ALLOWED)
+def delete_finding(
+    finding_id: str,  # noqa: ARG001
+    auth: Annotated[RequestAuthContext, Depends(require_workspace_member)],  # noqa: ARG001
+) -> None:
+    raise HTTPException(status_code=status.HTTP_405_METHOD_NOT_ALLOWED, detail="Data Quality API is read-only")
+
+
 # ---------------------------------------------------------------------------
 # GET /data-quality/summary
 # ---------------------------------------------------------------------------

@@ -17,6 +17,13 @@ from app.services.duplicate_detector import (
     DuplicateDetector,
 )
 
+pytestmark = pytest.mark.m3a_truth
+_CONTENT_HASH_UNIQUE = next(
+    constraint
+    for constraint in Document.__table__.constraints
+    if constraint.name == "uq_documents_workspace_content_hash"
+)
+
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -33,7 +40,11 @@ def engine():
     def _fk(conn, _):
         conn.execute("PRAGMA foreign_keys=ON")
 
-    Base.metadata.create_all(eng)
+    Document.__table__.constraints.remove(_CONTENT_HASH_UNIQUE)
+    try:
+        Base.metadata.create_all(eng)
+    finally:
+        Document.__table__.constraints.add(_CONTENT_HASH_UNIQUE)
     return eng
 
 

@@ -1,14 +1,124 @@
 {
-  "report_schema_version": 1,
+  "report_schema_version": 2,
   "report_name": "data_quality_report",
   "generated_by": "run_data_quality_cli",
-  "generated_at": "2026-06-01T12:27:23.703851+00:00",
-  "run_id": "c3cc1c80-5908-4bb3-a3ce-25e4cba8aaf9",
+  "generated_at": "2026-06-02T11:58:41.996000+00:00",
+  "timestamp": "2026-06-02T11:58:41.996000+00:00",
+  "run_id": "281ce12d-c62e-4d32-99b3-7fd4a4e54dce",
   "workspace_id": "00000000-0000-0000-0000-000000000001",
   "status": "completed",
-  "started_at": "2026-06-01T12:27:23.670539+00:00",
-  "finished_at": "2026-06-01T12:27:23.699700+00:00",
-  "total_findings": 0,
-  "quality_score": 100.0,
-  "findings": []
+  "started_at": "2026-06-02T11:58:41.482519+00:00",
+  "finished_at": "2026-06-02T11:58:41.966954+00:00",
+  "total_documents": 1,
+  "total_findings": 4,
+  "quality_score": 94.0,
+  "score_explanation": {
+    "score": 94.0,
+    "formula": "100 - sum(category_weight_percent * min(category_findings, 10) / 10)",
+    "category_weights_percent": {
+      "duplicate": 25,
+      "metadata": 15,
+      "lifecycle": 25,
+      "source_status": 20,
+      "orphan": 15
+    },
+    "categories": {
+      "duplicate": {
+        "label": "Duplicate",
+        "weight_percent": 25,
+        "finding_count": 0,
+        "capped_finding_count": 0,
+        "max_findings_for_full_penalty": 10,
+        "penalty_points": 0.0
+      },
+      "metadata": {
+        "label": "Metadata",
+        "weight_percent": 15,
+        "finding_count": 4,
+        "capped_finding_count": 4,
+        "max_findings_for_full_penalty": 10,
+        "penalty_points": 6.0
+      },
+      "lifecycle": {
+        "label": "Lifecycle",
+        "weight_percent": 25,
+        "finding_count": 0,
+        "capped_finding_count": 0,
+        "max_findings_for_full_penalty": 10,
+        "penalty_points": 0.0
+      },
+      "source_status": {
+        "label": "Source Status",
+        "weight_percent": 20,
+        "finding_count": 0,
+        "capped_finding_count": 0,
+        "max_findings_for_full_penalty": 10,
+        "penalty_points": 0.0
+      },
+      "orphan": {
+        "label": "Orphan Objects",
+        "weight_percent": 15,
+        "finding_count": 0,
+        "capped_finding_count": 0,
+        "max_findings_for_full_penalty": 10,
+        "penalty_points": 0.0
+      }
+    },
+    "total_penalty_points": 6.0,
+    "unknown_finding_types": {}
+  },
+  "findings": [
+    {
+      "finding_type": "MISSING_METADATA",
+      "severity": "warning",
+      "document_id": "7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad",
+      "version_id": "06f22a96-5144-464e-9f70-a40c0a683e1f",
+      "chunk_id": null,
+      "title": "Fehlende Tags",
+      "description": "Dokument 7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad (Version 06f22a96-5144-464e-9f70-a40c0a683e1f) hat kein 'tags'-Feld in den Versions-Metadaten oder das Feld ist leer.",
+      "remediation": "Tags in den Dokumentmetadaten ergaenzen. Keine automatische Befuellung."
+    },
+    {
+      "finding_type": "MISSING_METADATA",
+      "severity": "warning",
+      "document_id": "7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad",
+      "version_id": "06f22a96-5144-464e-9f70-a40c0a683e1f",
+      "chunk_id": null,
+      "title": "Fehlende Kategorie",
+      "description": "Dokument 7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad (Version 06f22a96-5144-464e-9f70-a40c0a683e1f) hat kein 'category'-Feld in den Versions-Metadaten oder das Feld ist leer.",
+      "remediation": "Kategorie in den Dokumentmetadaten ergaenzen. Keine automatische Befuellung."
+    },
+    {
+      "finding_type": "MISSING_METADATA",
+      "severity": "warning",
+      "document_id": "7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad",
+      "version_id": "06f22a96-5144-464e-9f70-a40c0a683e1f",
+      "chunk_id": null,
+      "title": "Fehlender Dokumenttyp",
+      "description": "Dokument 7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad (Version 06f22a96-5144-464e-9f70-a40c0a683e1f) hat kein 'doc_type'-Feld in den Versions-Metadaten oder das Feld ist leer.",
+      "remediation": "Dokumenttyp in den Metadaten ergaenzen. Keine automatische Befuellung."
+    },
+    {
+      "finding_type": "MISSING_METADATA",
+      "severity": "info",
+      "document_id": "7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad",
+      "version_id": "06f22a96-5144-464e-9f70-a40c0a683e1f",
+      "chunk_id": null,
+      "title": "Fehlende Zusammenfassung",
+      "description": "Dokument 7c4c46f3-63c9-4afa-bb7b-acc45d8a3dad (Version 06f22a96-5144-464e-9f70-a40c0a683e1f) hat kein 'summary'-Feld in den Versions-Metadaten oder das Feld ist leer.",
+      "remediation": "Zusammenfassung in den Metadaten ergaenzen. Keine automatische Befuellung."
+    }
+  ],
+  "duplicate_findings": 0,
+  "metadata_findings": 4,
+  "lifecycle_findings": 0,
+  "source_status_findings": 0,
+  "orphan_findings": 0,
+  "findings_by_severity": {
+    "warning": 3,
+    "info": 1
+  },
+  "findings_by_type": {
+    "MISSING_METADATA": 4
+  }
 }

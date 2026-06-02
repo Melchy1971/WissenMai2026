@@ -3,6 +3,7 @@ import { useCallback, useEffect, useReducer } from 'react';
 import {
   getDataQualitySummary,
   getDataQualityRun,
+  listDataQualityRuns,
   listDataQualityFindings,
 } from '../../api/dataQuality.js';
 
@@ -12,6 +13,7 @@ function init() {
   return {
     summary: null,
     latestRun: null,
+    recentRuns: [],
     findings: null,
     findingsTotal: 0,
     findingsOffset: 0,
@@ -29,6 +31,8 @@ function reducer(state, action) {
       return { ...state, summary: action.summary, loading: false };
     case 'RUN_OK':
       return { ...state, latestRun: action.run };
+    case 'RUNS_OK':
+      return { ...state, recentRuns: action.runs };
     case 'FINDINGS_OK':
       return {
         ...state,
@@ -64,6 +68,8 @@ export function useDataQuality() {
         const run = await getDataQualityRun(summary.latest_run_id);
         dispatch({ type: 'RUN_OK', run });
       }
+      const runs = await listDataQualityRuns({ limit: 5, offset: 0 });
+      dispatch({ type: 'RUNS_OK', runs: runs.items ?? [] });
     } catch (err) {
       dispatch({ type: 'ERROR', error: err });
     }

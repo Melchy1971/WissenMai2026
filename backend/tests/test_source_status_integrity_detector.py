@@ -1,4 +1,4 @@
-"""Unit tests for LifecycleIntegrityDetector - SQLite in-memory."""
+"""Unit tests for SourceStatusIntegrityDetector - SQLite in-memory."""
 from __future__ import annotations
 
 import uuid
@@ -18,7 +18,7 @@ from app.models.documents import (
     DocumentVersion,
     Workspace,
 )
-from app.services.lifecycle_integrity_detector import LifecycleIntegrityDetector
+from app.services.source_status_integrity_detector import SourceStatusIntegrityDetector
 
 
 pytestmark = pytest.mark.m3a_truth
@@ -62,6 +62,7 @@ def _doc(
     title: str = "doc",
     archived_at=None,
     deleted_at=None,
+    import_status: str = "parsed",
 ) -> str:
     did = str(uuid.uuid4())
     session.add(
@@ -72,7 +73,7 @@ def _doc(
             title=title,
             source_type="upload",
             content_hash=uuid.uuid4().hex,
-            import_status="parsed",
+            import_status=import_status,
             lifecycle_status=lifecycle_status,
             archived_at=archived_at,
             deleted_at=deleted_at,
@@ -154,109 +155,17 @@ def _seed_citation(session: Session, wid: str, document_id: str, chunk_id: str |
 
 
 def _detect(session: Session, wid: str):
-    return LifecycleIntegrityDetector(session, wid).detect()
+    return SourceStatusIntegrityDetector(session, wid).detect()
 
 
-def _assert_invalid_lifecycle(finding: dict, document_id: str) -> None:
+def _assert_invalid_source_status(finding: dict, document_id: str) -> None:
     assert finding["document_id"] == document_id
-    assert finding["finding_type"] == "INVALID_LIFECYCLE"
+    assert finding["finding_type"] == "INVALID_SOURCE_STATUS"
     assert finding["severity"] == "error"
-    assert finding["remediation"] == "Lifecycle korrigieren"
+    assert finding["remediation"] == "Source-Status korrigieren"
 
 
-def test_active_document_without_searchable_chunk_detects_violation(session, engine):
-    wid = _wid()
-    _seed_workspace(session, wid)
-    did = _doc(session, wid, lifecycle_status="active")
-    vid = _version(session, did)
-    _chunk(session, did, vid, searchable=False)
-    session.commit()
-
-    findings = _detect(session, wid)
-    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Active document not findable")
-    _assert_invalid_lifecycle(match, did)
-
-
-def test_active_parsed_document_without_chunks_detects_violation(session, engine):
-    wid = _wid()
-    _seed_workspace(session, wid)
-    did = _doc(session, wid, lifecycle_status="active")
-    _version(session, did)
-    session.commit()
-
-    findings = _detect(session, wid)
-    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Active document not findable")
-    _assert_invalid_lifecycle(match, did)
-
-
-def test_archived_document_in_search_detects_violation(session, engine):
-    wid = _wid()
-    _seed_workspace(session, wid)
-    did = _doc(session, wid, lifecycle_status="archived", archived_at=_now())
-    vid = _version(session, did)
-    _chunk(session, did, vid, searchable=True)
-    session.commit()
-
-    findings = _detect(session, wid)
-    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Archived document appears in search")
-    _assert_invalid_lifecycle(match, did)
-
-
-def test_archived_document_in_retrieval_detects_violation(session, engine):
-    wid = _wid()
-    _seed_workspace(session, wid)
-    did = _doc(session, wid, lifecycle_status="archived", archived_at=_now())
-    vid = _version(session, did)
-    chunk_id = _chunk(session, did, vid, searchable=False)
-    _seed_citation(session, wid, did, chunk_id, source_status="active")
-    session.commit()
-
-    findings = _detect(session, wid)
-    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Archived document appears in retrieval")
-    _assert_invalid_lifecycle(match, did)
-
-
-def test_deleted_document_in_search_detects_violation(session, engine):
-    wid = _wid()
-    _seed_workspace(session, wid)
-    did = _doc(session, wid, lifecycle_status="deleted", deleted_at=_now())
-    vid = _version(session, did)
-    _chunk(session, did, vid, searchable=True)
-    session.commit()
-
-    findings = _detect(session, wid)
-    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Deleted document appears in search")
-    _assert_invalid_lifecycle(match, did)
-
-
-def test_deleted_document_in_retrieval_detects_violation(session, engine):
-    wid = _wid()
-    _seed_workspace(session, wid)
-    did = _doc(session, wid, lifecycle_status="deleted", deleted_at=_now())
-    vid = _version(session, did)
-    chunk_id = _chunk(session, did, vid, searchable=False)
-    _seed_citation(session, wid, did, chunk_id, source_status="active")
-    session.commit()
-
-    findings = _detect(session, wid)
-    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Deleted document appears in retrieval")
-    _assert_invalid_lifecycle(match, did)
-
-
-def test_lifecycle_status_timestamp_mismatch_detected(session, engine):
-    wid = _wid()
-    _seed_workspace(session, wid)
-    did = _doc(session, wid, lifecycle_status="active", archived_at=_now())
-    vid = _version(session, did)
-    _chunk(session, did, vid, searchable=True)
-    session.commit()
-
-    findings = _detect(session, wid)
-    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Lifecycle timestamp mismatch")
-    _assert_invalid_lifecycle(match, did)
-
-
-def test_source_status_drift_detected_as_invalid_lifecycle(session, engine):
+def test_active_source_status_mismatch_detected(session, engine):
     wid = _wid()
     _seed_workspace(session, wid)
     did = _doc(session, wid, lifecycle_status="active")
@@ -266,26 +175,107 @@ def test_source_status_drift_detected_as_invalid_lifecycle(session, engine):
     session.commit()
 
     findings = _detect(session, wid)
-    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Citation source status mismatch")
-    _assert_invalid_lifecycle(match, did)
+    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Active source status mismatch")
+    _assert_invalid_source_status(match, did)
 
 
-def test_non_current_searchable_version_detected(session, engine):
+def test_archived_source_status_mismatch_detected(session, engine):
+    wid = _wid()
+    _seed_workspace(session, wid)
+    did = _doc(session, wid, lifecycle_status="archived", archived_at=_now())
+    vid = _version(session, did)
+    chunk_id = _chunk(session, did, vid, searchable=False)
+    _seed_citation(session, wid, did, chunk_id, source_status="active")
+    session.commit()
+
+    findings = _detect(session, wid)
+    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Archived source status mismatch")
+    _assert_invalid_source_status(match, did)
+
+
+def test_deleted_source_status_mismatch_detected(session, engine):
+    wid = _wid()
+    _seed_workspace(session, wid)
+    did = _doc(session, wid, lifecycle_status="deleted", deleted_at=_now())
+    vid = _version(session, did)
+    chunk_id = _chunk(session, did, vid, searchable=False)
+    _seed_citation(session, wid, did, chunk_id, source_status="active")
+    session.commit()
+
+    findings = _detect(session, wid)
+    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Deleted source status mismatch")
+    _assert_invalid_source_status(match, did)
+
+
+def test_historical_old_version_active_source_is_clean(session, engine):
     wid = _wid()
     _seed_workspace(session, wid)
     did = _doc(session, wid, lifecycle_status="active")
     old_vid = _version(session, did, version_number=1)
-    _chunk(session, did, old_vid, searchable=True)
+    old_chunk_id = _chunk(session, did, old_vid, searchable=True)
     _version(session, did, version_number=2)
+    _seed_citation(session, wid, did, old_chunk_id, source_status="active")
+    session.commit()
+
+    assert _detect(session, wid) == []
+
+
+def test_historical_detached_source_must_be_marked_missing(session, engine):
+    wid = _wid()
+    _seed_workspace(session, wid)
+    did = _doc(session, wid, lifecycle_status="active")
+    _version(session, did)
+    _seed_citation(session, wid, did, None, source_status="active")
     session.commit()
 
     findings = _detect(session, wid)
-    match = next(
-        f
-        for f in findings
-        if f["document_id"] == did and f["title"] == "Searchable chunk belongs to non-current version"
-    )
-    _assert_invalid_lifecycle(match, did)
+    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Historical source missing marker mismatch")
+    _assert_invalid_source_status(match, did)
+
+
+def test_citation_status_consistency_detects_chunk_document_mismatch(session, engine):
+    wid = _wid()
+    _seed_workspace(session, wid)
+    did_a = _doc(session, wid, lifecycle_status="active", title="a")
+    vid_a = _version(session, did_a)
+    _chunk(session, did_a, vid_a, searchable=True)
+    did_b = _doc(session, wid, lifecycle_status="active", title="b")
+    vid_b = _version(session, did_b)
+    chunk_b = _chunk(session, did_b, vid_b, searchable=True)
+    _seed_citation(session, wid, did_a, chunk_b, source_status="active")
+    session.commit()
+
+    findings = _detect(session, wid)
+    match = next(f for f in findings if f["document_id"] == did_a and f["title"] == "Citation chunk document mismatch")
+    _assert_invalid_source_status(match, did_a)
+
+
+def test_retrieval_respects_source_status_for_active_sources(session, engine):
+    wid = _wid()
+    _seed_workspace(session, wid)
+    did = _doc(session, wid, lifecycle_status="active")
+    vid = _version(session, did)
+    chunk_id = _chunk(session, did, vid, searchable=False)
+    _seed_citation(session, wid, did, chunk_id, source_status="active")
+    session.commit()
+
+    findings = _detect(session, wid)
+    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Active source not retrievable")
+    _assert_invalid_source_status(match, did)
+
+
+def test_retrieval_respects_source_status_for_non_active_sources(session, engine):
+    wid = _wid()
+    _seed_workspace(session, wid)
+    did = _doc(session, wid, lifecycle_status="archived", archived_at=_now())
+    vid = _version(session, did)
+    chunk_id = _chunk(session, did, vid, searchable=True)
+    _seed_citation(session, wid, did, chunk_id, source_status="archived")
+    session.commit()
+
+    findings = _detect(session, wid)
+    match = next(f for f in findings if f["document_id"] == did and f["title"] == "Non-active source remains retrievable")
+    _assert_invalid_source_status(match, did)
 
 
 def test_workspace_isolation(session, engine):
@@ -294,13 +284,13 @@ def test_workspace_isolation(session, engine):
     _seed_workspace(session, wa)
     _seed_workspace(session, wb)
 
-    did_b = _doc(session, wb, lifecycle_status="archived", archived_at=_now())
+    did_b = _doc(session, wb, lifecycle_status="active")
     vid_b = _version(session, did_b)
-    _chunk(session, did_b, vid_b, searchable=True)
+    chunk_b = _chunk(session, did_b, vid_b, searchable=True)
+    _seed_citation(session, wb, did_b, chunk_b, source_status="deleted")
     session.commit()
 
-    findings_a = _detect(session, wa)
-    assert findings_a == []
+    assert _detect(session, wa) == []
 
 
 def test_no_document_chunk_or_citation_mutation(session, engine):
@@ -313,7 +303,7 @@ def test_no_document_chunk_or_citation_mutation(session, engine):
     session.commit()
 
     before_doc = session.execute(
-        text("SELECT id, lifecycle_status, archived_at, deleted_at FROM documents WHERE workspace_id=:w"),
+        text("SELECT id, lifecycle_status, import_status FROM documents WHERE workspace_id=:w"),
         {"w": wid},
     ).fetchall()
     before_chunk = session.execute(
@@ -329,7 +319,7 @@ def test_no_document_chunk_or_citation_mutation(session, engine):
     session.commit()
 
     after_doc = session.execute(
-        text("SELECT id, lifecycle_status, archived_at, deleted_at FROM documents WHERE workspace_id=:w"),
+        text("SELECT id, lifecycle_status, import_status FROM documents WHERE workspace_id=:w"),
         {"w": wid},
     ).fetchall()
     after_chunk = session.execute(
@@ -350,36 +340,23 @@ def test_finding_shape_and_clean_state(session, engine):
     wid = _wid()
     _seed_workspace(session, wid)
 
-    # active searchable
-    did_a = _doc(session, wid, lifecycle_status="active")
-    vid_a = _version(session, did_a)
-    chunk_id = _chunk(session, did_a, vid_a, searchable=True)
-    _seed_citation(session, wid, did_a, chunk_id, source_status="active")
-
-    # archived/deleted not searchable
-    did_ar = _doc(session, wid, lifecycle_status="archived", archived_at=_now())
-    vid_ar = _version(session, did_ar)
-    _chunk(session, did_ar, vid_ar, searchable=False)
-
-    did_del = _doc(session, wid, lifecycle_status="deleted", deleted_at=_now())
-    vid_del = _version(session, did_del)
-    _chunk(session, did_del, vid_del, searchable=False)
-
+    did = _doc(session, wid, lifecycle_status="archived", archived_at=_now())
+    vid = _version(session, did)
+    chunk_id = _chunk(session, did, vid, searchable=False)
+    _seed_citation(session, wid, did, chunk_id, source_status="archived")
+    _seed_citation(session, wid, did, None, source_status="missing")
     session.commit()
 
-    findings = _detect(session, wid)
-    assert findings == []
+    assert _detect(session, wid) == []
 
-    # Create one violation and validate shape
-    did_bad = _doc(session, wid, lifecycle_status="archived", archived_at=_now())
-    vid_bad = _version(session, did_bad)
-    _chunk(session, did_bad, vid_bad, searchable=True)
+    _seed_citation(session, wid, did, chunk_id, source_status="active")
     session.commit()
+
     findings = _detect(session, wid)
     required = {"finding_type", "severity", "document_id", "version_id", "chunk_id", "title", "description", "remediation"}
     for finding in findings:
         assert required <= set(finding.keys())
-        assert finding["finding_type"] == "INVALID_LIFECYCLE"
+        assert finding["finding_type"] == "INVALID_SOURCE_STATUS"
         assert finding["severity"] == "error"
-        assert finding["remediation"] == "Lifecycle korrigieren"
+        assert finding["remediation"] == "Source-Status korrigieren"
         assert "run_id" not in finding

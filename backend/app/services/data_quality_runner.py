@@ -26,6 +26,9 @@ from app.models.documents import Chunk, Document, DocumentVersion
 from app.services.duplicate_detector import DuplicateDetector
 from app.services.lifecycle_integrity_detector import LifecycleIntegrityDetector
 from app.services.metadata_quality_detector import MetadataQualityDetector
+from app.services.orphan_detector import OrphanObjectDetector
+from app.services.quality_score import calculate_quality_score_from_findings
+from app.services.source_status_integrity_detector import SourceStatusIntegrityDetector
 
 
 # ---------------------------------------------------------------------------
@@ -42,6 +45,7 @@ class RunResult:
     total_findings: int
     quality_score: float
     findings: list[dict[str, Any]]
+    score_explanation: dict[str, Any] = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
@@ -173,35 +177,8 @@ class MissingMetadataDetector:
 # Score calculation
 # ---------------------------------------------------------------------------
 
-_SCORE_WEIGHTS: dict[str, float] = {
-    "DUPLICATE_DOCUMENT":   0.25,
-    "DUPLICATE_CONTENT":    0.25,
-    "EMPTY_DOCUMENT":       0.10,
-    "EMPTY_CHUNK":          0.10,
-    "ORPHAN_CHUNK":         0.15,
-    "ORPHAN_VERSION":       0.10,
-    "MISSING_METADATA":     0.05,
-    "INVALID_SOURCE_STATUS": 0.10,
-    "INVALID_LIFECYCLE":    0.20,
-    "RETRIEVAL_RISK":       0.15,
-}
-_SEVERITY_MULTIPLIER: dict[str, float] = {
-    "error":   1.0,
-    "warning": 0.5,
-    "info":    0.1,
-}
-
-
 def _calculate_score(findings: list[dict[str, Any]]) -> float:
-    """Placeholder scoring: weighted penalty per finding, capped at 0–100."""
-    if not findings:
-        return 100.0
-    penalty = sum(
-        _SCORE_WEIGHTS.get(f.get("finding_type", ""), 0.1)
-        * _SEVERITY_MULTIPLIER.get(f.get("severity", "info"), 0.1)
-        for f in findings
-    )
-    return round(max(0.0, 100.0 - penalty * 100.0), 2)
+    return calculate_quality_score_from_findings(findings).score
 
 
 # ---------------------------------------------------------------------------
@@ -248,9 +225,9 @@ class DataQualityRunner:
         run = self._create_run(resolved_id, created_by)
         try:
             findings_data = self._execute_detectors()
-            score = _calculate_score(findings_data)
+            score_result = calculate_quality_score_from_findings(findings_data)
             self._persist_findings(run, findings_data)
-            return self._complete_run(run, findings_data, score)
+            return self._complete_run(run, findings_data, score_result.score, score_result.score_explanation)
         except Exception:
             self._fail_run(run)
             raise
@@ -269,6 +246,7 @@ class DataQualityRunner:
         findings = [
             self._finding_to_dict(f) for f in row.findings
         ]
+        score_result = calculate_quality_score_from_findings(findings)
         return RunResult(
             run_id=row.id,
             workspace_id=row.workspace_id,
@@ -278,6 +256,7 @@ class DataQualityRunner:
             total_findings=row.total_findings or 0,
             quality_score=row.quality_score or 0.0,
             findings=findings,
+            score_explanation=score_result.score_explanation,
         )
 
     def _create_run(self, run_id: str, created_by: str | None) -> DataQualityRun:
@@ -298,7 +277,8 @@ class DataQualityRunner:
             DuplicateDetector(self._session, self._workspace_id),
             MetadataQualityDetector(self._session, self._workspace_id),
             LifecycleIntegrityDetector(self._session, self._workspace_id),
-            OrphanChunkDetector(self._session, self._workspace_id),
+            SourceStatusIntegrityDetector(self._session, self._workspace_id),
+            OrphanObjectDetector(self._session, self._workspace_id),
             EmptyChunkDetector(self._session, self._workspace_id),
             InvalidLifecycleDetector(self._session, self._workspace_id),
             MissingMetadataDetector(self._session, self._workspace_id),
@@ -337,6 +317,7 @@ class DataQualityRunner:
         run: DataQualityRun,
         findings_data: list[dict[str, Any]],
         score: float,
+        score_explanation: dict[str, Any],
     ) -> RunResult:
         now = datetime.now(UTC)
         run.status = "completed"
@@ -353,6 +334,7 @@ class DataQualityRunner:
             total_findings=len(findings_data),
             quality_score=score,
             findings=findings_data,
+            score_explanation=score_explanation,
         )
 
     def _fail_run(self, run: DataQualityRun) -> None:

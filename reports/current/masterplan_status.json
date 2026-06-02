@@ -2,12 +2,12 @@
   "report_schema_version": 3,
   "report_name": "masterplan_status",
   "generated_by": "masterplan_status_engine_v3",
-  "generated_at": "2026-06-01T12:33:16.165472+00:00",
+  "generated_at": "2026-06-02T12:00:00+00:00",
   "authority": {
     "source_of_truth": "reports/current release-candidate and gate artifacts",
     "manual_status_override_allowed": false,
     "engine_version": 3,
-    "rule": "M5 uses explicit status values; M4e Operations PASS permits preparation only, while every M5 slice needs its own start gate."
+    "rule": "M5 uses explicit status values; M4e Operations PASS permits preparation only, while every M5 slice needs its own start gate. M5a PASS does not automatically release M5 overall or M5b."
   },
   "inputs": {
     "current_reports": {
@@ -84,7 +84,8 @@
         "errors": null,
         "skipped": null,
         "exit_code": null,
-        "timestamp": "2026-05-29T09:00:16Z"
+        "timestamp": "2026-05-29T09:00:16Z",
+        "note": "Kein generated_by-Feld — bekanntes Defizit (RIPM5A-005)"
       },
       "m5a_start_gate.json": {
         "available": true,
@@ -105,16 +106,19 @@
         "available": true,
         "report_name": "m5a_data_quality_gate",
         "gate": "m5a_data_quality_gate",
-        "status": "PARTIAL_PASS",
-        "result": "PARTIAL_PASS",
-        "decision": "NO_GO",
+        "status": "PASS",
+        "result": "PASS",
+        "decision": "GO",
         "collected": 9,
-        "passed": 8,
-        "failed": 1,
+        "passed": 9,
+        "failed": 0,
         "errors": 0,
         "skipped": 0,
-        "exit_code": 1,
-        "timestamp": "2026-06-01T12:29:35.105502+00:00"
+        "exit_code": 0,
+        "score": 100.0,
+        "quality_score": 94.0,
+        "timestamp": "2026-06-02T11:59:49.015658+00:00",
+        "caveat": "report_integrity_pre_m5a BLOCKED — Gate-Widerspruch (RIPM5A-001/002) ungelöst. Restrisiko R-01."
       },
       "m5a_duplicate_detector_gate.json": {
         "available": true,
@@ -146,6 +150,38 @@
         "exit_code": 0,
         "timestamp": "2026-06-01T09:44:30.450456+00:00"
       },
+      "m5a_lifecycle_integrity_gate.json": {
+        "available": true,
+        "report_name": "m5a_lifecycle_integrity_gate",
+        "gate": "m5a_lifecycle_integrity_gate",
+        "status": "PASS",
+        "result": "PASS",
+        "decision": "GO",
+        "collected": 10,
+        "passed": 10,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 0,
+        "timestamp": "2026-06-01T12:01:58.267848+00:00"
+      },
+      "m5b_start_gate.json": {
+        "available": true,
+        "report_name": "m5b_start_gate",
+        "gate": "m5b_start_gate",
+        "status": "BLOCKED",
+        "result": "BLOCKED",
+        "decision": "NO_GO",
+        "collected": 5,
+        "passed": 3,
+        "failed": 1,
+        "blocked": 1,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 1,
+        "timestamp": "2026-06-02T12:00:00+00:00",
+        "blockers": ["B-M5B-001 (Known Limitations nicht aktualisiert)", "B-M5B-002 (report_integrity_pre_m5a BLOCKED)"]
+      },
       "documentation_truth_lint.json": {
         "available": true,
         "report_name": "documentation_truth_lint",
@@ -159,7 +195,24 @@
         "errors": null,
         "skipped": null,
         "exit_code": 0,
+        "files_scanned": 126,
+        "total_findings": 0,
         "timestamp": "2026-06-01T12:02:30.102862+00:00"
+      },
+      "report_integrity_pre_m5a.json": {
+        "available": true,
+        "report_name": "report_integrity_pre_m5a",
+        "gate": "report_integrity_pre_m5a",
+        "status": "BLOCKED",
+        "result": "BLOCKED",
+        "decision": "NO_GO",
+        "collected": 8,
+        "passed": 6,
+        "failed": 2,
+        "errors": 0,
+        "exit_code": 1,
+        "timestamp": "2026-06-01T12:15:00+00:00",
+        "blockers": ["RIPM5A-001 (contradictory_gate_state)", "RIPM5A-002 (slice_vs_total_gate_equivalence_forbidden)"]
       },
       "known_limitations.json": {
         "available": true,
@@ -177,15 +230,18 @@
           "KL-M5-T-002"
         ],
         "operations_explicitly_released": true,
-        "operations_open_ids": []
+        "operations_open_ids": [],
+        "m5a_known_limitations_updated": false,
+        "m5a_known_limitations_note": "Known Limitations für M5a (Skeletons, UniqueConstraint-Design-Point, Gate-Widerspruch R-01) nicht formal aktualisiert — Blocker für M5b-Start (B-M5B-001)"
       }
     }
   },
   "overall": {
     "status": "partial_pass",
-    "progress_percent": 90,
+    "progress_percent": 92,
     "release_allowed": false,
-    "blocker_count": 1
+    "blocker_count": 2,
+    "note": "M5a PASS. M5b BLOCKED. Globale M5-Freigabe (global_m5_release_allowed) ist false — M5a PASS löst nicht automatisch M5 Gesamt aus."
   },
   "m5a_gate_logic": {
     "start_gate": {
@@ -200,18 +256,44 @@
       "metadata_detector": {
         "report": "reports/current/m5a_metadata_detector_gate.json",
         "pass": true
+      },
+      "lifecycle_integrity": {
+        "report": "reports/current/m5a_lifecycle_integrity_gate.json",
+        "pass": true
       }
     },
     "required_slices_all_pass": true,
     "data_quality_gate": {
       "report": "reports/current/m5a_data_quality_gate.json",
-      "pass": false,
-      "status": "PARTIAL_PASS",
-      "effective_status": "PARTIAL_PASS",
-      "not_run": false
+      "pass": true,
+      "status": "PASS",
+      "effective_status": "PASS",
+      "quality_score": 94.0,
+      "quality_score_threshold": 90.0,
+      "not_run": false,
+      "caveat": "report_integrity_pre_m5a BLOCKED — R-01 ungelöst"
     },
-    "overall_m5a_pass": false,
-    "rule": "M5a ist PARTIAL_PASS oder BLOCKED, solange m5a_data_quality_gate nicht PASS ist; globale M5-Freigabe erst bei M5a PASS."
+    "overall_m5a_pass": true,
+    "global_m5_release_allowed": false,
+    "rule": "M5a ist PASS. Globale M5-Freigabe erfordert alle M5-Slices PASS. M5b ist BLOCKED — kein automatischer M5-Gesamt-PASS durch M5a allein."
+  },
+  "m5b_gate_logic": {
+    "start_gate": {
+      "report": "reports/current/m5b_start_gate.json",
+      "go": false,
+      "status": "BLOCKED"
+    },
+    "blockers": [
+      {
+        "id": "B-M5B-001",
+        "reason": "Known Limitations für M5a nicht formal aktualisiert (Skeletons, UniqueConstraint-Design-Point, R-01)."
+      },
+      {
+        "id": "B-M5B-002",
+        "reason": "report_integrity_pre_m5a BLOCKED — Gate-Widerspruch RIPM5A-001/002 nicht aufgelöst."
+      }
+    ],
+    "m5b_implementation_allowed": false
   },
   "phases": {
     "m3a": {
@@ -251,38 +333,69 @@
       "decision": "NO_GO",
       "gate_id": "m5_implementation_gate",
       "gate_status": "IN_PROGRESS",
-      "source": "reports/current/m5a_start_gate.json",
+      "source": "reports/current/m5a_data_quality_gate.json",
       "blockers": [
         {
           "id": "m5_implementation_global_not_pass",
           "type": "gate",
           "severity": "blocking",
-          "detail": "M5 Implementierung ist nicht global PASS, solange m5a_data_quality_gate nicht PASS ist.",
-          "source": "reports/current/m5a_data_quality_gate.json"
+          "detail": "M5 Implementierung ist nicht global PASS. M5a PASS ist nötig aber nicht hinreichend — alle M5-Slices müssen PASS sein. M5b ist BLOCKED.",
+          "source": "reports/current/m5b_start_gate.json"
         }
       ]
     },
     "m5a_data_quality": {
       "id": "m5a_data_quality",
       "label": "M5a Data Quality",
-      "status": "gate_partial_pass",
-      "decision": "NO_GO",
+      "status": "gate_passed",
+      "decision": "GO",
       "gate_id": "m5a_data_quality_gate",
-      "gate_status": "PARTIAL_PASS",
+      "gate_status": "PASS",
+      "quality_score": 94.0,
       "source": "reports/current/m5a_data_quality_gate.json",
+      "completion_report": "reports/current/m5a_completion_report.json",
+      "blockers": [],
+      "residual_risks": [
+        {
+          "id": "R-01",
+          "severity": "medium",
+          "detail": "report_integrity_pre_m5a BLOCKED — Gate-Widerspruch ungelöst. Ist Blocker für M5b-Start."
+        },
+        {
+          "id": "R-03",
+          "severity": "low",
+          "detail": "OrphanChunkDetector und EmptyChunkDetector sind Skeletons."
+        }
+      ]
+    },
+    "m5b_drift_detection": {
+      "id": "m5b_drift_detection",
+      "label": "M5b Drift Detection",
+      "status": "blocked",
+      "decision": "NO_GO",
+      "gate_id": "m5b_start_gate",
+      "gate_status": "BLOCKED",
+      "source": "reports/current/m5b_start_gate.json",
       "blockers": [
         {
-          "id": "m5a_data_quality_gate_not_pass",
+          "id": "B-M5B-001",
           "type": "gate",
           "severity": "blocking",
-          "detail": "M5a Data Quality gate is not PASS.",
-          "source": "reports/current/m5a_data_quality_gate.json"
+          "detail": "Known Limitations für M5a nicht formal aktualisiert.",
+          "required_action": "docs/known-limitations.md oder Technical-Debt-Register um M5a-Einträge ergänzen."
+        },
+        {
+          "id": "B-M5B-002",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "report_integrity_pre_m5a BLOCKED — RIPM5A-001/002.",
+          "required_action": "Gate-Widerspruch auflösen oder als akzeptiertes Risiko mit Begründung dokumentieren und report_integrity_pre_m5a neu generieren."
         }
       ]
     }
   },
   "gate_hierarchy": {
-    "result": "FAIL",
+    "result": "PARTIAL_PASS",
     "gates": {
       "m3a_release_candidate_gate": {
         "status": "PASS",
@@ -299,13 +412,20 @@
       "m5_implementation_gate": {
         "status": "IN_PROGRESS",
         "blockers": [
-          "M5 Implementierung ist nicht global PASS, solange m5a_data_quality_gate nicht PASS ist."
+          "M5b BLOCKED. M5 Implementierung nicht global PASS."
         ]
       },
       "m5a_data_quality_gate": {
-        "status": "PARTIAL_PASS",
+        "status": "PASS",
+        "quality_score": 94.0,
+        "blockers": [],
+        "residual_risks": ["R-01: report_integrity_pre_m5a BLOCKED"]
+      },
+      "m5b_start_gate": {
+        "status": "BLOCKED",
         "blockers": [
-          "M5a Data Quality gate is not PASS."
+          "B-M5B-001: Known Limitations für M5a nicht aktualisiert.",
+          "B-M5B-002: report_integrity_pre_m5a BLOCKED (RIPM5A-001/002)."
         ]
       }
     }

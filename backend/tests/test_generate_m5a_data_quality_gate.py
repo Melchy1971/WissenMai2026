@@ -44,10 +44,25 @@ def _gate_report(*, status: str = "PASS", decision: str = "GO") -> dict:
 
 def _data_quality_report_pass() -> dict:
     return {
-        "report_schema_version": "1.0.0",
+        "report_schema_version": 2,
         "report_name": "data_quality_report",
+        "generated_by": "run_data_quality_cli",
         "timestamp": "2026-06-01T00:00:00Z",
+        "run_id": "run-1",
+        "workspace_id": "00000000-0000-0000-0000-000000000001",
+        "status": "completed",
+        "started_at": "2026-06-01T00:00:00Z",
+        "finished_at": "2026-06-01T00:00:01Z",
+        "total_documents": 1,
+        "total_findings": 0,
+        "duplicate_findings": 0,
+        "metadata_findings": 0,
+        "lifecycle_findings": 0,
+        "source_status_findings": 0,
+        "orphan_findings": 0,
         "quality_score": 97,
+        "findings_by_severity": {},
+        "findings_by_type": {},
         "findings": [],
     }
 
@@ -56,6 +71,18 @@ def _write_required_slice_gates(report_dir: Path, *, start_go: bool = True, dupl
     _write(report_dir / gate.START_GATE, _gate_report(status="PASS" if start_go else "FAIL", decision="GO" if start_go else "NO_GO"))
     _write(report_dir / gate.DUPLICATE_GATE, _gate_report(status="PASS" if duplicate_pass else "FAIL", decision="GO" if duplicate_pass else "NO_GO"))
     _write(report_dir / gate.METADATA_GATE, _gate_report(status="PASS" if metadata_pass else "FAIL", decision="GO" if metadata_pass else "NO_GO"))
+    _write(report_dir / gate.LIFECYCLE_GATE, _gate_report(status="PASS", decision="GO"))
+    _write(report_dir / gate.DOC_TRUTH_LINT, {
+        "status": "PASS",
+        "summary": {"errors": 0},
+    })
+    report_integrity = _gate_report(status="PASS", decision="GO")
+    report_integrity.update({
+        "criteria": [
+            {"id": "reports_current_json_valid", "passed": True},
+        ],
+    })
+    _write(report_dir / gate.REPORT_INTEGRITY, report_integrity)
 
 
 def test_blocks_when_data_quality_report_missing(tmp_path: Path) -> None:
@@ -63,7 +90,7 @@ def test_blocks_when_data_quality_report_missing(tmp_path: Path) -> None:
 
     payload = gate.build_gate_report(tmp_path, timestamp="2026-06-01T00:00:00+00:00")
 
-    assert payload["status"] == "BLOCKED"
+    assert payload["status"] == "FAIL"
     assert payload["decision"]["go_no_go"] == "NO_GO"
     assert payload["decision"]["data_quality_report_state"] == "NOT_RUN"
     assert any(item["id"] == "data_quality_report_not_run" for item in payload["blockers"])
@@ -78,7 +105,7 @@ def test_passes_when_required_slices_and_data_quality_report_are_green(tmp_path:
     assert payload["status"] == "PASS"
     assert payload["decision"]["go_no_go"] == "GO"
     assert payload["decision"]["required_slices_all_pass"] is True
-    assert payload["decision"]["data_quality_report_state"] == "PASS"
+    assert payload["decision"]["data_quality_report_state"] == "COMPLETED"
     assert payload["blockers"] == []
 
 
@@ -89,6 +116,6 @@ def test_blocks_on_invalid_slice_gate_json(tmp_path: Path) -> None:
 
     payload = gate.build_gate_report(tmp_path, timestamp="2026-06-01T00:00:00+00:00")
 
-    assert payload["status"] == "BLOCKED"
+    assert payload["status"] == "FAIL"
     assert payload["decision"]["go_no_go"] == "NO_GO"
     assert any(item["id"] == "invalid_m5a_metadata_detector_gate" for item in payload["blockers"])

@@ -2,6 +2,8 @@ import json
 from datetime import datetime
 from typing import List
 
+from app.services.quality_score import calculate_quality_score_from_findings
+
 class DataQualityReportGenerator:
     def __init__(self, findings: List[dict], total_documents: int):
         self.findings = findings
@@ -13,7 +15,7 @@ class DataQualityReportGenerator:
         lifecycle_issues = [f for f in self.findings if f["type"] == "INVALID_LIFECYCLE"]
         source_status_issues = [f for f in self.findings if f["type"] == "INVALID_SOURCE_STATUS"]
         orphan_objects = [f for f in self.findings if "ORPHAN" in f["type"]]
-        quality_score = self.calculate_score(duplicates, metadata_issues, lifecycle_issues, source_status_issues, orphan_objects)
+        score_result = calculate_quality_score_from_findings(self.findings)
         return {
             "report_schema_version": "1.0.0",
             "report_name": "data_quality_report",
@@ -24,28 +26,20 @@ class DataQualityReportGenerator:
             "lifecycle_issues": len(lifecycle_issues),
             "source_status_issues": len(source_status_issues),
             "orphan_objects": len(orphan_objects),
-            "quality_score": quality_score,
+            "quality_score": score_result.score,
+            "score_explanation": score_result.score_explanation,
             "findings": self.findings
         }
 
     def calculate_score(self, duplicates, metadata_issues, lifecycle_issues, source_status_issues, orphan_objects):
-        # Gewichtung laut Vorgabe
-        weights = {
-            "duplicates": 0.25,
-            "metadata": 0.15,
-            "lifecycle": 0.25,
-            "source": 0.20,
-            "orphan": 0.15
-        }
-        penalty = (
-            weights["duplicates"] * min(len(duplicates), 10) / 10 +
-            weights["metadata"] * min(len(metadata_issues), 10) / 10 +
-            weights["lifecycle"] * min(len(lifecycle_issues), 10) / 10 +
-            weights["source"] * min(len(source_status_issues), 10) / 10 +
-            weights["orphan"] * min(len(orphan_objects), 10) / 10
-        )
-        score = max(0, 100 - int(penalty * 100))
-        return score
+        findings = [
+            *duplicates,
+            *metadata_issues,
+            *lifecycle_issues,
+            *source_status_issues,
+            *orphan_objects,
+        ]
+        return calculate_quality_score_from_findings(findings).score
 
     def write_json(self, path: str):
         report = self.generate()

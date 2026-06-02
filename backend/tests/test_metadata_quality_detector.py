@@ -15,6 +15,8 @@ from app.services.metadata_quality_detector import (
     _FINDING_TYPE,
 )
 
+pytestmark = pytest.mark.m3a_truth
+
 
 # ---------------------------------------------------------------------------
 # Fixtures

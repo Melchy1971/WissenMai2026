@@ -20,6 +20,8 @@ from app.models.data_quality import DataQualityFinding, DataQualityRun
 # Reuse constants from conftest
 from tests.conftest import DEFAULT_WORKSPACE_ID, SESSION_TOKEN
 
+pytestmark = pytest.mark.m3a_truth
+
 
 # ---------------------------------------------------------------------------
 # Client fixture for DQ API

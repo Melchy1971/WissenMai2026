@@ -16,12 +16,16 @@ from app.models.data_quality import DataQualityFinding, DataQualityRun
 from app.models.documents import Base
 from app.services.data_quality_runner import (
     DataQualityRunner,
+    DuplicateDetector,
     EmptyChunkDetector,
     InvalidLifecycleDetector,
     LifecycleIntegrityDetector,
+    MetadataQualityDetector,
     MissingMetadataDetector,
+    OrphanObjectDetector,
     OrphanChunkDetector,
     RunResult,
+    SourceStatusIntegrityDetector,
     _calculate_score,
 )
 
@@ -72,21 +76,22 @@ def _seed_workspace(session: Session, workspace_id: str) -> None:
 # ---------------------------------------------------------------------------
 
 class TestCalculateScore:
+    pytestmark = pytest.mark.m3a_truth
+
     def test_no_findings_returns_100(self):
         assert _calculate_score([]) == 100.0
 
-    def test_error_findings_reduce_score(self):
+    def test_category_findings_reduce_score(self):
         findings = [
             {"finding_type": "INVALID_LIFECYCLE", "severity": "error"},
             {"finding_type": "ORPHAN_CHUNK", "severity": "error"},
         ]
-        score = _calculate_score(findings)
-        assert 0.0 <= score < 100.0
+        assert _calculate_score(findings) == 96.0
 
-    def test_warning_penalises_less_than_error(self):
+    def test_severity_does_not_change_category_weight(self):
         error_score = _calculate_score([{"finding_type": "INVALID_LIFECYCLE", "severity": "error"}])
         warn_score = _calculate_score([{"finding_type": "INVALID_LIFECYCLE", "severity": "warning"}])
-        assert warn_score > error_score
+        assert warn_score == error_score
 
     def test_score_never_below_zero(self):
         findings = [{"finding_type": "INVALID_LIFECYCLE", "severity": "error"}] * 100
@@ -164,25 +169,93 @@ class TestDataQualityRunnerLifecycle:
         wid = _workspace_id()
         _seed_workspace(session, wid)
 
-        with patch.object(
-            LifecycleIntegrityDetector,
-            "detect",
-            return_value=[
-                {
-                    "finding_type": "RETRIEVAL_RISK",
-                    "severity": "warning",
-                    "document_id": str(uuid.uuid4()),
-                    "version_id": None,
-                    "chunk_id": None,
-                    "title": "Active document not retrievable",
-                    "description": "simulated lifecycle integrity finding",
-                    "remediation": "reconcile searchability",
-                }
-            ],
+        with (
+            patch.object(DuplicateDetector, "detect", return_value=[]),
+            patch.object(MetadataQualityDetector, "detect", return_value=[]),
+            patch.object(SourceStatusIntegrityDetector, "detect", return_value=[]),
+            patch.object(OrphanObjectDetector, "detect", return_value=[]),
+            patch.object(
+                LifecycleIntegrityDetector,
+                "detect",
+                return_value=[
+                    {
+                        "finding_type": "INVALID_LIFECYCLE",
+                        "severity": "error",
+                        "document_id": None,
+                        "version_id": None,
+                        "chunk_id": None,
+                        "title": "Active document not findable",
+                        "description": "simulated lifecycle integrity finding",
+                        "remediation": "Lifecycle korrigieren",
+                    }
+                ],
+            ),
         ):
             result = DataQualityRunner.from_session(session, wid).run()
 
-        assert any(f["finding_type"] == "RETRIEVAL_RISK" for f in result.findings)
+        assert any(f["finding_type"] == "INVALID_LIFECYCLE" for f in result.findings)
+
+    @pytest.mark.m3a_truth
+    def test_run_includes_source_status_integrity_detector_findings(self, session, engine):
+        wid = _workspace_id()
+        _seed_workspace(session, wid)
+
+        with (
+            patch.object(DuplicateDetector, "detect", return_value=[]),
+            patch.object(MetadataQualityDetector, "detect", return_value=[]),
+            patch.object(LifecycleIntegrityDetector, "detect", return_value=[]),
+            patch.object(OrphanObjectDetector, "detect", return_value=[]),
+            patch.object(
+                SourceStatusIntegrityDetector,
+                "detect",
+                return_value=[
+                    {
+                        "finding_type": "INVALID_SOURCE_STATUS",
+                        "severity": "error",
+                        "document_id": None,
+                        "version_id": None,
+                        "chunk_id": None,
+                        "title": "Active source status mismatch",
+                        "description": "simulated source status finding",
+                        "remediation": "Source-Status korrigieren",
+                    }
+                ],
+            ),
+        ):
+            result = DataQualityRunner.from_session(session, wid).run()
+
+        assert any(f["finding_type"] == "INVALID_SOURCE_STATUS" for f in result.findings)
+
+    @pytest.mark.m3a_truth
+    def test_run_includes_orphan_object_detector_findings(self, session, engine):
+        wid = _workspace_id()
+        _seed_workspace(session, wid)
+
+        with (
+            patch.object(DuplicateDetector, "detect", return_value=[]),
+            patch.object(MetadataQualityDetector, "detect", return_value=[]),
+            patch.object(LifecycleIntegrityDetector, "detect", return_value=[]),
+            patch.object(SourceStatusIntegrityDetector, "detect", return_value=[]),
+            patch.object(
+                OrphanObjectDetector,
+                "detect",
+                return_value=[
+                    {
+                        "finding_type": "ORPHAN_CITATION",
+                        "severity": "warning",
+                        "document_id": None,
+                        "version_id": None,
+                        "chunk_id": None,
+                        "title": "Citation without source",
+                        "description": "simulated orphan citation finding",
+                        "remediation": "Nur melden. Keine automatische Reparatur.",
+                    }
+                ],
+            ),
+        ):
+            result = DataQualityRunner.from_session(session, wid).run()
+
+        assert any(f["finding_type"] == "ORPHAN_CITATION" for f in result.findings)
 
     def test_run_creates_completed_run(self, session, engine):
         wid = _workspace_id()
@@ -323,6 +396,7 @@ class TestDataQualityRunnerLifecycle:
         )
         assert count is None
 
+    @pytest.mark.m3a_truth
     def test_run_result_has_required_fields(self, session, engine):
         wid = _workspace_id()
         _seed_workspace(session, wid)
@@ -335,3 +409,11 @@ class TestDataQualityRunnerLifecycle:
         assert isinstance(result.total_findings, int)
         assert isinstance(result.quality_score, float)
         assert isinstance(result.findings, list)
+        assert isinstance(result.score_explanation, dict)
+        assert result.score_explanation["category_weights_percent"] == {
+            "duplicate": 25,
+            "metadata": 15,
+            "lifecycle": 25,
+            "source_status": 20,
+            "orphan": 15,
+        }

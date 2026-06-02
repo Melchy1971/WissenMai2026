@@ -30,6 +30,8 @@ def _doc(
     owner_user_id: str,
     title: str = "doc",
     lifecycle_status: str = "active",
+    archived_at=None,
+    deleted_at=None,
 ) -> str:
     did = str(uuid.uuid4())
     session.add(
@@ -42,6 +44,8 @@ def _doc(
             content_hash=uuid.uuid4().hex,
             import_status="pending",
             lifecycle_status=lifecycle_status,
+            archived_at=archived_at,
+            deleted_at=deleted_at,
             created_at=_now(),
             updated_at=_now(),
         )
@@ -180,13 +184,19 @@ def test_archived_document_not_in_search_detected(
 ) -> None:
     wid = truth_seed["workspace_id"]
     uid = truth_seed["user_id"]
-    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="archived")
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="archived", archived_at=_now())
     vid = _version(truth_session, did)
     _chunk(truth_session, did, vid, searchable=True)
     truth_session.commit()
 
     findings = LifecycleIntegrityDetector(truth_session, wid).detect()
-    assert any(f["document_id"] == did and f["finding_type"] == "RETRIEVAL_RISK" for f in findings)
+    assert any(
+        f["document_id"] == did
+        and f["finding_type"] == "INVALID_LIFECYCLE"
+        and f["severity"] == "error"
+        and f["remediation"] == "Lifecycle korrigieren"
+        for f in findings
+    )
 
 
 def test_deleted_document_not_in_search_detected(
@@ -194,13 +204,13 @@ def test_deleted_document_not_in_search_detected(
 ) -> None:
     wid = truth_seed["workspace_id"]
     uid = truth_seed["user_id"]
-    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="deleted")
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="deleted", deleted_at=_now())
     vid = _version(truth_session, did)
     _chunk(truth_session, did, vid, searchable=True)
     truth_session.commit()
 
     findings = LifecycleIntegrityDetector(truth_session, wid).detect()
-    assert any(f["document_id"] == did and f["finding_type"] == "RETRIEVAL_RISK" for f in findings)
+    assert any(f["document_id"] == did and f["finding_type"] == "INVALID_LIFECYCLE" for f in findings)
 
 
 def test_active_document_retrievable_rule_detects_gap(
@@ -214,7 +224,7 @@ def test_active_document_retrievable_rule_detects_gap(
     truth_session.commit()
 
     findings = LifecycleIntegrityDetector(truth_session, wid).detect()
-    assert any(f["document_id"] == did and f["title"] == "Active document not retrievable" for f in findings)
+    assert any(f["document_id"] == did and f["title"] == "Active document not findable" for f in findings)
 
 
 def test_lifecycle_status_consistent_with_source_status_detects_drift(
@@ -229,7 +239,7 @@ def test_lifecycle_status_consistent_with_source_status_detects_drift(
     truth_session.commit()
 
     findings = LifecycleIntegrityDetector(truth_session, wid).detect()
-    assert any(f["finding_type"] == "INVALID_SOURCE_STATUS" and f["document_id"] == did for f in findings)
+    assert any(f["finding_type"] == "INVALID_LIFECYCLE" and f["document_id"] == did for f in findings)
 
 
 def test_findings_pass_db_constraints(
@@ -237,7 +247,7 @@ def test_findings_pass_db_constraints(
 ) -> None:
     wid = truth_seed["workspace_id"]
     uid = truth_seed["user_id"]
-    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="archived")
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="archived", archived_at=_now())
     vid = _version(truth_session, did)
     _chunk(truth_session, did, vid, searchable=True)
     truth_session.commit()

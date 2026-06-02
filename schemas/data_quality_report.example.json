@@ -1,35 +1,46 @@
 {
-  "report_schema_version": "1.0.0",
+  "report_schema_version": 2,
   "report_name": "data_quality_report",
-  "timestamp": "2026-05-29T12:00:00Z",
+  "generated_by": "run_data_quality_cli",
+  "generated_at": "2026-06-02T10:00:02+00:00",
+  "timestamp": "2026-06-02T10:00:02+00:00",
+  "run_id": "run-1",
   "workspace_id": "00000000-0000-0000-0000-000000000001",
-  "total_documents": 1000,
-  "active_documents": 900,
-  "archived_documents": 80,
-  "deleted_documents": 20,
-  "duplicate_documents": 5,
-  "orphan_chunks": 3,
-  "missing_metadata": 2,
-  "invalid_source_status": 1,
-  "quality_score": 0.97,
+  "status": "completed",
+  "started_at": "2026-06-02T10:00:00+00:00",
+  "finished_at": "2026-06-02T10:00:01+00:00",
+  "total_documents": 12,
+  "total_findings": 5,
+  "duplicate_findings": 1,
+  "metadata_findings": 1,
+  "lifecycle_findings": 1,
+  "source_status_findings": 1,
+  "orphan_findings": 1,
+  "quality_score": 87.5,
+  "findings_by_severity": {
+    "warning": 3,
+    "error": 2
+  },
+  "findings_by_type": {
+    "DUPLICATE_DOCUMENT": 1,
+    "MISSING_METADATA": 1,
+    "INVALID_LIFECYCLE": 1,
+    "INVALID_SOURCE_STATUS": 1,
+    "ORPHAN_CHUNK": 1
+  },
+  "score_explanation": {
+    "score": 87.5
+  },
   "findings": [
     {
-      "id": "DQ-001",
-      "description": "5 Duplikate gefunden (0.5%)",
-      "severity": "medium",
-      "remediation": "Duplikate prüfen und ggf. entfernen."
-    },
-    {
-      "id": "DQ-002",
-      "description": "3 verwaiste Chunks gefunden",
-      "severity": "low",
-      "remediation": "Chunks mit fehlender Referenz analysieren."
-    },
-    {
-      "id": "DQ-003",
-      "description": "1 Dokument mit ungültigem Source-Status",
-      "severity": "high",
-      "remediation": "Source-Status prüfen und korrigieren."
+      "finding_type": "DUPLICATE_DOCUMENT",
+      "severity": "warning",
+      "document_id": "doc-1",
+      "version_id": null,
+      "chunk_id": null,
+      "title": "Duplicate document",
+      "description": "Document has duplicate content.",
+      "remediation": "Review duplicates manually. No automatic repair."
     }
   ]
 }

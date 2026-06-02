@@ -9,6 +9,7 @@ from app.core.errors import (
     ChatMessageInvalidApiError,
     InvalidPaginationApiError,
     InvalidQueryApiError,
+    RequestValidationApiError,
     WorkspaceRequiredApiError,
 )
 
@@ -55,7 +56,7 @@ def map_validation_error(exc: RequestValidationError) -> ApiError:
         location = tuple(error.get("loc", ()))
         if location in {("query", "limit"), ("query", "offset")}:
             return InvalidPaginationApiError(details={"errors": errors})
-    return ApiError(message="Request validation failed", details={"errors": errors})
+    return RequestValidationApiError(details={"errors": errors})
 
 
 def error_content(code: str, message: str, details: dict[str, Any]) -> dict[str, Any]:
