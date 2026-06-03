@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "document": "gate_hierarchy",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-03T10:04:42.893222+02:00",
+  "report_source_policy": {
+    "active_report_dir": "reports/current",
+    "root_level_reports_allowed": false,
+    "archive_reports_allowed": false,
+    "stale_pass_reports_allowed": false,
+    "manual_status_statements_allowed": false
+  },
+  "validator_rules": {
+    "parent_pass_requires_all_mandatory_children_pass": true,
+    "missing_child_report_blocks_parent": true,
+    "invalid_json_blocks_parent": true,
+    "child_pass_status": "PASS",
+    "child_go_decision": "GO",
+    "gate_reports_require_generated_by": true,
+    "counter_reports_require_collected_gt_zero": true,
+    "counter_reports_require_passed_equals_collected": true,
+    "counter_reports_require_failed_errors_skipped_zero": true,
+    "counter_reports_require_exit_code_zero": true,
+    "data_quality_report_requires_status_completed": true,
+    "data_quality_report_min_quality_score": 90
+  },
+  "parents": {
+    "m3a": {
+      "label": "M3a",
+      "mandatory_children": [
+        "runtime_connectivity_gate",
+        "frontend_full_suite_staged",
+        "documentation_truth_lint"
+      ]
+    },
+    "m4": {
+      "label": "M4",
+      "mandatory_children": [
+        "m4a_auth_truth",
+        "m4b_upload_queue_truth",
+        "m4c_lifecycle_retrieval_truth",
+        "m4e_backup_restore_truth",
+        "report_truth_preflight"
+      ]
+    },
+    "m5a": {
+      "label": "M5a",
+      "mandatory_children": [
+        "m5a_start_gate",
+        "report_integrity_pre_m5a",
+        "documentation_truth_lint",
+        "data_quality_report",
+        "duplicate_detector_gate",
+        "metadata_detector_gate",
+        "lifecycle_integrity_gate",
+        "source_status_integrity_gate",
+        "orphan_detector_gate"
+      ]
+    }
+  },
+  "children": {
+    "runtime_connectivity_gate": {
+      "label": "Runtime Connectivity Gate",
+      "report": "reports/current/runtime_connectivity_gate.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "counter_validation": "required"
+    },
+    "frontend_full_suite_staged": {
+      "label": "Frontend Full Suite Staged",
+      "report": "reports/current/frontend_full_suite_staged_report.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "counter_validation": "required",
+      "optional_true_fields": [
+        "real_api",
+        "test_database_url_set"
+      ]
+    },
+    "documentation_truth_lint": {
+      "label": "Documentation Truth Lint",
+      "report": "reports/current/documentation_truth_lint.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "counter_validation": "not_required"
+    },
+    "m4a_auth_truth": {
+      "label": "M4a Auth Truth",
+      "report": "reports/current/m4a_auth_truth.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "counter_validation": "required"
+    },
+    "m4b_upload_queue_truth": {
+      "label": "M4b Upload Queue Truth",
+      "report": "reports/current/m4b_upload_queue_truth.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "counter_validation": "required"
+    },
+    "m4c_lifecycle_retrieval_truth": {
+      "label": "M4c Lifecycle Retrieval Truth",
+      "report": "reports/current/m4c_lifecycle_retrieval_truth.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "counter_validation": "required"
+    },
+    "m4e_backup_restore_truth": {
+      "label": "M4e Backup Restore Truth",
+      "report": "reports/current/m4e_backup_restore_truth.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "counter_validation": "required"
+    },
+    "report_truth_preflight": {
+      "label": "Report Truth Preflight",
+      "report": "reports/current/report_truth_preflight.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "counter_validation": "required"
+    },
+    "m5a_start_gate": {
+      "label": "M5a Start Gate",
+      "report": "reports/current/m5a_start_gate.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    "report_integrity_pre_m5a": {
+      "label": "Report Integrity Pre M5a",
+      "report": "reports/current/report_integrity_pre_m5a.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    "data_quality_report": {
+      "label": "Data Quality Report V2",
+      "report": "reports/current/data_quality_report.json",
+      "accepted_statuses": [
+        "completed"
+      ],
+      "counter_validation": "not_required",
+      "min_quality_score": 90
+    },
+    "duplicate_detector_gate": {
+      "label": "Duplicate Detector Gate",
+      "report": "reports/current/m5a_duplicate_detector_gate.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    "metadata_detector_gate": {
+      "label": "Metadata Detector Gate",
+      "report": "reports/current/m5a_metadata_detector_gate.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    "lifecycle_integrity_gate": {
+      "label": "Lifecycle Integrity Gate",
+      "report": "reports/current/m5a_lifecycle_integrity_gate.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    "source_status_integrity_gate": {
+      "label": "Source Status Integrity Gate",
+      "report": "reports/current/m5a_source_status_integrity_gate.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    "orphan_detector_gate": {
+      "label": "Orphan Detector Gate",
+      "report": "reports/current/m5a_orphan_detector_gate.json",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    }
+  }
+}

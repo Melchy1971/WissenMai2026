@@ -1,360 +1,701 @@
 {
-  "report_schema_version": 1,
+  "report_schema_version": 2,
   "report_name": "gate_hierarchy_result",
   "generated_by": "gate_validator",
-  "timestamp": "2026-05-27T12:43:45.811411+00:00",
+  "timestamp": "2026-06-03T08:09:49.106502+00:00",
   "environment": "local",
   "result": "FAIL",
   "status": "FAIL",
   "gate": "gate_hierarchy",
-  "collected": 9,
-  "passed": 3,
-  "failed": 3,
+  "collected": 19,
+  "passed": 13,
+  "failed": 4,
   "errors": 0,
-  "skipped": 3,
+  "skipped": 2,
   "exit_code": 1,
   "blockers": [
     {
-      "gate": "m3a_gate",
+      "gate": "runtime_connectivity_gate",
       "severity": "critical",
-      "reason": "m3a_frontend_truth.json: passed (5) must equal collected (100); m3a_frontend_truth.json: failed must be 0, got 37; m3a_frontend_truth.json: skipped must be 0, got 58; m3a_frontend_truth.json: exit_code must be 0, got 1; m3a_frontend_truth.json: failed_tests must be empty"
+      "reason": "missing report: H:\\WissenMai2026\\reports\\current\\runtime_connectivity_gate.json"
     },
     {
-      "gate": "m4b_gate",
+      "gate": "report_integrity_pre_m5a",
       "severity": "critical",
-      "reason": "m4b_upload_queue_truth.json: passed (46) must equal collected (51); m4b_upload_queue_truth.json: failed must be 0, got 5; m4b_upload_queue_truth.json: exit_code must be 0, got 1; m4b_upload_queue_truth.json: failed_tests must be empty"
+      "reason": "report_integrity_pre_m5a.json: status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']; report_integrity_pre_m5a.json: decision.go_no_go must be GO, got 'NO_GO'; report_integrity_pre_m5a.json: passed (6) must equal collected (8); report_integrity_pre_m5a.json: failed must be 0, got 2; report_integrity_pre_m5a.json: exit_code must be 0, got 1; report_integrity_pre_m5a.json: blockers must be empty"
     },
     {
-      "gate": "m4_crosscutting_gate",
+      "gate": "source_status_integrity_gate",
       "severity": "critical",
-      "reason": "m4_truth_report.json: passed (94) must equal collected (99); m4_truth_report.json: failed must be 0, got 5; m4_truth_report.json: exit_code must be 0, got 1; m4_truth_report.json: failed_tests must be empty"
+      "reason": "missing report: H:\\WissenMai2026\\reports\\current\\m5a_source_status_integrity_gate.json"
     },
     {
-      "gate": "m4_overall_gate",
+      "gate": "orphan_detector_gate",
       "severity": "critical",
-      "reason": "dependency not passed: m4_crosscutting_gate; dependency not passed: m4b_gate"
+      "reason": "missing report: H:\\WissenMai2026\\reports\\current\\m5a_orphan_detector_gate.json"
     },
     {
-      "gate": "m5_start_gate",
+      "gate": "m3a",
       "severity": "critical",
-      "reason": "dependency not passed: m4_overall_gate"
+      "reason": "mandatory child not passed: runtime_connectivity_gate"
     },
     {
-      "gate": "operational_governance_gate",
+      "gate": "m5a",
       "severity": "critical",
-      "reason": "dependency not passed: m5_start_gate"
+      "reason": "mandatory child not passed: report_integrity_pre_m5a; mandatory child not passed: source_status_integrity_gate; mandatory child not passed: orphan_detector_gate"
     }
   ],
   "source_command": "python scripts/validate_gate_hierarchy.py",
+  "hierarchy_source": "docs/gate_hierarchy.json",
+  "report_source_policy": {
+    "active_report_dir": "reports/current",
+    "root_level_reports_allowed": false,
+    "archive_reports_allowed": false,
+    "stale_pass_reports_allowed": false,
+    "manual_status_statements_allowed": false
+  },
   "gates": {
-    "m3a_gate": {
-      "id": "m3a_gate",
-      "label": "M3a Gate",
+    "runtime_connectivity_gate": {
+      "id": "runtime_connectivity_gate",
+      "label": "Runtime Connectivity Gate",
       "status": "FAIL",
       "reports": [
-        "m3a_frontend_truth.json"
+        "runtime_connectivity_gate.json"
       ],
-      "dependencies": [],
+      "mandatory_children": [],
       "blockers": [
-        "m3a_frontend_truth.json: passed (5) must equal collected (100)",
-        "m3a_frontend_truth.json: failed must be 0, got 37",
-        "m3a_frontend_truth.json: skipped must be 0, got 58",
-        "m3a_frontend_truth.json: exit_code must be 0, got 1",
-        "m3a_frontend_truth.json: failed_tests must be empty"
+        "missing report: H:\\WissenMai2026\\reports\\current\\runtime_connectivity_gate.json"
       ],
       "report_summaries": {
-        "m3a_frontend_truth.json": {
-          "available": true,
-          "collected": 100,
-          "passed": 5,
-          "failed": 37,
-          "errors": 0,
-          "skipped": 58,
-          "exit_code": 1,
-          "test_database_url_set": true,
-          "timestamp": "2026-05-26T07:55:18.789577+00:00"
+        "runtime_connectivity_gate.json": {
+          "available": false,
+          "error": "missing report: H:\\WissenMai2026\\reports\\current\\runtime_connectivity_gate.json"
         }
       }
     },
-    "m4a_gate": {
-      "id": "m4a_gate",
-      "label": "M4a Gate",
+    "frontend_full_suite_staged": {
+      "id": "frontend_full_suite_staged",
+      "label": "Frontend Full Suite Staged",
+      "status": "PASS",
+      "reports": [
+        "frontend_full_suite_staged_report.json"
+      ],
+      "mandatory_children": [],
+      "blockers": [],
+      "report_summaries": {
+        "frontend_full_suite_staged_report.json": {
+          "available": true,
+          "status": "PASS",
+          "result": null,
+          "decision": null,
+          "collected": 132,
+          "passed": 132,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": null,
+          "timestamp": "2026-05-28T10:28:30.000000+00:00"
+        }
+      }
+    },
+    "documentation_truth_lint": {
+      "id": "documentation_truth_lint",
+      "label": "Documentation Truth Lint",
+      "status": "PASS",
+      "reports": [
+        "documentation_truth_lint.json"
+      ],
+      "mandatory_children": [],
+      "blockers": [],
+      "report_summaries": {
+        "documentation_truth_lint.json": {
+          "available": true,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": null,
+          "collected": null,
+          "passed": null,
+          "failed": null,
+          "errors": null,
+          "skipped": null,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "documentation_truth_linter",
+          "test_database_url_set": null,
+          "timestamp": "2026-06-03T08:09:40.393205+00:00"
+        }
+      }
+    },
+    "m4a_auth_truth": {
+      "id": "m4a_auth_truth",
+      "label": "M4a Auth Truth",
       "status": "PASS",
       "reports": [
         "m4a_auth_truth.json"
       ],
-      "dependencies": [],
+      "mandatory_children": [],
       "blockers": [],
       "report_summaries": {
         "m4a_auth_truth.json": {
           "available": true,
+          "status": "PASS",
+          "result": null,
+          "decision": null,
           "collected": 43,
           "passed": 43,
           "failed": 0,
           "errors": 0,
           "skipped": 0,
           "exit_code": 0,
-          "test_database_url_set": null,
-          "timestamp": "2026-05-27T07:36:04.6432941Z"
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": true,
+          "timestamp": "2026-05-29T06:27:59.342852+00:00"
         }
       }
     },
-    "m4b_gate": {
-      "id": "m4b_gate",
-      "label": "M4b Gate",
-      "status": "FAIL",
+    "m4b_upload_queue_truth": {
+      "id": "m4b_upload_queue_truth",
+      "label": "M4b Upload Queue Truth",
+      "status": "PASS",
       "reports": [
         "m4b_upload_queue_truth.json"
       ],
-      "dependencies": [],
-      "blockers": [
-        "m4b_upload_queue_truth.json: passed (46) must equal collected (51)",
-        "m4b_upload_queue_truth.json: failed must be 0, got 5",
-        "m4b_upload_queue_truth.json: exit_code must be 0, got 1",
-        "m4b_upload_queue_truth.json: failed_tests must be empty"
-      ],
+      "mandatory_children": [],
+      "blockers": [],
       "report_summaries": {
         "m4b_upload_queue_truth.json": {
           "available": true,
-          "collected": 51,
-          "passed": 46,
-          "failed": 5,
+          "status": "PASS",
+          "result": null,
+          "decision": null,
+          "collected": 48,
+          "passed": 48,
+          "failed": 0,
           "errors": 0,
           "skipped": 0,
-          "exit_code": 1,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
           "test_database_url_set": true,
-          "timestamp": "2026-05-27T08:07:30.935715+00:00"
+          "timestamp": "2026-05-29T06:27:59.342852+00:00"
         }
       }
     },
-    "m4c_gate": {
-      "id": "m4c_gate",
-      "label": "M4c Gate",
+    "m4c_lifecycle_retrieval_truth": {
+      "id": "m4c_lifecycle_retrieval_truth",
+      "label": "M4c Lifecycle Retrieval Truth",
       "status": "PASS",
       "reports": [
         "m4c_lifecycle_retrieval_truth.json"
       ],
-      "dependencies": [],
+      "mandatory_children": [],
       "blockers": [],
       "report_summaries": {
         "m4c_lifecycle_retrieval_truth.json": {
           "available": true,
+          "status": "PASS",
+          "result": null,
+          "decision": null,
           "collected": 2,
           "passed": 2,
           "failed": 0,
           "errors": 0,
           "skipped": 0,
           "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
           "test_database_url_set": true,
-          "timestamp": "2026-05-27T08:21:47.734857+00:00"
+          "timestamp": "2026-05-29T06:27:59.342852+00:00"
         }
       }
     },
-    "m4e_gate": {
-      "id": "m4e_gate",
-      "label": "M4e Gate",
+    "m4e_backup_restore_truth": {
+      "id": "m4e_backup_restore_truth",
+      "label": "M4e Backup Restore Truth",
       "status": "PASS",
       "reports": [
         "m4e_backup_restore_truth.json"
       ],
-      "dependencies": [],
+      "mandatory_children": [],
       "blockers": [],
       "report_summaries": {
         "m4e_backup_restore_truth.json": {
           "available": true,
-          "collected": 3,
-          "passed": 3,
+          "status": "PASS",
+          "result": null,
+          "decision": null,
+          "collected": 9,
+          "passed": 9,
           "failed": 0,
           "errors": 0,
           "skipped": 0,
           "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
           "test_database_url_set": true,
-          "timestamp": "2026-05-27T00:00:00Z"
+          "timestamp": "2026-05-29T06:27:59.342852+00:00"
         }
       }
     },
-    "m4_crosscutting_gate": {
-      "id": "m4_crosscutting_gate",
-      "label": "M4 Cross-Cutting Gate",
+    "report_truth_preflight": {
+      "id": "report_truth_preflight",
+      "label": "Report Truth Preflight",
+      "status": "PASS",
+      "reports": [
+        "report_truth_preflight.json"
+      ],
+      "mandatory_children": [],
+      "blockers": [],
+      "report_summaries": {
+        "report_truth_preflight.json": {
+          "available": true,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": null,
+          "collected": 6,
+          "passed": 6,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": null,
+          "timestamp": "2026-05-29T06:38:24.591859+00:00"
+        }
+      }
+    },
+    "m5a_start_gate": {
+      "id": "m5a_start_gate",
+      "label": "M5a Start Gate",
+      "status": "PASS",
+      "reports": [
+        "m5a_start_gate.json"
+      ],
+      "mandatory_children": [],
+      "blockers": [],
+      "report_summaries": {
+        "m5a_start_gate.json": {
+          "available": true,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": "GO",
+          "collected": 12,
+          "passed": 12,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": null,
+          "timestamp": "2026-06-01T08:41:13.099732+00:00"
+        }
+      }
+    },
+    "report_integrity_pre_m5a": {
+      "id": "report_integrity_pre_m5a",
+      "label": "Report Integrity Pre M5a",
       "status": "FAIL",
       "reports": [
-        "m4_truth_report.json"
+        "report_integrity_pre_m5a.json"
       ],
-      "dependencies": [],
+      "mandatory_children": [],
       "blockers": [
-        "m4_truth_report.json: passed (94) must equal collected (99)",
-        "m4_truth_report.json: failed must be 0, got 5",
-        "m4_truth_report.json: exit_code must be 0, got 1",
-        "m4_truth_report.json: failed_tests must be empty"
+        "report_integrity_pre_m5a.json: status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
+        "report_integrity_pre_m5a.json: decision.go_no_go must be GO, got 'NO_GO'",
+        "report_integrity_pre_m5a.json: passed (6) must equal collected (8)",
+        "report_integrity_pre_m5a.json: failed must be 0, got 2",
+        "report_integrity_pre_m5a.json: exit_code must be 0, got 1",
+        "report_integrity_pre_m5a.json: blockers must be empty"
       ],
       "report_summaries": {
-        "m4_truth_report.json": {
+        "report_integrity_pre_m5a.json": {
           "available": true,
-          "collected": 99,
-          "passed": 94,
-          "failed": 5,
+          "status": "BLOCKED",
+          "result": "BLOCKED",
+          "decision": "NO_GO",
+          "collected": 8,
+          "passed": 6,
+          "failed": 2,
           "errors": 0,
           "skipped": 0,
           "exit_code": 1,
+          "quality_score": null,
+          "generated_by": "gate_validator",
           "test_database_url_set": null,
-          "timestamp": "2026-05-27T12:43:24.358540Z"
+          "timestamp": "2026-06-01T12:15:00+00:00"
         }
       }
     },
-    "m4_overall_gate": {
-      "id": "m4_overall_gate",
-      "label": "M4 Gesamtgate",
-      "status": "BLOCKED",
-      "reports": [],
-      "dependencies": [
-        "m4_crosscutting_gate",
-        "m4a_gate",
-        "m4b_gate",
-        "m4c_gate",
-        "m4e_gate"
-      ],
-      "blockers": [
-        "dependency not passed: m4_crosscutting_gate",
-        "dependency not passed: m4b_gate"
-      ],
-      "report_summaries": {}
-    },
-    "m5_start_gate": {
-      "id": "m5_start_gate",
-      "label": "M5 Startgate",
-      "status": "BLOCKED",
-      "reports": [],
-      "dependencies": [
-        "m4_overall_gate"
-      ],
-      "blockers": [
-        "dependency not passed: m4_overall_gate"
-      ],
-      "report_summaries": {}
-    },
-    "operational_governance_gate": {
-      "id": "operational_governance_gate",
-      "label": "Operational Governance Gate",
-      "status": "BLOCKED",
+    "data_quality_report": {
+      "id": "data_quality_report",
+      "label": "Data Quality Report V2",
+      "status": "PASS",
       "reports": [
-        "governance_truth_report.json"
+        "data_quality_report.json"
       ],
-      "dependencies": [
-        "m5_start_gate"
+      "mandatory_children": [],
+      "blockers": [],
+      "report_summaries": {
+        "data_quality_report.json": {
+          "available": true,
+          "status": "completed",
+          "result": null,
+          "decision": null,
+          "collected": null,
+          "passed": null,
+          "failed": null,
+          "errors": null,
+          "skipped": null,
+          "exit_code": null,
+          "quality_score": 94.0,
+          "generated_by": "run_data_quality_cli",
+          "test_database_url_set": null,
+          "timestamp": "2026-06-02T11:58:41.996000+00:00"
+        }
+      }
+    },
+    "duplicate_detector_gate": {
+      "id": "duplicate_detector_gate",
+      "label": "Duplicate Detector Gate",
+      "status": "PASS",
+      "reports": [
+        "m5a_duplicate_detector_gate.json"
       ],
+      "mandatory_children": [],
+      "blockers": [],
+      "report_summaries": {
+        "m5a_duplicate_detector_gate.json": {
+          "available": true,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": "GO",
+          "collected": 8,
+          "passed": 8,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": null,
+          "timestamp": "2026-06-01T09:28:52.011721+00:00"
+        }
+      }
+    },
+    "metadata_detector_gate": {
+      "id": "metadata_detector_gate",
+      "label": "Metadata Detector Gate",
+      "status": "PASS",
+      "reports": [
+        "m5a_metadata_detector_gate.json"
+      ],
+      "mandatory_children": [],
+      "blockers": [],
+      "report_summaries": {
+        "m5a_metadata_detector_gate.json": {
+          "available": true,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": "GO",
+          "collected": 11,
+          "passed": 11,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": null,
+          "timestamp": "2026-06-01T09:44:30.450456+00:00"
+        }
+      }
+    },
+    "lifecycle_integrity_gate": {
+      "id": "lifecycle_integrity_gate",
+      "label": "Lifecycle Integrity Gate",
+      "status": "PASS",
+      "reports": [
+        "m5a_lifecycle_integrity_gate.json"
+      ],
+      "mandatory_children": [],
+      "blockers": [],
+      "report_summaries": {
+        "m5a_lifecycle_integrity_gate.json": {
+          "available": true,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": "GO",
+          "collected": 10,
+          "passed": 10,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": null,
+          "timestamp": "2026-06-01T12:01:58.267848+00:00"
+        }
+      }
+    },
+    "source_status_integrity_gate": {
+      "id": "source_status_integrity_gate",
+      "label": "Source Status Integrity Gate",
+      "status": "FAIL",
+      "reports": [
+        "m5a_source_status_integrity_gate.json"
+      ],
+      "mandatory_children": [],
       "blockers": [
-        "dependency not passed: m5_start_gate"
+        "missing report: H:\\WissenMai2026\\reports\\current\\m5a_source_status_integrity_gate.json"
       ],
       "report_summaries": {
-        "governance_truth_report.json": {
+        "m5a_source_status_integrity_gate.json": {
           "available": false,
-          "error": "missing report: H:\\WissenMai2026\\reports\\current\\governance_truth_report.json"
+          "error": "missing report: H:\\WissenMai2026\\reports\\current\\m5a_source_status_integrity_gate.json"
         }
       }
+    },
+    "orphan_detector_gate": {
+      "id": "orphan_detector_gate",
+      "label": "Orphan Detector Gate",
+      "status": "FAIL",
+      "reports": [
+        "m5a_orphan_detector_gate.json"
+      ],
+      "mandatory_children": [],
+      "blockers": [
+        "missing report: H:\\WissenMai2026\\reports\\current\\m5a_orphan_detector_gate.json"
+      ],
+      "report_summaries": {
+        "m5a_orphan_detector_gate.json": {
+          "available": false,
+          "error": "missing report: H:\\WissenMai2026\\reports\\current\\m5a_orphan_detector_gate.json"
+        }
+      }
+    },
+    "m3a": {
+      "id": "m3a",
+      "label": "M3a",
+      "status": "BLOCKED",
+      "reports": [],
+      "mandatory_children": [
+        "runtime_connectivity_gate",
+        "frontend_full_suite_staged",
+        "documentation_truth_lint"
+      ],
+      "blockers": [
+        "mandatory child not passed: runtime_connectivity_gate"
+      ],
+      "report_summaries": {}
+    },
+    "m4": {
+      "id": "m4",
+      "label": "M4",
+      "status": "PASS",
+      "reports": [],
+      "mandatory_children": [
+        "m4a_auth_truth",
+        "m4b_upload_queue_truth",
+        "m4c_lifecycle_retrieval_truth",
+        "m4e_backup_restore_truth",
+        "report_truth_preflight"
+      ],
+      "blockers": [],
+      "report_summaries": {}
+    },
+    "m5a": {
+      "id": "m5a",
+      "label": "M5a",
+      "status": "BLOCKED",
+      "reports": [],
+      "mandatory_children": [
+        "m5a_start_gate",
+        "report_integrity_pre_m5a",
+        "documentation_truth_lint",
+        "data_quality_report",
+        "duplicate_detector_gate",
+        "metadata_detector_gate",
+        "lifecycle_integrity_gate",
+        "source_status_integrity_gate",
+        "orphan_detector_gate"
+      ],
+      "blockers": [
+        "mandatory child not passed: report_integrity_pre_m5a",
+        "mandatory child not passed: source_status_integrity_gate",
+        "mandatory child not passed: orphan_detector_gate"
+      ],
+      "report_summaries": {}
     }
   },
   "dependency_graph": {
     "nodes": [
       {
-        "id": "m3a_gate",
-        "label": "M3a Gate"
+        "id": "runtime_connectivity_gate",
+        "label": "Runtime Connectivity Gate"
       },
       {
-        "id": "m4a_gate",
-        "label": "M4a Gate"
+        "id": "frontend_full_suite_staged",
+        "label": "Frontend Full Suite Staged"
       },
       {
-        "id": "m4b_gate",
-        "label": "M4b Gate"
+        "id": "documentation_truth_lint",
+        "label": "Documentation Truth Lint"
       },
       {
-        "id": "m4c_gate",
-        "label": "M4c Gate"
+        "id": "m4a_auth_truth",
+        "label": "M4a Auth Truth"
       },
       {
-        "id": "m4e_gate",
-        "label": "M4e Gate"
+        "id": "m4b_upload_queue_truth",
+        "label": "M4b Upload Queue Truth"
       },
       {
-        "id": "m4_crosscutting_gate",
-        "label": "M4 Cross-Cutting Gate"
+        "id": "m4c_lifecycle_retrieval_truth",
+        "label": "M4c Lifecycle Retrieval Truth"
       },
       {
-        "id": "m4_overall_gate",
-        "label": "M4 Gesamtgate"
+        "id": "m4e_backup_restore_truth",
+        "label": "M4e Backup Restore Truth"
       },
       {
-        "id": "m5_start_gate",
-        "label": "M5 Startgate"
+        "id": "report_truth_preflight",
+        "label": "Report Truth Preflight"
       },
       {
-        "id": "operational_governance_gate",
-        "label": "Operational Governance Gate"
+        "id": "m5a_start_gate",
+        "label": "M5a Start Gate"
+      },
+      {
+        "id": "report_integrity_pre_m5a",
+        "label": "Report Integrity Pre M5a"
+      },
+      {
+        "id": "data_quality_report",
+        "label": "Data Quality Report V2"
+      },
+      {
+        "id": "duplicate_detector_gate",
+        "label": "Duplicate Detector Gate"
+      },
+      {
+        "id": "metadata_detector_gate",
+        "label": "Metadata Detector Gate"
+      },
+      {
+        "id": "lifecycle_integrity_gate",
+        "label": "Lifecycle Integrity Gate"
+      },
+      {
+        "id": "source_status_integrity_gate",
+        "label": "Source Status Integrity Gate"
+      },
+      {
+        "id": "orphan_detector_gate",
+        "label": "Orphan Detector Gate"
+      },
+      {
+        "id": "m3a",
+        "label": "M3a"
+      },
+      {
+        "id": "m4",
+        "label": "M4"
+      },
+      {
+        "id": "m5a",
+        "label": "M5a"
       }
     ],
     "edges": [
       {
-        "from": "m4_crosscutting_gate",
-        "to": "m4_overall_gate"
+        "from": "runtime_connectivity_gate",
+        "to": "m3a"
       },
       {
-        "from": "m4a_gate",
-        "to": "m4_overall_gate"
+        "from": "frontend_full_suite_staged",
+        "to": "m3a"
       },
       {
-        "from": "m4b_gate",
-        "to": "m4_overall_gate"
+        "from": "documentation_truth_lint",
+        "to": "m3a"
       },
       {
-        "from": "m4c_gate",
-        "to": "m4_overall_gate"
+        "from": "m4a_auth_truth",
+        "to": "m4"
       },
       {
-        "from": "m4e_gate",
-        "to": "m4_overall_gate"
+        "from": "m4b_upload_queue_truth",
+        "to": "m4"
       },
       {
-        "from": "m4_overall_gate",
-        "to": "m5_start_gate"
+        "from": "m4c_lifecycle_retrieval_truth",
+        "to": "m4"
       },
       {
-        "from": "m5_start_gate",
-        "to": "operational_governance_gate"
+        "from": "m4e_backup_restore_truth",
+        "to": "m4"
+      },
+      {
+        "from": "report_truth_preflight",
+        "to": "m4"
+      },
+      {
+        "from": "m5a_start_gate",
+        "to": "m5a"
+      },
+      {
+        "from": "report_integrity_pre_m5a",
+        "to": "m5a"
+      },
+      {
+        "from": "documentation_truth_lint",
+        "to": "m5a"
+      },
+      {
+        "from": "data_quality_report",
+        "to": "m5a"
+      },
+      {
+        "from": "duplicate_detector_gate",
+        "to": "m5a"
+      },
+      {
+        "from": "metadata_detector_gate",
+        "to": "m5a"
+      },
+      {
+        "from": "lifecycle_integrity_gate",
+        "to": "m5a"
+      },
+      {
+        "from": "source_status_integrity_gate",
+        "to": "m5a"
+      },
+      {
+        "from": "orphan_detector_gate",
+        "to": "m5a"
       }
     ]
   },
   "evaluation_rules": {
-    "m3a_gate": [
-      "m3a_frontend_truth.json"
-    ],
-    "m4a_gate": [
-      "m4a_auth_truth.json"
-    ],
-    "m4b_gate": [
-      "m4b_upload_queue_truth.json"
-    ],
-    "m4c_gate": [
-      "m4c_lifecycle_retrieval_truth.json"
-    ],
-    "m4e_gate": [
-      "m4e_backup_restore_truth.json"
-    ],
-    "m4_crosscutting_gate": [
-      "m4_truth_report.json"
-    ],
-    "m4_overall_gate": [
-      "m4_crosscutting_gate",
-      "m4a_gate",
-      "m4b_gate",
-      "m4c_gate",
-      "m4e_gate"
-    ],
-    "m5_start_gate": [
-      "m4_overall_gate"
-    ],
-    "operational_governance_gate": [
-      "m5_start_gate",
-      "governance_truth_report.json"
-    ]
+    "parent_pass_requires_all_mandatory_children_pass": true,
+    "missing_child_report_blocks_parent": true,
+    "invalid_json_blocks_parent": true,
+    "child_pass_status": "PASS",
+    "child_go_decision": "GO",
+    "gate_reports_require_generated_by": true,
+    "counter_reports_require_collected_gt_zero": true,
+    "counter_reports_require_passed_equals_collected": true,
+    "counter_reports_require_failed_errors_skipped_zero": true,
+    "counter_reports_require_exit_code_zero": true,
+    "data_quality_report_requires_status_completed": true,
+    "data_quality_report_min_quality_score": 90
   }
 }

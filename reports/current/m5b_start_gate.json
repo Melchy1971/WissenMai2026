@@ -3,143 +3,81 @@
   "report_name": "m5b_start_gate",
   "gate": "m5b_start_gate",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-02T12:00:00+00:00",
+  "timestamp": "2026-06-03T07:46:45.006964+00:00",
   "environment": "local",
-  "report_type": "gate",
+  "report_type": "start_gate",
+  "phase": "M5b",
+  "scope": "PREPARATION_ONLY",
   "status": "BLOCKED",
   "result": "BLOCKED",
-  "collected": 5,
+  "collected": 4,
   "passed": 3,
   "failed": 1,
-  "blocked": 1,
   "errors": 0,
   "skipped": 0,
   "exit_code": 1,
-  "score": 60.0,
-  "score_threshold": 100.0,
+  "blockers": [
+    {
+      "id": "m5a_gate_pass",
+      "severity": "blocking",
+      "reason": "Prerequisite failed: M5a Gate PASS (BLOCKED/NO_GO)",
+      "source": "reports/current/m5a_data_quality_gate.json"
+    }
+  ],
   "decision": {
     "go_no_go": "NO_GO",
     "result": "NO_GO",
-    "m5b_implementation_start_allowed": false,
-    "reason": "Kriterium C5 (Known Limitations) nicht nachweisbar erfüllt. Kriterium C3 (Reports valide) teilweise geblockt durch report_integrity_pre_m5a."
-  },
-  "preconditions": {
-    "m5a_pass": {
-      "result": true,
-      "source": "reports/current/m5a_data_quality_gate.json",
-      "evidence": "status=PASS, decision=GO, score=100.0, quality_score=94.0",
-      "caveat": "report_integrity_pre_m5a.json BLOCKED — bekanntes Restrisiko R-01. Gate-Widerspruch ungelöst (m5a_start_validation_report.json: FAIL/NO_GO vs. m5a_data_quality_gate.json: PASS/GO)."
-    }
+    "preparation_status": "BLOCKED",
+    "m5b_preparation_allowed": false,
+    "m5b_implementation_allowed": false,
+    "implementation_state": "NOT_IMPLEMENTING",
+    "forbidden_state": "IMPLEMENTING"
   },
   "inputs": {
-    "m5a_data_quality_gate": "reports/current/m5a_data_quality_gate.json",
-    "data_quality_report": "reports/current/data_quality_report.json",
-    "documentation_truth_lint": "reports/current/documentation_truth_lint.json",
-    "report_integrity_pre_m5a": "reports/current/report_integrity_pre_m5a.json",
-    "m5a_completion_report": "reports/current/m5a_completion_report.json",
-    "technical_debt_register": "docs/paket-5-technical-debt-register.md"
+    "m5a_gate": "reports/current/m5a_data_quality_gate.json",
+    "retrieval_baseline": "reports/current/retrieval_quality_baseline_report.json",
+    "drift_architecture": "docs/m5b-drift-architecture.md",
+    "drift_schema": "schemas/drift_schema.json",
+    "documentation_truth_lint": "reports/current/documentation_truth_lint.json"
   },
   "criteria": [
     {
-      "id": "c1",
-      "label": "Data Quality stabil",
-      "passed": true,
-      "source": "reports/current/data_quality_report.json",
-      "evidence": "status=completed, quality_score=94.0 (>= 90.0), alle 5 Detektor-Kategorien auswertbar, Runner idempotent, workspace-isoliert. 4 MISSING_METADATA Findings — ausschließlich warning/info.",
-      "detail": {
-        "status": "completed",
-        "quality_score": 94.0,
-        "total_findings": 4,
-        "duplicate_findings": 0,
-        "lifecycle_findings": 0,
-        "source_status_findings": 0,
-        "orphan_findings": 0,
-        "metadata_findings": 4,
-        "schema_version": 2
-      }
-    },
-    {
-      "id": "c2",
-      "label": "Quality Score verfügbar",
-      "passed": true,
-      "source": "reports/current/data_quality_report.json",
-      "evidence": "quality_score=94.0 im Data Quality Report V2 (schema_version=2) vorhanden. Score-Formel dokumentiert: 100 - sum(weight * min(findings, 10) / 10). API /summary liefert latest_quality_score. Dashboard zeigt Score-Breakdown via dq-score-breakdown.",
-      "detail": {
-        "score": 94.0,
-        "formula_documented": true,
-        "api_endpoint_present": "GET /api/v1/data-quality/summary",
-        "dashboard_widget_present": "dq-score-breakdown"
-      }
-    },
-    {
-      "id": "c3",
-      "label": "Reports valide",
+      "id": "m5a_gate_pass",
+      "label": "M5a Gate PASS",
+      "mandatory": true,
       "passed": false,
-      "blocked": true,
-      "source": "reports/current/documentation_truth_lint.json, reports/current/report_integrity_pre_m5a.json",
-      "evidence": "documentation_truth_lint.json: PASS (126 Dateien, 0 Findings, 0 Errors). ABER: report_integrity_pre_m5a.json: BLOCKED — 2 blockierende Widersprüche (RIPM5A-001: Gesamtgate PASS obwohl Start-Validation FAIL; RIPM5A-002: Slice-PASS ersetzt kein Gesamtgate-PASS). Report-Integrität nicht vollständig herstellbar.",
-      "sub_findings": [
-        {
-          "id": "C3-1",
-          "label": "documentation_truth_lint",
-          "passed": true,
-          "evidence": "PASS, files_scanned=126, total_findings=0"
-        },
-        {
-          "id": "C3-2",
-          "label": "report_integrity_pre_m5a",
-          "passed": false,
-          "severity": "blocking",
-          "evidence": "BLOCKED — RIPM5A-001 + RIPM5A-002. Gate-Widerspruch nicht aufgelöst."
-        }
-      ]
+      "source": "reports/current/m5a_data_quality_gate.json",
+      "evidence": "BLOCKED/NO_GO"
     },
     {
-      "id": "c4",
-      "label": "Dashboard verfügbar",
+      "id": "retrieval_baseline_present",
+      "label": "Retrieval Baseline vorhanden",
+      "mandatory": true,
       "passed": true,
-      "source": "frontend/src/features/data-quality/DataQualityDashboard.jsx",
-      "evidence": "DataQualityDashboard.jsx vorhanden. 9 Widgets mit data-testid implementiert. Filterung nach Severity und Finding-Typ. Paginierung. Score-Labels (Exzellent/Gut/Mäßig/Kritisch). DataQualityPage.jsx als Route vorhanden.",
-      "detail": {
-        "file": "frontend/src/features/data-quality/DataQualityDashboard.jsx",
-        "widgets_count": 9,
-        "filters": ["severity", "finding_type"],
-        "pagination": true,
-        "data_testid_present": true
-      }
+      "source": "reports/current/retrieval_quality_baseline_report.json",
+      "evidence": "status=WARN"
     },
     {
-      "id": "c5",
-      "label": "Known Limitations aktualisiert",
-      "passed": false,
-      "source": null,
-      "evidence": "Kein dediziertes Known-Limitations-Dokument für M5a gefunden (kein docs/known-limitations.md oder äquivalent). Residual-Risks sind in m5a_completion_report.json (R-01 bis R-05) dokumentiert. Technisches Schuldenregister (paket-5-technical-debt-register.md) enthält M5a-relevante Punkte (TD-P5-001, TD-P5-008), aber ohne explizite M5a-Aktualisierung. Formale Aktualisierung der Known Limitations für M5a fehlt.",
-      "required_action": "Known Limitations für M5a explizit aktualisieren: OrphanChunkDetector/EmptyChunkDetector Skeletons, UniqueConstraint vs. Detector Design-Point, Gate-Widerspruch R-01. Entweder docs/known-limitations.md anlegen oder technisches Schuldenregister um M5a-Einträge ergänzen."
-    }
-  ],
-  "blockers": [
-    {
-      "id": "B-M5B-001",
-      "criterion": "c5",
-      "severity": "blocking",
-      "reason": "Known Limitations für M5a nicht aktualisiert. Kein dediziertes Dokument nachweisbar. M5b-Start setzt voraus, dass Scope und bekannte Einschränkungen des Vorgänger-Milestones explizit dokumentiert sind."
+      "id": "drift_architecture_present",
+      "label": "Drift Architektur vorhanden",
+      "mandatory": true,
+      "passed": true,
+      "source": "docs/m5b-drift-architecture.md, schemas/drift_schema.json",
+      "evidence": "architecture_and_schema_present"
     },
     {
-      "id": "B-M5B-002",
-      "criterion": "c3",
-      "severity": "blocking",
-      "reason": "report_integrity_pre_m5a.json BLOCKED. Widerspruch RIPM5A-001/RIPM5A-002 nicht aufgelöst. Gate-Integrität für M5a ist nicht vollständig hergestellt.",
-      "caveat": "documentation_truth_lint ist PASS. Blocker stammt ausschließlich aus dem Gate-Widerspruch in report_integrity_pre_m5a."
+      "id": "documentation_current",
+      "label": "Doku aktuell",
+      "mandatory": true,
+      "passed": true,
+      "source": "reports/current/documentation_truth_lint.json",
+      "evidence": "PASS/errors=0"
     }
-  ],
-  "required_actions_before_m5b": [
-    "C5: Known Limitations für M5a formalisieren — Skeletons (OrphanChunkDetector, EmptyChunkDetector), UniqueConstraint-Design-Point, Gate-Widerspruch R-01 als Einträge in docs/known-limitations.md oder paket-5-technical-debt-register.md.",
-    "C3/R-01: Gate-Widerspruch auflösen: m5a_start_validation_report.json (FAIL/NO_GO) vs. m5a_data_quality_gate.json (PASS/GO). Entweder Gate-Logik korrigieren (Start-Validation-Blocker muss Gesamtgate blockieren) oder Widerspruch als akzeptiertes Risiko mit Begründung dokumentieren und report_integrity_pre_m5a neu generieren."
   ],
   "summary": {
-    "rule": "M5b-Start erfordert M5a PASS und alle 5 Kriterien PASS. C1, C2, C4 erfüllt. C3 teilgeblockt (report_integrity). C5 nicht nachweisbar erfüllt.",
-    "m5a_precondition_met": true,
-    "m5a_precondition_caveat": "report_integrity_pre_m5a BLOCKED — Widerspruch ungelöst",
-    "overall_m5b_start_allowed": false
+    "rule": "M5b Start Gate can be PREPARED only when M5a Gate is PASS, retrieval baseline exists, drift architecture exists, and documentation truth lint is PASS. Implementation remains forbidden.",
+    "requested_status": "PREPARED",
+    "actual_status": "BLOCKED",
+    "not_implementing": true
   }
 }

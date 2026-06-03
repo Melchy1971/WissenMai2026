@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "drift_report_v1",
+  "title": "M5b Drift Report Schema V1",
+  "description": "Schema fuer den M5b Drift Detection Report. Read-only, workspace-scoped.",
+  "type": "object",
+  "required": [
+    "report_schema_version",
+    "report_name",
+    "generated_at",
+    "run_id",
+    "workspace_id",
+    "status",
+    "drift_categories",
+    "total_findings",
+    "findings_by_category",
+    "findings_by_severity",
+    "drift_rate_percent",
+    "quality_score",
+    "findings"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "report_schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema-Version dieses Reports. Wird bei inkompatiblen Aenderungen erhoeht."
+    },
+    "report_name": {
+      "type": "string",
+      "const": "drift_report"
+    },
+    "generated_by": {
+      "type": "string",
+      "description": "Name des Scripts oder Services, das den Report erzeugt hat."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "workspace_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["completed", "failed", "not_run"],
+      "description": "completed: Lauf erfolgreich abgeschlossen. failed: Lauf mit Fehler abgebrochen. not_run: Noch nicht ausgefuehrt."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "drift_categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["document", "metadata", "lifecycle", "source_status", "retrieval"]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Welche Drift-Kategorien in diesem Lauf geprueft wurden."
+    },
+    "total_findings": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "findings_by_category": {
+      "type": "object",
+      "required": [
+        "document_drift",
+        "metadata_drift",
+        "lifecycle_drift",
+        "source_status_drift",
+        "retrieval_drift"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "document_drift":      { "type": "integer", "minimum": 0 },
+        "metadata_drift":      { "type": "integer", "minimum": 0 },
+        "lifecycle_drift":     { "type": "integer", "minimum": 0 },
+        "source_status_drift": { "type": "integer", "minimum": 0 },
+        "retrieval_drift":     { "type": "integer", "minimum": 0 }
+      }
+    },
+    "findings_by_severity": {
+      "type": "object",
+      "required": ["error", "warning", "info"],
+      "additionalProperties": false,
+      "properties": {
+        "error":   { "type": "integer", "minimum": 0 },
+        "warning": { "type": "integer", "minimum": 0 },
+        "info":    { "type": "integer", "minimum": 0 }
+      }
+    },
+    "drift_rate_percent": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 100.0,
+      "description": "Anteil betroffener aktiver Dokumente mit mindestens einem error-Finding in Prozent."
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 100.0,
+      "description": "Berechneter Quality Score nach Drift-Gewichtungsformel."
+    },
+    "score_explanation": {
+      "type": "object",
+      "description": "Aufschlueselung der Score-Berechnung nach Kategorie.",
+      "properties": {
+        "formula": { "type": "string" },
+        "category_weights_percent": {
+          "type": "object",
+          "properties": {
+            "duplicate":      { "type": "integer" },
+            "metadata":       { "type": "integer" },
+            "lifecycle":      { "type": "integer" },
+            "source_status":  { "type": "integer" },
+            "orphan":         { "type": "integer" },
+            "drift":          { "type": "integer" }
+          }
+        },
+        "total_penalty_points": { "type": "number" }
+      }
+    },
+    "baseline_comparison": {
+      "type": "object",
+      "required": ["available"],
+      "properties": {
+        "available": {
+          "type": "boolean",
+          "description": "true wenn ein Baseline-Report fuer den Vergleich vorliegt."
+        },
+        "baseline_run_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "baseline_score": {
+          "type": ["number", "null"],
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "current_score": {
+          "type": ["number", "null"]
+        },
+        "score_delta": {
+          "type": ["number", "null"],
+          "description": "current_score - baseline_score. Negativ = Regression."
+        },
+        "regression_threshold_percent": {
+          "type": ["number", "null"],
+          "description": "Konfigurierter Threshold fuer Score-Regression (Default: -10)."
+        },
+        "regression_detected": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "retrieval_stats": {
+      "type": "object",
+      "description": "Statistik fuer Retrieval-Drift-Pruefung.",
+      "properties": {
+        "db_chunk_count":    { "type": "integer", "minimum": 0 },
+        "index_chunk_count": { "type": ["integer", "null"], "minimum": 0 },
+        "count_discrepancy_percent": { "type": ["number", "null"] },
+        "stale_index_entries":   { "type": "integer", "minimum": 0 },
+        "missing_index_entries": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/DriftFinding" }
+    }
+  },
+
+  "$defs": {
+    "DriftFinding": {
+      "type": "object",
+      "required": ["finding_type", "severity", "drift_category", "title", "description", "remediation"],
+      "additionalProperties": false,
+      "properties": {
+        "finding_type": {
+          "type": "string",
+          "enum": [
+            "DOCUMENT_DRIFT",
+            "METADATA_DRIFT",
+            "LIFECYCLE_DRIFT",
+            "SOURCE_STATUS_DRIFT",
+            "RETRIEVAL_DRIFT"
+          ]
+        },
+        "drift_category": {
+          "type": "string",
+          "enum": ["document", "metadata", "lifecycle", "source_status", "retrieval"]
+        },
+        "drift_subtype": {
+          "type": "string",
+          "enum": [
+            "version_reference_broken",
+            "no_chunks",
+            "hash_mismatch",
+            "import_status_inconsistent",
+            "metadata_regression",
+            "jsonb_key_loss",
+            "timestamp_drift",
+            "invalid_status_value",
+            "invalid_status_combination",
+            "index_inconsistency",
+            "missing_audit_trail",
+            "source_status_stale",
+            "document_deleted_citation_active",
+            "document_missing_not_flagged",
+            "stale_index_entry",
+            "missing_index_entry",
+            "count_discrepancy",
+            "quality_regression"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"]
+        },
+        "document_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "version_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "chunk_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "citation_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "remediation": {
+          "type": "string",
+          "description": "Handlungsempfehlung. Kein automatisches Repair.",
+          "minLength": 1
+        },
+        "affected_fields": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "description": "Betroffene Metadaten-Felder bei METADATA_DRIFT."
+        },
+        "current_lifecycle_status": {
+          "type": ["string", "null"]
+        },
+        "current_source_status": {
+          "type": ["string", "null"]
+        },
+        "index_count": {
+          "type": ["integer", "null"]
+        },
+        "db_count": {
+          "type": ["integer", "null"]
+        },
+        "discrepancy_percent": {
+          "type": ["number", "null"]
+        },
+        "baseline_score": {
+          "type": ["number", "null"]
+        },
+        "current_score": {
+          "type": ["number", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+
+  "examples": [
+    {
+      "report_schema_version": 1,
+      "report_name": "drift_report",
+      "generated_by": "drift_runner",
+      "generated_at": "2026-06-02T14:00:00+00:00",
+      "run_id": "11111111-0000-0000-0000-000000000001",
+      "workspace_id": "00000000-0000-0000-0000-000000000001",
+      "status": "completed",
+      "started_at": "2026-06-02T14:00:00+00:00",
+      "finished_at": "2026-06-02T14:00:01+00:00",
+      "drift_categories": ["document", "metadata", "lifecycle", "source_status", "retrieval"],
+      "total_findings": 0,
+      "findings_by_category": {
+        "document_drift": 0,
+        "metadata_drift": 0,
+        "lifecycle_drift": 0,
+        "source_status_drift": 0,
+        "retrieval_drift": 0
+      },
+      "findings_by_severity": { "error": 0, "warning": 0, "info": 0 },
+      "drift_rate_percent": 0.0,
+      "quality_score": 100.0,
+      "baseline_comparison": { "available": false, "previous_score": null, "score_delta": null },
+      "findings": []
+    }
+  ]
+}

@@ -3,13 +3,13 @@
   "report_name": "report_integrity_pre_m5a",
   "gate": "report_integrity_pre_m5a",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-01T12:15:00+00:00",
+  "timestamp": "2026-06-03T08:40:00+00:00",
   "environment": "local",
   "report_type": "gate",
   "status": "BLOCKED",
   "result": "BLOCKED",
-  "collected": 8,
-  "passed": 6,
+  "collected": 6,
+  "passed": 4,
   "failed": 2,
   "errors": 0,
   "skipped": 0,
@@ -22,94 +22,140 @@
   },
   "criteria": [
     {
-      "id": "operations_selftest_report_valid_json",
-      "label": "operations_selftest_report.json gueltig",
-      "passed": true,
-      "source": "reports/current/operations_selftest_report.json",
-      "evidence": "valid JSON"
-    },
-    {
-      "id": "reindex_recovery_report_valid_json",
-      "label": "reindex_recovery_report.json gueltig",
-      "passed": true,
-      "source": "reports/current/reindex_recovery_report.json",
-      "evidence": "valid JSON"
-    },
-    {
-      "id": "data_quality_report_valid_json",
-      "label": "data_quality_report.json gueltig",
-      "passed": true,
-      "source": "reports/current/data_quality_report.json",
-      "evidence": "valid JSON"
-    },
-    {
-      "id": "data_quality_not_not_run",
-      "label": "data_quality_report ist nicht NOT_RUN",
-      "passed": true,
-      "source": "reports/current/data_quality_report.json",
-      "evidence": "status=completed"
-    },
-    {
-      "id": "m5a_start_validation_report_valid_json",
-      "label": "m5a_start_validation_report.json gueltig",
-      "passed": true,
-      "source": "reports/current/m5a_start_validation_report.json",
-      "evidence": "valid JSON"
-    },
-    {
       "id": "reports_current_json_valid",
-      "label": "Alle geprueften Reports sind syntaktisch valides JSON",
+      "label": "Alle reports/current/*.json sind gueltiges JSON",
       "passed": true,
-      "source": "reports/current/operations_selftest_report.json, reports/current/reindex_recovery_report.json, reports/current/data_quality_report.json, reports/current/m5a_start_validation_report.json, reports/current/m5a_data_quality_gate.json",
-      "evidence": "5/5 valid JSON"
+      "source": "reports/current/*.json",
+      "evidence": "45/45 valid JSON, 0 invalid, 0 empty"
     },
     {
-      "id": "no_start_validation_vs_total_gate_contradiction",
-      "label": "Kein Widerspruch: Start-Validation FAIL vs Gesamtgate PASS",
-      "passed": false,
-      "source": "reports/current/m5a_start_validation_report.json, reports/current/m5a_data_quality_gate.json",
-      "evidence": "start_validation=FAIL/NO_GO, total_gate=PASS/GO"
+      "id": "no_empty_reports",
+      "label": "Keine leeren Reports in reports/current",
+      "passed": true,
+      "source": "reports/current/*.json",
+      "evidence": "0 empty reports"
     },
     {
-      "id": "slice_pass_not_equivalent_total_pass",
-      "label": "Slice-PASS ersetzt kein Gesamtgate-PASS",
+      "id": "no_contradictory_gate_status",
+      "label": "Keine Widersprueche zwischen status/result und decision.go_no_go",
+      "passed": true,
+      "source": "reports/current/*.json",
+      "evidence": "Der alte Widerspruch m5a_data_quality_gate PASS/GO vs m5a_start_validation_report FAIL/NO_GO ist aufgeloest; m5a_data_quality_gate ist aktuell BLOCKED/NO_GO."
+    },
+    {
+      "id": "no_invalid_optional_reports",
+      "label": "Optionale Reports sind entweder gueltig oder als BLOCKED valide",
+      "passed": true,
+      "source": "reports/current/*.json",
+      "evidence": "Keine invaliden oder leeren optionalen JSON-Reports gefunden."
+    },
+    {
+      "id": "all_active_reports_have_generated_by",
+      "label": "Aktive Reports setzen generated_by",
       "passed": false,
-      "source": "reports/current/m5a_data_quality_gate.json",
-      "evidence": "Gesamtgate darf bei vorhandenem Start-Validation-Blocker nicht PASS sein"
+      "source": "reports/current/cleanup_log.json, reports/current/known_limitations.json",
+      "evidence": "2/45 JSON-Dateien ohne generated_by"
+    },
+    {
+      "id": "no_stale_pass_reports",
+      "label": "Keine stale PASS-Reports in reports/current",
+      "passed": false,
+      "source": "reports/current/frontend_truth_minimal_report.json, reports/current/regression_lock_result.json",
+      "evidence": "2 stale PASS-Reports aelter als 168 Stunden"
     }
   ],
   "invalid_reports": [],
   "findings": [
     {
-      "id": "RIPM5A-001",
+      "id": "RIPM5A-003",
       "severity": "blocking",
-      "rule": "contradictory_gate_state",
-      "file": "reports/current/m5a_data_quality_gate.json",
-      "detail": "m5a_data_quality_gate.json ist PASS/GO, obwohl m5a_start_validation_report.json FAIL/NO_GO meldet."
+      "rule": "missing_generated_by",
+      "file": "reports/current/cleanup_log.json",
+      "fehlerart": "missing generated_by",
+      "ursache": "cleanup_log.json ist ein aktiver JSON-Report in reports/current, enthaelt aber kein generated_by-Feld.",
+      "fix": "Report mit generated_by neu erzeugen oder als Legacy-/Archivlog aus reports/current nach reports/archive verschieben, wenn er nicht als aktiver Gate-Input dienen soll."
+    },
+    {
+      "id": "RIPM5A-004",
+      "severity": "blocking",
+      "rule": "missing_generated_by",
+      "file": "reports/current/known_limitations.json",
+      "fehlerart": "missing generated_by",
+      "ursache": "known_limitations.json ist ein aktiver JSON-Report in reports/current, enthaelt aber kein generated_by-Feld.",
+      "fix": "Report mit generated_by neu erzeugen oder als dokumentarischen Input aus der aktiven Reportquelle entfernen."
+    },
+    {
+      "id": "RIPM5A-005",
+      "severity": "blocking",
+      "rule": "stale_pass_report",
+      "file": "reports/current/frontend_truth_minimal_report.json",
+      "fehlerart": "stale report",
+      "ursache": "Report meldet PASS mit Timestamp 2026-05-27T07:18:41.864548+00:00 und ist damit aelter als die 168h-Stale-Grenze.",
+      "fix": "Minimal-Frontend-Truth neu ausfuehren, Report archivieren, oder den optionalen Report als validen BLOCKED-Report mit Grund stale_previous_report neu schreiben."
+    },
+    {
+      "id": "RIPM5A-006",
+      "severity": "blocking",
+      "rule": "stale_pass_report",
+      "file": "reports/current/regression_lock_result.json",
+      "fehlerart": "stale report",
+      "ursache": "Report meldet PASS mit Timestamp 2026-05-27T08:32:33.631035+00:00 und ist damit aelter als die 168h-Stale-Grenze.",
+      "fix": "Regression-Lock neu ausfuehren, Report archivieren, oder den optionalen Report als validen BLOCKED-Report mit Grund stale_previous_report neu schreiben."
+    }
+  ],
+  "fixed_previous_blockers": [
+    {
+      "id": "RIPM5A-001",
+      "previous_rule": "contradictory_gate_state",
+      "previous_file": "reports/current/m5a_data_quality_gate.json",
+      "resolution": "m5a_data_quality_gate.json meldet aktuell BLOCKED/NO_GO statt PASS/GO."
     },
     {
       "id": "RIPM5A-002",
-      "severity": "blocking",
-      "rule": "slice_vs_total_gate_equivalence_forbidden",
-      "file": "reports/current/m5a_data_quality_gate.json",
-      "detail": "Slice-Erfuellung darf Gesamtgate nicht automatisch auf PASS setzen; bestehende Blocker muessen Gesamtgate blockieren."
+      "previous_rule": "slice_vs_total_gate_equivalence_forbidden",
+      "previous_file": "reports/current/m5a_data_quality_gate.json",
+      "resolution": "Slice-PASS setzt das Gesamtgate nicht mehr auf PASS; Parent-Gate-Validation blockiert korrekt."
     }
   ],
   "summary": {
-    "reports_checked": 6,
-    "reports_valid_json": 6,
+    "reports_checked": 45,
+    "reports_valid_json": 45,
     "invalid_reports_count": 0,
     "empty_reports_count": 0,
     "not_run_reports_count": 0,
-    "contradictions_count": 2,
-    "decision_reason": "No invalid/empty JSON, but contradictory gate state detected; M5a overall must be blocked."
+    "missing_generated_by_count": 2,
+    "stale_pass_reports_count": 2,
+    "contradictions_count": 0,
+    "decision_reason": "No invalid or empty JSON and no current gate-status contradiction. Gate remains BLOCKED because active reports still contain missing generated_by and stale PASS artifacts."
   },
-  "blocker": "contradictory_gate_state",
   "blockers": [
     {
-      "id": "contradictory_gate_state",
+      "id": "missing_generated_by_cleanup_log",
       "severity": "blocking",
-      "reason": "M5a Gesamtgate widerspricht m5a_start_validation_report und ist daher nicht vertrauenswuerdig."
+      "file": "reports/current/cleanup_log.json",
+      "fehlerart": "missing generated_by",
+      "reason": "cleanup_log.json has no generated_by field."
+    },
+    {
+      "id": "missing_generated_by_known_limitations",
+      "severity": "blocking",
+      "file": "reports/current/known_limitations.json",
+      "fehlerart": "missing generated_by",
+      "reason": "known_limitations.json has no generated_by field."
+    },
+    {
+      "id": "stale_pass_frontend_truth_minimal_report",
+      "severity": "blocking",
+      "file": "reports/current/frontend_truth_minimal_report.json",
+      "fehlerart": "stale report",
+      "reason": "frontend_truth_minimal_report.json is a stale PASS report older than 168 hours."
+    },
+    {
+      "id": "stale_pass_regression_lock_result",
+      "severity": "blocking",
+      "file": "reports/current/regression_lock_result.json",
+      "fehlerart": "stale report",
+      "reason": "regression_lock_result.json is a stale PASS report older than 168 hours."
     }
   ]
 }

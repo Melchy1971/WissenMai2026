@@ -1,0 +1,145 @@
+{
+  "report_schema_version": 1,
+  "report_name": "retrieval_quality_baseline_report",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-03T07:45:04.833852+00:00",
+  "workspace_id": "00000000-0000-0000-0000-000000000001",
+  "status": "WARN",
+  "result": "WARN",
+  "report_type": "baseline_validation",
+  "scope": "read_only_current_m5a_data",
+  "inputs": {
+    "data_quality_report": "reports/current/data_quality_report.json",
+    "m5a_data_quality_gate": "reports/current/m5a_data_quality_gate.json",
+    "retrieval_quality_baseline": "docs/retrieval-quality-baseline.md",
+    "m5_retrieval_quality_baseline": "docs/m5-retrieval-quality-baseline.md"
+  },
+  "m5a_snapshot": {
+    "data_quality_run_id": "281ce12d-c62e-4d32-99b3-7fd4a4e54dce",
+    "data_quality_status": "completed",
+    "m5a_gate_status": "BLOCKED",
+    "m5a_gate_decision": "NO_GO",
+    "total_documents": 1,
+    "duplicate_findings": 0,
+    "metadata_findings": 4,
+    "lifecycle_findings": 0,
+    "source_status_findings": 0,
+    "orphan_findings": 0,
+    "quality_score": 94.0
+  },
+  "current_workspace_counts": {
+    "total_documents": 1,
+    "active_documents": 1,
+    "total_chunks": 5,
+    "eligible_retrieval_chunks": 5,
+    "citation_total": 0
+  },
+  "metrics": {
+    "citation_accuracy": {
+      "status": "NOT_MEASURED",
+      "value": null,
+      "numerator": 0,
+      "denominator": 0,
+      "target": ">= 0.98",
+      "warning_threshold": "< 0.95",
+      "gate_threshold": "< 0.90",
+      "method": "Proxy validation: citation has document, valid optional chunk, non-empty snapshot fields, and source_anchor. Golden offset accuracy is not measured.",
+      "source": "chat_citations joined through chat_messages/chat_sessions plus documents/document_chunks"
+    },
+    "lifecycle_compliance": {
+      "status": "PASS",
+      "value": 1.0,
+      "violations": 0,
+      "denominator": 5,
+      "target": "1.0",
+      "warning_threshold": "< 0.99",
+      "gate_threshold": "< 0.98",
+      "method": "Read-only DB check: archived/deleted chunks must not be searchable; active parsed/chunked chunks should be searchable.",
+      "source": "documents + document_chunks and M5a lifecycle/source status findings"
+    },
+    "source_status_accuracy": {
+      "status": "NOT_MEASURED",
+      "value": null,
+      "numerator": 0,
+      "denominator": 0,
+      "target": "1.0",
+      "warning_threshold": "< 0.99",
+      "gate_threshold": "< 0.98",
+      "method": "Read-only citation source_status compared to current document lifecycle_status; missing document expects source_status=missing.",
+      "source": "chat_citations + documents and M5a source_status_findings"
+    },
+    "duplicate_retrieval_rate": {
+      "status": "PASS",
+      "value": 0.0,
+      "duplicate_active_documents": 0,
+      "denominator": 1,
+      "target": "0.0",
+      "warning_threshold": "> 0.001",
+      "gate_threshold": "> 0.005",
+      "method": "Proxy validation from active document content_hash duplicates and current M5a duplicate_findings. Query-result duplicate rate is not measured.",
+      "source": "documents.content_hash and reports/current/data_quality_report.json"
+    },
+    "empty_retrieval_rate": {
+      "status": "PASS",
+      "value": 0.0,
+      "empty_searchable_chunks": 0,
+      "denominator": 5,
+      "target": "0.0",
+      "warning_threshold": "> 0.001",
+      "gate_threshold": "> 0.005",
+      "method": "Read-only DB check for active searchable chunks with empty content plus M5a EMPTY_CHUNK findings.",
+      "source": "documents + document_chunks and reports/current/data_quality_report.json"
+    }
+  },
+  "known_risks": [
+    {
+      "id": "no_current_citations",
+      "severity": "warning",
+      "risk": "Citation Accuracy and Source Status Accuracy have no runtime denominator in the current workspace.",
+      "impact": "Metrics are structurally defined but not empirically validated against live citations.",
+      "m5b_input": "M5b must require a golden citation fixture or benchmark workspace before treating citation metrics as release-grade."
+    },
+    {
+      "id": "golden_dataset_not_replayed",
+      "severity": "warning",
+      "risk": "This validation used current M5a data and read-only DB state; it did not replay the m5-retrieval-golden-v1 benchmark.",
+      "impact": "Precision/Recall/MRR and true query-result duplicate rate remain outside this report.",
+      "m5b_input": "M5b Retrieval Drift must run the golden-query benchmark as a separate gate input."
+    },
+    {
+      "id": "citation_offset_accuracy_proxy_only",
+      "severity": "warning",
+      "risk": "Citation Accuracy is proxy-validated via IDs and snapshots; exact source offsets are not compared against a golden dataset.",
+      "impact": "Wrong paragraph/page offsets could remain undetected until golden citation assertions exist.",
+      "m5b_input": "Add golden citation anchors with expected document_id, chunk_id, source_anchor, and quote window."
+    },
+    {
+      "id": "metadata_findings_present",
+      "severity": "info",
+      "risk": "Current M5a report has 4 metadata findings.",
+      "impact": "Metadata gaps do not directly fail retrieval baseline metrics here, but can degrade filtering, source labeling, and future retrieval scoring.",
+      "m5b_input": "Metadata Drift should track whether missing fields regress further or affect retrieval filters."
+    }
+  ],
+  "m5b_input": {
+    "baseline_validation_status": "WARN",
+    "m5a_data_quality_report": "reports/current/data_quality_report.json",
+    "m5a_gate_report": "reports/current/m5a_data_quality_gate.json",
+    "retrieval_quality_baseline": "docs/retrieval-quality-baseline.md",
+    "drift_architecture": "docs/m5b-drift-architecture.md",
+    "required_m5b_followups": [
+      "Run m5-retrieval-golden-v1 benchmark before M5b gate approval.",
+      "Add golden citation anchors for exact citation accuracy.",
+      "Promote lifecycle_compliance and source_status_accuracy to hard M5b drift inputs.",
+      "Track duplicate_retrieval_rate from actual query result sets, not only document hashes.",
+      "Keep empty_retrieval_rate as a read-only DB and retrieval-result check."
+    ]
+  },
+  "decision": {
+    "go_no_go": "NO_GO",
+    "result": "NO_GO",
+    "baseline_release_grade": false,
+    "m5b_architecture_input_ready": true,
+    "requires_golden_retrieval_benchmark": true
+  }
+}

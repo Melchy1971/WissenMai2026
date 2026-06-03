@@ -2,11 +2,11 @@
   "report_schema_version": 1,
   "report_name": "documentation_truth_lint",
   "generated_by": "documentation_truth_linter",
-  "timestamp": "2026-06-01T12:02:30.102862+00:00",
+  "timestamp": "2026-06-03T08:09:40.393205+00:00",
   "result": "PASS",
   "status": "PASS",
   "summary": {
-    "files_scanned": 126,
+    "files_scanned": 128,
     "total_findings": 0,
     "errors": 0,
     "warnings": 0,

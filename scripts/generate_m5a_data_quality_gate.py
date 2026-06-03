@@ -5,6 +5,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+try:
+    from scripts.parent_gate_validator import validate_parent_gate
+except ModuleNotFoundError:
+    from parent_gate_validator import validate_parent_gate
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CURRENT_DIR = REPO_ROOT / "reports" / "current"
@@ -19,6 +24,7 @@ REPORT_INTEGRITY = "report_integrity_pre_m5a.json"
 
 OUTPUT_GATE = "m5a_data_quality_gate.json"
 SCORE_THRESHOLD = 90.0
+PARENT_GATE_MAX_REPORT_AGE_HOURS = 168
 
 SOURCE_STATUS_DETECTOR = REPO_ROOT / "backend" / "app" / "services" / "source_status_integrity_detector.py"
 ORPHAN_DETECTOR = REPO_ROOT / "backend" / "app" / "services" / "orphan_detector.py"
@@ -161,6 +167,13 @@ def _data_quality_report_state(report: dict[str, Any] | None) -> tuple[str, bool
 
 def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -> dict[str, Any]:
     now = timestamp or datetime.now(UTC).isoformat()
+    parent_validation = validate_parent_gate(
+        "m5a",
+        report_dir=current_dir,
+        timestamp=now,
+        max_report_age_hours=PARENT_GATE_MAX_REPORT_AGE_HOURS,
+    )
+    parent_validation_pass = parent_validation["status"] == "PASS"
 
     start_gate, start_gate_error = _load_json(current_dir / START_GATE)
     duplicate_gate, duplicate_gate_error = _load_json(current_dir / DUPLICATE_GATE)
@@ -230,7 +243,44 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
             "reason": "M5a Data Quality report is present but not a completed full run.",
         })
 
+    # ---------------------------------------------------------------------------
+    # Mandatory precondition gates — failure sets status=BLOCKED, not FAIL.
+    # These must appear in criteria so their pass/fail state drives the result.
+    # ---------------------------------------------------------------------------
+    MANDATORY_GATE_IDS = frozenset({
+        "m5a_start_gate_pass",
+        "documentation_truth_lint_pass",
+        "report_integrity_pre_m5a_pass",
+        "parent_gate_validation_pass",
+    })
+
     criteria: list[dict[str, Any]] = [
+        # --- Mandatory precondition gates ---
+        {
+            "id": "m5a_start_gate_pass",
+            "label": "M5a Start Gate",
+            "mandatory": True,
+            "passed": start_pass,
+            "source": f"reports/current/{START_GATE}",
+            "evidence": str((start_gate or {}).get("status") or "MISSING"),
+        },
+        {
+            "id": "documentation_truth_lint_pass",
+            "label": "Documentation Truth Lint",
+            "mandatory": True,
+            "passed": doc_lint_pass,
+            "source": f"reports/current/{DOC_TRUTH_LINT}",
+            "evidence": "PASS" if doc_lint_pass else str((doc_lint or {}).get("status") or "MISSING"),
+        },
+        {
+            "id": "report_integrity_pre_m5a_pass",
+            "label": "Report Integrity Pre-M5a",
+            "mandatory": True,
+            "passed": report_integrity_pass,
+            "source": f"reports/current/{REPORT_INTEGRITY}",
+            "evidence": str((report_integrity or {}).get("status") or "MISSING"),
+        },
+        # --- Slice and implementation criteria ---
         {
             "id": "duplicate_detector_pass",
             "label": "Duplicate Detector",
@@ -294,6 +344,14 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
             "source": f"reports/current/{DATA_QUALITY_REPORT}",
             "evidence": f"{dq_state}, schema_version={(dq_report or {}).get('report_schema_version')}",
         },
+        {
+            "id": "parent_gate_validation_pass",
+            "label": "Parent Gate Validator",
+            "mandatory": True,
+            "passed": parent_validation_pass,
+            "source": "docs/gate_hierarchy.json",
+            "evidence": parent_validation["status"],
+        },
     ]
 
     passed = sum(1 for item in criteria if item["passed"])
@@ -306,8 +364,19 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
                 "reason": f"{item['label']} criterion failed: {item['evidence']}",
                 "source": item["source"],
             })
+    for parent_blocker in parent_validation["blockers"]:
+        blockers.append({
+            "id": f"parent_child_{parent_blocker['child_gate_id']}",
+            "child_gate_id": parent_blocker["child_gate_id"],
+            "severity": "blocking",
+            "reason": parent_blocker["reason"],
+            "source": "docs/gate_hierarchy.json",
+        })
 
-    status = "PASS" if failed == 0 and not blockers else "FAIL"
+    # Mandatory gate failure → BLOCKED (precondition unmet, gate cannot be PASS).
+    # Any other criterion failure → FAIL.
+    # All criteria pass and no load-time blockers → PASS.
+    status = parent_validation["status"]
     go_no_go = "GO" if status == "PASS" else "NO_GO"
 
     return {
@@ -344,6 +413,7 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
             "no_invalid_json_reports": no_invalid_json,
             "documentation_truth_lint_pass": doc_lint_pass,
             "report_integrity_pre_m5a_pass": report_integrity_pass,
+            "parent_gate_validation_pass": parent_validation_pass,
         },
         "inputs": {
             "start_gate": f"reports/current/{START_GATE}",
@@ -353,10 +423,21 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
             "data_quality_report": f"reports/current/{DATA_QUALITY_REPORT}",
             "documentation_truth_lint": f"reports/current/{DOC_TRUTH_LINT}",
             "report_integrity_pre_m5a": f"reports/current/{REPORT_INTEGRITY}",
+            "gate_hierarchy": "docs/gate_hierarchy.json",
         },
         "criteria": criteria,
+        "parent_gate_validation": parent_validation,
+        "gate_decision_trace": parent_validation["gate_decision_trace"],
         "summary": {
-            "rule": "PASS requires all nine M5a Data Quality criteria, Data Quality Report V2 completed, and quality_score >= 90.",
+            "rule": (
+                "M5a Data Quality Gate status is derived from mandatory child gates in "
+                "docs/gate_hierarchy.json. "
+                "must each be PASS — any failure sets status=BLOCKED. "
+                "Child FAIL sets parent FAIL. All children PASS sets parent PASS."
+            ),
+            "mandatory_gate_ids": sorted(MANDATORY_GATE_IDS),
+            "parent_gate_id": "m5a",
+            "parent_gate_validation_required": True,
             "overall_m5a_data_quality_pass": status == "PASS",
         },
     }

@@ -20,6 +20,9 @@ def _green_report(marker: str, collected: int = 1) -> dict:
         "report_format_version": 1,
         "marker": marker,
         "timestamp": "2026-05-20T08:00:00+00:00",
+        "generated_by": "gate_validator",
+        "status": "PASS",
+        "result": "PASS",
         "collected": collected,
         "passed": collected,
         "failed": 0,
@@ -28,6 +31,37 @@ def _green_report(marker: str, collected: int = 1) -> dict:
         "exit_code": 0,
         "test_database_url_set": True,
         "failed_tests": [],
+        "blockers": [],
+    }
+
+
+def _go_gate(marker: str, collected: int = 1) -> dict:
+    return {
+        **_green_report(marker, collected=collected),
+        "decision": {
+            "go_no_go": "GO",
+            "result": "GO",
+        },
+    }
+
+
+def _data_quality_report(score: float = 94.0) -> dict:
+    return {
+        "report_schema_version": 2,
+        "report_name": "data_quality_report",
+        "generated_by": "run_data_quality_cli",
+        "timestamp": "2026-05-20T08:00:00+00:00",
+        "status": "completed",
+        "quality_score": score,
+        "total_documents": 1,
+        "duplicate_findings": 0,
+        "metadata_findings": 0,
+        "lifecycle_findings": 0,
+        "source_status_findings": 0,
+        "orphan_findings": 0,
+        "findings_by_severity": {},
+        "findings_by_type": {},
+        "blockers": [],
     }
 
 
@@ -37,21 +71,39 @@ def _write_report(report_dir: Path, filename: str, payload: dict) -> None:
 
 
 def _write_all_green_reports(report_dir: Path) -> None:
-    marker_by_report = {
-        "m3a_frontend_truth.json": "m3a_frontend_truth",
-        "m3a_truth_report.json": "m3a_truth",
-        "m4_truth_report.json": "m4_truth",
-        "m4a_auth_truth.json": "m4a_auth_truth",
-        "m4b_upload_queue_truth.json": "m4b_upload_queue_truth",
-        "m4c_lifecycle_retrieval_truth.json": "m4c_lifecycle_retrieval_truth",
-        "m4e_backup_restore_truth.json": "m4e_backup_restore_truth",
-        "governance_truth_report.json": "governance_truth",
+    reports = {
+        "runtime_connectivity_gate.json": _green_report("runtime_connectivity_gate", collected=9),
+        "frontend_full_suite_staged_report.json": _green_report("frontend_full_suite_staged", collected=132),
+        "documentation_truth_lint.json": {
+            "report_schema_version": 1,
+            "report_name": "documentation_truth_lint",
+            "generated_by": "documentation_truth_linter",
+            "timestamp": "2026-05-20T08:00:00+00:00",
+            "status": "PASS",
+            "result": "PASS",
+            "summary": {"errors": 0},
+            "exit_code": 0,
+            "blockers": [],
+        },
+        "m4a_auth_truth.json": _green_report("m4a_auth_truth"),
+        "m4b_upload_queue_truth.json": _green_report("m4b_upload_queue_truth"),
+        "m4c_lifecycle_retrieval_truth.json": _green_report("m4c_lifecycle_retrieval_truth"),
+        "m4e_backup_restore_truth.json": _green_report("m4e_backup_restore_truth"),
+        "report_truth_preflight.json": _green_report("report_truth_preflight", collected=6),
+        "m5a_start_gate.json": _go_gate("m5a_start_gate", collected=12),
+        "report_integrity_pre_m5a.json": _go_gate("report_integrity_pre_m5a", collected=8),
+        "data_quality_report.json": _data_quality_report(),
+        "m5a_duplicate_detector_gate.json": _go_gate("m5a_duplicate_detector_gate", collected=8),
+        "m5a_metadata_detector_gate.json": _go_gate("m5a_metadata_detector_gate", collected=11),
+        "m5a_lifecycle_integrity_gate.json": _go_gate("m5a_lifecycle_integrity_gate", collected=10),
+        "m5a_source_status_integrity_gate.json": _go_gate("m5a_source_status_integrity_gate", collected=7),
+        "m5a_orphan_detector_gate.json": _go_gate("m5a_orphan_detector_gate", collected=5),
     }
-    for filename, marker in marker_by_report.items():
-        _write_report(report_dir, filename, _green_report(marker))
+    for filename, payload in reports.items():
+        _write_report(report_dir, filename, payload)
 
 
-def test_gate_hierarchy_passes_when_all_required_split_reports_are_green(tmp_path: Path) -> None:
+def test_gate_hierarchy_passes_when_all_mandatory_children_are_green(tmp_path: Path) -> None:
     _write_all_green_reports(tmp_path)
 
     result = gate_hierarchy.evaluate_gate_hierarchy(
@@ -60,19 +112,23 @@ def test_gate_hierarchy_passes_when_all_required_split_reports_are_green(tmp_pat
     )
 
     assert result["result"] == "PASS"
-    assert result["gates"]["m3a_gate"]["reports"] == ["m3a_frontend_truth.json"]
-    assert result["gates"]["m4_overall_gate"]["dependencies"] == [
-        "m4_crosscutting_gate",
-        "m4a_gate",
-        "m4b_gate",
-        "m4c_gate",
-        "m4e_gate",
+    assert result["hierarchy_source"] == "docs/gate_hierarchy.json"
+    assert result["gates"]["m3a"]["mandatory_children"] == [
+        "runtime_connectivity_gate",
+        "frontend_full_suite_staged",
+        "documentation_truth_lint",
     ]
-    assert result["gates"]["m5_start_gate"]["dependencies"] == ["m4_overall_gate"]
-    assert result["gates"]["operational_governance_gate"]["dependencies"] == ["m5_start_gate"]
+    assert result["gates"]["m4"]["mandatory_children"] == [
+        "m4a_auth_truth",
+        "m4b_upload_queue_truth",
+        "m4c_lifecycle_retrieval_truth",
+        "m4e_backup_restore_truth",
+        "report_truth_preflight",
+    ]
+    assert result["gates"]["m5a"]["status"] == "PASS"
 
 
-def test_m4_overall_and_m5_are_blocked_by_failed_m4_subgate(tmp_path: Path) -> None:
+def test_parent_gates_are_blocked_by_failed_mandatory_child(tmp_path: Path) -> None:
     _write_all_green_reports(tmp_path)
     failed_m4b = _green_report("m4b_upload_queue_truth")
     failed_m4b.update(
@@ -87,131 +143,99 @@ def test_m4_overall_and_m5_are_blocked_by_failed_m4_subgate(tmp_path: Path) -> N
 
     result = gate_hierarchy.evaluate_gate_hierarchy(tmp_path)
 
-    assert result["gates"]["m4b_gate"]["status"] == "FAIL"
-    assert result["gates"]["m4_overall_gate"]["status"] == "BLOCKED"
-    assert result["gates"]["m5_start_gate"]["status"] == "BLOCKED"
-    assert result["gates"]["operational_governance_gate"]["status"] == "BLOCKED"
+    assert result["gates"]["m4b_upload_queue_truth"]["status"] == "FAIL"
+    assert result["gates"]["m4"]["status"] == "BLOCKED"
+    assert "mandatory child not passed: m4b_upload_queue_truth" in result["gates"]["m4"]["blockers"]
 
 
-def test_governance_failure_does_not_block_before_m5_start(tmp_path: Path) -> None:
+def test_m5a_parent_requires_data_quality_score_threshold(tmp_path: Path) -> None:
     _write_all_green_reports(tmp_path)
-    failed_governance = _green_report("governance_truth")
-    failed_governance.update(
-        {
-            "passed": 0,
-            "failed": 1,
-            "exit_code": 1,
-            "failed_tests": ["tests/test_governance.py::test_cleanup"],
-        }
-    )
-    _write_report(tmp_path, "governance_truth_report.json", failed_governance)
+    _write_report(tmp_path, "data_quality_report.json", _data_quality_report(score=89.9))
 
     result = gate_hierarchy.evaluate_gate_hierarchy(tmp_path)
 
-    assert result["gates"]["m4_overall_gate"]["status"] == "PASS"
-    assert result["gates"]["m5_start_gate"]["status"] == "PASS"
-    assert result["gates"]["operational_governance_gate"]["status"] == "FAIL"
+    assert result["gates"]["data_quality_report"]["status"] == "FAIL"
+    assert result["gates"]["m5a"]["status"] == "BLOCKED"
+    assert "quality_score" in " ".join(result["gates"]["data_quality_report"]["blockers"])
 
 
-def test_dependency_graph_contains_expected_edges() -> None:
+def test_dependency_graph_contains_required_parent_edges() -> None:
     graph = gate_hierarchy.dependency_graph()
 
-    assert {"from": "m4_overall_gate", "to": "m5_start_gate"} in graph["edges"]
-    assert {"from": "m5_start_gate", "to": "operational_governance_gate"} in graph["edges"]
-    assert {"from": "m4a_gate", "to": "m4_overall_gate"} in graph["edges"]
-    assert {"from": "m4_crosscutting_gate", "to": "m4_overall_gate"} in graph["edges"]
-
-
-# ---------------------------------------------------------------------------
-# Gate Regression Lock tests
-# ---------------------------------------------------------------------------
-
-
-def _write_gate_spec_reports(report_dir: Path, overrides: dict | None = None) -> None:
-    """Write gate reports using the filenames GATE_SPECS actually requires."""
-    base = {
-        "m3a_frontend_truth.json": _green_report("m3a_frontend_truth"),
-        "m4a_auth_truth.json": _green_report("m4a_auth_truth"),
-        "m4b_upload_queue_truth.json": _green_report("m4b_upload_queue_truth"),
-        "m4c_lifecycle_retrieval_truth.json": _green_report("m4c_lifecycle_retrieval_truth"),
-        "m4e_backup_restore_truth.json": _green_report("m4e_backup_restore_truth"),
-        "m4_truth_report.json": _green_report("m4_truth"),
-        "governance_truth_report.json": _green_report("governance_truth"),
-    }
-    if overrides:
-        base.update(overrides)
-    for filename, payload in base.items():
-        _write_report(report_dir, filename, payload)
+    assert {"from": "runtime_connectivity_gate", "to": "m3a"} in graph["edges"]
+    assert {"from": "report_truth_preflight", "to": "m4"} in graph["edges"]
+    assert {"from": "duplicate_detector_gate", "to": "m5a"} in graph["edges"]
+    assert {"from": "source_status_integrity_gate", "to": "m5a"} in graph["edges"]
 
 
 def test_regression_lock_blocks_gate_when_collected_drops_over_threshold(tmp_path: Path) -> None:
-    """Gate FAIL when collected drops >20% from baseline without justification."""
-    _write_gate_spec_reports(tmp_path, {"m4a_auth_truth.json": _green_report("m4a_auth_truth", collected=79)})
+    _write_all_green_reports(tmp_path)
+    _write_report(tmp_path, "m4a_auth_truth.json", _green_report("m4a_auth_truth", collected=79))
 
     result = gate_hierarchy.evaluate_gate_hierarchy(
         tmp_path,
         baseline={"m4a_auth_truth.json": 100},
     )
 
-    assert result["gates"]["m4a_gate"]["status"] == "FAIL"
-    blockers_text = " ".join(result["gates"]["m4a_gate"]["blockers"])
+    assert result["gates"]["m4a_auth_truth"]["status"] == "FAIL"
+    blockers_text = " ".join(result["gates"]["m4a_auth_truth"]["blockers"])
     assert "regression" in blockers_text.lower()
     assert "100" in blockers_text
     assert "79" in blockers_text
 
 
 def test_regression_lock_passes_when_drop_within_threshold(tmp_path: Path) -> None:
-    """Gate PASS when collected drops exactly 20% (not over threshold)."""
-    _write_gate_spec_reports(tmp_path, {"m4a_auth_truth.json": _green_report("m4a_auth_truth", collected=80)})
+    _write_all_green_reports(tmp_path)
+    _write_report(tmp_path, "m4a_auth_truth.json", _green_report("m4a_auth_truth", collected=80))
 
     result = gate_hierarchy.evaluate_gate_hierarchy(
         tmp_path,
         baseline={"m4a_auth_truth.json": 100},
     )
 
-    assert result["gates"]["m4a_gate"]["status"] == "PASS"
+    assert result["gates"]["m4a_auth_truth"]["status"] == "PASS"
 
 
 def test_regression_lock_passes_with_justified_scope_change(tmp_path: Path) -> None:
-    """Gate PASS when collected drops >20% but report carries scope_change_reason and approval."""
+    _write_all_green_reports(tmp_path)
     justified = {
         **_green_report("m4a_auth_truth", collected=60),
         "scope_change_reason": "Removed deprecated endpoint tests after endpoint removal",
         "approval": "lead-architect-2026-05-26",
     }
-    _write_gate_spec_reports(tmp_path, {"m4a_auth_truth.json": justified})
+    _write_report(tmp_path, "m4a_auth_truth.json", justified)
 
     result = gate_hierarchy.evaluate_gate_hierarchy(
         tmp_path,
         baseline={"m4a_auth_truth.json": 100},
     )
 
-    assert result["gates"]["m4a_gate"]["status"] == "PASS"
+    assert result["gates"]["m4a_auth_truth"]["status"] == "PASS"
 
 
 def test_regression_lock_requires_both_reason_and_approval(tmp_path: Path) -> None:
-    """Gate FAIL when scope_change_reason present but approval missing."""
+    _write_all_green_reports(tmp_path)
     partial = {
         **_green_report("m4a_auth_truth", collected=60),
         "scope_change_reason": "Removed deprecated endpoint tests after endpoint removal",
     }
-    _write_gate_spec_reports(tmp_path, {"m4a_auth_truth.json": partial})
+    _write_report(tmp_path, "m4a_auth_truth.json", partial)
 
     result = gate_hierarchy.evaluate_gate_hierarchy(
         tmp_path,
         baseline={"m4a_auth_truth.json": 100},
     )
 
-    assert result["gates"]["m4a_gate"]["status"] == "FAIL"
+    assert result["gates"]["m4a_auth_truth"]["status"] == "FAIL"
 
 
 def test_regression_lock_skipped_when_no_baseline(tmp_path: Path) -> None:
-    """No regression check fires when baseline is None (first run / no baseline configured)."""
-    _write_gate_spec_reports(tmp_path, {"m4a_auth_truth.json": _green_report("m4a_auth_truth", collected=1)})
+    _write_all_green_reports(tmp_path)
+    _write_report(tmp_path, "m4a_auth_truth.json", _green_report("m4a_auth_truth", collected=1))
 
     result = gate_hierarchy.evaluate_gate_hierarchy(tmp_path, baseline=None)
 
-    assert result["gates"]["m4a_gate"]["status"] == "PASS"
+    assert result["gates"]["m4a_auth_truth"]["status"] == "PASS"
 
 
 def test_report_dir_under_repo_must_be_current() -> None:
@@ -235,7 +259,7 @@ def test_archive_report_dir_is_rejected() -> None:
 
 
 def test_stale_gate_report_is_rejected(tmp_path: Path) -> None:
-    _write_gate_spec_reports(tmp_path)
+    _write_all_green_reports(tmp_path)
 
     result = gate_hierarchy.evaluate_gate_hierarchy(
         tmp_path,
@@ -243,5 +267,5 @@ def test_stale_gate_report_is_rejected(tmp_path: Path) -> None:
         max_report_age_hours=24,
     )
 
-    assert result["gates"]["m3a_gate"]["status"] == "FAIL"
-    assert "older than 24 hours" in " ".join(result["gates"]["m3a_gate"]["blockers"])
+    assert result["gates"]["runtime_connectivity_gate"]["status"] == "FAIL"
+    assert "older than 24 hours" in " ".join(result["gates"]["runtime_connectivity_gate"]["blockers"])

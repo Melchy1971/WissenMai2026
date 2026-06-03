@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "drift_schema.json",
+  "title": "M5bDriftReport",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "report_schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "report_name": {
+      "type": "string",
+      "const": "m5b_drift_report"
+    },
+    "generated_by": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["completed", "failed", "not_run"]
+    },
+    "drift_categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["document", "metadata", "lifecycle", "source_status", "retrieval"]
+      },
+      "minItems": 5,
+      "uniqueItems": true
+    },
+    "total_findings": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "findings_by_drift_type": {
+      "$ref": "#/definitions/driftTypeCounts"
+    },
+    "findings_by_severity": {
+      "$ref": "#/definitions/severityCounts"
+    },
+    "critical_findings": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "error_findings": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "drift_rate_percent": {
+      "type": "number",
+      "minimum": 0
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "go_no_go": {
+          "type": "string",
+          "enum": ["GO", "NO_GO"]
+        },
+        "result": {
+          "type": "string",
+          "enum": ["GO", "NO_GO"]
+        },
+        "m5b_drift_gate_passed": {
+          "type": "boolean"
+        },
+        "blockers_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["go_no_go", "result", "m5b_drift_gate_passed", "blockers_count"]
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/blocker"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/driftFinding"
+      }
+    }
+  },
+  "required": [
+    "report_schema_version",
+    "report_name",
+    "generated_by",
+    "timestamp",
+    "run_id",
+    "workspace_id",
+    "status",
+    "drift_categories",
+    "total_findings",
+    "findings_by_drift_type",
+    "findings_by_severity",
+    "critical_findings",
+    "error_findings",
+    "drift_rate_percent",
+    "quality_score",
+    "decision",
+    "blockers",
+    "findings"
+  ],
+  "definitions": {
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "critical"]
+    },
+    "driftType": {
+      "type": "string",
+      "enum": ["document", "metadata", "lifecycle", "source_status", "retrieval"]
+    },
+    "driftTypeCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "document": { "type": "integer", "minimum": 0 },
+        "metadata": { "type": "integer", "minimum": 0 },
+        "lifecycle": { "type": "integer", "minimum": 0 },
+        "source_status": { "type": "integer", "minimum": 0 },
+        "retrieval": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["document", "metadata", "lifecycle", "source_status", "retrieval"]
+    },
+    "severityCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "info": { "type": "integer", "minimum": 0 },
+        "warning": { "type": "integer", "minimum": 0 },
+        "error": { "type": "integer", "minimum": 0 },
+        "critical": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["info", "warning", "error", "critical"]
+    },
+    "entityReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "document_id": { "type": ["string", "null"] },
+        "version_id": { "type": ["string", "null"] },
+        "previous_version_id": { "type": ["string", "null"] },
+        "chunk_id": { "type": ["string", "null"] },
+        "citation_id": { "type": ["string", "null"] },
+        "message_id": { "type": ["string", "null"] },
+        "query_id": { "type": ["string", "null"] },
+        "index_id": { "type": ["string", "null"] }
+      }
+    },
+    "driftFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "drift_id": {
+          "type": "string"
+        },
+        "drift_type": {
+          "$ref": "#/definitions/driftType"
+        },
+        "finding_type": {
+          "type": "string",
+          "enum": [
+            "DOCUMENT_DRIFT",
+            "METADATA_DRIFT",
+            "LIFECYCLE_DRIFT",
+            "SOURCE_STATUS_DRIFT",
+            "RETRIEVAL_DRIFT"
+          ]
+        },
+        "drift_subtype": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/definitions/severity"
+        },
+        "entity": {
+          "$ref": "#/definitions/entityReference"
+        },
+        "expected_state": {
+          "type": "object"
+        },
+        "observed_state": {
+          "type": "object"
+        },
+        "detection_strategy": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "remediation_hint": {
+          "type": "string"
+        },
+        "escalation": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "drift_id",
+        "drift_type",
+        "finding_type",
+        "drift_subtype",
+        "workspace_id",
+        "severity",
+        "entity",
+        "expected_state",
+        "observed_state",
+        "detection_strategy",
+        "description",
+        "remediation_hint",
+        "escalation",
+        "created_at"
+      ]
+    },
+    "blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["blocking"]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "severity", "reason", "source"]
+    }
+  }
+}

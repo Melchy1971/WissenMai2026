@@ -12,6 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 REPORTS_DIR = REPO_ROOT / "reports"
 CURRENT_DIR = REPORTS_DIR / "current"
 ARCHIVE_DIR = REPORTS_DIR / "archive"
+HIERARCHY_JSON = REPO_ROOT / "docs" / "gate_hierarchy.json"
 DEFAULT_OUTPUT_JSON = CURRENT_DIR / "gate_hierarchy_result.json"
 DEFAULT_OUTPUT_MD = CURRENT_DIR / "gate_hierarchy_result.md"
 
@@ -23,67 +24,83 @@ DEFAULT_MAX_REPORT_AGE_HOURS = 168
 class GateSpec:
     id: str
     label: str
-    reports: tuple[str, ...] = ()
-    dependencies: tuple[str, ...] = ()
+    report: str | None = None
+    mandatory_children: tuple[str, ...] = ()
+    accepted_statuses: tuple[str, ...] = ("PASS",)
+    required_decision: str | None = None
+    counter_validation: str = "required"
+    min_quality_score: float | None = None
+    optional_true_fields: tuple[str, ...] = ()
 
 
-GATE_SPECS: tuple[GateSpec, ...] = (
-    GateSpec(
-        id="m3a_gate",
-        label="M3a Gate",
-        reports=("m3a_frontend_truth.json",),
-    ),
-    GateSpec(
-        id="m4a_gate",
-        label="M4a Gate",
-        reports=("m4a_auth_truth.json",),
-    ),
-    GateSpec(
-        id="m4b_gate",
-        label="M4b Gate",
-        reports=("m4b_upload_queue_truth.json",),
-    ),
-    GateSpec(
-        id="m4c_gate",
-        label="M4c Gate",
-        reports=("m4c_lifecycle_retrieval_truth.json",),
-    ),
-    GateSpec(
-        id="m4e_gate",
-        label="M4e Gate",
-        reports=("m4e_backup_restore_truth.json",),
-    ),
-    GateSpec(
-        id="m4_crosscutting_gate",
-        label="M4 Cross-Cutting Gate",
-        reports=("m4_truth_report.json",),
-    ),
-    GateSpec(
-        id="m4_overall_gate",
-        label="M4 Gesamtgate",
-        dependencies=("m4_crosscutting_gate", "m4a_gate", "m4b_gate", "m4c_gate", "m4e_gate"),
-    ),
-    GateSpec(
-        id="m5_start_gate",
-        label="M5 Startgate",
-        dependencies=("m4_overall_gate",),
-    ),
-    GateSpec(
-        id="operational_governance_gate",
-        label="Operational Governance Gate",
-        reports=("governance_truth_report.json",),
-        dependencies=("m5_start_gate",),
-    ),
-)
+def _load_hierarchy(path: Path = HIERARCHY_JSON) -> tuple[dict[str, Any], tuple[GateSpec, ...]]:
+    payload, error = _load_report(path)
+    if error or payload is None:
+        raise ValueError(error or f"missing hierarchy: {path}")
+
+    specs: list[GateSpec] = []
+    children = payload.get("children")
+    parents = payload.get("parents")
+    if not isinstance(children, dict) or not isinstance(parents, dict):
+        raise ValueError("gate_hierarchy.json must define object fields 'children' and 'parents'")
+
+    for gate_id, raw in children.items():
+        if not isinstance(raw, dict):
+            raise ValueError(f"child gate must be object: {gate_id}")
+        report = raw.get("report")
+        if not isinstance(report, str) or not report.startswith("reports/current/"):
+            raise ValueError(f"child gate {gate_id} must use reports/current as report source")
+        specs.append(
+            GateSpec(
+                id=str(gate_id),
+                label=str(raw.get("label") or gate_id),
+                report=report,
+                accepted_statuses=tuple(str(value) for value in raw.get("accepted_statuses", ["PASS"])),
+                required_decision=raw.get("required_decision"),
+                counter_validation=str(raw.get("counter_validation", "required")),
+                min_quality_score=(
+                    float(raw["min_quality_score"])
+                    if raw.get("min_quality_score") is not None
+                    else None
+                ),
+                optional_true_fields=tuple(str(value) for value in raw.get("optional_true_fields", [])),
+            )
+        )
+
+    known_children = {spec.id for spec in specs}
+    for gate_id, raw in parents.items():
+        if not isinstance(raw, dict):
+            raise ValueError(f"parent gate must be object: {gate_id}")
+        mandatory_children = raw.get("mandatory_children")
+        if not isinstance(mandatory_children, list) or not mandatory_children:
+            raise ValueError(f"parent gate {gate_id} must define mandatory children")
+        missing = [child for child in mandatory_children if child not in known_children]
+        if missing:
+            raise ValueError(f"parent gate {gate_id} references unknown children: {', '.join(missing)}")
+        specs.append(
+            GateSpec(
+                id=str(gate_id),
+                label=str(raw.get("label") or gate_id),
+                mandatory_children=tuple(str(child) for child in mandatory_children),
+                counter_validation="not_required",
+            )
+        )
+
+    return payload, tuple(specs)
 
 
-def dependency_graph() -> dict[str, Any]:
+def _report_filename(report_path: str) -> str:
+    return Path(report_path).name
+
+
+def dependency_graph(hierarchy_path: Path = HIERARCHY_JSON) -> dict[str, Any]:
+    _, specs = _load_hierarchy(hierarchy_path)
     return {
-        "nodes": [{"id": spec.id, "label": spec.label} for spec in GATE_SPECS],
+        "nodes": [{"id": spec.id, "label": spec.label} for spec in specs],
         "edges": [
-            {"from": dependency, "to": spec.id}
-            for spec in GATE_SPECS
-            for dependency in spec.dependencies
+            {"from": child, "to": spec.id}
+            for spec in specs
+            for child in spec.mandatory_children
         ],
     }
 
@@ -138,6 +155,27 @@ def _as_int(value: Any) -> int | None:
     return value if isinstance(value, int) else None
 
 
+def _nested_value(payload: dict[str, Any], path: str) -> Any:
+    current: Any = payload
+    for part in path.split("."):
+        if not isinstance(current, dict):
+            return None
+        current = current.get(part)
+    return current
+
+
+def _status_values(report: dict[str, Any]) -> set[str]:
+    values: set[str] = set()
+    for key in ("status", "result"):
+        value = report.get(key)
+        if isinstance(value, str) and value:
+            values.add(value)
+    decision_result = _nested_value(report, "decision.result")
+    if isinstance(decision_result, str) and decision_result:
+        values.add(decision_result)
+    return values
+
+
 def _regression_blocker(
     report_name: str,
     report: dict[str, Any] | None,
@@ -157,24 +195,18 @@ def _regression_blocker(
     if report.get("scope_change_reason") and report.get("approval"):
         return None
     return (
-        f"{report_name}: collected regression — dropped from {baseline_collected} to {current} "
+        f"{report_name}: collected regression - dropped from {baseline_collected} to {current} "
         f"({drop_fraction:.0%} > {int(REGRESSION_THRESHOLD * 100)}% threshold); "
         "add scope_change_reason and approval fields to override"
     )
 
 
-def _report_blockers(
-    report_name: str,
-    report: dict[str, Any] | None,
-    load_error: str | None,
-    baseline_collected: int | None = None,
-    now: datetime | None = None,
-    max_report_age_hours: int | None = None,
-) -> list[str]:
-    if load_error or report is None:
-        return [load_error or f"{report_name} unavailable"]
-
+def _counter_blockers(report_name: str, report: dict[str, Any], required: bool) -> list[str]:
     blockers: list[str] = []
+    has_counter_fields = any(key in report for key in ("collected", "passed", "failed", "errors", "skipped"))
+    if not required and not has_counter_fields:
+        return blockers
+
     collected = _as_int(report.get("collected"))
     passed = _as_int(report.get("passed"))
     failed = _as_int(report.get("failed"))
@@ -194,19 +226,76 @@ def _report_blockers(
         blockers.append(f"{report_name}: skipped must be 0, got {skipped!r}")
     if exit_code != 0:
         blockers.append(f"{report_name}: exit_code must be 0, got {exit_code!r}")
+    return blockers
+
+
+def _report_blockers(
+    spec: GateSpec,
+    report: dict[str, Any] | None,
+    load_error: str | None,
+    baseline_collected: int | None = None,
+    now: datetime | None = None,
+    max_report_age_hours: int | None = None,
+) -> list[str]:
+    report_name = _report_filename(spec.report or spec.id)
+    if load_error or report is None:
+        return [load_error or f"{report_name} unavailable"]
+
+    blockers: list[str] = []
+    accepted_statuses = set(spec.accepted_statuses)
+    statuses = _status_values(report)
+    if statuses.isdisjoint(accepted_statuses):
+        blockers.append(
+            f"{report_name}: status/result must be one of {sorted(accepted_statuses)}, got {sorted(statuses)}"
+        )
+
+    if not report.get("generated_by"):
+        blockers.append(f"{report_name}: generated_by must be set")
+
+    if spec.required_decision is not None:
+        decision = _nested_value(report, "decision.go_no_go")
+        if decision != spec.required_decision:
+            blockers.append(
+                f"{report_name}: decision.go_no_go must be {spec.required_decision}, got {decision!r}"
+            )
+
+    counter_required = spec.counter_validation == "required"
+    blockers.extend(_counter_blockers(report_name, report, required=counter_required))
+
+    summary_errors = _nested_value(report, "summary.errors")
+    if isinstance(summary_errors, int) and summary_errors != 0:
+        blockers.append(f"{report_name}: summary.errors must be 0, got {summary_errors}")
 
     failed_tests = report.get("failed_tests")
     if failed_tests not in ([], None):
         blockers.append(f"{report_name}: failed_tests must be empty")
+
+    blockers_value = report.get("blockers")
+    if blockers_value not in ([], None):
+        blockers.append(f"{report_name}: blockers must be empty")
+
+    for field in spec.optional_true_fields:
+        if field in report and report.get(field) is not True:
+            blockers.append(f"{report_name}: {field} must be true when present")
+
+    if spec.min_quality_score is not None:
+        quality_score = report.get("quality_score")
+        if not isinstance(quality_score, (int, float)) or quality_score < spec.min_quality_score:
+            blockers.append(
+                f"{report_name}: quality_score must be >= {spec.min_quality_score:g}, got {quality_score!r}"
+            )
+
     regression = _regression_blocker(report_name, report, baseline_collected)
     if regression:
         blockers.append(regression)
+
     if max_report_age_hours is not None:
         timestamp = _parse_timestamp(report.get("timestamp") or report.get("generated_at"))
         if timestamp is None:
             blockers.append(f"{report_name}: timestamp must be machine-readable")
         elif (now or datetime.now(UTC)) - timestamp > timedelta(hours=max_report_age_hours):
             blockers.append(f"{report_name}: report is older than {max_report_age_hours} hours")
+
     return blockers
 
 
@@ -215,14 +304,19 @@ def _report_summary(report: dict[str, Any] | None, load_error: str | None) -> di
         return {"available": False, "error": load_error}
     return {
         "available": True,
+        "status": report.get("status"),
+        "result": report.get("result"),
+        "decision": _nested_value(report, "decision.go_no_go"),
         "collected": report.get("collected"),
         "passed": report.get("passed"),
         "failed": report.get("failed"),
         "errors": report.get("errors"),
         "skipped": report.get("skipped"),
         "exit_code": report.get("exit_code"),
+        "quality_score": report.get("quality_score"),
+        "generated_by": report.get("generated_by"),
         "test_database_url_set": report.get("test_database_url_set"),
-        "timestamp": report.get("timestamp"),
+        "timestamp": report.get("timestamp") or report.get("generated_at"),
     }
 
 
@@ -232,38 +326,43 @@ def evaluate_gate_hierarchy(
     timestamp: str | None = None,
     baseline: dict[str, int] | None = None,
     max_report_age_hours: int | None = None,
+    hierarchy_path: Path = HIERARCHY_JSON,
 ) -> dict[str, Any]:
     timestamp = timestamp or datetime.now(UTC).isoformat()
     now = _parse_timestamp(timestamp) or datetime.now(UTC)
+    hierarchy, specs = _load_hierarchy(hierarchy_path)
     source_policy_errors = _report_dir_policy_errors(report_dir)
+
+    report_specs = [spec for spec in specs if spec.report]
     reports: dict[str, tuple[dict[str, Any] | None, str | None]] = {}
-    for spec in GATE_SPECS:
-        for report_name in spec.reports:
-            if report_name not in reports:
-                reports[report_name] = _load_report(report_dir / report_name)
+    for spec in report_specs:
+        report_name = _report_filename(spec.report or "")
+        if report_name not in reports:
+            reports[report_name] = _load_report(report_dir / report_name)
 
     gate_results: dict[str, dict[str, Any]] = {}
-    for spec in GATE_SPECS:
-        dependency_blockers = [
-            dependency
-            for dependency in spec.dependencies
-            if gate_results[dependency]["status"] != "PASS"
+    for spec in specs:
+        child_blockers = [
+            child
+            for child in spec.mandatory_children
+            if gate_results[child]["status"] != "PASS"
         ]
 
         blockers: list[str] = []
         report_summaries: dict[str, dict[str, Any]] = {}
-        if source_policy_errors:
-            blockers.extend(source_policy_errors)
-            for report_name in spec.reports:
-                report, load_error = reports[report_name]
-                report_summaries[report_name] = _report_summary(report, load_error)
-        elif not dependency_blockers:
-            for report_name in spec.reports:
-                report, load_error = reports[report_name]
+        reports_list: list[str] = []
+        if spec.report:
+            report_name = _report_filename(spec.report)
+            reports_list = [report_name]
+            report, load_error = reports[report_name]
+            report_summaries[report_name] = _report_summary(report, load_error)
+            if source_policy_errors:
+                blockers.extend(source_policy_errors)
+            else:
                 baseline_collected = baseline.get(report_name) if baseline else None
                 blockers.extend(
                     _report_blockers(
-                        report_name,
+                        spec,
                         report,
                         load_error,
                         baseline_collected,
@@ -271,15 +370,13 @@ def evaluate_gate_hierarchy(
                         max_report_age_hours,
                     )
                 )
-                report_summaries[report_name] = _report_summary(report, load_error)
-        else:
-            for report_name in spec.reports:
-                report, load_error = reports[report_name]
-                report_summaries[report_name] = _report_summary(report, load_error)
+        elif child_blockers:
+            blockers = [f"mandatory child not passed: {child}" for child in child_blockers]
+        elif source_policy_errors:
+            blockers.extend(source_policy_errors)
 
-        if dependency_blockers:
+        if child_blockers:
             status = "BLOCKED"
-            blockers = [f"dependency not passed: {dependency}" for dependency in dependency_blockers]
         elif blockers:
             status = "FAIL"
         else:
@@ -289,48 +386,39 @@ def evaluate_gate_hierarchy(
             "id": spec.id,
             "label": spec.label,
             "status": status,
-            "reports": list(spec.reports),
-            "dependencies": list(spec.dependencies),
+            "reports": reports_list,
+            "mandatory_children": list(spec.mandatory_children),
             "blockers": blockers,
             "report_summaries": report_summaries,
         }
 
+    all_passed = all(result["status"] == "PASS" for result in gate_results.values())
     return {
-        "report_schema_version": 1,
+        "report_schema_version": 2,
         "report_name": "gate_hierarchy_result",
         "generated_by": "gate_validator",
         "timestamp": timestamp,
         "environment": "local",
-        "result": "PASS"
-        if all(result["status"] == "PASS" for result in gate_results.values())
-        else "FAIL",
-        "status": "PASS" if all(result["status"] == "PASS" for result in gate_results.values()) else "FAIL",
+        "result": "PASS" if all_passed else "FAIL",
+        "status": "PASS" if all_passed else "FAIL",
         "gate": "gate_hierarchy",
         "collected": len(gate_results),
         "passed": sum(1 for result in gate_results.values() if result["status"] == "PASS"),
         "failed": sum(1 for result in gate_results.values() if result["status"] == "FAIL"),
         "errors": 0,
         "skipped": sum(1 for result in gate_results.values() if result["status"] == "BLOCKED"),
-        "exit_code": 0 if all(result["status"] == "PASS" for result in gate_results.values()) else 1,
+        "exit_code": 0 if all_passed else 1,
         "blockers": [
             {"gate": gate_id, "severity": "critical", "reason": "; ".join(result["blockers"])}
             for gate_id, result in gate_results.items()
             if result["status"] != "PASS"
         ],
         "source_command": "python scripts/validate_gate_hierarchy.py",
+        "hierarchy_source": hierarchy_path.relative_to(REPO_ROOT).as_posix(),
+        "report_source_policy": hierarchy.get("report_source_policy", {}),
         "gates": gate_results,
-        "dependency_graph": dependency_graph(),
-        "evaluation_rules": {
-            "m3a_gate": ["m3a_frontend_truth.json"],
-            "m4a_gate": ["m4a_auth_truth.json"],
-            "m4b_gate": ["m4b_upload_queue_truth.json"],
-            "m4c_gate": ["m4c_lifecycle_retrieval_truth.json"],
-            "m4e_gate": ["m4e_backup_restore_truth.json"],
-            "m4_crosscutting_gate": ["m4_truth_report.json"],
-            "m4_overall_gate": ["m4_crosscutting_gate", "m4a_gate", "m4b_gate", "m4c_gate", "m4e_gate"],
-            "m5_start_gate": ["m4_overall_gate"],
-            "operational_governance_gate": ["m5_start_gate", "governance_truth_report.json"],
-        },
+        "dependency_graph": dependency_graph(hierarchy_path),
+        "evaluation_rules": hierarchy.get("validator_rules", {}),
     }
 
 
@@ -340,21 +428,26 @@ def _render_markdown(payload: dict[str, Any]) -> str:
         "",
         f"- Result: `{payload['result']}`",
         f"- Timestamp: `{payload['timestamp']}`",
+        f"- Hierarchy Source: `{payload['hierarchy_source']}`",
         "",
         "## Gates",
         "",
-        "| Gate | Status | Dependencies | Reports | Blockers |",
+        "| Gate | Status | Mandatory Children | Reports | Blockers |",
         "|---|---|---|---|---|",
     ]
     for gate in payload["gates"].values():
-        dependencies = ", ".join(f"`{dep}`" for dep in gate["dependencies"]) or "-"
+        children = ", ".join(f"`{child}`" for child in gate["mandatory_children"]) or "-"
         reports = ", ".join(f"`{report}`" for report in gate["reports"]) or "-"
         blockers = "<br>".join(gate["blockers"]) or "-"
-        lines.append(f"| {gate['label']} | `{gate['status']}` | {dependencies} | {reports} | {blockers} |")
+        lines.append(f"| {gate['label']} | `{gate['status']}` | {children} | {reports} | {blockers} |")
 
     lines.extend(["", "## Dependency Graph", ""])
     for edge in payload["dependency_graph"]["edges"]:
         lines.append(f"- `{edge['from']}` -> `{edge['to']}`")
+
+    lines.extend(["", "## Validator Rules", ""])
+    for key, value in payload["evaluation_rules"].items():
+        lines.append(f"- `{key}`: `{value}`")
     return "\n".join(lines) + "\n"
 
 
@@ -365,8 +458,9 @@ def write_result(payload: dict[str, Any], json_path: Path, md_path: Path) -> Non
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Validate the truth gate hierarchy from split reports.")
+    parser = argparse.ArgumentParser(description="Validate the mandatory truth gate hierarchy.")
     parser.add_argument("--report-dir", type=Path, default=CURRENT_DIR)
+    parser.add_argument("--hierarchy-json", type=Path, default=HIERARCHY_JSON)
     parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)
     parser.add_argument("--output-md", type=Path, default=DEFAULT_OUTPUT_MD)
     parser.add_argument(
@@ -378,7 +472,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     max_report_age_hours = None if args.max_report_age_hours < 0 else args.max_report_age_hours
-    payload = evaluate_gate_hierarchy(args.report_dir, max_report_age_hours=max_report_age_hours)
+    payload = evaluate_gate_hierarchy(
+        args.report_dir,
+        hierarchy_path=args.hierarchy_json,
+        max_report_age_hours=max_report_age_hours,
+    )
     write_result(payload, args.output_json, args.output_md)
 
     print(f"Gate Hierarchy = {payload['result']}")
