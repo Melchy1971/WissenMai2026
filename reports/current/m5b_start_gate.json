@@ -3,7 +3,7 @@
   "report_name": "m5b_start_gate",
   "gate": "m5b_start_gate",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-03T07:46:45.006964+00:00",
+  "timestamp": "2026-06-03T09:05:00+00:00",
   "environment": "local",
   "report_type": "start_gate",
   "phase": "M5b",
@@ -18,9 +18,9 @@
   "exit_code": 1,
   "blockers": [
     {
-      "id": "m5a_gate_pass",
+      "id": "M5A_NOT_PASSED",
       "severity": "blocking",
-      "reason": "Prerequisite failed: M5a Gate PASS (BLOCKED/NO_GO)",
+      "reason": "M5b Start Gate is BLOCKED because m5a_data_quality_gate is not PASS.",
       "source": "reports/current/m5a_data_quality_gate.json"
     }
   ],
@@ -42,7 +42,7 @@
   },
   "criteria": [
     {
-      "id": "m5a_gate_pass",
+      "id": "M5A_NOT_PASSED",
       "label": "M5a Gate PASS",
       "mandatory": true,
       "passed": false,
@@ -75,7 +75,7 @@
     }
   ],
   "summary": {
-    "rule": "M5b Start Gate can be PREPARED only when M5a Gate is PASS, retrieval baseline exists, drift architecture exists, and documentation truth lint is PASS. Implementation remains forbidden.",
+    "rule": "If reports/current/m5a_data_quality_gate.json status is not PASS, m5b_start_gate status is BLOCKED with blocker M5A_NOT_PASSED. If m5a_data_quality_gate status is PASS, m5b_start_gate may become PREPARED when the remaining preparation prerequisites pass. Implementation remains forbidden.",
     "requested_status": "PREPARED",
     "actual_status": "BLOCKED",
     "not_implementing": true

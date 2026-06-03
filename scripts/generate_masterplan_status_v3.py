@@ -16,6 +16,7 @@ from typing import Any
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
 from m3a_stale_guard import check_staleness  # noqa: E402
+from parent_gate_validator import HIERARCHY_JSON, validate_parent_gate  # noqa: E402
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +36,8 @@ M5A_START_GATE = "m5a_start_gate.json"
 M5A_DATA_QUALITY_GATE = "m5a_data_quality_gate.json"
 M5A_DUPLICATE_DETECTOR_GATE = "m5a_duplicate_detector_gate.json"
 M5A_METADATA_DETECTOR_GATE = "m5a_metadata_detector_gate.json"
+REPORT_INTEGRITY_PRE_M5A = "report_integrity_pre_m5a.json"
+M5B_START_GATE = "m5b_start_gate.json"
 FRONTEND_FULL_SUITE = "frontend_full_suite_staged_report.json"
 PREFLIGHT = "report_truth_preflight.json"
 
@@ -275,6 +278,61 @@ def _m5a_gate_status(report: dict[str, Any] | None) -> str:
     return "UNKNOWN"
 
 
+def _parent_validation(parent_gate: str, current_dir: Path, timestamp: str) -> tuple[dict[str, Any], str | None]:
+    try:
+        return validate_parent_gate(
+            parent_gate,
+            report_dir=current_dir,
+            hierarchy_path=HIERARCHY_JSON,
+            timestamp=timestamp,
+        ), None
+    except Exception as exc:  # pragma: no cover - defensive report integrity guard
+        return {
+            "report_name": "parent_gate_validation",
+            "generated_by": "gate_validator",
+            "parent_gate": parent_gate,
+            "status": "BLOCKED",
+            "result": "BLOCKED",
+            "decision": {"go_no_go": "NO_GO", "manual_override_allowed": False},
+            "blockers": [{
+                "id": "parent_gate_validator_error",
+                "child_gate_id": parent_gate,
+                "severity": "blocking",
+                "reason": str(exc),
+            }],
+            "gate_decision_trace": {
+                "parent_gate": parent_gate,
+                "rule": "Parent gate validation failed; parent remains BLOCKED.",
+                "evaluated_children": [],
+                "blocking_children": [parent_gate],
+                "failing_children": [],
+                "final_status": "BLOCKED",
+            },
+        }, str(exc)
+
+
+def _parent_status(validation: dict[str, Any]) -> str:
+    return str(validation.get("status") or validation.get("result") or "BLOCKED").upper()
+
+
+def _parent_blockers(validation: dict[str, Any], *, parent_gate: str) -> list[dict[str, Any]]:
+    blockers: list[dict[str, Any]] = []
+    for blocker in validation.get("blockers", []):
+        if not isinstance(blocker, dict):
+            continue
+        child_gate = str(blocker.get("child_gate_id") or blocker.get("id") or parent_gate)
+        reason = str(blocker.get("reason") or blocker.get("detail") or f"{child_gate} blocks {parent_gate}.")
+        blockers.append({
+            "id": f"{parent_gate}_parent_child_{child_gate}",
+            "type": "parent_gate",
+            "severity": "blocking",
+            "detail": reason,
+            "source": "docs/gate_hierarchy.json",
+            "child_gate_id": child_gate,
+        })
+    return blockers
+
+
 def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -> dict[str, Any]:
     generated_at = timestamp or datetime.now(timezone.utc).isoformat()
     m3a, m3a_error = _load_json(current_dir / M3A_RC)
@@ -288,11 +346,19 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
     m5a_data_quality, m5a_data_quality_error = _load_json(current_dir / M5A_DATA_QUALITY_GATE)
     m5a_dup_gate, m5a_dup_gate_error = _load_json(current_dir / M5A_DUPLICATE_DETECTOR_GATE)
     m5a_metadata_gate, m5a_metadata_gate_error = _load_json(current_dir / M5A_METADATA_DETECTOR_GATE)
+    report_integrity, report_integrity_error = _load_json(current_dir / REPORT_INTEGRITY_PRE_M5A)
+    m5b_start, m5b_start_error = _load_json(current_dir / M5B_START_GATE)
+    gate_hierarchy, gate_hierarchy_error = _load_json(HIERARCHY_JSON)
+    m3a_parent_validation, m3a_parent_validation_error = _parent_validation("m3a", current_dir, generated_at)
+    m4_parent_validation, m4_parent_validation_error = _parent_validation("m4", current_dir, generated_at)
+    m5a_parent_validation, m5a_parent_validation_error = _parent_validation("m5a", current_dir, generated_at)
 
     m3a_stale_blocker = _check_m3a_stale(m3a, current_dir)
-    # Masterplan rule-set: M3a=PASS when the M3a gate report itself is PASS.
-    m3a_pass = _is_pass_report(m3a)
-    m4_pass = _is_pass_report(m4)
+    m3a_parent_pass = _parent_status(m3a_parent_validation) == "PASS"
+    m4_parent_pass = _parent_status(m4_parent_validation) == "PASS"
+    # Masterplan rule-set: parent gates follow mandatory child gates.
+    m3a_pass = _is_pass_report(m3a) and m3a_parent_pass and m3a_stale_blocker is None
+    m4_pass = _is_pass_report(m4) and m4_parent_pass
     m4e_primary_pass = _is_pass_report(m4e_ops)
     m4e_alt_pass = _is_pass_report(m4e_ops_gate) if m4e_ops_gate else None
     m4e_operations_pass = m4e_primary_pass or bool(m4e_alt_pass)
@@ -312,23 +378,27 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
         M5A_DATA_QUALITY_GATE: m5a_data_quality_error,
         M5A_DUPLICATE_DETECTOR_GATE: m5a_dup_gate_error,
         M5A_METADATA_DETECTOR_GATE: m5a_metadata_gate_error,
+        REPORT_INTEGRITY_PRE_M5A: report_integrity_error,
+        M5B_START_GATE: m5b_start_error,
+        "docs/gate_hierarchy.json": gate_hierarchy_error,
     })
 
     m5a_start_go = _is_go_gate(m5a_start)
     m5a_gate_status = _m5a_gate_status(m5a_data_quality)
-    m5a_data_quality_pass = _is_pass_report(m5a_data_quality) and m5a_gate_status == "PASS"
+    m5a_parent_status = _parent_status(m5a_parent_validation)
+    m5a_parent_pass = m5a_parent_status == "PASS"
+    raw_m5a_data_quality_pass = _is_pass_report(m5a_data_quality) and m5a_gate_status == "PASS"
+    m5a_data_quality_pass = raw_m5a_data_quality_pass and m5a_parent_pass
     m5a_duplicate_slice_pass = _is_pass_report(m5a_dup_gate)
     m5a_metadata_slice_pass = _is_pass_report(m5a_metadata_gate)
     required_slices_pass = m5a_duplicate_slice_pass and m5a_metadata_slice_pass
     data_quality_report_not_run = m5a_gate_status in {"NOT_RUN", "MISSING"}
     slice_start_allowed = m5a_start_go
-    m5a_overall_pass = (
-        slice_start_allowed
-        and required_slices_pass
-        and m5a_data_quality_pass
-        and not data_quality_report_not_run
+    m5a_overall_pass = m5a_parent_pass and m5a_data_quality_pass and not data_quality_report_not_run
+    m5a_partial_pass = (
+        m5a_parent_pass
+        and ((required_slices_pass and not m5a_overall_pass and not data_quality_report_not_run) or m5a_gate_status == "PARTIAL_PASS")
     )
-    m5a_partial_pass = (required_slices_pass and not m5a_overall_pass and not data_quality_report_not_run) or m5a_gate_status == "PARTIAL_PASS"
     slice_gate_passed = m5a_overall_pass
     preparation_done = _assessment_value(m5_assessment, "m5_preparation_done") is True
     slice_implementing = m5a_start_go and not m5a_overall_pass
@@ -366,7 +436,7 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             "detail": "m5_gate_assessment allows slice start but slice prerequisites are not met.",
             "source": f"reports/current/{M5_GATE_ASSESSMENT}",
         })
-    if m5a_data_quality_pass and not m5a_start_go:
+    if raw_m5a_data_quality_pass and not m5a_start_go:
         contradictions.append({
             "id": "m5a_data_quality_without_start_gate",
             "type": "report_contradiction",
@@ -374,7 +444,7 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             "detail": "m5a_data_quality_gate.json is PASS without m5a_start_gate = GO.",
             "source": f"reports/current/{M5A_DATA_QUALITY_GATE}",
         })
-    if m5a_data_quality_pass and not required_slices_pass:
+    if raw_m5a_data_quality_pass and not required_slices_pass:
         contradictions.append({
             "id": "m5a_data_quality_without_required_slices",
             "type": "report_contradiction",
@@ -384,7 +454,7 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
         })
 
     m3a_blockers = []
-    if m3a_error or not m3a_pass:
+    if m3a_error or not _is_pass_report(m3a):
         m3a_blockers.append({
             "id": "m3a_rc_not_pass",
             "type": "release_candidate",
@@ -392,14 +462,22 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             "detail": f"{M3A_RC} must be PASS/GO and not stale.",
             "source": f"reports/current/{M3A_RC}",
         })
+    if m3a_stale_blocker:
+        m3a_blockers.append(m3a_stale_blocker)
+    if not m3a_parent_pass:
+        m3a_blockers.extend(_parent_blockers(m3a_parent_validation, parent_gate="m3a"))
 
-    m4_blockers = [] if m4_pass else [{
+    m4_blockers = []
+    if m4_error or not _is_pass_report(m4):
+        m4_blockers.append({
         "id": "m4_backend_rc_not_pass",
         "type": "release_candidate",
         "severity": "blocking",
         "detail": f"{M4_BACKEND_RC} must be PASS/GO.",
         "source": f"reports/current/{M4_BACKEND_RC}",
-    }]
+        })
+    if not m4_parent_pass:
+        m4_blockers.extend(_parent_blockers(m4_parent_validation, parent_gate="m4"))
     doc_blockers = [] if doc_errors == 0 and not doc_error else [{
         "id": "documentation_truth_lint_errors",
         "type": "documentation",
@@ -460,9 +538,22 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             "detail": "M5a Data Quality gate is not PASS.",
             "source": f"reports/current/{M5A_DATA_QUALITY_GATE}",
         })
+    if not m5a_parent_pass:
+        m5a_overall_blockers.extend(_parent_blockers(m5a_parent_validation, parent_gate="m5a"))
 
     model_blocked = bool(integrity_blockers or contradictions)
-    m5a_effective_status = "PASS" if (m5a_overall_pass and not model_blocked) else ("PARTIAL_PASS" if (m5a_partial_pass and not model_blocked) else "BLOCKED")
+    if model_blocked:
+        m5a_effective_status = "BLOCKED"
+    elif m5a_parent_status in {"BLOCKED", "MISSING", "INVALID", "STALE"}:
+        m5a_effective_status = "BLOCKED"
+    elif m5a_parent_status == "FAIL":
+        m5a_effective_status = "FAIL"
+    elif m5a_overall_pass:
+        m5a_effective_status = "PASS"
+    elif m5a_partial_pass:
+        m5a_effective_status = "PARTIAL_PASS"
+    else:
+        m5a_effective_status = "BLOCKED"
     m5_status = _derive_m5_status(
         blocked=model_blocked,
         m4e_operations_pass=m4e_operations_ready,
@@ -488,6 +579,26 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
 
     # M5 implementation is never globally PASS before M5a overall PASS.
     m5_implementation_global_pass = m5_implementation_allowed and (m5a_effective_status == "PASS")
+    m5b_status = str((m5b_start or {}).get("status") or (m5b_start or {}).get("result") or "MISSING").upper()
+    m5b_prepared = m5a_effective_status == "PASS" and m5b_status == "PREPARED"
+    m5b_blockers: list[dict[str, Any]] = []
+    if m5a_effective_status != "PASS":
+        m5b_blockers.append({
+            "id": "m5b_requires_m5a_parent_pass",
+            "type": "dependency",
+            "severity": "blocking",
+            "detail": "M5b darf erst PREPARED sein, wenn M5a durch das Parent-Gate PASS ist.",
+            "source": f"reports/current/{M5A_DATA_QUALITY_GATE}",
+        })
+    for blocker in (m5b_start or {}).get("blockers", []):
+        if isinstance(blocker, dict):
+            m5b_blockers.append({
+                "id": str(blocker.get("id") or "m5b_start_gate_blocker"),
+                "type": "gate",
+                "severity": str(blocker.get("severity") or "blocking"),
+                "detail": str(blocker.get("reason") or blocker.get("detail") or "m5b_start_gate blocks M5b preparation."),
+                "source": str(blocker.get("source") or f"reports/current/{M5B_START_GATE}"),
+            })
 
     release_blockers = [*m3a_blockers, *m4_blockers, *doc_blockers, *integrity_blockers, *contradictions]
     if m5a_effective_status != "PASS":
@@ -541,11 +652,34 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             phase_status="gate_partial_pass" if m5a_effective_status == "PARTIAL_PASS" else None,
             gate_status=m5a_effective_status if m5a_effective_status in {"PASS", "PARTIAL_PASS", "BLOCKED"} else None,
         ),
+        "m5b_drift": _phase(
+            "m5b_drift",
+            "M5b Drift",
+            passed=m5b_prepared,
+            decision="PREPARED" if m5b_prepared else "NO_GO",
+            gate_id="m5b_start_gate",
+            source=f"reports/current/{M5B_START_GATE}",
+            blockers=[] if m5b_prepared else m5b_blockers,
+            phase_status="prepared" if m5b_prepared else "blocked",
+            gate_status="PREPARED" if m5b_prepared else m5b_status,
+        ),
     }
     m5a_progress = 20 if m5a_effective_status == "PASS" else (10 if m5a_effective_status == "PARTIAL_PASS" else 0)
     progress = round((25 if m3a_pass else 0) + (35 if m4_pass else 0) + (20 if m5_preparation_allowed else 0) + m5a_progress, 1)
     if m5a_effective_status != "PASS" and progress >= 100:
         progress = 99.0
+    parent_gate_statuses = {
+        "m3a": _parent_status(m3a_parent_validation),
+        "m4": _parent_status(m4_parent_validation),
+        "m5a": _parent_status(m5a_parent_validation),
+    }
+    parent_hierarchy_result = (
+        "PASS"
+        if all(status == "PASS" for status in parent_gate_statuses.values())
+        else "BLOCKED"
+        if any(status in {"BLOCKED", "MISSING", "INVALID", "STALE"} for status in parent_gate_statuses.values())
+        else "FAIL"
+    )
 
     return {
         "report_schema_version": SCHEMA_VERSION,
@@ -568,8 +702,16 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             M5A_DATA_QUALITY_GATE: _summary(m5a_data_quality, m5a_data_quality_error),
             M5A_DUPLICATE_DETECTOR_GATE: _summary(m5a_dup_gate, m5a_dup_gate_error),
             M5A_METADATA_DETECTOR_GATE: _summary(m5a_metadata_gate, m5a_metadata_gate_error),
+            REPORT_INTEGRITY_PRE_M5A: _summary(report_integrity, report_integrity_error),
+            M5B_START_GATE: _summary(m5b_start, m5b_start_error),
             DOC_LINT: _summary(doc_lint, doc_error),
             KNOWN_LIMITATIONS: {"available": known is not None, "error": known_error, **known_summary},
+            "docs/gate_hierarchy.json": {
+                "available": gate_hierarchy is not None,
+                "error": gate_hierarchy_error,
+                "timestamp": (gate_hierarchy or {}).get("timestamp") if gate_hierarchy else None,
+                "generated_by": (gate_hierarchy or {}).get("generated_by") if gate_hierarchy else None,
+            },
         }},
         "overall": {
             "status": overall_status,
@@ -603,9 +745,41 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             "overall_m5a_pass": m5a_effective_status == "PASS",
             "rule": "M5a ist PARTIAL_PASS oder BLOCKED, solange m5a_data_quality_gate nicht PASS ist; globale M5-Freigabe erst bei M5a PASS.",
         },
+        "m5": {
+            "status": m5_status,
+            "valid_status_values": list(M5_STATUSES),
+            "preparation_allowed": m5_preparation_allowed,
+            "implementation_allowed": m5_implementation_allowed,
+            "implementation_decision": "GO" if m5_implementation_global_pass else "NO_GO",
+            "slice_start_allowed": slice_start_allowed,
+            "slice_gate_passed": slice_gate_passed,
+            "m5a_status": m5a_effective_status,
+            "m5b_status": "PREPARED" if m5b_prepared else m5b_status,
+            "rule": "M5 Gesamt wird nicht automatisch PASS; M5b PREPARED erfordert M5a Parent-Gate PASS.",
+        },
+        "documentation_lint": {
+            "status": (doc_lint or {}).get("status"),
+            "errors": doc_errors,
+        },
+        "known_limitations": known_summary,
+        "input_integrity_issues": integrity_blockers,
+        "report_contradictions": contradictions,
+        "blockers": release_blockers,
+        "parent_gate_validations": {
+            "m3a": m3a_parent_validation,
+            "m4": m4_parent_validation,
+            "m5a": m5a_parent_validation,
+            "errors": {
+                "m3a": m3a_parent_validation_error,
+                "m4": m4_parent_validation_error,
+                "m5a": m5a_parent_validation_error,
+            },
+        },
         "phases": phases,
         "gate_hierarchy": {
-            "result": "PASS" if release_allowed else "FAIL",
+            "result": parent_hierarchy_result,
+            "source": "docs/gate_hierarchy.json",
+            "parent_statuses": parent_gate_statuses,
             "gates": {phase["gate_id"]: {"status": phase["gate_status"], "blockers": [b["detail"] for b in phase["blockers"]]} for phase in phases.values()},
         },
     }
@@ -638,7 +812,17 @@ def render_status_section(payload: dict[str, Any]) -> str:
         )
 
     dl = payload.get("inputs", {}).get("current_reports", {}).get(DOC_LINT, {})
+    m5 = payload.get("m5", {})
+    gate_hierarchy = payload.get("gate_hierarchy", {})
     lines.extend([
+        "",
+        "### M5 Statusmodell",
+        "",
+        f"- Status: `{m5.get('status', '-')}`",
+        f"- M5a: `{m5.get('m5a_status', '-')}`",
+        f"- M5b: `{m5.get('m5b_status', '-')}`",
+        f"- Implementierung global: `{m5.get('implementation_decision', 'NO_GO')}`",
+        f"- Parent-Gate-Hierarchie: `{gate_hierarchy.get('result', '-')}`",
         "",
         "### Dokumentations-Lint",
         "",
@@ -650,8 +834,16 @@ def render_status_section(payload: dict[str, Any]) -> str:
     ])
 
     blockers: list[str] = []
-    for gate in payload.get("gate_hierarchy", {}).get("gates", {}).values():
-        blockers.extend([str(b) for b in gate.get("blockers", []) if b])
+    for phase in payload.get("phases", {}).values():
+        for blocker in phase.get("blockers", []):
+            if not isinstance(blocker, dict):
+                continue
+            detail = str(blocker.get("detail") or blocker.get("reason") or "")
+            source = str(blocker.get("source") or "")
+            if detail and source:
+                blockers.append(f"{detail} (laut {source})")
+            elif detail:
+                blockers.append(detail)
     if blockers:
         for blocker in blockers[:20]:
             lines.append(f"- {blocker}")

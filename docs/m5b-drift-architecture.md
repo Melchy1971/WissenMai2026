@@ -2,7 +2,19 @@
 
 Stand: 2026-06-03
 
+Status: `DRAFT` (Planungsartefakt; keine Implementierungsfreigabe, siehe `reports/current/m5b_start_gate.json`).
+
 Scope: architecture phase only. No implementation, no migration, no API endpoint, no repair action.
+
+This draft is allowed independently of the M5b start gate because it is planning-only. It does not authorize detector implementation, schema changes, background jobs, API routes, dashboard work, reindexing, cleanup, repair, or any mutating operation.
+
+## Gate Status Model
+
+- `DRAFT`: Architekturplanung ist erlaubt und unabhaengig vom Start-Gate.
+- `PREPARED`: M5b darf nur dann vorbereitet sein, wenn `reports/current/m5b_start_gate.json` dies meldet.
+- M5b Start-Gate darf erst `PREPARED` werden, wenn M5a Gesamt-`PASS` ist. M5a Gesamt-`PASS` setzt das Parent-Gate `m5a` nach `docs/gate_hierarchy.json` und `reports/current/m5a_data_quality_gate.json` voraus.
+- Ein M5a Slice-`PASS` reicht nicht fuer M5b `PREPARED`.
+- Diese Architektur enthaelt keine globale Prozent- oder Vollstaendigkeitsfreigabe.
 
 M5b defines drift as a time-based divergence between expected system state and observed system state. It is different from M5a Data Quality: M5a checks the current state of data quality findings; M5b checks whether previously valid document, metadata, lifecycle, source-status, or retrieval state has degraded over time.
 
@@ -26,7 +38,7 @@ Common reporting fields:
 | Field | Meaning |
 | --- | --- |
 | `drift_id` | Stable finding id for the run. |
-| `drift_type` | One of `document`, `metadata`, `lifecycle`, `source_status`, `retrieval`. |
+| `drift_type` | One of `document`, `chunk`, `metadata`, `lifecycle`, `source_status`, `retrieval`. |
 | `drift_subtype` | Specific rule id within the drift type. |
 | `workspace_id` | Workspace scope for the finding. |
 | `severity` | `info`, `warning`, `error`, or `critical`. |
@@ -101,7 +113,75 @@ Any `error` finding requires technical review before M5b gate approval. Any `cri
 
 Document Drift rate above 5 percent of active documents is a gate blocker. Warnings below that threshold remain review-required but not automatically blocking.
 
-## 2. Metadata Drift
+## 2. Chunk Drift
+
+### Definition
+
+Chunk Drift exists when stored chunk state no longer matches the expected chunk set for the current document version over time. Chunks are retrieval units, so their document id, version id, content hash, normalized text hash, ordering, lifecycle visibility, and index eligibility must remain aligned with the canonical document version.
+
+Chunk Drift is not duplicate detection. Duplicate detection compares equivalent content across documents or versions. Chunk Drift compares the current chunk set to the expected chunk set for the same document version and workspace.
+
+### Trigger
+
+- A current active version has missing chunks compared with its previous approved chunk count or chunk hash baseline.
+- A document has chunks that reference an older version while `documents.current_version_id` points elsewhere.
+- Chunk order has gaps, duplicates, or non-monotonic positions for a version.
+- Chunk content hash or normalized text hash changed without a versioning, parsing, or restore event.
+- Chunk workspace id, document id, or version id no longer matches the owning document.
+- Chunk searchability diverges from document lifecycle or source-status expectations.
+
+### Detection Strategy
+
+Use read-only workspace-scoped joins across `documents`, `document_versions`, and `document_chunks`. The draft detector compares current-version chunk membership, positional sequence, hash stability, ownership consistency, and lifecycle-derived searchability.
+
+The strategy must not reparse documents, regenerate chunks, mutate indexes, or infer missing chunks through retrieval. When no approved historical chunk baseline exists, the check reports baseline absence as `info` or skips baseline-only rules.
+
+### Severity
+
+| Condition | Severity |
+| --- | --- |
+| Chunk references a missing document or version | `error` |
+| Chunk belongs to a different workspace than its document | `critical` |
+| Active current version has missing chunks versus approved baseline | `error` |
+| Chunk order contains gaps or duplicates | `warning` |
+| Chunk hash changed without a version or parser event | `warning` |
+| Searchability is inconsistent with lifecycle state | `error` |
+| Historical baseline is unavailable | `info` |
+
+### Reporting
+
+Finding type: `CHUNK_DRIFT`
+
+Required report details:
+
+- `chunk_id`
+- `document_id`
+- `version_id`
+- `workspace_id`
+- `drift_subtype`
+- `expected_state`
+- `observed_state`
+- `severity`
+- `remediation_hint`
+
+Allowed subtypes:
+
+- `chunk_missing_from_current_version`
+- `chunk_wrong_version_reference`
+- `chunk_position_gap`
+- `chunk_position_duplicate`
+- `chunk_hash_changed_without_event`
+- `chunk_workspace_mismatch`
+- `chunk_searchability_mismatch`
+- `chunk_baseline_missing`
+
+### Escalation
+
+Any `critical` Chunk Drift blocks M5b planning promotion and requires workspace-isolation review according to `docs/gate_hierarchy.json` and `reports/current/m5b_start_gate.json`. `error` findings require technical review before retrieval completeness or lifecycle visibility can be declared green. This draft does not authorize automatic rechunking, reindexing, deletion, merge, or repair.
+
+Chunk Drift error rate above 2 percent of eligible active chunks is a planned gate blocker. Warning-level drift remains report-visible and review-required.
+
+## 3. Metadata Drift
 
 ### Definition
 
@@ -164,7 +244,7 @@ Metadata Drift does not automatically authorize metadata repair. `error` finding
 
 Metadata Drift becomes a gate blocker when metadata-drift errors affect more than 2 percent of active documents or any cross-workspace reference appears.
 
-## 3. Lifecycle Drift
+## 4. Lifecycle Drift
 
 ### Definition
 
@@ -230,7 +310,7 @@ Any `critical` Lifecycle Drift freezes mutating document, reindex, and cleanup o
 
 Lifecycle Drift error rate above 2 percent of active documents blocks the gate even when individual findings are not critical.
 
-## 4. Source Status Drift
+## 5. Source Status Drift
 
 ### Definition
 
@@ -296,7 +376,7 @@ Allowed subtypes:
 
 A source-status error rate above 10 percent of non-missing citations triggers escalation to technical review.
 
-## 5. Retrieval Drift
+## 6. Retrieval Drift
 
 ### Definition
 

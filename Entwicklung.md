@@ -1,55 +1,43 @@
 # Entwicklung
 
-Statusquelle: `reports/current/m5a_start_gate.json`, `reports/current/m5a_duplicate_detector_gate.json`, `reports/current/m5a_metadata_detector_gate.json`, `reports/current/m5a_lifecycle_integrity_gate.json`, `reports/current/m5a_data_quality_gate.json`
+Statusquelle: `reports/current/masterplan_status.json`, `docs/gate_hierarchy.json`, `reports/current/m5a_data_quality_gate.json`, `reports/current/m5b_start_gate.json`
 
-M5a Start-Gate (`reports/current/m5a_start_gate.json`): `GO`. Implementierung laeuft.
+Aktuelle Freigaben werden nicht manuell gepflegt. Der generierte Maschinenstatus in `reports/current/masterplan_status.json` ist autoritativ.
 
-Duplicate Detector Slice Gate (`reports/current/m5a_duplicate_detector_gate.json`): `GO`, Score 100/100.
+## Gate-Hierarchie nach Fix
 
-Metadata Detector Slice Gate (`reports/current/m5a_metadata_detector_gate.json`): `GO`, Score 100/100.
+- M5a ist nur dann Gesamt-`PASS`, wenn das Parent-Gate `m5a` nach `docs/gate_hierarchy.json` `PASS` ist.
+- Ein M5a Slice-Gate bewertet nur den jeweiligen Slice. Slice-`PASS` ist keine M5a-Gesamtfreigabe.
+- `reports/current/m5a_data_quality_gate.json` bleibt das Gesamtgate fuer M5a Data Quality.
+- `reports/current/m5b_start_gate.json` bleibt `DRAFT` oder `PREPARED` nur in Abhaengigkeit von M5a; solange M5a nicht `PASS` ist, bleibt M5b blockiert.
+- Es gibt keine globale Prozent- oder Vollstaendigkeitsfreigabe ausserhalb maschinenlesbarer Reports.
 
-Lifecycle Integrity Slice Gate (`reports/current/m5a_lifecycle_integrity_gate.json`): `GO`, Score 100/100.
+## M5a Slice-Arbeit
 
----
+Vorhandene Slice-Artefakte:
 
-## Abgeschlossene M5a Slices
+- Duplicate Detector: `reports/current/m5a_duplicate_detector_gate.json`
+- Metadata Detector: `reports/current/m5a_metadata_detector_gate.json`
+- Lifecycle Integrity Detector: `reports/current/m5a_lifecycle_integrity_gate.json`
 
-- Slice 1: Duplicate Detector (`reports/current/m5a_duplicate_detector_gate.json`) = `PASS`
-- Slice 2: Metadata Detector (`reports/current/m5a_metadata_detector_gate.json`) = `PASS`
-- Slice 3: Lifecycle Integrity Detector (`reports/current/m5a_lifecycle_integrity_gate.json`) = `PASS`
+Diese Reports koennen Slice-Fortschritt belegen. Sie ersetzen nicht `reports/current/m5a_data_quality_gate.json` und nicht die Parent-Gate-Validierung aus `docs/gate_hierarchy.json`.
 
-## Aktiver M5a Slice
+## M5b Planung
 
-- Kein aktiver Blocker im Lifecycle Slice; Slice 3 ist formal abgeschlossen.
+M5b Drift Architecture ist ein Planungsartefakt: `docs/m5b-drift-architecture.md`.
 
-## Aktueller Fokus: M5a Gesamtgate-Hardening
+Planung ist unabhaengig vom Start-Gate erlaubt. Implementierung bleibt untersagt, solange `reports/current/m5b_start_gate.json` keine entsprechende Freigabe gemaess M5a-Abhaengigkeit meldet.
 
-Implementiert:
+## Laufende technische Arbeit
 
-- Datenmodell: `data_quality_runs`, `data_quality_findings` (Migration `20260601_0018`, an `20260508_0014` gekettet)
-- `DataQualityRunner` — workspace-scoped, idempotent, read-only, Python 3.10 kompatibel
-- `DuplicateDetector` V1 — content_hash, nur aktive Dokumente, DUPLICATE_DOCUMENT warning, DB-agnostische 2-Query-Variante
-- `MetadataQualityDetector` V1 — MQ-1..MQ-5 (title/tags/category/doc_type/summary), `MISSING_METADATA`, read-only
-- `LifecycleIntegrityDetector` V1 — Search/Retrieval/Lifecycle/source_status Konsistenz, read-only
-- Read-Only API: `GET /api/v1/data-quality/runs`, `runs/{id}`, `findings`, `summary`
-- Dashboard: Route `/data-quality`, read-only, keine Repair-Actions, `data-testid` vollstaendig
-- CLI: `python scripts/run_data_quality.py --workspace <id>`, Report: `reports/current/data_quality_report.json`
-- Tests Metadata Slice: `backend/tests/test_metadata_quality_detector.py`, `backend/tests/postgres_truth/test_m5a_metadata_quality_truth.py`
-- Tests Lifecycle Slice: `backend/tests/test_lifecycle_integrity_detector.py`, `backend/tests/postgres_truth/test_m5a_lifecycle_integrity_truth.py`
+- Data-Quality-Runner, Detectoren, Read-only API und Dashboard bleiben read-only.
+- Cleanup-, Merge- oder Repair-Actions brauchen separate Governance.
+- Lifecycle-Aenderungen durch Data-Quality-Prozesse bleiben ausser Scope.
 
-Wichtig: Auch bei PASS der drei Slice-Gates bleibt das M5a-Gesamtgate (`reports/current/m5a_data_quality_gate.json`) an den aktuellen Data-Quality-Run und Integritaetsreports gebunden.
+## Relevante Tests
 
-Nicht freigegeben ohne separate Governance:
+- Metadata Slice: `backend/tests/test_metadata_quality_detector.py`, `backend/tests/postgres_truth/test_m5a_metadata_quality_truth.py`
+- Lifecycle Slice: `backend/tests/test_lifecycle_integrity_detector.py`, `backend/tests/postgres_truth/test_m5a_lifecycle_integrity_truth.py`
+- Gate-Hierarchie: `tests/test_m5a_gate_hierarchy.py`, `backend/tests/test_parent_gate_validator.py`
 
-- Cleanup-, Merge- oder Repair-Actions
-- `data_quality_metrics`, `data_quality_snapshots`
-- Lifecycle-Aenderungen durch Data-Quality-Prozesse
-
-## Ausstehend
-
-Manuell auszufuehren (brauchen laufenden System-Stack):
-
-- `reports/current/operations_selftest_report.json` — `scripts/operations_selftest.ps1`
-- `reports/current/reindex_recovery_report.json` — pytest `test_m4e_reindex_recovery_truth.py`
-
-PostgreSQL-Truth-Lauf fuer Duplicate Detector: `pytest -m m5_truth` (braucht `TEST_DATABASE_URL`).
+Testergebnisse und Freigaben werden nur aus aktuellen Reports unter `reports/current/` abgeleitet.

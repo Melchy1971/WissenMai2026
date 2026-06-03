@@ -29,6 +29,7 @@ def _rc(status: str = "PASS", decision: str = "GO") -> dict:
     return {
         "report_schema_version": 1,
         "report_name": "rc",
+        "generated_by": "test",
         "status": status,
         "result": status,
         "decision": {"go_no_go": decision},
@@ -45,6 +46,8 @@ def _rc(status: str = "PASS", decision: str = "GO") -> dict:
 def _doc_lint(errors: int = 0) -> dict:
     status = "FAIL" if errors else "PASS"
     return {
+        "report_name": "documentation_truth_lint",
+        "generated_by": "test",
         "status": status,
         "result": status,
         "timestamp": "2026-05-29T08:00:00+00:00",
@@ -61,7 +64,7 @@ def _known_limitations(operations_open: bool = True) -> dict:
             "zielphase": "M5 Operations",
             "blockiert_gate": [],
         })
-    return {"limitations": limitations}
+    return {"generated_by": "test", "limitations": limitations}
 
 
 def _operations_release(status: str = "PASS", decision: str = "GO") -> dict:
@@ -76,6 +79,8 @@ def _operations_release(status: str = "PASS", decision: str = "GO") -> dict:
 
 def _m5a_start_gate(decision: str = "GO") -> dict:
     return {
+        "report_name": "m5a_start_gate",
+        "generated_by": "test",
         "gate": "m5a_start_gate",
         "status": "PASS" if decision == "GO" else "FAIL",
         "decision": decision,
@@ -90,6 +95,8 @@ def _m5a_start_gate(decision: str = "GO") -> dict:
 
 def _m5_gate_assessment(*, implementation_allowed: bool = False, slice_start_allowed: bool = False) -> dict:
     return {
+        "report_name": "m5_gate_assessment",
+        "generated_by": "test",
         "gate": "m5_gate_assessment",
         "decision": "GO",
         "assessment": {
@@ -98,6 +105,14 @@ def _m5_gate_assessment(*, implementation_allowed: bool = False, slice_start_all
             "m5_slice_start_allowed": slice_start_allowed,
         },
     }
+
+
+def _write_parent_children(report_dir: Path) -> None:
+    _write(report_dir / "runtime_connectivity_gate.json", _rc())
+    _write(report_dir / "m4a_auth_truth.json", _rc())
+    _write(report_dir / "m4b_upload_queue_truth.json", _rc())
+    _write(report_dir / "m4c_lifecycle_retrieval_truth.json", _rc())
+    _write(report_dir / "m4e_backup_restore_truth.json", _rc())
 
 
 def _write_inputs(
@@ -118,6 +133,7 @@ def _write_inputs(
     _write(report_dir / engine.KNOWN_LIMITATIONS, _known_limitations(operations_open))
     _write(report_dir / engine.FRONTEND_FULL_SUITE, _rc())
     _write(report_dir / engine.PREFLIGHT, _rc())
+    _write_parent_children(report_dir)
     if m5a_start_gate is not None:
         _write(report_dir / engine.M5A_START_GATE, m5a_start_gate)
     if m5_gate_assessment is not None:
@@ -156,7 +172,7 @@ def test_v3_keeps_m5_implementation_no_go_until_operations_release(tmp_path: Pat
     assert payload["m5"]["implementation_allowed"] is False
     assert payload["m5"]["implementation_decision"] == "NO_GO"
     assert payload["m5"]["status"] == "NOT_STARTED"
-    assert payload["overall"]["release_allowed"] is True
+    assert payload["overall"]["release_allowed"] is False
 
 
 def test_v3_m4e_operations_go_allows_preparation_only_without_slice_gate(tmp_path: Path) -> None:
@@ -175,10 +191,11 @@ def test_v3_allows_slice_start_when_m5a_start_gate_is_go(tmp_path: Path) -> None
 
     payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
 
-    assert payload["m5"]["status"] == "SLICE_START_ALLOWED"
+    assert payload["m5"]["status"] == "SLICE_IMPLEMENTING"
     assert payload["m5"]["slice_start_allowed"] is True
     assert payload["m5"]["implementation_allowed"] is True
-    assert payload["phases"]["m5_implementation"]["gate_status"] == "PASS"
+    assert payload["phases"]["m5_implementation"]["gate_status"] == "IN_PROGRESS"
+    assert payload["phases"]["m5_implementation"]["decision"] == "NO_GO"
 
 
 def test_v3_keeps_m5_implementation_no_go_for_active_known_operations_limitation(tmp_path: Path) -> None:

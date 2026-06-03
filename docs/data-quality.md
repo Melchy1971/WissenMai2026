@@ -12,13 +12,14 @@ Alle Aussagen, Status und Gates werden ausschliesslich aus maschinenlesbaren Rep
 - Metadata Detector Gate: Siehe `reports/current/m5a_metadata_detector_gate.json`
 - M5a Gesamtgate: Siehe `reports/current/m5a_data_quality_gate.json`
 - M5a Lifecycle Integrity Slice Gate: Siehe `reports/current/m5a_lifecycle_integrity_gate.json`
+- Parent-Gate-Hierarchie: Siehe `docs/gate_hierarchy.json`
 - CLI: `python scripts/run_data_quality.py --workspace <id>`
 
 ## M5a Start-Gate
 
-`reports/current/m5a_start_gate.json` entscheidet, ob M5a ueber Vorbereitung hinausgehen darf. Status: `GO`. Implementierungsstart ist freigegeben.
+`reports/current/m5a_start_gate.json` entscheidet nur ueber den Slice-Start. Die M5a-Gesamtfreigabe entsteht nicht aus diesem Start-Gate, sondern aus `reports/current/m5a_data_quality_gate.json` und der Parent-Gate-Hierarchie in `docs/gate_hierarchy.json`.
 
-## Implementierter Scope (M5a Slice 1, 2 und 3 in Umsetzung)
+## Implementierter Scope (M5a Slice-Artefakte)
 
 ### Datenmodell (Minimal)
 
@@ -66,7 +67,7 @@ Nachweise:
 
 - Unit: `backend/tests/test_metadata_quality_detector.py`
 - PostgreSQL Truth: `backend/tests/postgres_truth/test_m5a_metadata_quality_truth.py`
-- Gate: `reports/current/m5a_metadata_detector_gate.json` (`PASS`, 11/11 Kriterien)
+- Gate-Nachweis: `reports/current/m5a_metadata_detector_gate.json`
 
 ### Lifecycle Integrity Detector V1 (Slice 3)
 
@@ -84,7 +85,7 @@ Nachweise:
 
 - Unit: `backend/tests/test_lifecycle_integrity_detector.py`
 - PostgreSQL Truth: `backend/tests/postgres_truth/test_m5a_lifecycle_integrity_truth.py`
-- Slice Gate: `reports/current/m5a_lifecycle_integrity_gate.json` (`PASS`, 10/10 Kriterien)
+- Slice-Gate-Nachweis: `reports/current/m5a_lifecycle_integrity_gate.json`
 
 ### Runner
 
@@ -130,14 +131,16 @@ Nicht in diesem Slice und ohne separate Governance ausser Scope:
   "workspace_id": "<uuid>",
   "status": "completed",
   "total_findings": 0,
-  "quality_score": 100.0,
+  "quality_score": "<score>",
   "findings": []
 }
 ```
 
 ## Gate-Bezug
 
-- Duplicate Detector Slice: `reports/current/m5a_duplicate_detector_gate.json` = `PASS`.
-- Metadata Detector Slice: `reports/current/m5a_metadata_detector_gate.json` = `PASS`.
-- Lifecycle Integrity Slice: `reports/current/m5a_lifecycle_integrity_gate.json` = `PASS`.
-- M5a Gesamtgate: `reports/current/m5a_data_quality_gate.json` bleibt formal an den Data-Quality-Run (`data_quality_report.json`) und Integritaetsreports (`report_integrity_pre_m5a.json`, plus operations/reindex laut Gate-Regel) gebunden.
+- Duplicate Detector Slice: Status siehe `reports/current/m5a_duplicate_detector_gate.json`.
+- Metadata Detector Slice: Status siehe `reports/current/m5a_metadata_detector_gate.json`.
+- Lifecycle Integrity Slice: Status siehe `reports/current/m5a_lifecycle_integrity_gate.json`.
+- Slice-Regel: Ein Slice-Gate bewertet nur den jeweiligen Slice und ersetzt keinen M5a-Gesamt-`PASS`.
+- M5a Gesamtgate: Status siehe `reports/current/m5a_data_quality_gate.json`.
+- Parent-Gate-Regel: M5a darf nur Gesamt-`PASS` sein, wenn das Parent-Gate `m5a` nach `docs/gate_hierarchy.json` `PASS` ist.
