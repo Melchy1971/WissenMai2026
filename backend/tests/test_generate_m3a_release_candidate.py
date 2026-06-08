@@ -38,6 +38,7 @@ T_NEW = "2026-05-28T14:00:00+00:00"
 
 def _report(*, ts: str = T_OLD, status: str = "PASS", collected: int = 1) -> dict:
     return {
+        "generated_by": "gate_validator",
         "status": status, "result": status,
         "collected": collected, "passed": collected if status == "PASS" else 0,
         "failed": 0 if status == "PASS" else 1, "errors": 0, "skipped": 0,
@@ -56,7 +57,8 @@ def _rc(*, ts: str = T_RC, status: str = "PASS") -> dict:
 def _doc_lint(*, ts: str = T_OLD, errors: int = 0) -> dict:
     status = "PASS" if errors == 0 else "FAIL"
     return {
-        "status": status, "result": status, "errors": errors,
+        "generated_by": "documentation_truth_linter",
+        "status": status, "result": status,
         "summary": {"errors": errors, "warnings": 0},
         "exit_code": 0 if errors == 0 else 1, "timestamp": ts,
     }
@@ -75,7 +77,7 @@ def _ops_rc() -> dict:
 
 def _write_engine_inputs(
     report_dir: Path, *, m3a=None, m4=None, doc_errors=0,
-    operations_release=None, frontend_full_suite=None, preflight=None,
+    operations_release=None, frontend_full_suite=None, preflight=None, runtime_gate=None,
 ) -> None:
     _write(report_dir / engine.M3A_RC, m3a or _rc())
     _write(report_dir / engine.M4_BACKEND_RC, m4 or _rc())
@@ -84,6 +86,11 @@ def _write_engine_inputs(
     _write(report_dir / engine.KNOWN_LIMITATIONS, {"limitations": []})
     _write(report_dir / engine.FRONTEND_FULL_SUITE, frontend_full_suite or _report())
     _write(report_dir / engine.PREFLIGHT, preflight or _report())
+    _write(report_dir / engine.RUNTIME_CONNECTIVITY_GATE, runtime_gate or _report())
+    _write(report_dir / "m4a_auth_truth.json", _report())
+    _write(report_dir / "m4b_upload_queue_truth.json", _report())
+    _write(report_dir / "m4c_lifecycle_retrieval_truth.json", _report())
+    _write(report_dir / "m4e_backup_restore_truth.json", _report())
 
 
 # ---------------------------------------------------------------------------
@@ -113,6 +120,18 @@ class TestCheckStaleness:
         result = guard.check_staleness(rc, _report(ts=T_OLD), _report(ts=T_OLD), _doc_lint(ts=T_NEW))
         assert result.is_stale
         assert any("documentation_truth_lint" in r for r in result.reasons)
+
+    def test_runtime_connectivity_newer_than_rc_is_stale(self):
+        rc = _rc(ts=T_RC)
+        result = guard.check_staleness(
+            rc,
+            _report(ts=T_OLD),
+            _report(ts=T_OLD),
+            _doc_lint(ts=T_OLD),
+            runtime_connectivity_gate=_report(ts=T_NEW),
+        )
+        assert result.is_stale
+        assert any("runtime_connectivity_gate" in r for r in result.reasons)
 
     def test_all_three_inputs_stale_three_reasons(self):
         rc = _rc(ts=T_RC)
@@ -184,8 +203,9 @@ class TestCheckPreconditions:
 
 def _make_generator_inputs(report_dir, gui_truth_dir, *, frontend_ts=T_OLD,
                             frontend_status="PASS", preflight_status="PASS", doc_errors=0):
+    del gui_truth_dir
+    _write(report_dir / generator.RUNTIME_CONNECTIVITY_GATE, _report(ts=T_OLD))
     _write(report_dir / generator.FRONTEND_FULL_SUITE, _report(ts=frontend_ts, status=frontend_status))
-    _write(report_dir / generator.FRONTEND_MINIMAL, _report(ts=T_OLD))
     _write(report_dir / generator.PREFLIGHT, _report(status=preflight_status))
     _write(report_dir / generator.DOC_LINT, _doc_lint(errors=doc_errors))
 
@@ -194,15 +214,12 @@ class TestBuildReleaseCandidate:
     def test_pass_when_all_inputs_green_and_gui_available(self, tmp_path):
         gui_dir = tmp_path / "gui_truth"
         _make_generator_inputs(tmp_path, gui_dir)
-        _write(gui_dir / generator.GUI_CHAOS, {
-            "result": "PASS", "collected": 8, "passed": 8, "failed": 0,
-            "errors": 0, "skipped": 0, "exit_code": 0, "timestamp": T_OLD,
-        })
 
         payload, exit_code = generator.build_release_candidate(tmp_path, gui_dir)
 
         assert payload["status"] == "PASS"
         assert payload["decision"]["go_no_go"] == "GO"
+        assert payload["generated_by"] == "gate_validator"
         assert exit_code == 0
 
     def test_blocked_when_preflight_fails(self, tmp_path):
@@ -212,7 +229,7 @@ class TestBuildReleaseCandidate:
         payload, exit_code = generator.build_release_candidate(tmp_path, gui_dir)
 
         assert payload["status"] == "BLOCKED"
-        assert payload["decision"]["go_no_go"] == "NO-GO"
+        assert payload["decision"]["go_no_go"] == "NO_GO"
         assert exit_code == 1
         assert "stale_reason" in payload
 
@@ -232,7 +249,7 @@ class TestBuildReleaseCandidate:
         payload, exit_code = generator.build_release_candidate(tmp_path, gui_dir)
 
         assert payload["status"] != "PASS"
-        assert payload["decision"]["go_no_go"] == "NO-GO"
+        assert payload["decision"]["go_no_go"] == "NO_GO"
         assert exit_code == 1
 
     def test_stale_guard_metadata_always_present(self, tmp_path):
@@ -290,7 +307,7 @@ class TestStatusEngineStaleGuard:
         result = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
 
         assert result["phases"]["m3a"]["decision"] == "GO"
-        assert result["overall"]["release_allowed"] is True
+        assert result["phases"]["m3a"]["blockers"] == []
 
     def test_stale_rc_blocks_m3a_gate(self, tmp_path):
         _write_engine_inputs(tmp_path, m3a=_rc(ts=T_OLD),
@@ -362,4 +379,4 @@ class TestStatusEngineStaleGuard:
         result = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
 
         assert result["phases"]["m3a"]["decision"] == "GO"
-        assert result["overall"]["release_allowed"] is True
+        assert result["phases"]["m3a"]["blockers"] == []

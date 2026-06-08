@@ -1,0 +1,165 @@
+{
+  "report_schema_version": 1,
+  "report_name": "runtime_connectivity_report",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-06-03T09:35:24.440Z",
+  "timestamp": "2026-06-03T09:35:24.440Z",
+  "result": "PASS",
+  "status": "PASS",
+  "gate": "runtime_connectivity_gate",
+  "environment": "local",
+  "report_type": "truth",
+  "collected": 8,
+  "passed": 8,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "blockers": [],
+  "source_command": "node scripts/run_runtime_connectivity_report.js",
+  "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026",
+  "api_base_url": "http://127.0.0.1:8001",
+  "frontend_base_url": "http://127.0.0.1:5174",
+  "credentials": {
+    "login": "mdickscheit@gmail.com"
+  },
+  "checks": [
+    {
+      "id": "DATABASE_URL gesetzt",
+      "result": "PASS",
+      "evidence": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026"
+    },
+    {
+      "id": "Alembic head",
+      "result": "PASS",
+      "evidence": "current=20260602_0019"
+    },
+    {
+      "id": "Seed erfolgreich",
+      "result": "PASS",
+      "evidence": "seed_auth.py exit 0"
+    },
+    {
+      "id": "Backend /health",
+      "result": "PASS",
+      "evidence": 200
+    },
+    {
+      "id": "/auth/login",
+      "result": "PASS",
+      "evidence": 200
+    },
+    {
+      "id": "/auth/me",
+      "result": "PASS",
+      "evidence": 200
+    },
+    {
+      "id": "Frontend API erreichbar",
+      "result": "PASS",
+      "evidence": "3 API response(s)"
+    },
+    {
+      "id": "Workspace Bootstrap erfolgreich",
+      "result": "PASS",
+      "evidence": "http://127.0.0.1:5174/documents"
+    }
+  ],
+  "alembic": {
+    "ok": true,
+    "heads": [
+      "20260602_0019"
+    ],
+    "current": [
+      "20260602_0019"
+    ],
+    "missing_heads": [],
+    "stdout": {
+      "heads": "20260602_0019 (head)\r\n",
+      "current": "20260602_0019 (head)\r\n"
+    },
+    "stderr": {
+      "heads": "",
+      "current": "INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.\r\nINFO  [alembic.runtime.migration] Will assume transactional DDL.\r\n"
+    }
+  },
+  "seed": {
+    "exit_code": 0,
+    "stdout": "User updated: 00000000-0000-0000-0000-000000000001\r\n\r\nValidation:\r\nuser_id: 00000000-0000-0000-0000-000000000001\r\nworkspace_id: 00000000-0000-0000-0000-000000000001\r\nrole: admin\r\nis_active: True\r\nlogin: mdickscheit@gmail.com\r\nbootstrap_invariant: PASS\r\nreport: H:\\WissenMai2026\\reports\\seed_report.json\r\n",
+    "stderr": ""
+  },
+  "health": {
+    "status": 200,
+    "ok": true,
+    "error": null
+  },
+  "login": {
+    "status": 200,
+    "ok": true,
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "login": "mdickscheit@gmail.com",
+      "display_name": "mdickscheit@gmail.com"
+    },
+    "memberships": [
+      {
+        "workspace_id": "00000000-0000-0000-0000-000000000001",
+        "role": "admin"
+      }
+    ]
+  },
+  "auth_me": {
+    "status": 200,
+    "ok": true,
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000001",
+      "login": "mdickscheit@gmail.com",
+      "display_name": "mdickscheit@gmail.com"
+    },
+    "memberships": [
+      {
+        "workspace_id": "00000000-0000-0000-0000-000000000001",
+        "role": "admin"
+      }
+    ],
+    "active_workspace_id": "00000000-0000-0000-0000-000000000001"
+  },
+  "frontend": {
+    "frontend_api_reachable": true,
+    "workspace_bootstrap_successful": true,
+    "final_url": "http://127.0.0.1:5174/documents",
+    "api_responses": [
+      {
+        "url": "http://127.0.0.1:8001/api/v1/auth/login",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:8001/api/v1/auth/me",
+        "status": 200
+      },
+      {
+        "url": "http://127.0.0.1:8001/documents?limit=20&offset=0&lifecycle_status=active",
+        "status": 200
+      }
+    ],
+    "body_excerpt": "DEUTSCHE TELEKOM\n\nWissensbasis V1\nDokumente\nChat\nAdmin\nmdickscheit@gmail.com\n00000000-0000-0000-0000-000000000001\nAbmelden\n\nDOKUMENTUEBERSICHT\n\nDokumente\n\nWorkspace: 00000000-0000-0000-0000-000000000001\n\nLIFECYCLE\n\nSichtbarkeit\nSTATUSFILTER\nNur aktive Dokumente\nNur archivierte Dokumente\nHinweis\n\nArchivierte Dokumente erscheinen nicht in Suche oder Chat. Geloeschte Dokumente werden in der GUI nicht angezeigt.\n\nIMPORT\n\nDokument hochladen\nDATEI\nDokument importieren\n\nEINFACHE SUCHE\n\nChunk-Suche\nSUCHBEGRIFF\nSuchen\nZuruecksetzen\nTITEL\tTYP\tLIFECYCLE\tSTATUS\tVERSIONEN\tCHUNKS\tAKTUALISIERT\nAcronisUniversalRestore_userguide_en-US\tapplication/pdf\tactive\tLesbar\t1\t5\t01.06.2026, 10:09",
+    "events": [
+      {
+        "type": "console",
+        "level": "debug",
+        "text": "[vite] connecting..."
+      },
+      {
+        "type": "console",
+        "level": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "console",
+        "level": "debug",
+        "text": "[vite] connected."
+      }
+    ]
+  },
+  "remaining_errors": []
+}

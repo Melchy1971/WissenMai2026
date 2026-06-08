@@ -1,0 +1,62 @@
+{
+  "report_schema_version": 1,
+  "report_name": "report_integrity_pre_m5a_archive_log",
+  "gate": "report_integrity_pre_m5a",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-03T09:15:00+00:00",
+  "environment": "local",
+  "report_type": "informational",
+  "status": "INFO",
+  "result": "INFO",
+  "collected": 3,
+  "passed": 3,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "blockers": [],
+  "source_command": "manual_report_integrity_pre_m5a_unblock",
+  "archive_target": "reports/archive/m5a/report_integrity_pre_m5a_20260603T091500Z/",
+  "decisions": [
+    {
+      "file": "reports/current/cleanup_log.json",
+      "classification": "Legacy/Archiv",
+      "decision": "archived",
+      "reason": "cleanup_log.json is an archive/source-policy log, not an active gate input."
+    },
+    {
+      "file": "reports/current/frontend_truth_minimal_report.json",
+      "classification": "optionaler Report",
+      "decision": "archived",
+      "reason": "frontend_truth_minimal_report.json is stale and not a mandatory M5a gate input."
+    },
+    {
+      "file": "reports/current/regression_lock_result.json",
+      "classification": "optionaler Report",
+      "decision": "archived",
+      "reason": "regression_lock_result.json is stale and not a mandatory M5a gate input."
+    }
+  ],
+  "moved": [
+    {
+      "from": "reports/current/cleanup_log.json",
+      "to": "reports/archive/m5a/report_integrity_pre_m5a_20260603T091500Z/cleanup_log.json"
+    },
+    {
+      "from": "reports/current/frontend_truth_minimal_report.json",
+      "to": "reports/archive/m5a/report_integrity_pre_m5a_20260603T091500Z/frontend_truth_minimal_report.json"
+    },
+    {
+      "from": "reports/current/regression_lock_result.json",
+      "to": "reports/archive/m5a/report_integrity_pre_m5a_20260603T091500Z/regression_lock_result.json"
+    }
+  ],
+  "fixes": [
+    {
+      "file": "reports/current/known_limitations.json",
+      "classification": "aktiver Gate-Input",
+      "decision": "kept_active",
+      "fix": "Added generated_by, report_schema_version, timestamp, report metadata, counters, and source_command."
+    }
+  ]
+}

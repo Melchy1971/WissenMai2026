@@ -47,6 +47,7 @@ def _doc_lint(errors: int = 0) -> dict:
     status = "FAIL" if errors else "PASS"
     return {
         "report_name": "documentation_truth_lint",
+        "report_type": "supporting",
         "generated_by": "test",
         "status": status,
         "result": status,
@@ -83,7 +84,9 @@ def _m5a_start_gate(decision: str = "GO") -> dict:
         "generated_by": "test",
         "gate": "m5a_start_gate",
         "status": "PASS" if decision == "GO" else "FAIL",
-        "decision": decision,
+        "result": "PASS" if decision == "GO" else "FAIL",
+        "decision": {"go_no_go": decision, "result": decision},
+        "timestamp": "2026-05-29T08:00:00+00:00",
         "collected": 1,
         "passed": 1 if decision == "GO" else 0,
         "failed": 0 if decision == "GO" else 1,
@@ -91,6 +94,67 @@ def _m5a_start_gate(decision: str = "GO") -> dict:
         "skipped": 0,
         "exit_code": 0 if decision == "GO" else 1,
     }
+
+
+def _data_quality_report() -> dict:
+    return {
+        "report_name": "data_quality_report",
+        "report_type": "supporting",
+        "generated_by": "test",
+        "status": "completed",
+        "timestamp": "2026-05-29T08:00:00+00:00",
+        "quality_score": 94.0,
+        "blockers": [],
+    }
+
+
+def _m5a_data_quality_gate(status: str = "PASS", decision: str = "GO") -> dict:
+    return {
+        "report_name": "m5a_data_quality_gate",
+        "generated_by": "gate_validator",
+        "gate": "m5a_data_quality_gate",
+        "status": status,
+        "result": status,
+        "decision": {"go_no_go": decision, "result": decision},
+        "timestamp": "2026-05-29T08:00:00+00:00",
+        "collected": 1,
+        "passed": 1 if status == "PASS" else 0,
+        "failed": 0 if status == "PASS" else 1,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 0 if status == "PASS" else 1,
+        "blockers": [],
+    }
+
+
+def _m5b_start_gate(status: str = "PREPARED") -> dict:
+    return {
+        "report_name": "m5b_start_gate",
+        "generated_by": "gate_validator",
+        "gate": "m5b_start_gate",
+        "status": status,
+        "result": status,
+        "decision": {
+            "go_no_go": "GO" if status == "PREPARED" else "NO_GO",
+            "m5b_preparation_allowed": status == "PREPARED",
+            "m5b_implementation_allowed": False,
+            "m5b_implementation_gate_required": True,
+        },
+        "timestamp": "2026-05-29T08:00:00+00:00",
+        "blockers": [] if status == "PREPARED" else [{"id": "M5A_PARENT_GATE_NOT_PASSED"}],
+    }
+
+
+def _write_m5a_pass_inputs(report_dir: Path) -> None:
+    _write(report_dir / engine.M5A_START_GATE, _m5a_start_gate("GO"))
+    _write(report_dir / "report_integrity_pre_m5a.json", _rc())
+    _write(report_dir / "data_quality_report.json", _data_quality_report())
+    _write(report_dir / "m5a_duplicate_detector_gate.json", _rc())
+    _write(report_dir / "m5a_metadata_detector_gate.json", _rc())
+    _write(report_dir / "m5a_lifecycle_integrity_gate.json", _rc())
+    _write(report_dir / "m5a_source_status_integrity_gate.json", _rc())
+    _write(report_dir / "m5a_orphan_detector_gate.json", _rc())
+    _write(report_dir / engine.M5A_DATA_QUALITY_GATE, _m5a_data_quality_gate())
 
 
 def _m5_gate_assessment(*, implementation_allowed: bool = False, slice_start_allowed: bool = False) -> dict:
@@ -193,8 +257,8 @@ def test_v3_allows_slice_start_when_m5a_start_gate_is_go(tmp_path: Path) -> None
 
     assert payload["m5"]["status"] == "SLICE_IMPLEMENTING"
     assert payload["m5"]["slice_start_allowed"] is True
-    assert payload["m5"]["implementation_allowed"] is True
-    assert payload["phases"]["m5_implementation"]["gate_status"] == "IN_PROGRESS"
+    assert payload["m5"]["implementation_allowed"] is False
+    assert payload["phases"]["m5_implementation"]["gate_status"] == "BLOCKED"
     assert payload["phases"]["m5_implementation"]["decision"] == "NO_GO"
 
 
@@ -260,3 +324,33 @@ def test_v3_status_section_uses_v3_markers(tmp_path: Path) -> None:
     assert "NO_GO" in section
     assert "Statusmodell" in section
     assert "<!-- END GENERATED MASTERPLAN STATUS v3 -->" in section
+
+
+def test_v3_blocks_m5b_until_m5a_pass(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    _write(tmp_path / engine.M5B_START_GATE, _m5b_start_gate("PREPARED"))
+
+    payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
+
+    assert payload["phases"]["m5b_drift"]["gate_status"] == "PREPARED"
+    assert payload["phases"]["m5b_drift"]["decision"] == "NO_GO"
+    assert any(
+        blocker["id"] == "M5A_PARENT_GATE_NOT_PASSED"
+        for blocker in payload["phases"]["m5b_drift"]["blockers"]
+    )
+
+
+def test_v3_allows_m5b_prepared_after_m5a_pass_without_implementation(tmp_path: Path) -> None:
+    _write_inputs(tmp_path)
+    _write_m5a_pass_inputs(tmp_path)
+    _write(tmp_path / engine.M5B_START_GATE, _m5b_start_gate("PREPARED"))
+
+    payload = engine.evaluate(tmp_path, timestamp="2026-05-29T08:00:00+00:00")
+
+    assert payload["phases"]["m5b_drift"]["decision"] == "PREPARED"
+    assert payload["phases"]["m5b_drift"]["gate_status"] == "PREPARED"
+    assert payload["m5"]["m5b_implementation_allowed"] is False
+    assert payload["m5"]["m5b_implementation_gate_required"] is True
+    assert payload["gate_hierarchy"]["m5b_implementation_gate"]["status"] == "BLOCKED"
+    assert payload["overall"]["release_allowed"] is False
+    assert payload["overall"]["progress_percent"] < 100

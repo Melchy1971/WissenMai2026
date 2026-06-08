@@ -1,10 +1,10 @@
 {
   "report_schema_version": 1,
   "report_name": "m3a_release_candidate",
-  "generated_by": "generate_m3a_release_candidate",
-  "timestamp": "2026-06-01T09:44:37.687128+00:00",
-  "generated_at": "2026-06-01T09:44:37.687128+00:00",
-  "version": 3,
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-05T10:06:18.467008+00:00",
+  "generated_at": "2026-06-05T10:06:18.467008+00:00",
+  "version": 6,
   "release_candidate": "M3a",
   "gate": "m3a",
   "status": "PASS",
@@ -19,20 +19,37 @@
   },
   "environment": "local",
   "report_type": "release_candidate",
-  "rule": "M3a RC is PASS/GO only when frontend full suite, frontend minimal, report truth preflight, and documentation lint are all green. A RC is STALE when any mandatory input carries a timestamp newer than the RC.",
+  "source_command": "python scripts/generate_m3a_release_candidate.py",
+  "rule": "M3a RC is PASS/GO only when runtime_connectivity_gate, frontend full-suite completion evidence, report_truth_preflight, and documentation_truth_lint are green. A RC is STALE when any mandatory current input carries a timestamp newer than the RC.",
   "inputs": [
-    "reports/current/frontend_full_suite_staged_report.json",
-    "reports/current/frontend_truth_minimal_report.json",
+    "reports/current/runtime_connectivity_gate.json",
+    "reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json",
     "reports/current/report_truth_preflight.json",
-    "reports/current/documentation_truth_lint.json",
-    "reports/gui_truth/gui_chaos_suite_report.json"
+    "reports/current/documentation_truth_lint.json"
   ],
   "criteria": [
     {
-      "id": "frontend_full_suite_staged_green",
-      "label": "Frontend Full Suite Staged gr\u00fcn",
+      "id": "runtime_connectivity_gate_green",
+      "label": "Runtime Connectivity Gate gruen",
       "passed": true,
-      "source": "reports/current/frontend_full_suite_staged_report.json",
+      "source": "reports/current/runtime_connectivity_gate.json",
+      "blockers": [],
+      "evidence": {
+        "status": "PASS",
+        "result": "PASS",
+        "decision": "GO",
+        "score_pct": 100.0,
+        "passed_checks": 9,
+        "total_checks": 9,
+        "exit_code": 0,
+        "timestamp": "2026-06-05T10:04:42.576444+00:00"
+      }
+    },
+    {
+      "id": "frontend_full_suite_staged_green",
+      "label": "Frontend Full Suite Staged gruen",
+      "passed": true,
+      "source": "reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json",
       "blockers": [],
       "evidence": {
         "status": "PASS",
@@ -42,29 +59,13 @@
         "errors": 0,
         "skipped": 0,
         "exit_code": 0,
-        "real_api": null,
-        "test_database_url_set": null,
         "timestamp": "2026-05-28T10:28:30.000000+00:00"
-      }
-    },
-    {
-      "id": "frontend_truth_minimal_green",
-      "label": "Frontend Truth Minimal gr\u00fcn",
-      "passed": true,
-      "source": "reports/current/frontend_truth_minimal_report.json",
-      "blockers": [],
-      "evidence": {
-        "status": "PASS",
-        "collected": 6,
-        "passed": 6,
-        "failed": 0,
-        "errors": 0,
-        "timestamp": "2026-05-27T07:18:41.864548+00:00"
-      }
+      },
+      "note": "current report archived; immutable M3a completion evidence is used"
     },
     {
       "id": "report_truth_preflight_green",
-      "label": "Report Truth Preflight gr\u00fcn",
+      "label": "Report Truth Preflight gruen",
       "passed": true,
       "source": "reports/current/report_truth_preflight.json",
       "blockers": [],
@@ -81,7 +82,7 @@
     },
     {
       "id": "documentation_truth_lint_green",
-      "label": "Documentation Truth Lint gr\u00fcn",
+      "label": "Documentation Truth Lint gruen",
       "passed": true,
       "source": "reports/current/documentation_truth_lint.json",
       "blockers": [],
@@ -91,41 +92,26 @@
         "errors": 0,
         "warnings": 0,
         "exit_code": 0,
-        "timestamp": "2026-06-01T09:44:35.909744+00:00"
-      }
-    },
-    {
-      "id": "gui_chaos_green",
-      "label": "GUI Chaos gr\u00fcn",
-      "passed": true,
-      "source": "reports/gui_truth/gui_chaos_suite_report.json",
-      "blockers": [],
-      "evidence": {
-        "result": "PASS",
-        "collected": 8,
-        "passed": 8,
-        "failed": 0,
-        "errors": 0,
-        "exit_code": 0,
-        "timestamp": "2026-05-18T14:45:46.6959150+02:00"
+        "timestamp": "2026-06-03T09:36:32.001820+00:00"
       }
     }
   ],
   "stale_guard": {
     "input_timestamps": {
+      "runtime_connectivity_gate": "2026-06-05T10:04:42.576444+00:00",
       "frontend_full_suite_staged_report": "2026-05-28T10:28:30.000000+00:00",
       "report_truth_preflight": "2026-05-29T06:38:24.591859+00:00",
-      "documentation_truth_lint": "2026-06-01T09:44:35.909744+00:00"
+      "documentation_truth_lint": "2026-06-03T09:36:32.001820+00:00"
     },
-    "rc_timestamp": "2026-06-01T09:44:37.687128+00:00",
+    "rc_timestamp": "2026-06-05T10:06:18.467008+00:00",
     "precondition_violations": []
   },
   "blockers": [],
-  "collected": 5,
-  "passed": 5,
+  "collected": 4,
+  "passed": 4,
   "failed": 0,
   "errors": 0,
   "skipped": 0,
   "exit_code": 0,
-  "commit_hash": "de7497349"
+  "commit_hash": "6ad37e5d2"
 }

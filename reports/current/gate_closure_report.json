@@ -1,0 +1,127 @@
+{
+  "report_schema_version": 1,
+  "report_name": "gate_closure_report",
+  "generated_by": "gate_closure_report_engine_v1",
+  "generated_at": "2026-06-05T10:20:00+00:00",
+  "timestamp": "2026-06-05T10:20:00+00:00",
+  "sprint": "M5a Completion Sprint",
+  "scope": "Final Gate Closure Assessment fuer M5a",
+  "status": "PASS",
+  "result": "CLOSED",
+  "decision": {
+    "go_no_go": "GO",
+    "sprint_closed": true,
+    "next_phase_allowed": "M5b Implementierungsfreigabe",
+    "next_phase_condition": "retrieval_baseline_release_grade=true AND m5b-drift-architecture != DRAFT"
+  },
+  "checks": [
+    {
+      "id": "check_01",
+      "label": "report_integrity_pre_m5a PASS?",
+      "result": "PASS",
+      "status": "PASS",
+      "go_no_go": "GO",
+      "source": "reports/current/report_integrity_pre_m5a.json",
+      "timestamp": "2026-06-05T10:10:00+00:00",
+      "evidence": "6/6 criteria passed. 42/42 valid JSON. Keine Widersprueche. Keine stale PASS ausserhalb Allowlist.",
+      "detail": "Alle 18 required gates present und valide. M4-era Reports via Allowlist als Regression-Lock-Baseline deklariert."
+    },
+    {
+      "id": "check_02",
+      "label": "gate_hierarchy_result PASS?",
+      "result": "PASS",
+      "status": "PASS",
+      "source": "reports/current/gate_hierarchy_result.json",
+      "timestamp": "2026-06-05T10:15:00+00:00",
+      "evidence": "19/19 gates PASS. m3a=PASS, m4=PASS, m5a=PASS.",
+      "detail": "Alle Parent- und Child-Gates gruengesetzt. Keine Blocker."
+    },
+    {
+      "id": "check_03",
+      "label": "m3a_release_candidate aktuell?",
+      "result": "PASS",
+      "status": "PASS",
+      "source": "reports/current/m3a_release_candidate.json",
+      "timestamp": "2026-06-05T10:05:00+00:00",
+      "rc_version": 5,
+      "stale": false,
+      "evidence": "RC v5, generiert 2026-06-05T10:05:00. stale_guard.precondition_violations=[]. runtime_connectivity_gate 2026-06-05 erneuert.",
+      "detail": "RC ist aktuell. Alle 4 Inputs gruengesetzt. go_no_go=GO."
+    },
+    {
+      "id": "check_04",
+      "label": "m5a_source_status_integrity_gate vorhanden?",
+      "result": "PASS",
+      "status": "PASS",
+      "go_no_go": "GO",
+      "source": "reports/current/m5a_source_status_integrity_gate.json",
+      "timestamp": "2026-06-05T10:00:00+00:00",
+      "evidence": "Vorhanden. 11/11 tests PASS. Frisch erzeugt 2026-06-05.",
+      "detail": "Gate ist mandatory child von m5a Parent-Gate. Statuskonform eingebunden in gate_hierarchy_result und m5a_data_quality_gate."
+    },
+    {
+      "id": "check_05",
+      "label": "m5a_orphan_detector_gate vorhanden?",
+      "result": "PASS",
+      "status": "PASS",
+      "go_no_go": "GO",
+      "source": "reports/current/m5a_orphan_detector_gate.json",
+      "timestamp": "2026-06-05T10:00:00+00:00",
+      "evidence": "Vorhanden. 9/9 tests PASS. Frisch erzeugt 2026-06-05.",
+      "detail": "Gate ist mandatory child von m5a Parent-Gate. Statuskonform eingebunden in gate_hierarchy_result und m5a_data_quality_gate."
+    },
+    {
+      "id": "check_06",
+      "label": "m5a_data_quality_gate PASS oder klar BLOCKED?",
+      "result": "PASS",
+      "status": "PASS",
+      "go_no_go": "GO",
+      "source": "reports/current/m5a_data_quality_gate.json",
+      "timestamp": "2026-06-05T10:20:00+00:00",
+      "evidence": "10/10 gate_decision_trace entries PASS. Alle child-gates PASS. quality_score=94.0 (>=90). blockers=[].",
+      "detail": "Parent-Gate m5a=PASS per gate_hierarchy_result. m5b_preparation_allowed=true."
+    },
+    {
+      "id": "check_07",
+      "label": "masterplan_status widerspruchsfrei?",
+      "result": "PASS",
+      "status": "PASS",
+      "source": "reports/current/masterplan_status.json",
+      "timestamp": "2026-06-05T10:20:00+00:00",
+      "evidence": "report_contradictions=[]. input_integrity_issues=[]. Alle Phasen konsistent mit jeweiligen Gate-Reports. M5b PREPARED mit 2 Implementierungsblockern dokumentiert.",
+      "detail": "Kein Widerspruch zwischen masterplan_status, gate_hierarchy_result, m5a_data_quality_gate und report_integrity_pre_m5a."
+    }
+  ],
+  "summary": {
+    "total_checks": 7,
+    "passed": 7,
+    "failed": 0,
+    "blocked": 0
+  },
+  "open_blockers_for_next_phase": [
+    {
+      "id": "retrieval_baseline_not_release_grade",
+      "severity": "blocking",
+      "phase": "M5b Implementierungsfreigabe",
+      "detail": "retrieval_quality_baseline_report: baseline_release_grade=false — Golden Retrieval Benchmark fehlt.",
+      "source": "reports/current/retrieval_quality_baseline_report.json"
+    },
+    {
+      "id": "m5b_architecture_draft",
+      "severity": "blocking",
+      "phase": "M5b Implementierungsfreigabe",
+      "detail": "m5b-drift-architecture status=DRAFT — Architektur muss finalisiert sein.",
+      "source": "docs/m5b-drift-architecture.md"
+    }
+  ],
+  "next_allowed_phase": {
+    "phase": "M5b Implementierungsfreigabe",
+    "current_gate_status": "PREPARED",
+    "required_to_unlock": [
+      "retrieval_quality_baseline_report: baseline_release_grade=true (Golden Retrieval Benchmark durchgelaufen)",
+      "m5b-drift-architecture: Status != DRAFT (Architektur finalisiert und freigegeben)"
+    ],
+    "implementation_allowed_after": "m5b_start_gate wechselt von PREPARED auf GO nach Aufloesung beider Blocker"
+  },
+  "blockers": []
+}

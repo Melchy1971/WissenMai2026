@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-01T12:27:18.873175Z",
-  "database_url": "postgresql://testuser:***@localhost:5433/wissen_test",
+  "generated_at": "2026-06-03T09:35:15.582602Z",
+  "database_url": "postgresql+psycopg://Markus:***@85.215.131.200:5432/wissen2026",
   "status": "success",
   "seeded": {
     "workspace": {
@@ -10,7 +10,7 @@
     },
     "user": {
       "id": "00000000-0000-0000-0000-000000000001",
-      "login": "admin@localhost",
+      "login": "mdickscheit@gmail.com",
       "role": "admin"
     },
     "membership": {
@@ -20,12 +20,12 @@
     }
   },
   "credentials": {
-    "login": "admin@localhost"
+    "login": "mdickscheit@gmail.com"
   },
   "bootstrap_invariant": {
     "id": "auth_seed_bootstrap_admin_login",
     "status": "PASS",
-    "login": "admin@localhost",
+    "login": "mdickscheit@gmail.com",
     "user_id": "00000000-0000-0000-0000-000000000001",
     "workspace_id": "00000000-0000-0000-0000-000000000001",
     "role": "admin",
@@ -36,5 +36,7 @@
       "mdickscheit@gmail.com"
     ]
   },
-  "legacy_repairs": []
+  "legacy_repairs": [
+    "updated legacy login mdickscheit@gmail.com on user 00000000-0000-0000-0000-000000000001"
+  ]
 }

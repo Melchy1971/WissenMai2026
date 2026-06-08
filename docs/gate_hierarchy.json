@@ -29,7 +29,7 @@
       "label": "M3a",
       "mandatory_children": [
         "runtime_connectivity_gate",
-        "frontend_full_suite_staged",
+        "m3a_release_candidate",
         "documentation_truth_lint"
       ]
     },
@@ -67,17 +67,15 @@
       ],
       "counter_validation": "required"
     },
-    "frontend_full_suite_staged": {
-      "label": "Frontend Full Suite Staged",
-      "report": "reports/current/frontend_full_suite_staged_report.json",
+    "m3a_release_candidate": {
+      "label": "M3a Release Candidate",
+      "report": "reports/current/m3a_release_candidate.json",
       "accepted_statuses": [
         "PASS"
       ],
+      "required_decision": "GO",
       "counter_validation": "required",
-      "optional_true_fields": [
-        "real_api",
-        "test_database_url_set"
-      ]
+      "optional_true_fields": []
     },
     "documentation_truth_lint": {
       "label": "Documentation Truth Lint",

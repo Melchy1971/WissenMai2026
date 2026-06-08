@@ -1,0 +1,70 @@
+{
+  "report_schema_version": 1,
+  "report_name": "archive_log",
+  "generated_by": "report_archiver",
+  "generated_at": "2026-06-05T11:06:43.8487735+02:00",
+  "timestamp": "2026-06-05T11:06:43.8487735+02:00",
+  "environment": "local",
+  "report_type": "audit",
+  "status": "INFO",
+  "result": "INFO",
+  "source_command": "reports_current_stale_archive_check_20260605",
+  "scope_definition": "reports/current_scope.json",
+  "archive_policy": {
+    "target_pattern": "reports/archive/legacy/<timestamp>/",
+    "stale_reports_checked": [
+      "reports/current/frontend_truth_minimal_report.json",
+      "reports/current/regression_lock_result.json"
+    ],
+    "move_only_if_present_in_current": true,
+    "regenerate_only_if_still_required": true
+  },
+  "summary": {
+    "reports_checked": 2,
+    "present_in_current": 0,
+    "already_archived": 2,
+    "moved_to_legacy_archive": 0,
+    "regenerated": 0,
+    "current_validation_status": "PASS",
+    "current_validation_detail": "reports/current contains no frontend_truth_minimal_report.json or regression_lock_result.json after archive check."
+  },
+  "decisions": [
+    {
+      "file": "reports/current/frontend_truth_minimal_report.json",
+      "status": "already_absent_from_current",
+      "existing_archive": "reports/archive/m5a/report_integrity_pre_m5a_20260603T091500Z/frontend_truth_minimal_report.json",
+      "archived_timestamp": "2026-05-27T07:18:41.864548+00:00",
+      "newer_replacement_exists": true,
+      "replacement": "reports/current/runtime_connectivity_gate.json",
+      "replacement_timestamp": "2026-06-05T10:00:00+00:00",
+      "still_required": false,
+      "action": "no_move_needed",
+      "reason": "Current M3a release candidate no longer uses frontend_truth_minimal_report.json as active input; runtime_connectivity_gate plus archived frontend_full_suite_staged evidence supersede it."
+    },
+    {
+      "file": "reports/current/regression_lock_result.json",
+      "status": "already_absent_from_current",
+      "existing_archive": "reports/archive/m5a/report_integrity_pre_m5a_20260603T091500Z/regression_lock_result.json",
+      "archived_timestamp": "2026-05-27T08:32:33.631035+00:00",
+      "newer_replacement_exists": true,
+      "replacement": "reports/current/m4b_regression_lock.json",
+      "replacement_timestamp": "2026-05-29T06:28:10.647605+00:00",
+      "still_required": false,
+      "action": "no_move_needed",
+      "reason": "m4b_regression_lock.json is the active scoped regression-lock report; stale regression_lock_result.json remains archived and is not an active Gate input."
+    }
+  ],
+  "validation": {
+    "validated_at": "2026-06-05T11:06:43.8487735+02:00",
+    "current_files_absent": [
+      "reports/current/frontend_truth_minimal_report.json",
+      "reports/current/regression_lock_result.json"
+    ],
+    "replacement_reports_valid_json": [
+      "reports/current/runtime_connectivity_gate.json",
+      "reports/current/m4b_regression_lock.json"
+    ],
+    "blockers": []
+  },
+  "blockers": []
+}

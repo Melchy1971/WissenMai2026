@@ -49,6 +49,7 @@ def _data_quality(score: float = 94.0) -> dict:
     return {
         "report_schema_version": 2,
         "report_name": "data_quality_report",
+        "report_type": "supporting",
         "generated_by": "run_data_quality_cli",
         "timestamp": "2026-06-03T08:00:00+00:00",
         "status": "completed",
@@ -63,6 +64,7 @@ def _write_m5a_children(report_dir: Path) -> None:
     _write(report_dir / "documentation_truth_lint.json", {
         "generated_by": "documentation_truth_linter",
         "timestamp": "2026-06-03T08:00:00+00:00",
+        "report_type": "supporting",
         "status": "PASS",
         "result": "PASS",
         "summary": {"errors": 0},
@@ -147,6 +149,50 @@ def test_parent_gate_allows_configured_non_pass_status(tmp_path: Path) -> None:
     payload = validator.validate_parent_gate("m5a", report_dir=tmp_path)
 
     assert payload["child_results"]["data_quality_report"]["validation_status"] == "PASS"
+
+
+def test_parent_gate_blocks_pass_child_missing_generated_by(tmp_path: Path) -> None:
+    _write_m5a_children(tmp_path)
+    child = _gate(collected=8)
+    child.pop("generated_by")
+    _write(tmp_path / "m5a_duplicate_detector_gate.json", child)
+
+    payload = validator.validate_parent_gate("m5a", report_dir=tmp_path)
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["child_results"]["duplicate_detector_gate"]["validation_status"] == "INVALID"
+    assert payload["gate_decision_trace"]["blocking_children"] == ["duplicate_detector_gate"]
+
+
+def test_parent_gate_blocks_pass_child_missing_timestamp(tmp_path: Path) -> None:
+    _write_m5a_children(tmp_path)
+    child = _gate(collected=8)
+    child.pop("timestamp")
+    _write(tmp_path / "m5a_duplicate_detector_gate.json", child)
+
+    payload = validator.validate_parent_gate("m5a", report_dir=tmp_path)
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["child_results"]["duplicate_detector_gate"]["validation_status"] == "STALE"
+
+
+def test_parent_gate_blocks_pass_child_without_counter_or_supporting_type(tmp_path: Path) -> None:
+    _write_m5a_children(tmp_path)
+    doc_lint = {
+        "generated_by": "documentation_truth_linter",
+        "timestamp": "2026-06-03T08:00:00+00:00",
+        "status": "PASS",
+        "result": "PASS",
+        "summary": {"errors": 0},
+        "exit_code": 0,
+        "blockers": [],
+    }
+    _write(tmp_path / "documentation_truth_lint.json", doc_lint)
+
+    payload = validator.validate_parent_gate("m5a", report_dir=tmp_path)
+
+    assert payload["status"] == "BLOCKED"
+    assert payload["child_results"]["documentation_truth_lint"]["validation_status"] == "INVALID"
 
 
 def test_parent_gate_blocks_stale_child(tmp_path: Path) -> None:

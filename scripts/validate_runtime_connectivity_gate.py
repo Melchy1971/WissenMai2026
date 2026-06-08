@@ -25,6 +25,7 @@ Exit-Codes:
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
 import sys
 from pathlib import Path
@@ -175,6 +176,8 @@ def _flatten_values(obj: Any, depth: int = 0) -> list[Any]:
 def main() -> int:
     report = _load(REPORT_IN)
     checks = _evaluate(report)
+    generated_at = datetime.now(timezone.utc).isoformat()
+    evidence_timestamp = report.get("generated_at", report.get("timestamp", ""))
 
     passed = sum(1 for c in checks if c["status"] == "pass")
     score_pct = round(passed / TOTAL_CHECKS * 100, 1)
@@ -186,9 +189,10 @@ def main() -> int:
         "report_name": "runtime_connectivity_gate",
         "generated_by": "gate_validator",
         "name": "runtime_connectivity_gate",
-        "timestamp": report.get("generated_at", report.get("timestamp", "")),
-        "gate": "m3a_preflight",
+        "timestamp": generated_at,
+        "gate": "runtime_connectivity_gate",
         "status": "PASS" if gate_passed else "FAIL",
+        "result": "PASS" if gate_passed else "FAIL",
         "threshold_pct": THRESHOLD_PCT,
         "total_checks": TOTAL_CHECKS,
         "passed_checks": passed,
@@ -208,7 +212,16 @@ def main() -> int:
         "skipped": 0,
         "exit_code": 0 if gate_passed else 1,
         "source_command": "python scripts/validate_runtime_connectivity_gate.py",
+        "decision": {
+            "go_no_go": "GO" if gate_passed else "NO_GO",
+            "result": "GO" if gate_passed else "NO_GO",
+            "runtime_connectivity_allowed": gate_passed,
+        },
         "known_limitations": [],
+        "generated_at": generated_at,
+        "re_evaluated_at": generated_at,
+        "evidence_from": "reports/current/runtime_connectivity_report.json",
+        "evidence_timestamp": evidence_timestamp,
     }
 
     REPORT_OUT.parent.mkdir(parents=True, exist_ok=True)

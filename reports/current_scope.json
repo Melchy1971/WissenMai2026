@@ -1,0 +1,352 @@
+{
+  "report_schema_version": 1,
+  "report_name": "current_scope",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-06-05T10:00:00+00:00",
+  "timestamp": "2026-06-05T10:00:00+00:00",
+  "environment": "local",
+  "report_type": "scope_definition",
+  "status": "ACTIVE",
+  "description": "Allowlist und Klassifikation aller erlaubten Dateien in reports/current. Grundlage fuer report_integrity_pre_m5a Gate-Checks.",
+  "current_allowlist_total": 45,
+  "ignored_legacy_total": 16,
+  "blocking_categories": ["required_gate_report", "required_supporting_report"],
+  "warning_categories": ["optional_current_report"],
+  "archive_categories": ["ignored_legacy_report"],
+  "integrity_policy": {
+    "blocking_categories": ["required_gate_report", "required_supporting_report"],
+    "warning_only_categories": ["optional_current_report"],
+    "auto_archive_categories": ["ignored_legacy_report"],
+    "blocking_defects": [
+      "missing required file",
+      "invalid JSON",
+      "empty JSON report",
+      "missing generated_by",
+      "missing report_schema_version",
+      "unapproved stale PASS report",
+      "contradictory gate status or decision"
+    ],
+    "non_blocking_defects": [
+      "optional_current_report status WARN/BLOCKED",
+      "optional_current_report stale timestamp",
+      "ignored_legacy_report defects after successful archive"
+    ]
+  },
+  "classifications": {
+    "required_gate_report": 18,
+    "required_supporting_report": 20,
+    "optional_current_report": 7,
+    "ignored_legacy_report": 16
+  },
+  "required_gate_report": [
+    {
+      "file": "reports/current/masterplan_status.json",
+      "role": "Zentrale Zustandsquelle. Wird von allen Gate-Checks als Authority-Dokument verwendet.",
+      "referenced_by": ["documentation_truth_lint", "gate_hierarchy_result", "m5a_data_quality_gate", "m5b_start_gate"]
+    },
+    {
+      "file": "reports/current/m3a_release_candidate.json",
+      "role": "M3a Release-Candidate Gate. Pflichtinput masterplan_status.json.",
+      "referenced_by": ["masterplan_status"]
+    },
+    {
+      "file": "reports/current/m4_backend_release_candidate.json",
+      "role": "M4 Backend Release-Candidate Gate. Pflichtinput masterplan_status.json.",
+      "referenced_by": ["masterplan_status"]
+    },
+    {
+      "file": "reports/current/m4e_operations_release_gate.json",
+      "role": "M4e Operations Release Gate. Freigibt M5-Implementierung. Pflichtinput masterplan_status.json.",
+      "referenced_by": ["masterplan_status", "pre_m5_decision_report"]
+    },
+    {
+      "file": "reports/current/m5a_data_quality_gate.json",
+      "role": "M5a Data Quality Gate. Pflichtinput masterplan_status.json.",
+      "referenced_by": ["masterplan_status", "m5a_completion_report"]
+    },
+    {
+      "file": "reports/current/m5b_start_gate.json",
+      "role": "M5b Start Gate. Pflichtinput masterplan_status.json.",
+      "referenced_by": ["masterplan_status"]
+    },
+    {
+      "file": "reports/current/gate_hierarchy_result.json",
+      "role": "Gate-Hierarchie-Validierung. Pflichtinput masterplan_status.json.",
+      "referenced_by": ["masterplan_status"]
+    },
+    {
+      "file": "reports/current/documentation_truth_lint.json",
+      "role": "Dokumentations-Truth-Lint. Pflichtinput masterplan_status.json.",
+      "referenced_by": ["masterplan_status"]
+    },
+    {
+      "file": "reports/current/known_limitations.json",
+      "role": "Known Limitations Register. Pflichtinput masterplan_status.json und pre_m5_decision_report.",
+      "referenced_by": ["masterplan_status", "pre_m5_decision_report", "m5_gate_assessment"]
+    },
+    {
+      "file": "reports/current/m5a_start_gate.json",
+      "role": "M5a Start Gate. Freigabe fuer M5a-Implementierung.",
+      "referenced_by": ["m5a_completion_report"]
+    },
+    {
+      "file": "reports/current/m5a_duplicate_detector_gate.json",
+      "role": "M5a Sub-Gate: Duplicate Detector.",
+      "referenced_by": ["m5a_completion_report"]
+    },
+    {
+      "file": "reports/current/m5a_metadata_detector_gate.json",
+      "role": "M5a Sub-Gate: Metadata Detector.",
+      "referenced_by": ["m5a_completion_report"]
+    },
+    {
+      "file": "reports/current/m5a_lifecycle_integrity_gate.json",
+      "role": "M5a Sub-Gate: Lifecycle Integrity.",
+      "referenced_by": ["m5a_completion_report"]
+    },
+    {
+      "file": "reports/current/m5a_orphan_detector_gate.json",
+      "role": "M5a Sub-Gate: Orphan Detector.",
+      "referenced_by": ["m5a_completion_report"]
+    },
+    {
+      "file": "reports/current/m5a_source_status_integrity_gate.json",
+      "role": "M5a Sub-Gate: Source Status Integrity.",
+      "referenced_by": ["m5a_completion_report"]
+    },
+    {
+      "file": "reports/current/m5a_completion_report.json",
+      "role": "M5a Completion Report. Aggregiert alle M5a Sub-Gate-Ergebnisse.",
+      "referenced_by": ["masterplan_status"]
+    },
+    {
+      "file": "reports/current/runtime_connectivity_gate.json",
+      "role": "Runtime Connectivity Gate. Aktive Laufzeitpruefung.",
+      "referenced_by": ["masterplan_status"]
+    },
+    {
+      "file": "reports/current/report_integrity_pre_m5a.json",
+      "role": "Report Integrity Gate fuer M5a. Prueft Vollstaendigkeit und Gueltigkeit aller reports/current Artefakte.",
+      "referenced_by": []
+    }
+  ],
+  "required_supporting_report": [
+    {
+      "file": "reports/current/data_quality_report.json",
+      "role": "Backing Truth fuer m5_data_quality_report. Direkte Messung der Datenqualitaet."
+    },
+    {
+      "file": "reports/current/m5_data_quality_report.json",
+      "role": "M5 Data Quality Truth Report. Backing fuer m5a_data_quality_gate."
+    },
+    {
+      "file": "reports/current/m5a_lifecycle_integrity_truth.json",
+      "role": "Truth-Backing fuer m5a_lifecycle_integrity_gate."
+    },
+    {
+      "file": "reports/current/m4b_regression_lock.json",
+      "role": "Aktiver Regression Lock. Definiert Mindest-Baseline fuer Upload-Queue-Tests. Darf nur mit Scope-Change-Approval unterschritten werden."
+    },
+    {
+      "file": "reports/current/m4b_upload_queue_truth.json",
+      "role": "Basis-Truth fuer m4b_regression_lock. Baseline: 48 collected, 48 passed."
+    },
+    {
+      "file": "reports/current/m4c_lifecycle_retrieval_truth.json",
+      "role": "M4c Lifecycle Retrieval Truth. Backing fuer M5-Lifecycle-Checks."
+    },
+    {
+      "file": "reports/current/m4e_backup_restore_truth.json",
+      "role": "M4e Backup/Restore Truth. Backing fuer m4e_operations_release_gate."
+    },
+    {
+      "file": "reports/current/m4a_auth_truth.json",
+      "role": "M4a Auth Truth Baseline. 43/43 passed. Backing fuer M4 Backend RC."
+    },
+    {
+      "file": "reports/current/m4_truth_report.json",
+      "role": "M4 Crosscutting Truth Report. Aggregiertes Backing fuer m4_backend_release_candidate."
+    },
+    {
+      "file": "reports/current/pre_m5_decision_report.json",
+      "role": "Entscheidungsprotokoll fuer M5-Freigabe. Dokumentiert Go/No-Go-Basis inkl. aktiver Blocker."
+    },
+    {
+      "file": "reports/current/retrieval_quality_baseline_report.json",
+      "role": "Retrieval Quality Baseline. Status WARN — wird fuer M5b-Slice-Freigabe benoetigt."
+    },
+    {
+      "file": "reports/current/runtime_connectivity_report.json",
+      "role": "Backing Report fuer runtime_connectivity_gate."
+    },
+    {
+      "file": "reports/current/m5_gate_assessment.json",
+      "role": "M5 Gate Assessment. Dokumentiert Slice-Blocker KL-M5-T-001 und KL-M5-T-002."
+    },
+    {
+      "file": "reports/current/reindex_recovery_report.json",
+      "role": "Reindex Recovery Truth. Status BLOCKED — dokumentiert ausstehende Recovery-Maßnahmen."
+    },
+    {
+      "file": "reports/current/report_integrity_pre_m5a_archive_log.json",
+      "role": "Archiv-Log des vorherigen report_integrity_pre_m5a Cleanup-Laufs (2026-06-03)."
+    },
+    {
+      "file": "reports/current/report_integrity_root_cause.json",
+      "role": "Root-Cause-Analyse des report_integrity_pre_m5a BLOCKED-Zustands vom 2026-06-01."
+    },
+    {
+      "file": "reports/current/m4e_operations_release_report.json",
+      "role": "Backing Report fuer m4e_operations_release_gate."
+    },
+    {
+      "file": "reports/current/report_truth_preflight.json",
+      "role": "Preflight-Check vor M4 Backend Release Candidate. PASS."
+    },
+    {
+      "file": "reports/current/m5a_start_validation_report.json",
+      "role": "Initiale Validierung vor m5a_start_gate (Status FAIL, 2026-06-01T08:00). Dokumentiert Ausgangszustand vor Gate-Unblock. Superseded durch m5a_start_gate.json (PASS, 2026-06-01T08:41)."
+    },
+    {
+      "file": "reports/current/cleanup_log.json",
+      "role": "Audit-Log der automatischen Archivierung von ignored_legacy_report-Artefakten fuer report_integrity_pre_m5a."
+    }
+  ],
+  "optional_current_report": [
+    {
+      "file": "reports/current/final_status_report.json",
+      "role": "Interim-Statusrefresh gate final_pre_m5_status_refresh. Status FAIL, 2/3 passed. Nicht mehr aktiver Gate-Input. Verbleibt als historisches Artefakt.",
+      "retention_reason": "Dokumentiert Zustand waehrend finaler Pre-M5-Pruefung."
+    },
+    {
+      "file": "reports/current/operations_selftest_report.json",
+      "role": "Operations Selftest. Status BLOCKED wegen fehlender psql-Installation in Testumgebung. Umgebungsspezifisch, kein M5a-Gate-Input.",
+      "retention_reason": "Dokumentiert aktuellen Umgebungszustand."
+    },
+    {
+      "file": "reports/current/m4c_marker_mapping.json",
+      "role": "M4c Marker Mapping. Informational, gate m4c. Kein aktiver Gate-Input.",
+      "retention_reason": "Referenzdokument fuer M4c-Slice-Marker."
+    },
+    {
+      "file": "reports/current/m4a_auth_single_issue.json",
+      "role": "M4a Auth Single Issue. Informational, gate m4a. Kein aktiver Gate-Input.",
+      "retention_reason": "Dokumentiert einzelnes Auth-Issue aus M4a-Sprint."
+    },
+    {
+      "file": "reports/current/gate_closure_report.json",
+      "role": "Gate-Closure-Zusammenfassung vom 2026-06-05. Dokumentiert Abschlusszustand, ist aber kein Pflichtinput fuer report_integrity_pre_m5a.",
+      "retention_reason": "Auditierbarer Abschlussnachweis; darf warnen, aber nicht blockieren."
+    },
+    {
+      "file": "reports/current/normalized_reports_log.json",
+      "role": "Audit-Log der Metadaten-Normalisierung erlaubter current Reports.",
+      "retention_reason": "Nachweis, dass nur technische Metadaten ergaenzt und fachliche PASS/FAIL-Werte nicht geaendert wurden."
+    },
+    {
+      "file": "reports/current/archive_log.json",
+      "role": "Audit-Log der stale-Report-Archivpruefung fuer frontend_truth_minimal_report.json und regression_lock_result.json.",
+      "retention_reason": "Nachweis, dass die betroffenen stale Reports bereits aus reports/current entfernt, archiviert und durch neuere aktive Reports ersetzt sind."
+    }
+  ],
+  "ignored_legacy_report": [
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_failure_clusters.json",
+      "original": "reports/current/frontend_failure_clusters.json",
+      "reason": "M3a era, gate m3a, 192h alt, nicht referenziert von aktiven Gates."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_full_suite_activation_plan.json",
+      "original": "reports/current/frontend_full_suite_activation_plan.json",
+      "reason": "M3a era, gate m3a, 189h alt, Aktivierungsplan abgeschlossen."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json",
+      "original": "reports/current/frontend_full_suite_staged_report.json",
+      "reason": "M3a era, gate m3a, 189h alt, PASS-Report nicht mehr aktiver Input."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_fullsuite_reactivation_decision.json",
+      "original": "reports/current/frontend_fullsuite_reactivation_decision.json",
+      "reason": "M3a era, gate m3a, 214h alt, BLOCKED-Entscheidung aus M3a-Recovery-Sprint."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/m3a_frontend_truth.json",
+      "original": "reports/current/m3a_frontend_truth.json",
+      "reason": "M3a era, 192h alt, non-standard Schema (kein report_schema_version, kein generated_by), nicht referenziert."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/recovery_sprint_gate.json",
+      "original": "reports/current/recovery_sprint_gate.json",
+      "reason": "M3a era, gate frontend_full_suite_reactivation, 210h alt, Status FAIL, abgeschlossener Sprint."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/01_auth_report.json",
+      "original": "reports/current/frontend_truth_groups/01_auth_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema, kein generated_by, kein report_name."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/02_workspace_report.json",
+      "original": "reports/current/frontend_truth_groups/02_workspace_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/03_documents_report.json",
+      "original": "reports/current/frontend_truth_groups/03_documents_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/04_upload_report.json",
+      "original": "reports/current/frontend_truth_groups/04_upload_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/05_search_report.json",
+      "original": "reports/current/frontend_truth_groups/05_search_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/06_chat_report.json",
+      "original": "reports/current/frontend_truth_groups/06_chat_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/07_lifecycle_report.json",
+      "original": "reports/current/frontend_truth_groups/07_lifecycle_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/08_diagnostics_report.json",
+      "original": "reports/current/frontend_truth_groups/08_diagnostics_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/09_error_states_report.json",
+      "original": "reports/current/frontend_truth_groups/09_error_states_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "file": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/10_concurrency_report.json",
+      "original": "reports/current/frontend_truth_groups/10_concurrency_report.json",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    }
+  ],
+  "allowlist_rules": {
+    "max_age_hours_for_pass_reports": 168,
+    "required_fields": ["report_schema_version", "report_name", "generated_by", "timestamp", "status"],
+    "forbidden_in_current": [
+      "Reports aelter als 168h mit Status PASS ohne aktive Gate-Referenz",
+      "Reports ohne generated_by",
+      "Reports ohne report_schema_version",
+      "M3a-era Reports (gate: m3a) ohne Referenz in masterplan_status.json",
+      "Frontend-Truth-Groups Subdirectory (kein Standard-Schema)"
+    ],
+    "exceptions": [
+      "m3a_release_candidate.json: Pflichtinput masterplan_status.json trotz M3a-era",
+      "m4_backend_release_candidate.json: Pflichtinput masterplan_status.json",
+      "m4_truth_report.json, m4a_auth_truth.json, m4b_*: Aktive Regression-Lock-Baseline",
+      "optional_current_report Kategorie: darf Warnungen erzeugen, blockiert report_integrity_pre_m5a aber nicht",
+      "ignored_legacy_report Kategorie: wird automatisch nach reports/archive/legacy/ verschoben und blockiert nicht"
+    ]
+  }
+}

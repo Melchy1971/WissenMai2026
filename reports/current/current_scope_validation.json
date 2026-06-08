@@ -1,0 +1,241 @@
+{
+  "report_schema_version": 1,
+  "report_name": "current_scope_validation",
+  "gate": "current_scope_validator",
+  "generated_by": "current_scope_validator",
+  "generated_at": "2026-06-08T07:13:04.937078Z",
+  "timestamp": "2026-06-08T07:13:04.937078Z",
+  "environment": "local",
+  "report_type": "gate",
+  "status": "PASS",
+  "result": "PASS",
+  "collected": 5,
+  "passed": 5,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "source_command": "current_scope_validator_snapshot reports/current_scope.json reports/current/*.json",
+  "inputs": {
+    "scope_definition": "reports/current_scope.json",
+    "current_glob": "reports/current/*.json",
+    "input_snapshot_excludes_output": "reports/current/current_scope_validation.json",
+    "reason": "Validator output is excluded from its own input snapshot."
+  },
+  "policy": {
+    "blocking_categories": [
+      "required_gate_report",
+      "required_supporting_report"
+    ],
+    "warning_categories": [
+      "optional_current_report"
+    ],
+    "archive_categories": [
+      "ignored_legacy_report"
+    ],
+    "unknown_current_report_decision": "blocker after policy classification; validator output is treated as generated evidence, not an active gate input"
+  },
+  "criteria": [
+    {
+      "id": "required_gate_report_complete",
+      "passed": true,
+      "evidence": "18/18 present"
+    },
+    {
+      "id": "required_supporting_report_complete",
+      "passed": true,
+      "evidence": "20/20 present"
+    },
+    {
+      "id": "optional_current_report_warning_only",
+      "passed": true,
+      "evidence": "2 optional status warnings, blockers=0"
+    },
+    {
+      "id": "ignored_legacy_report_archived",
+      "passed": true,
+      "evidence": "16/16 archived"
+    },
+    {
+      "id": "unknown_report_policy",
+      "passed": true,
+      "evidence": "No unclassified report is required for active gate evaluation; current_scope_validation.json is validator evidence."
+    }
+  ],
+  "summary": {
+    "current_json_files_checked": 46,
+    "required_gate_report": {
+      "expected": 18,
+      "present": 18,
+      "valid_json": 18,
+      "complete": true,
+      "empty_reports": [],
+      "missing_required_fields": [],
+      "status_contradictions": [],
+      "status_warnings": [],
+      "blocking": false
+    },
+    "required_supporting_report": {
+      "expected": 20,
+      "present": 20,
+      "valid_json": 20,
+      "complete": true,
+      "empty_reports": [],
+      "missing_required_fields": [],
+      "status_contradictions": [],
+      "status_warnings": [],
+      "blocking": false
+    },
+    "optional_current_report": {
+      "expected": 7,
+      "present": 7,
+      "valid_json": 7,
+      "complete": true,
+      "empty_reports": [],
+      "missing_required_fields": [],
+      "status_contradictions": [],
+      "status_warnings": [
+        {
+          "file": "reports/current/final_status_report.json",
+          "status": "FAIL",
+          "policy": "warning_only"
+        },
+        {
+          "file": "reports/current/operations_selftest_report.json",
+          "status": "BLOCKED",
+          "policy": "warning_only"
+        }
+      ],
+      "blocking": false
+    },
+    "ignored_legacy_report": {
+      "expected": 16,
+      "verified_archived": 16,
+      "archive_required": 0,
+      "archive_missing": 0,
+      "complete": true,
+      "blocking": false
+    },
+    "errors_count": 0,
+    "warnings_count": 2,
+    "blockers_count": 0
+  },
+  "errors_list": [],
+  "warnings": [
+    {
+      "id": "WARN-001",
+      "severity": "warning",
+      "category": "optional_current_report",
+      "file": "reports/current/final_status_report.json",
+      "status": "FAIL",
+      "policy": "warning_only"
+    },
+    {
+      "id": "WARN-002",
+      "severity": "warning",
+      "category": "optional_current_report",
+      "file": "reports/current/operations_selftest_report.json",
+      "status": "BLOCKED",
+      "policy": "warning_only"
+    }
+  ],
+  "blockers": [],
+  "archive_actions": [
+    {
+      "original": "reports/current/frontend_failure_clusters.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_failure_clusters.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate m3a, 192h alt, nicht referenziert von aktiven Gates."
+    },
+    {
+      "original": "reports/current/frontend_full_suite_activation_plan.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_full_suite_activation_plan.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate m3a, 189h alt, Aktivierungsplan abgeschlossen."
+    },
+    {
+      "original": "reports/current/frontend_full_suite_staged_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate m3a, 189h alt, PASS-Report nicht mehr aktiver Input."
+    },
+    {
+      "original": "reports/current/frontend_fullsuite_reactivation_decision.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_fullsuite_reactivation_decision.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate m3a, 214h alt, BLOCKED-Entscheidung aus M3a-Recovery-Sprint."
+    },
+    {
+      "original": "reports/current/m3a_frontend_truth.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/m3a_frontend_truth.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 192h alt, non-standard Schema (kein report_schema_version, kein generated_by), nicht referenziert."
+    },
+    {
+      "original": "reports/current/recovery_sprint_gate.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/recovery_sprint_gate.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate frontend_full_suite_reactivation, 210h alt, Status FAIL, abgeschlossener Sprint."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/01_auth_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/01_auth_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema, kein generated_by, kein report_name."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/02_workspace_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/02_workspace_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/03_documents_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/03_documents_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/04_upload_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/04_upload_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/05_search_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/05_search_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/06_chat_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/06_chat_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/07_lifecycle_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/07_lifecycle_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/08_diagnostics_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/08_diagnostics_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/09_error_states_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/09_error_states_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/10_concurrency_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/10_concurrency_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    }
+  ]
+}

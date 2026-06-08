@@ -50,6 +50,7 @@ def _data_quality_report_pass() -> dict:
     return {
         "report_schema_version": 2,
         "report_name": "data_quality_report",
+        "report_type": "supporting",
         "generated_by": "run_data_quality_cli",
         "timestamp": "2026-06-01T00:00:00Z",
         "run_id": "run-1",
@@ -81,6 +82,7 @@ def _write_required_slice_gates(report_dir: Path, *, start_go: bool = True, dupl
     _write(report_dir / gate.DOC_TRUTH_LINT, {
         "generated_by": "documentation_truth_linter",
         "timestamp": "2026-06-01T00:00:00Z",
+        "report_type": "supporting",
         "status": "PASS",
         "result": "PASS",
         "summary": {"errors": 0},
@@ -104,7 +106,8 @@ def test_blocks_when_data_quality_report_missing(tmp_path: Path) -> None:
     assert payload["status"] == "BLOCKED"
     assert payload["decision"]["go_no_go"] == "NO_GO"
     assert payload["decision"]["data_quality_report_state"] == "NOT_RUN"
-    assert any(item["id"] == "data_quality_report_not_run" for item in payload["blockers"])
+    assert any(item["id"] == "child_gate_data_quality_report" for item in payload["blockers"])
+    assert any(item["id"] == "data_quality_report_not_run" for item in payload["diagnostic_blockers"])
 
 
 def test_passes_when_required_slices_and_data_quality_report_are_green(tmp_path: Path) -> None:
@@ -129,7 +132,8 @@ def test_blocks_on_invalid_slice_gate_json(tmp_path: Path) -> None:
 
     assert payload["status"] == "BLOCKED"
     assert payload["decision"]["go_no_go"] == "NO_GO"
-    assert any(item["id"] == "invalid_m5a_metadata_detector_gate" for item in payload["blockers"])
+    assert any(item["id"] == "child_gate_metadata_detector_gate" for item in payload["blockers"])
+    assert any(item["id"] == "invalid_m5a_metadata_detector_gate" for item in payload["diagnostic_blockers"])
 
 
 # ---------------------------------------------------------------------------
@@ -153,6 +157,7 @@ def _write_required_slice_gates_with_report_integrity(
     _write(report_dir / gate.DOC_TRUTH_LINT, {
         "generated_by": "documentation_truth_linter",
         "timestamp": "2026-06-01T00:00:00Z",
+        "report_type": "supporting",
         "status": "PASS",
         "result": "PASS",
         "summary": {"errors": 0},
@@ -199,8 +204,8 @@ def test_regression_report_integrity_blocked_makes_gate_blocked(tmp_path: Path) 
     assert payload["decision"]["go_no_go"] == "NO_GO"
     assert payload["decision"]["report_integrity_pre_m5a_pass"] is False
     blocker_ids = [b["id"] for b in payload["blockers"]]
-    assert "report_integrity_pre_m5a_pass" in blocker_ids, (
-        f"report_integrity_pre_m5a_pass must be a blocker, got: {blocker_ids}"
+    assert "child_gate_report_integrity_pre_m5a" in blocker_ids, (
+        f"report_integrity_pre_m5a must be a child-gate blocker, got: {blocker_ids}"
     )
     # Verify criterion is present in criteria list
     criterion_ids = [c["id"] for c in payload["criteria"]]
@@ -233,7 +238,7 @@ def test_start_gate_fail_makes_gate_fail(tmp_path: Path) -> None:
     assert payload["decision"]["go_no_go"] == "NO_GO"
     assert payload["decision"]["m5a_start_gate_pass"] is False
     blocker_ids = [b["id"] for b in payload["blockers"]]
-    assert "m5a_start_gate_pass" in blocker_ids
+    assert "child_gate_m5a_start_gate" in blocker_ids
 
 
 def test_doc_lint_fail_makes_gate_fail(tmp_path: Path) -> None:
@@ -243,6 +248,7 @@ def test_doc_lint_fail_makes_gate_fail(tmp_path: Path) -> None:
     _write(tmp_path / gate.DOC_TRUTH_LINT, {
         "generated_by": "documentation_truth_linter",
         "timestamp": "2026-06-01T00:00:00Z",
+        "report_type": "supporting",
         "status": "FAIL",
         "result": "FAIL",
         "summary": {"errors": 5, "warnings": 2},
@@ -257,7 +263,7 @@ def test_doc_lint_fail_makes_gate_fail(tmp_path: Path) -> None:
     assert payload["decision"]["go_no_go"] == "NO_GO"
     assert payload["decision"]["documentation_truth_lint_pass"] is False
     blocker_ids = [b["id"] for b in payload["blockers"]]
-    assert "documentation_truth_lint_pass" in blocker_ids
+    assert "child_gate_documentation_truth_lint" in blocker_ids
 
 
 def test_mandatory_gates_all_pass_allows_pass(tmp_path: Path) -> None:
@@ -267,13 +273,10 @@ def test_mandatory_gates_all_pass_allows_pass(tmp_path: Path) -> None:
 
     payload = gate.build_gate_report(tmp_path, timestamp="2026-06-01T00:00:00+00:00")
 
-    # Note: source_status, orphan, api, dashboard rely on real filesystem paths
-    # and may be missing in tmp_path context. Only assert mandatory gates and DQ report.
     assert payload["decision"]["report_integrity_pre_m5a_pass"] is True
     assert payload["decision"]["m5a_start_gate_pass"] is True
     assert payload["decision"]["documentation_truth_lint_pass"] is True
-    # Must not be BLOCKED
-    assert payload["status"] != "BLOCKED"
+    assert payload["status"] == "PASS"
 
 
 def test_criteria_list_contains_all_mandatory_gates(tmp_path: Path) -> None:

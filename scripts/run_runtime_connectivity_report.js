@@ -104,9 +104,8 @@ function parseRevisionLines(text) {
 }
 
 function checkAlembic(env) {
-  const backend = path.join(ROOT, 'backend');
-  const heads = run(PYTHON, ['-m', 'alembic', 'heads'], env, backend);
-  const current = run(PYTHON, ['-m', 'alembic', 'current'], env, backend);
+  const heads = run(PYTHON, ['-m', 'alembic', '-c', path.join(ROOT, 'backend', 'alembic.ini'), 'heads'], env, ROOT);
+  const current = run(PYTHON, ['-m', 'alembic', '-c', path.join(ROOT, 'backend', 'alembic.ini'), 'current'], env, ROOT);
   const headRevisions = parseRevisionLines(heads.stdout);
   const currentRevisions = parseRevisionLines(current.stdout);
   const missing = headRevisions.filter((revision) => !currentRevisions.includes(revision));
@@ -261,8 +260,24 @@ async function main() {
   }
 
   const report = {
+    report_schema_version: 1,
+    report_name: 'runtime_connectivity_report',
+    generated_by: 'gate_validator',
     generated_at: nowIso(),
+    timestamp: null,
     result: checks.every((check) => check.pass) ? 'PASS' : 'FAIL',
+    status: null,
+    gate: 'runtime_connectivity_gate',
+    environment: 'local',
+    report_type: 'truth',
+    collected: checks.length,
+    passed: checks.filter((check) => check.pass).length,
+    failed: checks.filter((check) => !check.pass).length,
+    errors: 0,
+    skipped: 0,
+    exit_code: checks.every((check) => check.pass) ? 0 : 1,
+    blockers: [],
+    source_command: 'node scripts/run_runtime_connectivity_report.js',
     database_url: maskDatabaseUrl(env.DATABASE_URL),
     api_base_url: API_BASE_URL,
     frontend_base_url: FRONTEND_BASE_URL,
@@ -276,6 +291,11 @@ async function main() {
     frontend: browser,
     remaining_errors: remainingErrors,
   };
+  report.timestamp = report.generated_at;
+  report.status = report.result;
+  report.blockers = checks
+    .filter((check) => !check.pass)
+    .map((check) => ({ id: check.id, severity: 'blocking', reason: String(check.evidence || 'failed') }));
 
   fs.writeFileSync(JSON_REPORT, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
   fs.writeFileSync(MD_REPORT, renderMarkdown(report), 'utf8');

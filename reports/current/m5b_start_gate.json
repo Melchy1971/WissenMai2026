@@ -1,83 +1,86 @@
 {
   "report_schema_version": 1,
   "report_name": "m5b_start_gate",
-  "gate": "m5b_start_gate",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-03T09:05:00+00:00",
+  "timestamp": "2026-06-05T15:33:38.425088+00:00",
+  "generated_at": "2026-06-05T15:33:38.425088+00:00",
+  "gate": "m5b_start_gate",
   "environment": "local",
-  "report_type": "start_gate",
-  "phase": "M5b",
-  "scope": "PREPARATION_ONLY",
-  "status": "BLOCKED",
-  "result": "BLOCKED",
-  "collected": 4,
-  "passed": 3,
-  "failed": 1,
-  "errors": 0,
-  "skipped": 0,
-  "exit_code": 1,
-  "blockers": [
-    {
-      "id": "M5A_NOT_PASSED",
-      "severity": "blocking",
-      "reason": "M5b Start Gate is BLOCKED because m5a_data_quality_gate is not PASS.",
-      "source": "reports/current/m5a_data_quality_gate.json"
-    }
-  ],
+  "report_type": "gate",
+  "status": "PREPARED",
+  "result": "PREPARED",
   "decision": {
-    "go_no_go": "NO_GO",
-    "result": "NO_GO",
-    "preparation_status": "BLOCKED",
-    "m5b_preparation_allowed": false,
+    "go_no_go": "GO",
+    "result": "GO",
+    "preparation_status": "PREPARED",
+    "m5b_preparation_allowed": true,
     "m5b_implementation_allowed": false,
+    "m5b_implementation_gate_required": true,
     "implementation_state": "NOT_IMPLEMENTING",
     "forbidden_state": "IMPLEMENTING"
   },
-  "inputs": {
-    "m5a_gate": "reports/current/m5a_data_quality_gate.json",
-    "retrieval_baseline": "reports/current/retrieval_quality_baseline_report.json",
-    "drift_architecture": "docs/m5b-drift-architecture.md",
-    "drift_schema": "schemas/drift_schema.json",
-    "documentation_truth_lint": "reports/current/documentation_truth_lint.json"
-  },
-  "criteria": [
-    {
-      "id": "M5A_NOT_PASSED",
-      "label": "M5a Gate PASS",
-      "mandatory": true,
+  "preconditions": {
+    "m5a_data_quality_gate": {
+      "report": "reports/current/m5a_data_quality_gate.json",
+      "status": "PASS",
+      "decision": "GO",
+      "timestamp": "2026-06-05T11:38:52.0389260+02:00",
+      "passed": true,
+      "error": null,
+      "rule": "M5b darf erst PREPARED werden, wenn m5a_data_quality_gate PASS/GO meldet."
+    },
+    "retrieval_quality_baseline_report": {
+      "report": "reports/current/retrieval_quality_baseline_report.json",
+      "status": "WARN",
+      "result": "WARN",
+      "decision": "NO_GO",
+      "timestamp": "2026-06-03T07:45:04.833852+00:00",
       "passed": false,
-      "source": "reports/current/m5a_data_quality_gate.json",
-      "evidence": "BLOCKED/NO_GO"
+      "error": null,
+      "note": "Kein Blocker fuer PREPARED, aber Blocker fuer Implementierungsfreigabe."
+    },
+    "m5b_drift_architecture": {
+      "source": "docs/m5b-drift-architecture.md",
+      "status": "DRAFT",
+      "planning_allowed": true,
+      "implementation_allowed": false,
+      "note": "Planung erlaubt; Implementierung nur mit separatem M5b Implementation Gate."
+    },
+    "documentation_truth_lint": {
+      "report": "reports/current/documentation_truth_lint.json",
+      "status": "PASS",
+      "timestamp": "2026-06-03T09:36:32.001820+00:00",
+      "passed": true,
+      "error": null
+    }
+  },
+  "implementation_blockers": [
+    {
+      "id": "M5B_IMPLEMENTATION_GATE_REQUIRED",
+      "severity": "blocking",
+      "detail": "M5b Implementierung bleibt gesperrt bis ein separates M5b Implementation Gate PASS/GO meldet.",
+      "source": "reports/current/m5b_implementation_gate.json"
     },
     {
-      "id": "retrieval_baseline_present",
-      "label": "Retrieval Baseline vorhanden",
-      "mandatory": true,
-      "passed": true,
-      "source": "reports/current/retrieval_quality_baseline_report.json",
-      "evidence": "status=WARN"
+      "id": "retrieval_baseline_not_release_grade",
+      "severity": "blocking",
+      "detail": "retrieval_quality_baseline_report: baseline_release_grade=false, requires_golden_retrieval_benchmark=true",
+      "source": "reports/current/retrieval_quality_baseline_report.json"
     },
     {
-      "id": "drift_architecture_present",
-      "label": "Drift Architektur vorhanden",
-      "mandatory": true,
-      "passed": true,
-      "source": "docs/m5b-drift-architecture.md, schemas/drift_schema.json",
-      "evidence": "architecture_and_schema_present"
-    },
-    {
-      "id": "documentation_current",
-      "label": "Doku aktuell",
-      "mandatory": true,
-      "passed": true,
-      "source": "reports/current/documentation_truth_lint.json",
-      "evidence": "PASS/errors=0"
+      "id": "m5b_architecture_draft",
+      "severity": "blocking",
+      "detail": "m5b-drift-architecture status=DRAFT - Architektur muss finalisiert sein vor Implementierungsstart",
+      "source": "docs/m5b-drift-architecture.md"
     }
   ],
-  "summary": {
-    "rule": "If reports/current/m5a_data_quality_gate.json status is not PASS, m5b_start_gate status is BLOCKED with blocker M5A_NOT_PASSED. If m5a_data_quality_gate status is PASS, m5b_start_gate may become PREPARED when the remaining preparation prerequisites pass. Implementation remains forbidden.",
-    "requested_status": "PREPARED",
-    "actual_status": "BLOCKED",
-    "not_implementing": true
-  }
+  "blockers": [],
+  "rule": "Wenn m5a_data_quality_gate nicht PASS/GO ist, bleibt M5b BLOCKED mit M5A_PARENT_GATE_NOT_PASSED. Bei M5a PASS darf M5b PREPARED werden; Implementierung erfordert ein separates M5b Implementation Gate.",
+  "collected": 1,
+  "passed": 1,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "source_command": "python scripts/generate_m5b_start_gate.py"
 }

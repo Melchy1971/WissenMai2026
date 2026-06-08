@@ -3,7 +3,9 @@
   "report_name": "m4e_operations_release_gate",
   "gate": "m4e_operations_release",
   "generated_at": "2026-05-29T09:02:52.923591+00:00",
+  "timestamp": "2026-05-29T09:02:52.923591+00:00",
   "generated_by": "gate_validator",
+  "environment": "local",
   "status": "PASS",
   "result": "PASS",
   "decision": {
@@ -17,6 +19,7 @@
   "skipped": 0,
   "exit_code": 0,
   "blockers": [],
+  "source_command": "reports/current/m4e_operations_release_gate.json",
   "scope": {
     "in_scope": [
       "Backup erzeugbar",

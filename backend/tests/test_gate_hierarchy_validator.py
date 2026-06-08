@@ -73,7 +73,7 @@ def _write_report(report_dir: Path, filename: str, payload: dict) -> None:
 def _write_all_green_reports(report_dir: Path) -> None:
     reports = {
         "runtime_connectivity_gate.json": _green_report("runtime_connectivity_gate", collected=9),
-        "frontend_full_suite_staged_report.json": _green_report("frontend_full_suite_staged", collected=132),
+        "m3a_release_candidate.json": _go_gate("m3a_release_candidate", collected=4),
         "documentation_truth_lint.json": {
             "report_schema_version": 1,
             "report_name": "documentation_truth_lint",
@@ -115,7 +115,7 @@ def test_gate_hierarchy_passes_when_all_mandatory_children_are_green(tmp_path: P
     assert result["hierarchy_source"] == "docs/gate_hierarchy.json"
     assert result["gates"]["m3a"]["mandatory_children"] == [
         "runtime_connectivity_gate",
-        "frontend_full_suite_staged",
+        "m3a_release_candidate",
         "documentation_truth_lint",
     ]
     assert result["gates"]["m4"]["mandatory_children"] == [
@@ -146,6 +146,21 @@ def test_parent_gates_are_blocked_by_failed_mandatory_child(tmp_path: Path) -> N
     assert result["gates"]["m4b_upload_queue_truth"]["status"] == "FAIL"
     assert result["gates"]["m4"]["status"] == "BLOCKED"
     assert "mandatory child not passed: m4b_upload_queue_truth" in result["gates"]["m4"]["blockers"]
+    assert any(
+        detail["gate"] == "m4b_upload_queue_truth"
+        and detail["report_path"] == "reports/current/m4b_upload_queue_truth.json"
+        and detail["status"] == "FAIL"
+        and "Fix the failing tests/counters" in detail["next_action"]
+        for detail in result["blocker_details"]
+    )
+    assert any(
+        detail["gate"] == "m4b_upload_queue_truth"
+        and detail["report_path"] == "reports/current/m4b_upload_queue_truth.json"
+        and detail["status"] == "FAIL"
+        and "m4 blocked because mandatory child" in detail["reason"]
+        and "Fix the failing tests/counters" in detail["next_action"]
+        for detail in result["blocker_details"]
+    )
 
 
 def test_m5a_parent_requires_data_quality_score_threshold(tmp_path: Path) -> None:
@@ -157,6 +172,30 @@ def test_m5a_parent_requires_data_quality_score_threshold(tmp_path: Path) -> Non
     assert result["gates"]["data_quality_report"]["status"] == "FAIL"
     assert result["gates"]["m5a"]["status"] == "BLOCKED"
     assert "quality_score" in " ".join(result["gates"]["data_quality_report"]["blockers"])
+    assert any(
+        detail["gate"] == "data_quality_report"
+        and detail["report_path"] == "reports/current/data_quality_report.json"
+        and "quality_score" in detail["reason"]
+        and "quality_score at or above" in detail["next_action"]
+        for detail in result["blocker_details"]
+    )
+
+
+def test_missing_child_report_includes_repair_path(tmp_path: Path) -> None:
+    _write_all_green_reports(tmp_path)
+    (tmp_path / "m5a_orphan_detector_gate.json").unlink()
+
+    result = gate_hierarchy.evaluate_gate_hierarchy(tmp_path)
+
+    assert result["gates"]["orphan_detector_gate"]["status"] == "FAIL"
+    assert any(
+        detail["gate"] == "orphan_detector_gate"
+        and detail["report_path"] == "reports/current/m5a_orphan_detector_gate.json"
+        and "missing report" in detail["reason"]
+        and "Generate the missing child report" in detail["next_action"]
+        for detail in result["blocker_details"]
+    )
+    assert result["repair_path"]
 
 
 def test_dependency_graph_contains_required_parent_edges() -> None:

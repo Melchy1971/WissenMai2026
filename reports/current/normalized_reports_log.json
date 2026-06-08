@@ -1,0 +1,108 @@
+{
+  "report_schema_version": 1,
+  "report_name": "normalized_reports_log",
+  "generated_by": "report_metadata_normalizer",
+  "generated_at": "2026-06-05T10:59:41.4598877+02:00",
+  "timestamp": "2026-06-05T10:59:41.4598877+02:00",
+  "environment": "local",
+  "report_type": "audit",
+  "status": "INFO",
+  "result": "INFO",
+  "source_command": "metadata_only_current_report_normalization_20260605",
+  "scope_definition": "reports/current_scope.json",
+  "policy": {
+    "allowed_categories": [
+      "required_gate_report",
+      "required_supporting_report",
+      "optional_current_report"
+    ],
+    "normalized_fields": [
+      "generated_by",
+      "report_schema_version",
+      "report_name",
+      "timestamp"
+    ],
+    "fachliche_values_unchanged": true,
+    "unchanged_fields": [
+      "status",
+      "result",
+      "decision",
+      "collected",
+      "passed",
+      "failed",
+      "errors",
+      "skipped",
+      "exit_code",
+      "blockers"
+    ]
+  },
+  "summary": {
+    "allowed_current_reports_checked": 44,
+    "reports_changed": 3,
+    "reports_created": 1,
+    "fields_added": 3,
+    "generated_by_added": 0,
+    "report_schema_version_added": 0,
+    "report_name_added": 0,
+    "timestamp_added": 3,
+    "invalid_reports": 0,
+    "fachliche_values_changed": false
+  },
+  "validation": {
+    "validated_at": "2026-06-05T10:59:41.4598877+02:00",
+    "allowed_current_reports_validated": 44,
+    "invalid_json_reports": 0,
+    "reports_missing_required_metadata": 0,
+    "required_metadata": [
+      "generated_by",
+      "report_schema_version",
+      "report_name",
+      "timestamp"
+    ],
+    "scope_coverage": {
+      "current_json_files": 44,
+      "scope_entries": 44,
+      "missing_in_scope": 0,
+      "missing_on_disk": 0
+    }
+  },
+  "changes": [
+    {
+      "file": "reports/current/m4e_operations_release_gate.json",
+      "category": "required_gate_report",
+      "added_fields": {
+        "timestamp": "2026-05-29T09:02:52.923591+00:00"
+      },
+      "timestamp_source": "generated_at",
+      "status_before": "PASS",
+      "status_after": "PASS",
+      "result_before": "PASS",
+      "result_after": "PASS"
+    },
+    {
+      "file": "reports/current/pre_m5_decision_report.json",
+      "category": "required_supporting_report",
+      "added_fields": {
+        "timestamp": "2026-05-29T09:13:05.681082+00:00"
+      },
+      "timestamp_source": "generated_at",
+      "status_before": null,
+      "status_after": null,
+      "result_before": null,
+      "result_after": null
+    },
+    {
+      "file": "reports/current/report_integrity_root_cause.json",
+      "category": "required_supporting_report",
+      "added_fields": {
+        "timestamp": "2026-06-02T13:00:00+00:00"
+      },
+      "timestamp_source": "generated_at",
+      "status_before": null,
+      "status_after": null,
+      "result_before": null,
+      "result_after": null
+    }
+  ],
+  "blockers": []
+}

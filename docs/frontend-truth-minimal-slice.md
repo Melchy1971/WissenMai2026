@@ -29,7 +29,9 @@ $env:TEST_DATABASE_URL = $env:DATABASE_URL
 python scripts\run_gui_truth.py --minimal --start-api --start-frontend
 ```
 
-Output:
-- `reports/current/frontend_truth_minimal_report.json`
+Aktueller Nachweis:
+- `reports/archive/m5a/report_integrity_pre_m5a_20260603T091500Z/frontend_truth_minimal_report.json`
+
+Der Minimal-Report ist als stale optionaler Report archiviert und aktuell kein aktiver Gate-Input. Ein neuer Lauf darf wieder einen aktuellen Report erzeugen; bis dahin ist fuer Gate-Entscheidungen der Full-Suite- und Parent-Gate-Status massgeblich.
 
 Die Full-Suite wird weiterhin ueber `python scripts\run_gui_truth.py` erzeugt und bleibt von diesem Minimal-Report getrennt.

@@ -1,0 +1,84 @@
+{
+  "report_schema_version": 1,
+  "report_name": "runtime_connectivity_gate",
+  "generated_by": "gate_validator",
+  "name": "runtime_connectivity_gate",
+  "timestamp": "2026-06-05T10:04:42.576444+00:00",
+  "gate": "runtime_connectivity_gate",
+  "status": "PASS",
+  "result": "PASS",
+  "threshold_pct": 95.0,
+  "total_checks": 9,
+  "passed_checks": 9,
+  "score_pct": 100.0,
+  "checks": [
+    {
+      "id": "db_reachable",
+      "status": "pass",
+      "evidence": "database_url_set=True alembic.ok=True"
+    },
+    {
+      "id": "alembic_head",
+      "status": "pass",
+      "evidence": "ok=True missing=[]"
+    },
+    {
+      "id": "seed_ok",
+      "status": "pass",
+      "evidence": "seed.exit_code=0"
+    },
+    {
+      "id": "backend_health",
+      "status": "pass",
+      "evidence": "status_code=200"
+    },
+    {
+      "id": "login_ok",
+      "status": "pass",
+      "evidence": "status_code=200 token=True"
+    },
+    {
+      "id": "auth_me_ok",
+      "status": "pass",
+      "evidence": "status_code=200 workspace=present"
+    },
+    {
+      "id": "workspace_bootstrap",
+      "status": "pass",
+      "evidence": "signal=http://127.0.0.1:5174/documents"
+    },
+    {
+      "id": "frontend_reachable",
+      "status": "pass",
+      "evidence": "api_responses=1"
+    },
+    {
+      "id": "no_api_unreachable",
+      "status": "pass",
+      "evidence": "clean"
+    }
+  ],
+  "blockers": [],
+  "m3a_impact": "green",
+  "m4_impact": "unblocked",
+  "environment": "local",
+  "database_url_set": true,
+  "test_database_url_set": false,
+  "collected": 9,
+  "passed": 9,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 0,
+  "source_command": "python scripts/validate_runtime_connectivity_gate.py",
+  "decision": {
+    "go_no_go": "GO",
+    "result": "GO",
+    "runtime_connectivity_allowed": true
+  },
+  "known_limitations": [],
+  "generated_at": "2026-06-05T10:04:42.576444+00:00",
+  "re_evaluated_at": "2026-06-05T10:04:42.576444+00:00",
+  "evidence_from": "reports/current/runtime_connectivity_report.json",
+  "evidence_timestamp": "2026-06-03T09:35:24.440Z"
+}

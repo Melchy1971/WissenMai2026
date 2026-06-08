@@ -4,6 +4,8 @@
   "report_type": "decision",
   "generated_by": "gate_validator",
   "generated_at": "2026-05-29T09:13:05.681082+00:00",
+  "timestamp": "2026-05-29T09:13:05.681082+00:00",
+  "status": "PASS",
   "authority": {
     "gate_rule": "M5 Implementierung bleibt NO-GO, solange m4e_operations_release_gate nicht PASS ist.",
     "source_of_truth": [

@@ -1,0 +1,42 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5a_source_status_integrity_gate",
+  "gate": "m5a_source_status_integrity_gate",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-06-08T07:20:00Z",
+  "timestamp": "2026-06-08T07:20:00Z",
+  "environment": "local",
+  "report_type": "gate",
+  "status": "BLOCKED",
+  "result": "BLOCKED",
+  "collected": 0,
+  "passed": 0,
+  "failed": 0,
+  "errors": 1,
+  "skipped": 0,
+  "exit_code": 1,
+  "source_command": "python -m pytest backend\\tests\\postgres_truth\\test_m5a_source_status_integrity_truth.py -q --tb=short",
+  "test_module": "backend/tests/postgres_truth/test_m5a_source_status_integrity_truth.py",
+  "implementation": "backend/app/services/source_status_integrity_detector.py",
+  "finding_type": "INVALID_SOURCE_STATUS",
+  "parent_gate": "m5a",
+  "decision": {
+    "go_no_go": "NO_GO",
+    "result": "NO_GO",
+    "m5a_source_status_integrity_verified": false
+  },
+  "preflight": {
+    "postgres_truth_tests_exist": true,
+    "postgres_truth_test_path": "backend/tests/postgres_truth/test_m5a_source_status_integrity_truth.py",
+    "executable": false,
+    "failure_reason": "postgres_truth preflight failed: TEST_DATABASE_URL is not set. Configure a reachable PostgreSQL test database; skips are not allowed for postgres_truth."
+  },
+  "blockers": [
+    {
+      "id": "SOURCE_STATUS_GATE_NOT_EXECUTABLE",
+      "severity": "blocking",
+      "reason": "Source Status Integrity PostgreSQL truth tests are present but not executable in the current environment because TEST_DATABASE_URL is not set.",
+      "required_action": "Set TEST_DATABASE_URL to a reachable PostgreSQL test database and rerun backend/tests/postgres_truth/test_m5a_source_status_integrity_truth.py."
+    }
+  ]
+}

@@ -21,6 +21,7 @@ LIFECYCLE_GATE = "m5a_lifecycle_integrity_gate.json"
 DATA_QUALITY_REPORT = "data_quality_report.json"
 DOC_TRUTH_LINT = "documentation_truth_lint.json"
 REPORT_INTEGRITY = "report_integrity_pre_m5a.json"
+CHILD_GATE_MATRIX = "m5a_child_gate_matrix.json"
 
 OUTPUT_GATE = "m5a_data_quality_gate.json"
 SCORE_THRESHOLD = 90.0
@@ -165,6 +166,110 @@ def _data_quality_report_state(report: dict[str, Any] | None) -> tuple[str, bool
     return "INCOMPLETE", False
 
 
+def _parent_child_status(parent_validation: dict[str, Any]) -> str:
+    child_results = parent_validation.get("child_results")
+    if not isinstance(child_results, dict) or not child_results:
+        return "BLOCKED"
+
+    statuses = {
+        str(item.get("validation_status") or "")
+        for item in child_results.values()
+        if isinstance(item, dict)
+    }
+    if statuses & {"BLOCKED", "MISSING", "INVALID", "STALE"}:
+        return "BLOCKED"
+    if "FAIL" in statuses:
+        return "FAIL"
+    if statuses == {"PASS"}:
+        return "PASS"
+    return "BLOCKED"
+
+
+def _child_gate_trace(
+    parent_validation: dict[str, Any],
+    matrix: dict[str, Any] | None,
+    report_integrity: dict[str, Any] | None,
+    status: str,
+) -> dict[str, Any]:
+    child_results = parent_validation.get("child_results")
+    if not isinstance(child_results, dict):
+        child_results = {}
+
+    matrix_children = {}
+    if isinstance(matrix, dict) and isinstance(matrix.get("child_gates"), list):
+        matrix_children = {
+            str(item.get("child_gate")): item
+            for item in matrix["child_gates"]
+            if isinstance(item, dict)
+        }
+
+    evaluated_children: list[dict[str, Any]] = []
+    for child_id, result in child_results.items():
+        if not isinstance(result, dict):
+            continue
+        validation_status = str(result.get("validation_status") or "INVALID")
+        matrix_child = matrix_children.get(str(child_id), {})
+        evaluated_children.append({
+            "child_gate_id": child_id,
+            "report": result.get("report"),
+            "matrix_status": matrix_child.get("status"),
+            "matrix_blocking": matrix_child.get("blocking"),
+            "parent_validation_status": validation_status,
+            "report_status": result.get("report_status"),
+            "decision": result.get("decision"),
+            "generated_by": result.get("generated_by"),
+            "timestamp": result.get("timestamp"),
+            "collected": result.get("collected"),
+            "report_type": result.get("report_type"),
+            "effect": (
+                "blocks_parent"
+                if validation_status in {"BLOCKED", "MISSING", "INVALID", "STALE"}
+                else "fails_parent"
+                if validation_status == "FAIL"
+                else "passes_parent"
+            ),
+            "blockers": result.get("blockers", []),
+        })
+
+    return {
+        "parent_gate": "m5a",
+        "rule": (
+            "PASS iff all child gates PASS. BLOCKED if at least one child gate is "
+            "BLOCKED, missing, invalid, or stale. FAIL if no child gate blocks and at least "
+            "one child gate is technically FAIL."
+        ),
+        "inputs": {
+            "child_gate_matrix": {
+                "source": f"reports/current/{CHILD_GATE_MATRIX}",
+                "status": matrix.get("status") if isinstance(matrix, dict) else None,
+                "timestamp": matrix.get("timestamp") if isinstance(matrix, dict) else None,
+            },
+            "report_integrity_pre_m5a": {
+                "source": f"reports/current/{REPORT_INTEGRITY}",
+                "status": report_integrity.get("status") if isinstance(report_integrity, dict) else None,
+                "timestamp": report_integrity.get("timestamp") if isinstance(report_integrity, dict) else None,
+            },
+            "parent_gate_validator": {
+                "source": "scripts/parent_gate_validator.py m5a",
+                "status": parent_validation.get("status"),
+                "timestamp": parent_validation.get("timestamp"),
+            },
+        },
+        "evaluated_children": evaluated_children,
+        "blocking_children": [
+            item["child_gate_id"]
+            for item in evaluated_children
+            if item["parent_validation_status"] in {"BLOCKED", "MISSING", "INVALID", "STALE"}
+        ],
+        "failing_children": [
+            item["child_gate_id"]
+            for item in evaluated_children
+            if item["parent_validation_status"] == "FAIL"
+        ],
+        "final_status": status,
+    }
+
+
 def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -> dict[str, Any]:
     now = timestamp or datetime.now(UTC).isoformat()
     parent_validation = validate_parent_gate(
@@ -173,7 +278,11 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
         timestamp=now,
         max_report_age_hours=PARENT_GATE_MAX_REPORT_AGE_HOURS,
     )
-    parent_validation_pass = parent_validation["status"] == "PASS"
+    status = _parent_child_status(parent_validation)
+    parent_validation_pass = status == "PASS"
+    child_gate_count = _int_value(parent_validation.get("collected"), 0)
+    child_gates_passed = _int_value(parent_validation.get("passed"), 0)
+    child_gates_failed = child_gate_count - child_gates_passed
 
     start_gate, start_gate_error = _load_json(current_dir / START_GATE)
     duplicate_gate, duplicate_gate_error = _load_json(current_dir / DUPLICATE_GATE)
@@ -182,8 +291,9 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
     dq_report, dq_report_error = _load_json(current_dir / DATA_QUALITY_REPORT)
     doc_lint, doc_lint_error = _load_json(current_dir / DOC_TRUTH_LINT)
     report_integrity, report_integrity_error = _load_json(current_dir / REPORT_INTEGRITY)
+    child_gate_matrix, child_gate_matrix_error = _load_json(current_dir / CHILD_GATE_MATRIX)
 
-    blockers: list[dict[str, Any]] = []
+    diagnostic_blockers: list[dict[str, Any]] = []
 
     for report_name, error in (
         (START_GATE, start_gate_error),
@@ -193,9 +303,10 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
         (DATA_QUALITY_REPORT, dq_report_error),
         (DOC_TRUTH_LINT, doc_lint_error),
         (REPORT_INTEGRITY, report_integrity_error),
+        (CHILD_GATE_MATRIX, child_gate_matrix_error),
     ):
         if error:
-            blockers.append({
+            diagnostic_blockers.append({
                 "id": f"invalid_{Path(report_name).stem}",
                 "severity": "blocking",
                 "reason": f"Invalid or missing gate input JSON in reports/current/{report_name}: {error}",
@@ -231,13 +342,13 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
     report_v2_pass = dq_completed and _report_has_v2_fields(dq_report)
 
     if dq_state == "NOT_RUN":
-        blockers.append({
+        diagnostic_blockers.append({
             "id": "data_quality_report_not_run",
             "severity": "blocking",
             "reason": "M5a Data Quality report is NOT_RUN/missing; gate remains BLOCKED.",
         })
     elif dq_state == "INCOMPLETE":
-        blockers.append({
+        diagnostic_blockers.append({
             "id": "data_quality_report_incomplete",
             "severity": "blocking",
             "reason": "M5a Data Quality report is present but not a completed full run.",
@@ -358,14 +469,14 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
     failed = len(criteria) - passed
     for item in criteria:
         if not item["passed"]:
-            blockers.append({
+            diagnostic_blockers.append({
                 "id": item["id"],
                 "severity": "blocking",
                 "reason": f"{item['label']} criterion failed: {item['evidence']}",
                 "source": item["source"],
             })
     for parent_blocker in parent_validation["blockers"]:
-        blockers.append({
+        diagnostic_blockers.append({
             "id": f"parent_child_{parent_blocker['child_gate_id']}",
             "child_gate_id": parent_blocker["child_gate_id"],
             "severity": "blocking",
@@ -373,11 +484,19 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
             "source": "docs/gate_hierarchy.json",
         })
 
-    # Mandatory gate failure → BLOCKED (precondition unmet, gate cannot be PASS).
-    # Any other criterion failure → FAIL.
-    # All criteria pass and no load-time blockers → PASS.
-    status = parent_validation["status"]
+    child_gate_blockers = [
+        {
+            "id": f"child_gate_{parent_blocker['child_gate_id']}",
+            "child_gate_id": parent_blocker["child_gate_id"],
+            "severity": "blocking",
+            "reason": parent_blocker["reason"],
+            "source": "scripts/parent_gate_validator.py",
+        }
+        for parent_blocker in parent_validation["blockers"]
+    ]
+    gate_decision_trace = _child_gate_trace(parent_validation, child_gate_matrix, report_integrity, status)
     go_no_go = "GO" if status == "PASS" else "NO_GO"
+    gate_score = 100.0 if status == "PASS" else round((child_gates_passed / max(child_gate_count, 1)) * 100.0, 2)
 
     return {
         "report_schema_version": 1,
@@ -389,15 +508,16 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
         "report_type": "gate",
         "status": status,
         "result": status,
-        "collected": len(criteria),
-        "passed": passed,
-        "failed": failed,
+        "collected": child_gate_count,
+        "passed": child_gates_passed,
+        "failed": child_gates_failed,
         "errors": 0,
         "skipped": 0,
         "exit_code": 0 if status == "PASS" else 1,
-        "score": 100.0 if status == "PASS" else round((passed / len(criteria)) * 100.0, 2),
+        "score": gate_score,
         "score_threshold": SCORE_THRESHOLD,
-        "blockers": blockers,
+        "blockers": child_gate_blockers,
+        "diagnostic_blockers": diagnostic_blockers,
         "source_command": "python scripts/generate_m5a_data_quality_gate.py",
         "decision": {
             "go_no_go": go_no_go,
@@ -414,8 +534,10 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
             "documentation_truth_lint_pass": doc_lint_pass,
             "report_integrity_pre_m5a_pass": report_integrity_pass,
             "parent_gate_validation_pass": parent_validation_pass,
+            "child_gate_matrix_status": child_gate_matrix.get("status") if isinstance(child_gate_matrix, dict) else None,
         },
         "inputs": {
+            "child_gate_matrix": f"reports/current/{CHILD_GATE_MATRIX}",
             "start_gate": f"reports/current/{START_GATE}",
             "duplicate_slice_gate": f"reports/current/{DUPLICATE_GATE}",
             "metadata_slice_gate": f"reports/current/{METADATA_GATE}",
@@ -427,18 +549,21 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
         },
         "criteria": criteria,
         "parent_gate_validation": parent_validation,
-        "gate_decision_trace": parent_validation["gate_decision_trace"],
+        "gate_decision_trace": gate_decision_trace,
         "summary": {
             "rule": (
-                "M5a Data Quality Gate status is derived from mandatory child gates in "
-                "docs/gate_hierarchy.json. "
-                "must each be PASS — any failure sets status=BLOCKED. "
-                "Child FAIL sets parent FAIL. All children PASS sets parent PASS."
+                "M5a Data Quality Gate status is derived only from child-gate aggregation. "
+                "PASS requires every child gate to PASS. BLOCKED is used when at least one "
+                "child gate is BLOCKED, missing, invalid, or stale. FAIL is used when no child "
+                "blocks and at least one child gate technically FAILs."
             ),
             "mandatory_gate_ids": sorted(MANDATORY_GATE_IDS),
             "parent_gate_id": "m5a",
             "parent_gate_validation_required": True,
             "overall_m5a_data_quality_pass": status == "PASS",
+            "child_gates_collected": child_gate_count,
+            "child_gates_passed": child_gates_passed,
+            "child_gates_failed_or_blocking": child_gates_failed,
         },
     }
 

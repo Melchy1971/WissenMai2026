@@ -5,6 +5,7 @@ that is strictly newer than the RC's own timestamp.  A STALE RC must never
 be treated as PASS by the status engine.
 
 Stale triggers (all three checked independently):
+- runtime_connectivity_gate.timestamp          > rc.timestamp
 - frontend_full_suite_staged_report.timestamp  > rc.timestamp
 - report_truth_preflight.timestamp             > rc.timestamp
 - documentation_truth_lint.timestamp           > rc.timestamp
@@ -21,9 +22,11 @@ from typing import Any
 
 STALE_STATUS = "STALE"
 STALE_GATE = "BLOCKED"
+_UNSET = object()
 
 # Inputs that trigger staleness if they are newer than the RC.
 STALENESS_INPUTS: tuple[str, ...] = (
+    "runtime_connectivity_gate",
     "frontend_full_suite_staged_report",
     "report_truth_preflight",
     "documentation_truth_lint",
@@ -52,6 +55,7 @@ def check_staleness(
     frontend_full_suite: dict[str, Any] | None,
     report_truth_preflight: dict[str, Any] | None,
     documentation_truth_lint: dict[str, Any] | None,
+    runtime_connectivity_gate: dict[str, Any] | None | object = _UNSET,
 ) -> StaleResult:
     """Evaluate whether *rc* is stale relative to the supplied current reports.
 
@@ -65,6 +69,7 @@ def check_staleness(
         frontend_full_suite: Contents of frontend_full_suite_staged_report.json.
         report_truth_preflight: Contents of report_truth_preflight.json.
         documentation_truth_lint: Contents of documentation_truth_lint.json.
+        runtime_connectivity_gate: Contents of runtime_connectivity_gate.json.
 
     Returns:
         StaleResult with is_stale=True and reasons when the RC is outdated.
@@ -83,6 +88,8 @@ def check_staleness(
         "report_truth_preflight": report_truth_preflight,
         "documentation_truth_lint": documentation_truth_lint,
     }
+    if runtime_connectivity_gate is not _UNSET:
+        candidates["runtime_connectivity_gate"] = runtime_connectivity_gate
 
     for name, report in candidates.items():
         if report is None:

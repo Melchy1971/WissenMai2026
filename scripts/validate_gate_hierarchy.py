@@ -320,6 +320,92 @@ def _report_summary(report: dict[str, Any] | None, load_error: str | None) -> di
     }
 
 
+def _report_path_for_gate(gate: dict[str, Any]) -> str:
+    reports = gate.get("reports")
+    if isinstance(reports, list) and reports:
+        return f"reports/current/{reports[0]}"
+    summaries = gate.get("report_summaries")
+    if isinstance(summaries, dict) and summaries:
+        return f"reports/current/{next(iter(summaries))}"
+    return "docs/gate_hierarchy.json"
+
+
+def _next_action(reason: str, report_path: str) -> str:
+    lower = reason.lower()
+    if "missing report" in lower or "unavailable" in lower:
+        return f"Generate the missing child report at {report_path}, then rerun scripts/validate_gate_hierarchy.py."
+    if "invalid report" in lower or "root must be object" in lower:
+        return f"Repair or regenerate valid JSON at {report_path}, then rerun scripts/validate_gate_hierarchy.py."
+    if "generated_by" in lower:
+        return f"Normalize {report_path} so generated_by is set by the producing validator."
+    if "decision.go_no_go" in lower:
+        return f"Rerun the child gate that writes {report_path} until decision.go_no_go matches the hierarchy requirement."
+    if "quality_score" in lower:
+        return f"Fix the data-quality findings or regenerate {report_path} with quality_score at or above the configured threshold."
+    if "older than" in lower or "timestamp" in lower:
+        return f"Regenerate {report_path} so the report timestamp is fresh and machine-readable."
+    if "mandatory child not passed" in lower:
+        return "Open the referenced child gate detail, fix that child report first, then rerun scripts/validate_gate_hierarchy.py."
+    if any(token in lower for token in ("failed", "errors", "skipped", "exit_code", "passed", "collected")):
+        return f"Fix the failing tests/counters in {report_path}, rerun the child gate, and keep failed/errors/skipped at 0."
+    if "blockers must be empty" in lower:
+        return f"Resolve the blockers listed inside {report_path}, regenerate that report, then rerun the hierarchy validator."
+    if "reports/current" in lower or "reports/archive" in lower:
+        return "Point the validator at reports/current only; archive or root-level reports are not valid gate inputs."
+    return f"Inspect {report_path}, resolve the reported condition, and rerun scripts/validate_gate_hierarchy.py."
+
+
+def _blocker_details(gate_results: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    details: list[dict[str, Any]] = []
+    for gate_id, result in gate_results.items():
+        if result["status"] == "PASS":
+            continue
+        report_path = _report_path_for_gate(result)
+        reasons = result.get("blockers") or [f"{gate_id}: status is {result['status']}"]
+        for reason in reasons:
+            if str(reason).startswith("mandatory child not passed: "):
+                child_id = str(reason).split(":", 1)[1].strip()
+                child_result = gate_results.get(child_id)
+                if isinstance(child_result, dict):
+                    child_report_path = _report_path_for_gate(child_result)
+                    child_reasons = child_result.get("blockers") or [f"{child_id}: status is {child_result['status']}"]
+                    child_reason = "; ".join(str(item) for item in child_reasons)
+                    details.append(
+                        {
+                            "gate": child_id,
+                            "report_path": child_report_path,
+                            "status": child_result["status"],
+                            "reason": (
+                                f"{gate_id} blocked because mandatory child {child_id} is "
+                                f"{child_result['status']}. Child reason: {child_reason}"
+                            ),
+                            "next_action": _next_action(child_reason, child_report_path),
+                        }
+                    )
+                    continue
+            details.append(
+                {
+                    "gate": gate_id,
+                    "report_path": report_path,
+                    "status": result["status"],
+                    "reason": str(reason),
+                    "next_action": _next_action(str(reason), report_path),
+                }
+            )
+    return details
+
+
+def _unique_repair_path(blocker_details: list[dict[str, Any]]) -> list[str]:
+    actions: list[str] = []
+    seen: set[str] = set()
+    for detail in blocker_details:
+        action = str(detail["next_action"])
+        if action not in seen:
+            seen.add(action)
+            actions.append(action)
+    return actions
+
+
 def evaluate_gate_hierarchy(
     report_dir: Path = CURRENT_DIR,
     *,
@@ -393,6 +479,7 @@ def evaluate_gate_hierarchy(
         }
 
     all_passed = all(result["status"] == "PASS" for result in gate_results.values())
+    blocker_details = _blocker_details(gate_results)
     return {
         "report_schema_version": 2,
         "report_name": "gate_hierarchy_result",
@@ -413,6 +500,8 @@ def evaluate_gate_hierarchy(
             for gate_id, result in gate_results.items()
             if result["status"] != "PASS"
         ],
+        "blocker_details": blocker_details,
+        "repair_path": _unique_repair_path(blocker_details),
         "source_command": "python scripts/validate_gate_hierarchy.py",
         "hierarchy_source": hierarchy_path.relative_to(REPO_ROOT).as_posix(),
         "report_source_policy": hierarchy.get("report_source_policy", {}),

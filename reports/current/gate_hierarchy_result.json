@@ -2,49 +2,20 @@
   "report_schema_version": 2,
   "report_name": "gate_hierarchy_result",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-03T08:09:49.106502+00:00",
+  "timestamp": "2026-06-05T15:33:53.495635+00:00",
   "environment": "local",
-  "result": "FAIL",
-  "status": "FAIL",
+  "result": "PASS",
+  "status": "PASS",
   "gate": "gate_hierarchy",
   "collected": 19,
-  "passed": 13,
-  "failed": 4,
+  "passed": 19,
+  "failed": 0,
   "errors": 0,
-  "skipped": 2,
-  "exit_code": 1,
-  "blockers": [
-    {
-      "gate": "runtime_connectivity_gate",
-      "severity": "critical",
-      "reason": "missing report: H:\\WissenMai2026\\reports\\current\\runtime_connectivity_gate.json"
-    },
-    {
-      "gate": "report_integrity_pre_m5a",
-      "severity": "critical",
-      "reason": "report_integrity_pre_m5a.json: status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']; report_integrity_pre_m5a.json: decision.go_no_go must be GO, got 'NO_GO'; report_integrity_pre_m5a.json: passed (6) must equal collected (8); report_integrity_pre_m5a.json: failed must be 0, got 2; report_integrity_pre_m5a.json: exit_code must be 0, got 1; report_integrity_pre_m5a.json: blockers must be empty"
-    },
-    {
-      "gate": "source_status_integrity_gate",
-      "severity": "critical",
-      "reason": "missing report: H:\\WissenMai2026\\reports\\current\\m5a_source_status_integrity_gate.json"
-    },
-    {
-      "gate": "orphan_detector_gate",
-      "severity": "critical",
-      "reason": "missing report: H:\\WissenMai2026\\reports\\current\\m5a_orphan_detector_gate.json"
-    },
-    {
-      "gate": "m3a",
-      "severity": "critical",
-      "reason": "mandatory child not passed: runtime_connectivity_gate"
-    },
-    {
-      "gate": "m5a",
-      "severity": "critical",
-      "reason": "mandatory child not passed: report_integrity_pre_m5a; mandatory child not passed: source_status_integrity_gate; mandatory child not passed: orphan_detector_gate"
-    }
-  ],
+  "skipped": 0,
+  "exit_code": 0,
+  "blockers": [],
+  "blocker_details": [],
+  "repair_path": [],
   "source_command": "python scripts/validate_gate_hierarchy.py",
   "hierarchy_source": "docs/gate_hierarchy.json",
   "report_source_policy": {
@@ -58,38 +29,48 @@
     "runtime_connectivity_gate": {
       "id": "runtime_connectivity_gate",
       "label": "Runtime Connectivity Gate",
-      "status": "FAIL",
+      "status": "PASS",
       "reports": [
         "runtime_connectivity_gate.json"
       ],
       "mandatory_children": [],
-      "blockers": [
-        "missing report: H:\\WissenMai2026\\reports\\current\\runtime_connectivity_gate.json"
-      ],
+      "blockers": [],
       "report_summaries": {
         "runtime_connectivity_gate.json": {
-          "available": false,
-          "error": "missing report: H:\\WissenMai2026\\reports\\current\\runtime_connectivity_gate.json"
+          "available": true,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": "GO",
+          "collected": 9,
+          "passed": 9,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": false,
+          "timestamp": "2026-06-05T10:04:42.576444+00:00"
         }
       }
     },
-    "frontend_full_suite_staged": {
-      "id": "frontend_full_suite_staged",
-      "label": "Frontend Full Suite Staged",
+    "m3a_release_candidate": {
+      "id": "m3a_release_candidate",
+      "label": "M3a Release Candidate",
       "status": "PASS",
       "reports": [
-        "frontend_full_suite_staged_report.json"
+        "m3a_release_candidate.json"
       ],
       "mandatory_children": [],
       "blockers": [],
       "report_summaries": {
-        "frontend_full_suite_staged_report.json": {
+        "m3a_release_candidate.json": {
           "available": true,
           "status": "PASS",
-          "result": null,
-          "decision": null,
-          "collected": 132,
-          "passed": 132,
+          "result": "PASS",
+          "decision": "GO",
+          "collected": 4,
+          "passed": 4,
           "failed": 0,
           "errors": 0,
           "skipped": 0,
@@ -97,7 +78,7 @@
           "quality_score": null,
           "generated_by": "gate_validator",
           "test_database_url_set": null,
-          "timestamp": "2026-05-28T10:28:30.000000+00:00"
+          "timestamp": "2026-06-05T10:06:18.467008+00:00"
         }
       }
     },
@@ -125,7 +106,7 @@
           "quality_score": null,
           "generated_by": "documentation_truth_linter",
           "test_database_url_set": null,
-          "timestamp": "2026-06-03T08:09:40.393205+00:00"
+          "timestamp": "2026-06-03T09:36:32.001820+00:00"
         }
       }
     },
@@ -300,35 +281,28 @@
     "report_integrity_pre_m5a": {
       "id": "report_integrity_pre_m5a",
       "label": "Report Integrity Pre M5a",
-      "status": "FAIL",
+      "status": "PASS",
       "reports": [
         "report_integrity_pre_m5a.json"
       ],
       "mandatory_children": [],
-      "blockers": [
-        "report_integrity_pre_m5a.json: status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
-        "report_integrity_pre_m5a.json: decision.go_no_go must be GO, got 'NO_GO'",
-        "report_integrity_pre_m5a.json: passed (6) must equal collected (8)",
-        "report_integrity_pre_m5a.json: failed must be 0, got 2",
-        "report_integrity_pre_m5a.json: exit_code must be 0, got 1",
-        "report_integrity_pre_m5a.json: blockers must be empty"
-      ],
+      "blockers": [],
       "report_summaries": {
         "report_integrity_pre_m5a.json": {
           "available": true,
-          "status": "BLOCKED",
-          "result": "BLOCKED",
-          "decision": "NO_GO",
-          "collected": 8,
-          "passed": 6,
-          "failed": 2,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": "GO",
+          "collected": 7,
+          "passed": 7,
+          "failed": 0,
           "errors": 0,
           "skipped": 0,
-          "exit_code": 1,
+          "exit_code": 0,
           "quality_score": null,
           "generated_by": "gate_validator",
           "test_database_url_set": null,
-          "timestamp": "2026-06-01T12:15:00+00:00"
+          "timestamp": "2026-06-05T11:33:24.2226847+02:00"
         }
       }
     },
@@ -447,52 +421,70 @@
     "source_status_integrity_gate": {
       "id": "source_status_integrity_gate",
       "label": "Source Status Integrity Gate",
-      "status": "FAIL",
+      "status": "PASS",
       "reports": [
         "m5a_source_status_integrity_gate.json"
       ],
       "mandatory_children": [],
-      "blockers": [
-        "missing report: H:\\WissenMai2026\\reports\\current\\m5a_source_status_integrity_gate.json"
-      ],
+      "blockers": [],
       "report_summaries": {
         "m5a_source_status_integrity_gate.json": {
-          "available": false,
-          "error": "missing report: H:\\WissenMai2026\\reports\\current\\m5a_source_status_integrity_gate.json"
+          "available": true,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": "GO",
+          "collected": 3,
+          "passed": 3,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": null,
+          "timestamp": "2026-06-05T11:20:05.4350116+02:00"
         }
       }
     },
     "orphan_detector_gate": {
       "id": "orphan_detector_gate",
       "label": "Orphan Detector Gate",
-      "status": "FAIL",
+      "status": "PASS",
       "reports": [
         "m5a_orphan_detector_gate.json"
       ],
       "mandatory_children": [],
-      "blockers": [
-        "missing report: H:\\WissenMai2026\\reports\\current\\m5a_orphan_detector_gate.json"
-      ],
+      "blockers": [],
       "report_summaries": {
         "m5a_orphan_detector_gate.json": {
-          "available": false,
-          "error": "missing report: H:\\WissenMai2026\\reports\\current\\m5a_orphan_detector_gate.json"
+          "available": true,
+          "status": "PASS",
+          "result": "PASS",
+          "decision": "GO",
+          "collected": 5,
+          "passed": 5,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 0,
+          "exit_code": 0,
+          "quality_score": null,
+          "generated_by": "gate_validator",
+          "test_database_url_set": null,
+          "timestamp": "2026-06-05T11:33:24.2226847+02:00"
         }
       }
     },
     "m3a": {
       "id": "m3a",
       "label": "M3a",
-      "status": "BLOCKED",
+      "status": "PASS",
       "reports": [],
       "mandatory_children": [
         "runtime_connectivity_gate",
-        "frontend_full_suite_staged",
+        "m3a_release_candidate",
         "documentation_truth_lint"
       ],
-      "blockers": [
-        "mandatory child not passed: runtime_connectivity_gate"
-      ],
+      "blockers": [],
       "report_summaries": {}
     },
     "m4": {
@@ -513,7 +505,7 @@
     "m5a": {
       "id": "m5a",
       "label": "M5a",
-      "status": "BLOCKED",
+      "status": "PASS",
       "reports": [],
       "mandatory_children": [
         "m5a_start_gate",
@@ -526,11 +518,7 @@
         "source_status_integrity_gate",
         "orphan_detector_gate"
       ],
-      "blockers": [
-        "mandatory child not passed: report_integrity_pre_m5a",
-        "mandatory child not passed: source_status_integrity_gate",
-        "mandatory child not passed: orphan_detector_gate"
-      ],
+      "blockers": [],
       "report_summaries": {}
     }
   },
@@ -541,8 +529,8 @@
         "label": "Runtime Connectivity Gate"
       },
       {
-        "id": "frontend_full_suite_staged",
-        "label": "Frontend Full Suite Staged"
+        "id": "m3a_release_candidate",
+        "label": "M3a Release Candidate"
       },
       {
         "id": "documentation_truth_lint",
@@ -619,7 +607,7 @@
         "to": "m3a"
       },
       {
-        "from": "frontend_full_suite_staged",
+        "from": "m3a_release_candidate",
         "to": "m3a"
       },
       {

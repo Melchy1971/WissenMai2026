@@ -129,6 +129,10 @@ def _counter_blockers(report_name: str, report: dict[str, Any], required: bool) 
     return blockers
 
 
+def _is_supporting_report(report: dict[str, Any]) -> bool:
+    return str(report.get("report_type") or "").lower() == "supporting"
+
+
 def _child_blockers(
     child_id: str,
     child_spec: dict[str, Any],
@@ -155,8 +159,22 @@ def _child_blockers(
             f"{child_id}: status/result must be one of {sorted(accepted_statuses)}, got {sorted(statuses)}"
         )
 
+    invalid_blockers: list[str] = []
     if not report.get("generated_by"):
-        blockers.append(f"{child_id}: generated_by must be set")
+        invalid_blockers.append(f"{child_id}: generated_by must be set")
+
+    timestamp = _parse_timestamp(report.get("timestamp") or report.get("generated_at"))
+    if timestamp is None:
+        return "STALE", [f"{child_id}: timestamp must be machine-readable"]
+
+    collected = _as_int(report.get("collected"))
+    if not _is_supporting_report(report) and (collected is None or collected <= 0):
+        invalid_blockers.append(
+            f"{child_id}: passing child report requires collected > 0 or report_type=supporting"
+        )
+
+    if invalid_blockers:
+        return "INVALID", invalid_blockers
 
     required_decision = child_spec.get("required_decision")
     if required_decision is not None:
@@ -187,9 +205,6 @@ def _child_blockers(
             blockers.append(f"{child_id}: quality_score must be >= {min_quality_score}")
 
     if max_report_age_hours is not None:
-        timestamp = _parse_timestamp(report.get("timestamp") or report.get("generated_at"))
-        if timestamp is None:
-            return "STALE", [f"{child_id}: timestamp must be machine-readable"]
         if now - timestamp > timedelta(hours=max_report_age_hours):
             return "STALE", [f"{child_id}: report is older than {max_report_age_hours} hours"]
 
@@ -221,12 +236,17 @@ def _decision_trace(
                 if result["validation_status"] == "FAIL"
                 else "passes_parent"
             ),
+            "blockers": result.get("blockers", []),
         }
         for child_id, result in child_results.items()
     ]
     return {
         "parent_gate": parent_gate_id,
-        "rule": "Child BLOCKED/MISSING/INVALID/STALE => parent BLOCKED; child FAIL => parent FAIL; all children PASS => parent PASS.",
+        "rule": (
+            "Missing child, invalid child JSON, child BLOCKED/INVALID/STALE, or invalid PASS evidence "
+            "=> parent BLOCKED; child FAIL => parent FAIL; child PASS counts only with generated_by, "
+            "timestamp, and collected > 0 or report_type=supporting."
+        ),
         "evaluated_children": evaluated_children,
         "blocking_children": [
             item["child_gate_id"]
@@ -317,6 +337,9 @@ def validate_parent_gate(
                         "report_result": report.get("result"),
                         "decision": _nested(report, "decision.go_no_go"),
                         "timestamp": report.get("timestamp") or report.get("generated_at"),
+                        "generated_by": report.get("generated_by"),
+                        "collected": report.get("collected"),
+                        "report_type": report.get("report_type"),
                         "blockers": child_blockers,
                     }
 

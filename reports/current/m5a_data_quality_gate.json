@@ -3,26 +3,50 @@
   "report_name": "m5a_data_quality_gate",
   "gate": "m5a_data_quality_gate",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-03T08:45:26.181651+00:00",
+  "timestamp": "2026-06-08T07:32:45.339823+00:00",
   "environment": "local",
   "report_type": "gate",
   "status": "BLOCKED",
   "result": "BLOCKED",
-  "collected": 13,
-  "passed": 11,
-  "failed": 2,
+  "collected": 9,
+  "passed": 5,
+  "failed": 4,
   "errors": 0,
   "skipped": 0,
   "exit_code": 1,
-  "score": 84.62,
+  "score": 55.56,
   "score_threshold": 90.0,
   "blockers": [
     {
-      "id": "report_integrity_pre_m5a_pass",
+      "id": "child_gate_documentation_truth_lint",
+      "child_gate_id": "documentation_truth_lint",
       "severity": "blocking",
-      "reason": "Report Integrity Pre-M5a criterion failed: BLOCKED",
-      "source": "reports/current/report_integrity_pre_m5a.json"
+      "reason": "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting",
+      "source": "scripts/parent_gate_validator.py"
     },
+    {
+      "id": "child_gate_data_quality_report",
+      "child_gate_id": "data_quality_report",
+      "severity": "blocking",
+      "reason": "data_quality_report: passing child report requires collected > 0 or report_type=supporting",
+      "source": "scripts/parent_gate_validator.py"
+    },
+    {
+      "id": "child_gate_source_status_integrity_gate",
+      "child_gate_id": "source_status_integrity_gate",
+      "severity": "blocking",
+      "reason": "source_status_integrity_gate: child status is blocking (['BLOCKED'])",
+      "source": "scripts/parent_gate_validator.py"
+    },
+    {
+      "id": "child_gate_orphan_detector_gate",
+      "child_gate_id": "orphan_detector_gate",
+      "severity": "blocking",
+      "reason": "orphan_detector_gate: child status is blocking (['BLOCKED'])",
+      "source": "scripts/parent_gate_validator.py"
+    }
+  ],
+  "diagnostic_blockers": [
     {
       "id": "parent_gate_validation_pass",
       "severity": "blocking",
@@ -30,24 +54,31 @@
       "source": "docs/gate_hierarchy.json"
     },
     {
-      "id": "parent_child_report_integrity_pre_m5a",
-      "child_gate_id": "report_integrity_pre_m5a",
+      "id": "parent_child_documentation_truth_lint",
+      "child_gate_id": "documentation_truth_lint",
       "severity": "blocking",
-      "reason": "report_integrity_pre_m5a: child status is blocking (['BLOCKED'])",
+      "reason": "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting",
+      "source": "docs/gate_hierarchy.json"
+    },
+    {
+      "id": "parent_child_data_quality_report",
+      "child_gate_id": "data_quality_report",
+      "severity": "blocking",
+      "reason": "data_quality_report: passing child report requires collected > 0 or report_type=supporting",
       "source": "docs/gate_hierarchy.json"
     },
     {
       "id": "parent_child_source_status_integrity_gate",
       "child_gate_id": "source_status_integrity_gate",
       "severity": "blocking",
-      "reason": "source_status_integrity_gate: missing",
+      "reason": "source_status_integrity_gate: child status is blocking (['BLOCKED'])",
       "source": "docs/gate_hierarchy.json"
     },
     {
       "id": "parent_child_orphan_detector_gate",
       "child_gate_id": "orphan_detector_gate",
       "severity": "blocking",
-      "reason": "orphan_detector_gate: missing",
+      "reason": "orphan_detector_gate: child status is blocking (['BLOCKED'])",
       "source": "docs/gate_hierarchy.json"
     }
   ],
@@ -63,12 +94,14 @@
     "quality_score": 94.0,
     "score_threshold": 90.0,
     "global_m5_release_allowed": false,
-    "no_invalid_json_reports": true,
+    "no_invalid_json_reports": false,
     "documentation_truth_lint_pass": true,
-    "report_integrity_pre_m5a_pass": false,
-    "parent_gate_validation_pass": false
+    "report_integrity_pre_m5a_pass": true,
+    "parent_gate_validation_pass": false,
+    "child_gate_matrix_status": "PASS"
   },
   "inputs": {
+    "child_gate_matrix": "reports/current/m5a_child_gate_matrix.json",
     "start_gate": "reports/current/m5a_start_gate.json",
     "duplicate_slice_gate": "reports/current/m5a_duplicate_detector_gate.json",
     "metadata_slice_gate": "reports/current/m5a_metadata_detector_gate.json",
@@ -99,9 +132,9 @@
       "id": "report_integrity_pre_m5a_pass",
       "label": "Report Integrity Pre-M5a",
       "mandatory": true,
-      "passed": false,
+      "passed": true,
       "source": "reports/current/report_integrity_pre_m5a.json",
-      "evidence": "BLOCKED"
+      "evidence": "PASS"
     },
     {
       "id": "duplicate_detector_pass",
@@ -179,7 +212,7 @@
     "report_schema_version": 1,
     "report_name": "parent_gate_validation",
     "generated_by": "gate_validator",
-    "timestamp": "2026-06-03T08:45:26.181651+00:00",
+    "timestamp": "2026-06-08T07:32:45.339823+00:00",
     "parent_gate": "m5a",
     "status": "BLOCKED",
     "result": "BLOCKED",
@@ -188,8 +221,8 @@
       "manual_override_allowed": false
     },
     "collected": 9,
-    "passed": 6,
-    "failed": 3,
+    "passed": 5,
+    "failed": 4,
     "errors": 0,
     "skipped": 0,
     "exit_code": 1,
@@ -216,39 +249,53 @@
         "report_result": "PASS",
         "decision": "GO",
         "timestamp": "2026-06-01T08:41:13.099732+00:00",
+        "generated_by": "gate_validator",
+        "collected": 12,
+        "report_type": "gate",
         "blockers": []
       },
       "report_integrity_pre_m5a": {
         "child_gate_id": "report_integrity_pre_m5a",
         "report": "reports/current/report_integrity_pre_m5a.json",
-        "validation_status": "BLOCKED",
-        "report_status": "BLOCKED",
-        "report_result": "BLOCKED",
-        "decision": "NO_GO",
-        "timestamp": "2026-06-03T08:40:00+00:00",
-        "blockers": [
-          "report_integrity_pre_m5a: child status is blocking (['BLOCKED'])"
-        ]
+        "validation_status": "PASS",
+        "report_status": "PASS",
+        "report_result": "PASS",
+        "decision": "GO",
+        "timestamp": "2026-06-08T07:13:04.937078Z",
+        "generated_by": "gate_validator",
+        "collected": 8,
+        "report_type": "gate",
+        "blockers": []
       },
       "documentation_truth_lint": {
         "child_gate_id": "documentation_truth_lint",
         "report": "reports/current/documentation_truth_lint.json",
-        "validation_status": "PASS",
+        "validation_status": "INVALID",
         "report_status": "PASS",
         "report_result": "PASS",
         "decision": null,
-        "timestamp": "2026-06-03T08:09:40.393205+00:00",
-        "blockers": []
+        "timestamp": "2026-06-03T09:36:32.001820+00:00",
+        "generated_by": "documentation_truth_linter",
+        "collected": null,
+        "report_type": null,
+        "blockers": [
+          "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting"
+        ]
       },
       "data_quality_report": {
         "child_gate_id": "data_quality_report",
         "report": "reports/current/data_quality_report.json",
-        "validation_status": "PASS",
+        "validation_status": "INVALID",
         "report_status": "completed",
         "report_result": null,
         "decision": null,
         "timestamp": "2026-06-02T11:58:41.996000+00:00",
-        "blockers": []
+        "generated_by": "run_data_quality_cli",
+        "collected": null,
+        "report_type": null,
+        "blockers": [
+          "data_quality_report: passing child report requires collected > 0 or report_type=supporting"
+        ]
       },
       "duplicate_detector_gate": {
         "child_gate_id": "duplicate_detector_gate",
@@ -258,6 +305,9 @@
         "report_result": "PASS",
         "decision": "GO",
         "timestamp": "2026-06-01T09:28:52.011721+00:00",
+        "generated_by": "gate_validator",
+        "collected": 8,
+        "report_type": null,
         "blockers": []
       },
       "metadata_detector_gate": {
@@ -268,6 +318,9 @@
         "report_result": "PASS",
         "decision": "GO",
         "timestamp": "2026-06-01T09:44:30.450456+00:00",
+        "generated_by": "gate_validator",
+        "collected": 11,
+        "report_type": null,
         "blockers": []
       },
       "lifecycle_integrity_gate": {
@@ -278,97 +331,138 @@
         "report_result": "PASS",
         "decision": "GO",
         "timestamp": "2026-06-01T12:01:58.267848+00:00",
+        "generated_by": "gate_validator",
+        "collected": 10,
+        "report_type": "gate",
         "blockers": []
       },
       "source_status_integrity_gate": {
         "child_gate_id": "source_status_integrity_gate",
         "report": "reports/current/m5a_source_status_integrity_gate.json",
-        "validation_status": "MISSING",
+        "validation_status": "BLOCKED",
+        "report_status": "BLOCKED",
+        "report_result": "BLOCKED",
+        "decision": "NO_GO",
+        "timestamp": "2026-06-08T07:20:00Z",
+        "generated_by": "gate_validator",
+        "collected": 0,
+        "report_type": "gate",
         "blockers": [
-          "source_status_integrity_gate: missing"
+          "source_status_integrity_gate: child status is blocking (['BLOCKED'])"
         ]
       },
       "orphan_detector_gate": {
         "child_gate_id": "orphan_detector_gate",
         "report": "reports/current/m5a_orphan_detector_gate.json",
-        "validation_status": "MISSING",
+        "validation_status": "BLOCKED",
+        "report_status": "BLOCKED",
+        "report_result": "BLOCKED",
+        "decision": "NO_GO",
+        "timestamp": "2026-06-08T07:23:00Z",
+        "generated_by": "gate_validator",
+        "collected": 0,
+        "report_type": "gate",
         "blockers": [
-          "orphan_detector_gate: missing"
+          "orphan_detector_gate: child status is blocking (['BLOCKED'])"
         ]
       }
     },
     "blockers": [
       {
-        "id": "report_integrity_pre_m5a",
-        "child_gate_id": "report_integrity_pre_m5a",
+        "id": "documentation_truth_lint",
+        "child_gate_id": "documentation_truth_lint",
         "severity": "blocking",
-        "reason": "report_integrity_pre_m5a: child status is blocking (['BLOCKED'])"
+        "reason": "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting"
+      },
+      {
+        "id": "data_quality_report",
+        "child_gate_id": "data_quality_report",
+        "severity": "blocking",
+        "reason": "data_quality_report: passing child report requires collected > 0 or report_type=supporting"
       },
       {
         "id": "source_status_integrity_gate",
         "child_gate_id": "source_status_integrity_gate",
         "severity": "blocking",
-        "reason": "source_status_integrity_gate: missing"
+        "reason": "source_status_integrity_gate: child status is blocking (['BLOCKED'])"
       },
       {
         "id": "orphan_detector_gate",
         "child_gate_id": "orphan_detector_gate",
         "severity": "blocking",
-        "reason": "orphan_detector_gate: missing"
+        "reason": "orphan_detector_gate: child status is blocking (['BLOCKED'])"
       }
     ],
     "gate_decision_trace": {
       "parent_gate": "m5a",
-      "rule": "Child BLOCKED/MISSING/INVALID/STALE => parent BLOCKED; child FAIL => parent FAIL; all children PASS => parent PASS.",
+      "rule": "Missing child, invalid child JSON, child BLOCKED/INVALID/STALE, or invalid PASS evidence => parent BLOCKED; child FAIL => parent FAIL; child PASS counts only with generated_by, timestamp, and collected > 0 or report_type=supporting.",
       "evaluated_children": [
         {
           "child_gate_id": "m5a_start_gate",
           "validation_status": "PASS",
-          "effect": "passes_parent"
+          "effect": "passes_parent",
+          "blockers": []
         },
         {
           "child_gate_id": "report_integrity_pre_m5a",
-          "validation_status": "BLOCKED",
-          "effect": "blocks_parent"
+          "validation_status": "PASS",
+          "effect": "passes_parent",
+          "blockers": []
         },
         {
           "child_gate_id": "documentation_truth_lint",
-          "validation_status": "PASS",
-          "effect": "passes_parent"
+          "validation_status": "INVALID",
+          "effect": "blocks_parent",
+          "blockers": [
+            "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting"
+          ]
         },
         {
           "child_gate_id": "data_quality_report",
-          "validation_status": "PASS",
-          "effect": "passes_parent"
+          "validation_status": "INVALID",
+          "effect": "blocks_parent",
+          "blockers": [
+            "data_quality_report: passing child report requires collected > 0 or report_type=supporting"
+          ]
         },
         {
           "child_gate_id": "duplicate_detector_gate",
           "validation_status": "PASS",
-          "effect": "passes_parent"
+          "effect": "passes_parent",
+          "blockers": []
         },
         {
           "child_gate_id": "metadata_detector_gate",
           "validation_status": "PASS",
-          "effect": "passes_parent"
+          "effect": "passes_parent",
+          "blockers": []
         },
         {
           "child_gate_id": "lifecycle_integrity_gate",
           "validation_status": "PASS",
-          "effect": "passes_parent"
+          "effect": "passes_parent",
+          "blockers": []
         },
         {
           "child_gate_id": "source_status_integrity_gate",
-          "validation_status": "MISSING",
-          "effect": "blocks_parent"
+          "validation_status": "BLOCKED",
+          "effect": "blocks_parent",
+          "blockers": [
+            "source_status_integrity_gate: child status is blocking (['BLOCKED'])"
+          ]
         },
         {
           "child_gate_id": "orphan_detector_gate",
-          "validation_status": "MISSING",
-          "effect": "blocks_parent"
+          "validation_status": "BLOCKED",
+          "effect": "blocks_parent",
+          "blockers": [
+            "orphan_detector_gate: child status is blocking (['BLOCKED'])"
+          ]
         }
       ],
       "blocking_children": [
-        "report_integrity_pre_m5a",
+        "documentation_truth_lint",
+        "data_quality_report",
         "source_status_integrity_gate",
         "orphan_detector_gate"
       ],
@@ -378,56 +472,172 @@
   },
   "gate_decision_trace": {
     "parent_gate": "m5a",
-    "rule": "Child BLOCKED/MISSING/INVALID/STALE => parent BLOCKED; child FAIL => parent FAIL; all children PASS => parent PASS.",
+    "rule": "PASS iff all child gates PASS. BLOCKED if at least one child gate is BLOCKED, missing, invalid, or stale. FAIL if no child gate blocks and at least one child gate is technically FAIL.",
+    "inputs": {
+      "child_gate_matrix": {
+        "source": "reports/current/m5a_child_gate_matrix.json",
+        "status": "PASS",
+        "timestamp": "2026-06-08T07:16:18.968133Z"
+      },
+      "report_integrity_pre_m5a": {
+        "source": "reports/current/report_integrity_pre_m5a.json",
+        "status": "PASS",
+        "timestamp": "2026-06-08T07:13:04.937078Z"
+      },
+      "parent_gate_validator": {
+        "source": "scripts/parent_gate_validator.py m5a",
+        "status": "BLOCKED",
+        "timestamp": "2026-06-08T07:32:45.339823+00:00"
+      }
+    },
     "evaluated_children": [
       {
         "child_gate_id": "m5a_start_gate",
-        "validation_status": "PASS",
-        "effect": "passes_parent"
+        "report": "reports/current/m5a_start_gate.json",
+        "matrix_status": "PASS",
+        "matrix_blocking": false,
+        "parent_validation_status": "PASS",
+        "report_status": "PASS",
+        "decision": "GO",
+        "generated_by": "gate_validator",
+        "timestamp": "2026-06-01T08:41:13.099732+00:00",
+        "collected": 12,
+        "report_type": "gate",
+        "effect": "passes_parent",
+        "blockers": []
       },
       {
         "child_gate_id": "report_integrity_pre_m5a",
-        "validation_status": "BLOCKED",
-        "effect": "blocks_parent"
+        "report": "reports/current/report_integrity_pre_m5a.json",
+        "matrix_status": "PASS",
+        "matrix_blocking": false,
+        "parent_validation_status": "PASS",
+        "report_status": "PASS",
+        "decision": "GO",
+        "generated_by": "gate_validator",
+        "timestamp": "2026-06-08T07:13:04.937078Z",
+        "collected": 8,
+        "report_type": "gate",
+        "effect": "passes_parent",
+        "blockers": []
       },
       {
         "child_gate_id": "documentation_truth_lint",
-        "validation_status": "PASS",
-        "effect": "passes_parent"
+        "report": "reports/current/documentation_truth_lint.json",
+        "matrix_status": "PASS",
+        "matrix_blocking": false,
+        "parent_validation_status": "INVALID",
+        "report_status": "PASS",
+        "decision": null,
+        "generated_by": "documentation_truth_linter",
+        "timestamp": "2026-06-03T09:36:32.001820+00:00",
+        "collected": null,
+        "report_type": null,
+        "effect": "blocks_parent",
+        "blockers": [
+          "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting"
+        ]
       },
       {
         "child_gate_id": "data_quality_report",
-        "validation_status": "PASS",
-        "effect": "passes_parent"
+        "report": "reports/current/data_quality_report.json",
+        "matrix_status": "completed",
+        "matrix_blocking": false,
+        "parent_validation_status": "INVALID",
+        "report_status": "completed",
+        "decision": null,
+        "generated_by": "run_data_quality_cli",
+        "timestamp": "2026-06-02T11:58:41.996000+00:00",
+        "collected": null,
+        "report_type": null,
+        "effect": "blocks_parent",
+        "blockers": [
+          "data_quality_report: passing child report requires collected > 0 or report_type=supporting"
+        ]
       },
       {
         "child_gate_id": "duplicate_detector_gate",
-        "validation_status": "PASS",
-        "effect": "passes_parent"
+        "report": "reports/current/m5a_duplicate_detector_gate.json",
+        "matrix_status": "PASS",
+        "matrix_blocking": false,
+        "parent_validation_status": "PASS",
+        "report_status": "PASS",
+        "decision": "GO",
+        "generated_by": "gate_validator",
+        "timestamp": "2026-06-01T09:28:52.011721+00:00",
+        "collected": 8,
+        "report_type": null,
+        "effect": "passes_parent",
+        "blockers": []
       },
       {
         "child_gate_id": "metadata_detector_gate",
-        "validation_status": "PASS",
-        "effect": "passes_parent"
+        "report": "reports/current/m5a_metadata_detector_gate.json",
+        "matrix_status": "PASS",
+        "matrix_blocking": false,
+        "parent_validation_status": "PASS",
+        "report_status": "PASS",
+        "decision": "GO",
+        "generated_by": "gate_validator",
+        "timestamp": "2026-06-01T09:44:30.450456+00:00",
+        "collected": 11,
+        "report_type": null,
+        "effect": "passes_parent",
+        "blockers": []
       },
       {
         "child_gate_id": "lifecycle_integrity_gate",
-        "validation_status": "PASS",
-        "effect": "passes_parent"
+        "report": "reports/current/m5a_lifecycle_integrity_gate.json",
+        "matrix_status": "PASS",
+        "matrix_blocking": false,
+        "parent_validation_status": "PASS",
+        "report_status": "PASS",
+        "decision": "GO",
+        "generated_by": "gate_validator",
+        "timestamp": "2026-06-01T12:01:58.267848+00:00",
+        "collected": 10,
+        "report_type": "gate",
+        "effect": "passes_parent",
+        "blockers": []
       },
       {
         "child_gate_id": "source_status_integrity_gate",
-        "validation_status": "MISSING",
-        "effect": "blocks_parent"
+        "report": "reports/current/m5a_source_status_integrity_gate.json",
+        "matrix_status": "PASS",
+        "matrix_blocking": false,
+        "parent_validation_status": "BLOCKED",
+        "report_status": "BLOCKED",
+        "decision": "NO_GO",
+        "generated_by": "gate_validator",
+        "timestamp": "2026-06-08T07:20:00Z",
+        "collected": 0,
+        "report_type": "gate",
+        "effect": "blocks_parent",
+        "blockers": [
+          "source_status_integrity_gate: child status is blocking (['BLOCKED'])"
+        ]
       },
       {
         "child_gate_id": "orphan_detector_gate",
-        "validation_status": "MISSING",
-        "effect": "blocks_parent"
+        "report": "reports/current/m5a_orphan_detector_gate.json",
+        "matrix_status": "PASS",
+        "matrix_blocking": false,
+        "parent_validation_status": "BLOCKED",
+        "report_status": "BLOCKED",
+        "decision": "NO_GO",
+        "generated_by": "gate_validator",
+        "timestamp": "2026-06-08T07:23:00Z",
+        "collected": 0,
+        "report_type": "gate",
+        "effect": "blocks_parent",
+        "blockers": [
+          "orphan_detector_gate: child status is blocking (['BLOCKED'])"
+        ]
       }
     ],
     "blocking_children": [
-      "report_integrity_pre_m5a",
+      "documentation_truth_lint",
+      "data_quality_report",
       "source_status_integrity_gate",
       "orphan_detector_gate"
     ],
@@ -435,7 +645,7 @@
     "final_status": "BLOCKED"
   },
   "summary": {
-    "rule": "M5a Data Quality Gate status is derived from mandatory child gates in docs/gate_hierarchy.json. must each be PASS — any failure sets status=BLOCKED. Child FAIL sets parent FAIL. All children PASS sets parent PASS.",
+    "rule": "M5a Data Quality Gate status is derived only from child-gate aggregation. PASS requires every child gate to PASS. BLOCKED is used when at least one child gate is BLOCKED, missing, invalid, or stale. FAIL is used when no child blocks and at least one child gate technically FAILs.",
     "mandatory_gate_ids": [
       "documentation_truth_lint_pass",
       "m5a_start_gate_pass",
@@ -444,6 +654,9 @@
     ],
     "parent_gate_id": "m5a",
     "parent_gate_validation_required": true,
-    "overall_m5a_data_quality_pass": false
+    "overall_m5a_data_quality_pass": false,
+    "child_gates_collected": 9,
+    "child_gates_passed": 5,
+    "child_gates_failed_or_blocking": 4
   }
 }

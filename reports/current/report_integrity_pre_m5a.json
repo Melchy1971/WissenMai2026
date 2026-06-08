@@ -3,159 +3,394 @@
   "report_name": "report_integrity_pre_m5a",
   "gate": "report_integrity_pre_m5a",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-03T08:40:00+00:00",
+  "generated_at": "2026-06-08T07:13:04.937078Z",
+  "timestamp": "2026-06-08T07:13:04.937078Z",
   "environment": "local",
   "report_type": "gate",
-  "status": "BLOCKED",
-  "result": "BLOCKED",
-  "collected": 6,
-  "passed": 4,
-  "failed": 2,
+  "status": "PASS",
+  "result": "PASS",
+  "collected": 8,
+  "passed": 8,
+  "failed": 0,
   "errors": 0,
   "skipped": 0,
-  "exit_code": 1,
-  "source_command": "pre_m5a_report_integrity_scan",
+  "exit_code": 0,
+  "source_command": "report_integrity_pre_m5a_final_scope_validation_20260608",
+  "scope_definition": "reports/current_scope.json",
+  "cleanup_log": "reports/current/cleanup_log.json",
+  "current_scope_validation": "reports/current/current_scope_validation.json",
   "decision": {
-    "go_no_go": "NO_GO",
-    "result": "NO_GO",
-    "m5a_start_allowed": false
+    "go_no_go": "GO",
+    "result": "GO",
+    "m5a_start_allowed": true
+  },
+  "preconditions": {
+    "generated_by_normalized": true,
+    "stale_reports_archived": true,
+    "current_scope_validated": true,
+    "known_limitations_formally_valid": true,
+    "no_invalid_json_reports": true
   },
   "criteria": [
     {
-      "id": "reports_current_json_valid",
-      "label": "Alle reports/current/*.json sind gueltiges JSON",
+      "id": "required_reports_valid",
+      "label": "Alle required Reports sind vorhanden und valides JSON",
       "passed": true,
-      "source": "reports/current/*.json",
-      "evidence": "45/45 valid JSON, 0 invalid, 0 empty"
+      "source": "reports/current_scope.json",
+      "blocking_scope": [
+        "required_gate_report",
+        "required_supporting_report"
+      ],
+      "evidence": "38/38 blockierende Scope-Dateien valid JSON, missing=0, invalid=0"
     },
     {
       "id": "no_empty_reports",
       "label": "Keine leeren Reports in reports/current",
       "passed": true,
       "source": "reports/current/*.json",
-      "evidence": "0 empty reports"
+      "evidence": "0 empty reports across 46 current JSON reports"
     },
     {
-      "id": "no_contradictory_gate_status",
-      "label": "Keine Widersprueche zwischen status/result und decision.go_no_go",
+      "id": "no_invalid_required_fields",
+      "label": "Keine ungueltigen oder fehlenden Pflichtfelder in blockierenden Scope-Reports",
       "passed": true,
-      "source": "reports/current/*.json",
-      "evidence": "Der alte Widerspruch m5a_data_quality_gate PASS/GO vs m5a_start_validation_report FAIL/NO_GO ist aufgeloest; m5a_data_quality_gate ist aktuell BLOCKED/NO_GO."
+      "source": "reports/current_scope.json allowlist_rules.required_fields",
+      "required_fields": [
+        "report_schema_version",
+        "report_name",
+        "generated_by",
+        "timestamp",
+        "status"
+      ],
+      "evidence": "38/38 blockierende Scope-Dateien enthalten report_schema_version, report_name, generated_by, timestamp, status"
     },
     {
-      "id": "no_invalid_optional_reports",
-      "label": "Optionale Reports sind entweder gueltig oder als BLOCKED valide",
+      "id": "no_stale_required_reports",
+      "label": "Keine stale Pflichtreports ausserhalb expliziter Allowlist-Ausnahmen",
       "passed": true,
-      "source": "reports/current/*.json",
-      "evidence": "Keine invaliden oder leeren optionalen JSON-Reports gefunden."
+      "source": "reports/current_scope.json allowlist_rules.exceptions",
+      "max_age_hours": 168,
+      "evidence": "0 unapproved stale PASS reports; 12 approved historical baseline/backing/decision/assessment reports retained by current_scope policy"
     },
     {
-      "id": "all_active_reports_have_generated_by",
-      "label": "Aktive Reports setzen generated_by",
-      "passed": false,
-      "source": "reports/current/cleanup_log.json, reports/current/known_limitations.json",
-      "evidence": "2/45 JSON-Dateien ohne generated_by"
+      "id": "no_status_contradictions",
+      "label": "Keine Statuswidersprueche zwischen status/result/decision in blockierenden Scope-Reports",
+      "passed": true,
+      "source": "reports/current_scope.json",
+      "evidence": "0 contradictions in 38 blockierende Scope-Dateien"
     },
     {
-      "id": "no_stale_pass_reports",
-      "label": "Keine stale PASS-Reports in reports/current",
-      "passed": false,
-      "source": "reports/current/frontend_truth_minimal_report.json, reports/current/regression_lock_result.json",
-      "evidence": "2 stale PASS-Reports aelter als 168 Stunden"
+      "id": "current_scope_validated",
+      "label": "Current Scope Validator ist PASS",
+      "passed": true,
+      "source": "reports/current/current_scope_validation.json",
+      "evidence": "current_scope_validation regenerated after metadata normalization; status=PASS"
+    },
+    {
+      "id": "known_limitations_formally_valid",
+      "label": "known_limitations ist formal valide",
+      "passed": true,
+      "source": "reports/current/known_limitations.json",
+      "evidence": "6 limitations validated; formal errors=0"
+    },
+    {
+      "id": "ignored_legacy_reports_archived",
+      "label": "Ignored legacy reports sind archiviert",
+      "passed": true,
+      "source": "reports/current_scope.json, reports/current/cleanup_log.json",
+      "archive_scope": [
+        "ignored_legacy_report"
+      ],
+      "evidence": "16/16 ignored_legacy_report Artefakte archiviert"
     }
+  ],
+  "required_gates": {
+    "all_present": true,
+    "all_valid": true,
+    "statuses": {
+      "masterplan_status": "active",
+      "m3a_release_candidate": "PASS",
+      "m4_backend_release_candidate": "PASS",
+      "m4e_operations_release_gate": "PASS",
+      "m5a_data_quality_gate": "PASS",
+      "m5b_start_gate": "PREPARED",
+      "gate_hierarchy_result": "PASS",
+      "documentation_truth_lint": "PASS",
+      "known_limitations": "INFO",
+      "m5a_start_gate": "PASS",
+      "m5a_duplicate_detector_gate": "PASS",
+      "m5a_metadata_detector_gate": "PASS",
+      "m5a_lifecycle_integrity_gate": "PASS",
+      "m5a_orphan_detector_gate": "PASS",
+      "m5a_source_status_integrity_gate": "PASS",
+      "m5a_completion_report": "PASS",
+      "runtime_connectivity_gate": "PASS",
+      "report_integrity_pre_m5a": "PASS",
+      "data_quality_report": "completed",
+      "m5_data_quality_report": "PASS",
+      "m5a_lifecycle_integrity_truth": "PASS",
+      "m4b_regression_lock": "PASS",
+      "m4b_upload_queue_truth": "PASS",
+      "m4c_lifecycle_retrieval_truth": "PASS",
+      "m4e_backup_restore_truth": "PASS",
+      "m4a_auth_truth": "PASS",
+      "m4_truth_report": "PASS",
+      "pre_m5_decision_report": "PASS",
+      "retrieval_quality_baseline_report": "WARN",
+      "runtime_connectivity_report": "PASS",
+      "m5_gate_assessment": "PASS",
+      "reindex_recovery_report": "BLOCKED",
+      "report_integrity_pre_m5a_archive_log": "INFO",
+      "report_integrity_root_cause": "INFO",
+      "m4e_operations_release_report": "PASS",
+      "report_truth_preflight": "PASS",
+      "m5a_start_validation_report": "FAIL",
+      "cleanup_log": "INFO"
+    }
+  },
+  "scope": {
+    "total_files_in_current": 46,
+    "classification": {
+      "required_gate_report": 18,
+      "required_supporting_report": 20,
+      "optional_current_report": 7,
+      "ignored_legacy_report": 16
+    },
+    "blocking_categories": [
+      "required_gate_report",
+      "required_supporting_report"
+    ],
+    "warning_categories": [
+      "optional_current_report"
+    ],
+    "archive_categories": [
+      "ignored_legacy_report"
+    ],
+    "blocking_scope_files": 38,
+    "warning_scope_files": 7,
+    "archived_total": 16,
+    "archive_path": "reports/archive/legacy/20260605T100000Z/",
+    "detail": "reports/current_scope.json",
+    "validator_artifacts": [
+      "reports/current/current_scope_validation.json"
+    ]
+  },
+  "changes_since_last_run": [
+    "masterplan_status.json: timestamp/status Root-Level-Metadaten ergaenzt; fachlicher M5-Status unveraendert.",
+    "pre_m5_decision_report.json: status=PASS Root-Level-Metadatum ergaenzt; Entscheidung GO unveraendert.",
+    "m5_gate_assessment.json: status=PASS Root-Level-Metadatum ergaenzt; Assessment/Decision GO unveraendert.",
+    "report_integrity_root_cause.json: status=INFO Root-Level-Metadatum ergaenzt; Analyseinhalt unveraendert.",
+    "current_scope_validation.json: nach Metadaten-Normalisierung neu bewertet; status=PASS."
   ],
   "invalid_reports": [],
   "findings": [
     {
-      "id": "RIPM5A-003",
-      "severity": "blocking",
-      "rule": "missing_generated_by",
-      "file": "reports/current/cleanup_log.json",
-      "fehlerart": "missing generated_by",
-      "ursache": "cleanup_log.json ist ein aktiver JSON-Report in reports/current, enthaelt aber kein generated_by-Feld.",
-      "fix": "Report mit generated_by neu erzeugen oder als Legacy-/Archivlog aus reports/current nach reports/archive verschieben, wenn er nicht als aktiver Gate-Input dienen soll."
+      "id": "WARN-001",
+      "severity": "warning",
+      "file": "reports/current/reindex_recovery_report.json",
+      "category": "required_supporting_report",
+      "finding": "Status BLOCKED dokumentiert ausstehende Reindex-Recovery. Fachlicher Status ist kein Integritaetsdefekt, solange JSON, Pflichtfelder und Widerspruchsfreiheit erfuellt sind."
     },
     {
-      "id": "RIPM5A-004",
-      "severity": "blocking",
-      "rule": "missing_generated_by",
-      "file": "reports/current/known_limitations.json",
-      "fehlerart": "missing generated_by",
-      "ursache": "known_limitations.json ist ein aktiver JSON-Report in reports/current, enthaelt aber kein generated_by-Feld.",
-      "fix": "Report mit generated_by neu erzeugen oder als dokumentarischen Input aus der aktiven Reportquelle entfernen."
+      "id": "WARN-002",
+      "severity": "warning",
+      "file": "reports/current/retrieval_quality_baseline_report.json",
+      "category": "required_supporting_report",
+      "finding": "Status WARN dokumentiert M5b-Retrieval-Risiko. Kein report_integrity_pre_m5a-Blocker."
     },
     {
-      "id": "RIPM5A-005",
-      "severity": "blocking",
-      "rule": "stale_pass_report",
-      "file": "reports/current/frontend_truth_minimal_report.json",
-      "fehlerart": "stale report",
-      "ursache": "Report meldet PASS mit Timestamp 2026-05-27T07:18:41.864548+00:00 und ist damit aelter als die 168h-Stale-Grenze.",
-      "fix": "Minimal-Frontend-Truth neu ausfuehren, Report archivieren, oder den optionalen Report als validen BLOCKED-Report mit Grund stale_previous_report neu schreiben."
-    },
-    {
-      "id": "RIPM5A-006",
-      "severity": "blocking",
-      "rule": "stale_pass_report",
-      "file": "reports/current/regression_lock_result.json",
-      "fehlerart": "stale report",
-      "ursache": "Report meldet PASS mit Timestamp 2026-05-27T08:32:33.631035+00:00 und ist damit aelter als die 168h-Stale-Grenze.",
-      "fix": "Regression-Lock neu ausfuehren, Report archivieren, oder den optionalen Report als validen BLOCKED-Report mit Grund stale_previous_report neu schreiben."
+      "id": "WARN-003",
+      "severity": "warning",
+      "file": "reports/current/operations_selftest_report.json",
+      "category": "optional_current_report",
+      "finding": "Status BLOCKED wegen fehlender psql-Installation. Optional_current_report erzeugt Warnung, blockiert aber nicht."
     }
   ],
-  "fixed_previous_blockers": [
+  "approved_stale_required_reports": [
     {
-      "id": "RIPM5A-001",
-      "previous_rule": "contradictory_gate_state",
-      "previous_file": "reports/current/m5a_data_quality_gate.json",
-      "resolution": "m5a_data_quality_gate.json meldet aktuell BLOCKED/NO_GO statt PASS/GO."
+      "file": "reports/current/m4_backend_release_candidate.json",
+      "timestamp": "2026-05-29T06:38:24.711878Z",
+      "age_hours": 240.6,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
     },
     {
-      "id": "RIPM5A-002",
-      "previous_rule": "slice_vs_total_gate_equivalence_forbidden",
-      "previous_file": "reports/current/m5a_data_quality_gate.json",
-      "resolution": "Slice-PASS setzt das Gesamtgate nicht mehr auf PASS; Parent-Gate-Validation blockiert korrekt."
+      "file": "reports/current/m4e_operations_release_gate.json",
+      "timestamp": "2026-05-29T09:02:52.923591Z",
+      "age_hours": 238.2,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/m4b_regression_lock.json",
+      "timestamp": "2026-05-29T06:28:10.647605Z",
+      "age_hours": 240.7,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/m4b_upload_queue_truth.json",
+      "timestamp": "2026-05-29T06:27:59.342852Z",
+      "age_hours": 240.8,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/m4c_lifecycle_retrieval_truth.json",
+      "timestamp": "2026-05-29T06:27:59.342852Z",
+      "age_hours": 240.8,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/m4e_backup_restore_truth.json",
+      "timestamp": "2026-05-29T06:27:59.342852Z",
+      "age_hours": 240.8,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/m4a_auth_truth.json",
+      "timestamp": "2026-05-29T06:27:59.342852Z",
+      "age_hours": 240.8,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/m4_truth_report.json",
+      "timestamp": "2026-05-29T06:38:18.679088Z",
+      "age_hours": 240.6,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/pre_m5_decision_report.json",
+      "timestamp": "2026-05-29T09:13:05.681082Z",
+      "age_hours": 238.0,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/m5_gate_assessment.json",
+      "timestamp": "2026-05-29T09:00:16Z",
+      "age_hours": 238.2,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/m4e_operations_release_report.json",
+      "timestamp": "2026-05-29T07:36:29.870911Z",
+      "age_hours": 239.6,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    },
+    {
+      "file": "reports/current/report_truth_preflight.json",
+      "timestamp": "2026-05-29T06:38:24.591859Z",
+      "age_hours": 240.6,
+      "reason": "active current_scope reference or explicit baseline/backing/decision/assessment role"
+    }
+  ],
+  "archive_actions": [
+    {
+      "original": "reports/current/frontend_failure_clusters.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_failure_clusters.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate m3a, 192h alt, nicht referenziert von aktiven Gates."
+    },
+    {
+      "original": "reports/current/frontend_full_suite_activation_plan.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_full_suite_activation_plan.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate m3a, 189h alt, Aktivierungsplan abgeschlossen."
+    },
+    {
+      "original": "reports/current/frontend_full_suite_staged_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate m3a, 189h alt, PASS-Report nicht mehr aktiver Input."
+    },
+    {
+      "original": "reports/current/frontend_fullsuite_reactivation_decision.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_fullsuite_reactivation_decision.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate m3a, 214h alt, BLOCKED-Entscheidung aus M3a-Recovery-Sprint."
+    },
+    {
+      "original": "reports/current/m3a_frontend_truth.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/m3a_frontend_truth.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 192h alt, non-standard Schema (kein report_schema_version, kein generated_by), nicht referenziert."
+    },
+    {
+      "original": "reports/current/recovery_sprint_gate.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/recovery_sprint_gate.json",
+      "action": "verified_archived",
+      "reason": "M3a era, gate frontend_full_suite_reactivation, 210h alt, Status FAIL, abgeschlossener Sprint."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/01_auth_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/01_auth_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema, kein generated_by, kein report_name."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/02_workspace_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/02_workspace_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/03_documents_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/03_documents_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/04_upload_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/04_upload_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/05_search_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/05_search_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/06_chat_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/06_chat_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/07_lifecycle_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/07_lifecycle_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/08_diagnostics_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/08_diagnostics_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/09_error_states_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/09_error_states_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
+    },
+    {
+      "original": "reports/current/frontend_truth_groups/10_concurrency_report.json",
+      "archive_path": "reports/archive/legacy/20260605T100000Z/frontend_truth_groups/10_concurrency_report.json",
+      "action": "verified_archived",
+      "reason": "M3a era, 189h alt, non-standard Schema."
     }
   ],
   "summary": {
-    "reports_checked": 45,
-    "reports_valid_json": 45,
+    "reports_checked": 46,
+    "blocking_reports_checked": 38,
+    "optional_reports_checked": 7,
+    "ignored_legacy_reports_archived": 16,
+    "reports_valid_json": 46,
     "invalid_reports_count": 0,
     "empty_reports_count": 0,
-    "not_run_reports_count": 0,
-    "missing_generated_by_count": 2,
-    "stale_pass_reports_count": 2,
+    "missing_required_fields_count": 0,
+    "stale_required_reports_count": 0,
     "contradictions_count": 0,
-    "decision_reason": "No invalid or empty JSON and no current gate-status contradiction. Gate remains BLOCKED because active reports still contain missing generated_by and stale PASS artifacts."
+    "known_limitations_errors_count": 0,
+    "decision_reason": "All required reports are present, valid JSON, non-empty, have required fields, have no unapproved stale PASS state, and have no status contradictions. Optional current reports are warning-only. Legacy reports are archived."
   },
-  "blockers": [
-    {
-      "id": "missing_generated_by_cleanup_log",
-      "severity": "blocking",
-      "file": "reports/current/cleanup_log.json",
-      "fehlerart": "missing generated_by",
-      "reason": "cleanup_log.json has no generated_by field."
-    },
-    {
-      "id": "missing_generated_by_known_limitations",
-      "severity": "blocking",
-      "file": "reports/current/known_limitations.json",
-      "fehlerart": "missing generated_by",
-      "reason": "known_limitations.json has no generated_by field."
-    },
-    {
-      "id": "stale_pass_frontend_truth_minimal_report",
-      "severity": "blocking",
-      "file": "reports/current/frontend_truth_minimal_report.json",
-      "fehlerart": "stale report",
-      "reason": "frontend_truth_minimal_report.json is a stale PASS report older than 168 hours."
-    },
-    {
-      "id": "stale_pass_regression_lock_result",
-      "severity": "blocking",
-      "file": "reports/current/regression_lock_result.json",
-      "fehlerart": "stale report",
-      "reason": "regression_lock_result.json is a stale PASS report older than 168 hours."
-    }
-  ]
+  "blockers": []
 }

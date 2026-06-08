@@ -3,6 +3,8 @@
   "report_name": "report_integrity_root_cause",
   "generated_by": "root_cause_analyzer",
   "generated_at": "2026-06-02T13:00:00+00:00",
+  "timestamp": "2026-06-02T13:00:00+00:00",
+  "status": "INFO",
   "analyzed_report": "reports/current/report_integrity_pre_m5a.json",
   "analyzed_report_status": "BLOCKED",
   "analyzed_report_timestamp": "2026-06-01T12:15:00+00:00",

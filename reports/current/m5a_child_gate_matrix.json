@@ -1,0 +1,318 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5a_child_gate_matrix",
+  "gate": "m5a_child_gate_matrix",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-06-08T07:16:18.968133Z",
+  "timestamp": "2026-06-08T07:16:18.968133Z",
+  "environment": "local",
+  "report_type": "matrix",
+  "status": "PASS",
+  "result": "PASS",
+  "source_command": "m5a_child_gate_matrix_from_docs_gate_hierarchy_and_reports_current",
+  "inputs": {
+    "gate_hierarchy": "docs/gate_hierarchy.json",
+    "current_scope": "reports/current_scope.json",
+    "child_gates": [
+      "m5a_start_gate",
+      "data_quality_report",
+      "duplicate_detector_gate",
+      "metadata_detector_gate",
+      "lifecycle_integrity_gate",
+      "source_status_integrity_gate",
+      "orphan_detector_gate",
+      "documentation_truth_lint",
+      "report_integrity_pre_m5a"
+    ]
+  },
+  "policy": {
+    "accepted_statuses_source": "docs/gate_hierarchy.json children.*.accepted_statuses",
+    "counter_validation_source": "docs/gate_hierarchy.json children.*.counter_validation",
+    "stale_threshold_hours": 168,
+    "stale_rule": "PASS reports older than threshold are stale; non-PASS reports are evaluated by accepted_status/blocking rules."
+  },
+  "summary": {
+    "child_gates_expected": 9,
+    "present": 9,
+    "valid_json": 9,
+    "stale": 0,
+    "generated_by_present": 9,
+    "blocking": 0,
+    "missing": 0
+  },
+  "child_gates": [
+    {
+      "child_gate": "m5a_start_gate",
+      "label": "M5a Start Gate",
+      "report": "reports/current/m5a_start_gate.json",
+      "present": true,
+      "valid_json": true,
+      "status": "PASS",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "decision": "GO",
+      "required_decision": "GO",
+      "collected": 12,
+      "counter_validation": "required",
+      "counter_checks": {
+        "required": true,
+        "passed": true,
+        "details": []
+      },
+      "quality_score": null,
+      "min_quality_score": null,
+      "timestamp": "2026-06-01T08:41:13.099732+00:00",
+      "age_hours": 166.6,
+      "stale": false,
+      "stale_threshold_hours": 168,
+      "generated_by_present": true,
+      "generated_by": "gate_validator",
+      "blocking": false,
+      "blocking_reasons": []
+    },
+    {
+      "child_gate": "data_quality_report",
+      "label": "Data Quality Report V2",
+      "report": "reports/current/data_quality_report.json",
+      "present": true,
+      "valid_json": true,
+      "status": "completed",
+      "accepted_statuses": [
+        "completed"
+      ],
+      "decision": null,
+      "required_decision": null,
+      "collected": null,
+      "counter_validation": "not_required",
+      "counter_checks": {
+        "required": false,
+        "passed": true,
+        "details": []
+      },
+      "quality_score": 94.0,
+      "min_quality_score": 90,
+      "timestamp": "2026-06-02T11:58:41.996000+00:00",
+      "age_hours": 139.3,
+      "stale": false,
+      "stale_threshold_hours": 168,
+      "generated_by_present": true,
+      "generated_by": "run_data_quality_cli",
+      "blocking": false,
+      "blocking_reasons": []
+    },
+    {
+      "child_gate": "duplicate_detector_gate",
+      "label": "Duplicate Detector Gate",
+      "report": "reports/current/m5a_duplicate_detector_gate.json",
+      "present": true,
+      "valid_json": true,
+      "status": "PASS",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "decision": "GO",
+      "required_decision": "GO",
+      "collected": 8,
+      "counter_validation": "required",
+      "counter_checks": {
+        "required": true,
+        "passed": true,
+        "details": []
+      },
+      "quality_score": null,
+      "min_quality_score": null,
+      "timestamp": "2026-06-01T09:28:52.011721+00:00",
+      "age_hours": 165.8,
+      "stale": false,
+      "stale_threshold_hours": 168,
+      "generated_by_present": true,
+      "generated_by": "gate_validator",
+      "blocking": false,
+      "blocking_reasons": []
+    },
+    {
+      "child_gate": "metadata_detector_gate",
+      "label": "Metadata Detector Gate",
+      "report": "reports/current/m5a_metadata_detector_gate.json",
+      "present": true,
+      "valid_json": true,
+      "status": "PASS",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "decision": "GO",
+      "required_decision": "GO",
+      "collected": 11,
+      "counter_validation": "required",
+      "counter_checks": {
+        "required": true,
+        "passed": true,
+        "details": []
+      },
+      "quality_score": null,
+      "min_quality_score": null,
+      "timestamp": "2026-06-01T09:44:30.450456+00:00",
+      "age_hours": 165.5,
+      "stale": false,
+      "stale_threshold_hours": 168,
+      "generated_by_present": true,
+      "generated_by": "gate_validator",
+      "blocking": false,
+      "blocking_reasons": []
+    },
+    {
+      "child_gate": "lifecycle_integrity_gate",
+      "label": "Lifecycle Integrity Gate",
+      "report": "reports/current/m5a_lifecycle_integrity_gate.json",
+      "present": true,
+      "valid_json": true,
+      "status": "PASS",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "decision": "GO",
+      "required_decision": "GO",
+      "collected": 10,
+      "counter_validation": "required",
+      "counter_checks": {
+        "required": true,
+        "passed": true,
+        "details": []
+      },
+      "quality_score": null,
+      "min_quality_score": null,
+      "timestamp": "2026-06-01T12:01:58.267848+00:00",
+      "age_hours": 163.2,
+      "stale": false,
+      "stale_threshold_hours": 168,
+      "generated_by_present": true,
+      "generated_by": "gate_validator",
+      "blocking": false,
+      "blocking_reasons": []
+    },
+    {
+      "child_gate": "source_status_integrity_gate",
+      "label": "Source Status Integrity Gate",
+      "report": "reports/current/m5a_source_status_integrity_gate.json",
+      "present": true,
+      "valid_json": true,
+      "status": "PASS",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "decision": "GO",
+      "required_decision": "GO",
+      "collected": 3,
+      "counter_validation": "required",
+      "counter_checks": {
+        "required": true,
+        "passed": true,
+        "details": []
+      },
+      "quality_score": null,
+      "min_quality_score": null,
+      "timestamp": "2026-06-05T11:20:05.4350116+02:00",
+      "age_hours": 69.9,
+      "stale": false,
+      "stale_threshold_hours": 168,
+      "generated_by_present": true,
+      "generated_by": "gate_validator",
+      "blocking": false,
+      "blocking_reasons": []
+    },
+    {
+      "child_gate": "orphan_detector_gate",
+      "label": "Orphan Detector Gate",
+      "report": "reports/current/m5a_orphan_detector_gate.json",
+      "present": true,
+      "valid_json": true,
+      "status": "PASS",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "decision": "GO",
+      "required_decision": "GO",
+      "collected": 5,
+      "counter_validation": "required",
+      "counter_checks": {
+        "required": true,
+        "passed": true,
+        "details": []
+      },
+      "quality_score": null,
+      "min_quality_score": null,
+      "timestamp": "2026-06-05T11:33:24.2226847+02:00",
+      "age_hours": 69.7,
+      "stale": false,
+      "stale_threshold_hours": 168,
+      "generated_by_present": true,
+      "generated_by": "gate_validator",
+      "blocking": false,
+      "blocking_reasons": []
+    },
+    {
+      "child_gate": "documentation_truth_lint",
+      "label": "Documentation Truth Lint",
+      "report": "reports/current/documentation_truth_lint.json",
+      "present": true,
+      "valid_json": true,
+      "status": "PASS",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "decision": null,
+      "required_decision": null,
+      "collected": null,
+      "counter_validation": "not_required",
+      "counter_checks": {
+        "required": false,
+        "passed": true,
+        "details": []
+      },
+      "quality_score": null,
+      "min_quality_score": null,
+      "timestamp": "2026-06-03T09:36:32.001820+00:00",
+      "age_hours": 117.7,
+      "stale": false,
+      "stale_threshold_hours": 168,
+      "generated_by_present": true,
+      "generated_by": "documentation_truth_linter",
+      "blocking": false,
+      "blocking_reasons": []
+    },
+    {
+      "child_gate": "report_integrity_pre_m5a",
+      "label": "Report Integrity Pre M5a",
+      "report": "reports/current/report_integrity_pre_m5a.json",
+      "present": true,
+      "valid_json": true,
+      "status": "PASS",
+      "accepted_statuses": [
+        "PASS"
+      ],
+      "decision": "GO",
+      "required_decision": "GO",
+      "collected": 8,
+      "counter_validation": "required",
+      "counter_checks": {
+        "required": true,
+        "passed": true,
+        "details": []
+      },
+      "quality_score": null,
+      "min_quality_score": null,
+      "timestamp": "2026-06-08T07:13:04.937078Z",
+      "age_hours": 0.1,
+      "stale": false,
+      "stale_threshold_hours": 168,
+      "generated_by_present": true,
+      "generated_by": "gate_validator",
+      "blocking": false,
+      "blocking_reasons": []
+    }
+  ],
+  "missing_gates": [],
+  "blocking_gates": [],
+  "blockers": []
+}

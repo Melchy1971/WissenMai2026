@@ -15,6 +15,7 @@ REPORTS_DIR = REPO_ROOT / "reports"
 CURRENT_DIR = REPORTS_DIR / "current"
 ARCHIVE_DIR = REPORTS_DIR / "archive"
 SUPPORTED_SCHEMA_VERSION = 1
+SUPPORTED_SCHEMA_VERSIONS = {1, 2}
 DEFAULT_MAX_REPORT_AGE_HOURS = 168
 
 REQUIRED_FIELDS = (
@@ -247,14 +248,14 @@ def validate_payload(report: dict[str, Any]) -> list[ValidationIssue]:
     version = report.get("report_schema_version")
     if version is None:
         issues.append(ValidationIssue("missing_schema_version", "report_schema_version is required"))
-    elif version != SUPPORTED_SCHEMA_VERSION:
+    elif version not in SUPPORTED_SCHEMA_VERSIONS:
         issues.append(ValidationIssue("unknown_schema_version", f"unsupported report_schema_version: {version!r}"))
 
     for field in ("report_name", "gate", "status", "timestamp", "environment", "source_command"):
         if field in report and (not isinstance(report[field], str) or not report[field].strip()):
             issues.append(ValidationIssue("invalid_type", f"{field} must be a non-empty string"))
 
-    if report.get("status") not in {"PASS", "FAIL", "BLOCKED", "INFO"}:
+    if report.get("status") not in {"PASS", "FAIL", "BLOCKED", "INFO", "PREPARED"}:
         issues.append(ValidationIssue("invalid_status", f"invalid status: {report.get('status')!r}"))
 
     generated_by = report.get("generated_by")
