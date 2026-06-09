@@ -1,0 +1,161 @@
+{
+  "report_schema_version": 1,
+  "report_name": "gate_closure_sprint_report",
+  "gate": "gate_closure_sprint",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-06-08T09:22:50Z",
+  "timestamp": "2026-06-08T09:22:50Z",
+  "environment": "local",
+  "report_type": "gate",
+  "status": "BLOCKED",
+  "result": "BLOCKED",
+  "collected": 6,
+  "passed": 3,
+  "failed": 1,
+  "errors": 0,
+  "skipped": 2,
+  "exit_code": 1,
+  "source_command": "gate_closure_sprint_manual_current_report_review_20260608",
+  "sprint": "Gate Closure Sprint",
+  "scope": "M5a/M5b closure decision from current gate artifacts",
+  "inputs": [
+    "reports/current/report_integrity_pre_m5a.json",
+    "reports/current/m5a_child_gate_matrix.json",
+    "reports/current/m5a_data_quality_gate.json",
+    "reports/current/m5b_start_gate.json",
+    "reports/current/masterplan_status.json",
+    "reports/current/documentation_truth_lint.json"
+  ],
+  "decision": {
+    "go_no_go": "NO_GO",
+    "m5a_pass": false,
+    "m5a_status": "BLOCKED",
+    "m5a_blocked": true,
+    "m5b_status": "DRAFT",
+    "m5b_draft": true,
+    "m5b_prepared": false,
+    "m5b_go": false,
+    "m5b_implementation_allowed": false,
+    "next_allowed_phase": "M5a parent-gate blocker remediation; M5b drift planning may remain DRAFT only.",
+    "next_allowed_actions": [
+      "Fix M5a parent-gate blockers.",
+      "Regenerate stale or superseded M5a/M5b status artifacts after blocker changes.",
+      "Keep M5b drift architecture as DRAFT planning only.",
+      "Do not start M5b implementation until M5a parent-gate PASS and a separate M5b implementation gate PASS/GO exist."
+    ],
+    "not_allowed": [
+      "M5a PASS claim",
+      "M5b PREPARED claim",
+      "M5b GO claim",
+      "M5b implementation"
+    ]
+  },
+  "checks": [
+    {
+      "id": "check_01_report_integrity_pre_m5a",
+      "label": "report_integrity_pre_m5a",
+      "source": "reports/current/report_integrity_pre_m5a.json",
+      "status": "PASS",
+      "result": "PASS",
+      "timestamp": "2026-06-08T07:13:04.937078Z",
+      "evidence": "status=PASS, result=PASS, decision.go_no_go=GO, collected=8, failed=0, blockers=[]",
+      "effect": "supports_closure_inputs"
+    },
+    {
+      "id": "check_02_m5a_child_gate_matrix",
+      "label": "m5a_child_gate_matrix",
+      "source": "reports/current/m5a_child_gate_matrix.json",
+      "status": "PASS",
+      "result": "SUPERSEDED_BY_PARENT_VALIDATION",
+      "timestamp": "2026-06-08T07:16:18.968133Z",
+      "evidence": "Matrix reports status=PASS and blocking=0, but later/current m5a_data_quality_gate parent_validation reports BLOCKED.",
+      "effect": "warning_only_snapshot_not_decision_source"
+    },
+    {
+      "id": "check_03_m5a_data_quality_gate",
+      "label": "m5a_data_quality_gate",
+      "source": "reports/current/m5a_data_quality_gate.json",
+      "status": "BLOCKED",
+      "result": "BLOCKED",
+      "timestamp": "2026-06-08T07:32:45.339823+00:00",
+      "evidence": "status=BLOCKED, decision.go_no_go=NO_GO, child gates collected=9, passed=5, failed/blocking=4.",
+      "blocking_children": [
+        "documentation_truth_lint",
+        "data_quality_report",
+        "source_status_integrity_gate",
+        "orphan_detector_gate"
+      ],
+      "effect": "blocks_m5a_pass_and_m5b_prepared"
+    },
+    {
+      "id": "check_04_m5b_start_gate",
+      "label": "m5b_start_gate",
+      "source": "reports/current/m5b_start_gate.json",
+      "status": "DRAFT",
+      "result": "DRAFT",
+      "timestamp": "2026-06-08T09:15:03.279598+00:00",
+      "evidence": "status=DRAFT, go_no_go=NO_GO, m5b_preparation_allowed=false, m5b_implementation_allowed=false, blocker=M5A_PARENT_GATE_NOT_PASSED.",
+      "effect": "allows_planning_only"
+    },
+    {
+      "id": "check_05_masterplan_status",
+      "label": "masterplan_status",
+      "source": "reports/current/masterplan_status.json",
+      "status": "blocked",
+      "result": "STALE_M5B_INPUT",
+      "timestamp": "2026-06-08T09:10:09.568768+00:00",
+      "evidence": "overall.status=blocked and progress=50.0, but embedded m5b_start_gate input still says PREPARED from the older report before current DRAFT regeneration.",
+      "effect": "warning_requires_regeneration_after_current_m5b_draft"
+    },
+    {
+      "id": "check_06_documentation_truth_lint",
+      "label": "documentation_truth_lint",
+      "source": "reports/current/documentation_truth_lint.json",
+      "status": "PASS",
+      "result": "PASS",
+      "timestamp": "2026-06-03T09:36:32.001820+00:00",
+      "evidence": "status=PASS, summary.errors=0, summary.warnings=0.",
+      "effect": "documentation_clean_but_does_not_override_gate_blockers"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "M5A_PARENT_GATE_BLOCKED",
+      "severity": "blocking",
+      "phase": "M5a",
+      "source": "reports/current/m5a_data_quality_gate.json",
+      "detail": "M5a cannot close as PASS while m5a_data_quality_gate.status=BLOCKED and parent_gate_validation.status=BLOCKED."
+    },
+    {
+      "id": "M5B_PREPARED_NOT_ALLOWED",
+      "severity": "blocking",
+      "phase": "M5b",
+      "source": "reports/current/m5b_start_gate.json",
+      "detail": "M5b remains DRAFT until M5a parent-gate PASS. No PREPARED, no GO, no implementation."
+    }
+  ],
+  "warnings": [
+    {
+      "id": "M5A_CHILD_GATE_MATRIX_SUPERSEDED",
+      "severity": "warning",
+      "source": "reports/current/m5a_child_gate_matrix.json",
+      "detail": "Matrix still says PASS, but later parent validation in m5a_data_quality_gate is BLOCKED."
+    },
+    {
+      "id": "MASTERPLAN_STATUS_STALE_AFTER_M5B_DRAFT",
+      "severity": "warning",
+      "source": "reports/current/masterplan_status.json",
+      "detail": "masterplan_status was generated before the current m5b_start_gate DRAFT report and still embeds PREPARED for that input."
+    }
+  ],
+  "summary": {
+    "reports_checked": 6,
+    "passed_checks": 3,
+    "blocked_checks": 1,
+    "warning_checks": 2,
+    "m5a_final_decision": "BLOCKED",
+    "m5b_final_decision": "DRAFT",
+    "next_allowed_phase": "M5a blocker remediation and M5b DRAFT planning only",
+    "decision_reason": "M5a Data Quality Parent-Gate is BLOCKED. M5b Start Gate is therefore DRAFT/NO_GO with no preparation or implementation authorization."
+  }
+}

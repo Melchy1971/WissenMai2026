@@ -2,7 +2,10 @@
   "report_schema_version": 3,
   "report_name": "masterplan_status",
   "generated_by": "masterplan_status_engine_v3",
-  "generated_at": "2026-06-08T09:08:14.383587+00:00",
+  "generated_at": "2026-06-08T10:07:06.754746+00:00",
+  "timestamp": "2026-06-08T10:07:06.754746+00:00",
+  "status": "blocked",
+  "result": "blocked",
   "authority": {
     "source_of_truth": "reports/current release-candidate and gate artifacts",
     "manual_status_override_allowed": false,
@@ -109,12 +112,12 @@
         "result": "BLOCKED",
         "decision": "NO_GO",
         "collected": 9,
-        "passed": 5,
-        "failed": 4,
+        "passed": 1,
+        "failed": 8,
         "errors": 0,
         "skipped": 0,
         "exit_code": 1,
-        "timestamp": "2026-06-08T07:32:45.339823+00:00"
+        "timestamp": "2026-06-08T10:07:06.681525+00:00"
       },
       "m5a_duplicate_detector_gate.json": {
         "available": true,
@@ -146,35 +149,35 @@
         "exit_code": 0,
         "timestamp": "2026-06-01T09:44:30.450456+00:00"
       },
-      "report_integrity_pre_m5a.json": {
+      "report_integrity_v2.json": {
         "available": true,
-        "report_name": "report_integrity_pre_m5a",
-        "gate": "report_integrity_pre_m5a",
-        "status": "PASS",
-        "result": "PASS",
-        "decision": "GO",
-        "collected": 8,
-        "passed": 8,
-        "failed": 0,
+        "report_name": "report_integrity_v2",
+        "gate": "report_integrity_v2",
+        "status": "BLOCKED",
+        "result": "BLOCKED",
+        "decision": "NO_GO",
+        "collected": 7,
+        "passed": 6,
+        "failed": 1,
         "errors": 0,
         "skipped": 0,
-        "exit_code": 0,
-        "timestamp": "2026-06-08T07:13:04.937078Z"
+        "exit_code": 1,
+        "timestamp": "2026-06-08T10:06:51.584041+00:00"
       },
       "m5b_start_gate.json": {
         "available": true,
         "report_name": "m5b_start_gate",
         "gate": "m5b_start_gate",
-        "status": "PREPARED",
-        "result": "PREPARED",
-        "decision": "GO",
+        "status": "DRAFT",
+        "result": "DRAFT",
+        "decision": "NO_GO",
         "collected": 1,
-        "passed": 1,
-        "failed": 0,
+        "passed": 0,
+        "failed": 1,
         "errors": 0,
         "skipped": 0,
-        "exit_code": 0,
-        "timestamp": "2026-06-05T15:33:38.425088+00:00"
+        "exit_code": 1,
+        "timestamp": "2026-06-08T09:15:03.279598+00:00"
       },
       "m5b_implementation_gate.json": {
         "available": false,
@@ -355,7 +358,7 @@
     "slice_start_allowed": true,
     "slice_gate_passed": false,
     "m5a_status": "BLOCKED",
-    "m5b_status": "PREPARED",
+    "m5b_status": "DRAFT",
     "m5b_implementation_allowed": false,
     "m5b_implementation_gate_required": true,
     "rule": "M5 Gesamt wird nicht automatisch PASS; M5b PREPARED erfordert M5a Parent-Gate PASS. M5b Implementierung erfordert ein separates M5b Implementation Gate."
@@ -411,7 +414,7 @@
       "report_schema_version": 1,
       "report_name": "parent_gate_validation",
       "generated_by": "gate_validator",
-      "timestamp": "2026-06-08T09:08:14.383587+00:00",
+      "timestamp": "2026-06-08T10:07:06.754746+00:00",
       "parent_gate": "m3a",
       "status": "BLOCKED",
       "result": "BLOCKED",
@@ -486,7 +489,7 @@
       ],
       "gate_decision_trace": {
         "parent_gate": "m3a",
-        "rule": "Missing child, invalid child JSON, child BLOCKED/INVALID/STALE, or invalid PASS evidence => parent BLOCKED; child FAIL => parent FAIL; child PASS counts only with generated_by, timestamp, and collected > 0 or report_type=supporting.",
+        "rule": "Missing child, invalid child JSON, child BLOCKED/INVALID/STALE, or invalid PASS evidence => parent BLOCKED; child FAIL => parent FAIL; all mandatory child gates must PASS; manual override is not allowed.",
         "evaluated_children": [
           {
             "child_gate_id": "runtime_connectivity_gate",
@@ -520,7 +523,7 @@
       "report_schema_version": 1,
       "report_name": "parent_gate_validation",
       "generated_by": "gate_validator",
-      "timestamp": "2026-06-08T09:08:14.383587+00:00",
+      "timestamp": "2026-06-08T10:07:06.754746+00:00",
       "parent_gate": "m4",
       "status": "PASS",
       "result": "PASS",
@@ -614,7 +617,7 @@
       "blockers": [],
       "gate_decision_trace": {
         "parent_gate": "m4",
-        "rule": "Missing child, invalid child JSON, child BLOCKED/INVALID/STALE, or invalid PASS evidence => parent BLOCKED; child FAIL => parent FAIL; child PASS counts only with generated_by, timestamp, and collected > 0 or report_type=supporting.",
+        "rule": "Missing child, invalid child JSON, child BLOCKED/INVALID/STALE, or invalid PASS evidence => parent BLOCKED; child FAIL => parent FAIL; all mandatory child gates must PASS; manual override is not allowed.",
         "evaluated_children": [
           {
             "child_gate_id": "m4a_auth_truth",
@@ -656,7 +659,7 @@
       "report_schema_version": 1,
       "report_name": "parent_gate_validation",
       "generated_by": "gate_validator",
-      "timestamp": "2026-06-08T09:08:14.383587+00:00",
+      "timestamp": "2026-06-08T10:07:06.754746+00:00",
       "parent_gate": "m5a",
       "status": "BLOCKED",
       "result": "BLOCKED",
@@ -665,8 +668,8 @@
         "manual_override_allowed": false
       },
       "collected": 9,
-      "passed": 5,
-      "failed": 4,
+      "passed": 4,
+      "failed": 5,
       "errors": 0,
       "skipped": 0,
       "exit_code": 1,
@@ -675,7 +678,7 @@
       "no_manual_override": true,
       "mandatory_children": [
         "m5a_start_gate",
-        "report_integrity_pre_m5a",
+        "report_integrity_v2",
         "documentation_truth_lint",
         "data_quality_report",
         "duplicate_detector_gate",
@@ -698,18 +701,20 @@
           "report_type": "gate",
           "blockers": []
         },
-        "report_integrity_pre_m5a": {
-          "child_gate_id": "report_integrity_pre_m5a",
-          "report": "reports/current/report_integrity_pre_m5a.json",
-          "validation_status": "PASS",
-          "report_status": "PASS",
-          "report_result": "PASS",
-          "decision": "GO",
-          "timestamp": "2026-06-08T07:13:04.937078Z",
+        "report_integrity_v2": {
+          "child_gate_id": "report_integrity_v2",
+          "report": "reports/current/report_integrity_v2.json",
+          "validation_status": "BLOCKED",
+          "report_status": "BLOCKED",
+          "report_result": "BLOCKED",
+          "decision": "NO_GO",
+          "timestamp": "2026-06-08T10:06:51.584041+00:00",
           "generated_by": "gate_validator",
-          "collected": 8,
+          "collected": 7,
           "report_type": "gate",
-          "blockers": []
+          "blockers": [
+            "report_integrity_v2: child status is blocking (['BLOCKED'])"
+          ]
         },
         "documentation_truth_lint": {
           "child_gate_id": "documentation_truth_lint",
@@ -813,6 +818,12 @@
       },
       "blockers": [
         {
+          "id": "report_integrity_v2",
+          "child_gate_id": "report_integrity_v2",
+          "severity": "blocking",
+          "reason": "report_integrity_v2: child status is blocking (['BLOCKED'])"
+        },
+        {
           "id": "documentation_truth_lint",
           "child_gate_id": "documentation_truth_lint",
           "severity": "blocking",
@@ -839,7 +850,7 @@
       ],
       "gate_decision_trace": {
         "parent_gate": "m5a",
-        "rule": "Missing child, invalid child JSON, child BLOCKED/INVALID/STALE, or invalid PASS evidence => parent BLOCKED; child FAIL => parent FAIL; child PASS counts only with generated_by, timestamp, and collected > 0 or report_type=supporting.",
+        "rule": "Missing child, invalid child JSON, child BLOCKED/INVALID/STALE, or invalid PASS evidence => parent BLOCKED; child FAIL => parent FAIL; all mandatory child gates must PASS; manual override is not allowed.",
         "evaluated_children": [
           {
             "child_gate_id": "m5a_start_gate",
@@ -848,10 +859,12 @@
             "blockers": []
           },
           {
-            "child_gate_id": "report_integrity_pre_m5a",
-            "validation_status": "PASS",
-            "effect": "passes_parent",
-            "blockers": []
+            "child_gate_id": "report_integrity_v2",
+            "validation_status": "BLOCKED",
+            "effect": "blocks_parent",
+            "blockers": [
+              "report_integrity_v2: child status is blocking (['BLOCKED'])"
+            ]
           },
           {
             "child_gate_id": "documentation_truth_lint",
@@ -905,6 +918,7 @@
           }
         ],
         "blocking_children": [
+          "report_integrity_v2",
           "documentation_truth_lint",
           "data_quality_report",
           "source_status_integrity_gate",
@@ -995,6 +1009,14 @@
           "source": "reports/current/m5a_data_quality_gate.json"
         },
         {
+          "id": "m5a_parent_child_report_integrity_v2",
+          "type": "parent_gate",
+          "severity": "blocking",
+          "detail": "report_integrity_v2: child status is blocking (['BLOCKED'])",
+          "source": "docs/gate_hierarchy.json",
+          "child_gate_id": "report_integrity_v2"
+        },
+        {
           "id": "m5a_parent_child_documentation_truth_lint",
           "type": "parent_gate",
           "severity": "blocking",
@@ -1034,7 +1056,7 @@
       "status": "blocked",
       "decision": "NO_GO",
       "gate_id": "m5b_start_gate",
-      "gate_status": "PREPARED",
+      "gate_status": "DRAFT",
       "source": "reports/current/m5b_start_gate.json",
       "blockers": [
         {
@@ -1042,6 +1064,13 @@
           "type": "dependency",
           "severity": "blocking",
           "detail": "M5b bleibt BLOCKED bis m5a_data_quality_gate PASS/GO meldet.",
+          "source": "reports/current/m5a_data_quality_gate.json"
+        },
+        {
+          "id": "M5A_PARENT_GATE_NOT_PASSED",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "M5b bleibt DRAFT bis reports/current/m5a_data_quality_gate.json status=PASS, decision.go_no_go=GO und parent_gate_validation.status=PASS meldet.",
           "source": "reports/current/m5a_data_quality_gate.json"
         }
       ]
@@ -1080,6 +1109,7 @@
         "status": "BLOCKED",
         "blockers": [
           "M5a Data Quality gate is not PASS.",
+          "report_integrity_v2: child status is blocking (['BLOCKED'])",
           "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting",
           "data_quality_report: passing child report requires collected > 0 or report_type=supporting",
           "source_status_integrity_gate: child status is blocking (['BLOCKED'])",
@@ -1087,9 +1117,10 @@
         ]
       },
       "m5b_start_gate": {
-        "status": "PREPARED",
+        "status": "DRAFT",
         "blockers": [
-          "M5b bleibt BLOCKED bis m5a_data_quality_gate PASS/GO meldet."
+          "M5b bleibt BLOCKED bis m5a_data_quality_gate PASS/GO meldet.",
+          "M5b bleibt DRAFT bis reports/current/m5a_data_quality_gate.json status=PASS, decision.go_no_go=GO und parent_gate_validation.status=PASS meldet."
         ]
       }
     },

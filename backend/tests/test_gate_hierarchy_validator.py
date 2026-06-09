@@ -91,7 +91,7 @@ def _write_all_green_reports(report_dir: Path) -> None:
         "m4e_backup_restore_truth.json": _green_report("m4e_backup_restore_truth"),
         "report_truth_preflight.json": _green_report("report_truth_preflight", collected=6),
         "m5a_start_gate.json": _go_gate("m5a_start_gate", collected=12),
-        "report_integrity_pre_m5a.json": _go_gate("report_integrity_pre_m5a", collected=8),
+        "report_integrity_v2.json": _go_gate("report_integrity_v2", collected=8),
         "data_quality_report.json": _data_quality_report(),
         "m5a_duplicate_detector_gate.json": _go_gate("m5a_duplicate_detector_gate", collected=8),
         "m5a_metadata_detector_gate.json": _go_gate("m5a_metadata_detector_gate", collected=11),

@@ -47,7 +47,7 @@
       "label": "M5a",
       "mandatory_children": [
         "m5a_start_gate",
-        "report_integrity_pre_m5a",
+        "report_integrity_v2",
         "documentation_truth_lint",
         "data_quality_report",
         "duplicate_detector_gate",
@@ -134,9 +134,9 @@
       "required_decision": "GO",
       "counter_validation": "required"
     },
-    "report_integrity_pre_m5a": {
-      "label": "Report Integrity Pre M5a",
-      "report": "reports/current/report_integrity_pre_m5a.json",
+    "report_integrity_v2": {
+      "label": "Report Integrity v2",
+      "report": "reports/current/report_integrity_v2.json",
       "accepted_statuses": [
         "PASS"
       ],

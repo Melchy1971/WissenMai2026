@@ -37,7 +37,7 @@ M5A_START_GATE = "m5a_start_gate.json"
 M5A_DATA_QUALITY_GATE = "m5a_data_quality_gate.json"
 M5A_DUPLICATE_DETECTOR_GATE = "m5a_duplicate_detector_gate.json"
 M5A_METADATA_DETECTOR_GATE = "m5a_metadata_detector_gate.json"
-REPORT_INTEGRITY_PRE_M5A = "report_integrity_pre_m5a.json"
+REPORT_INTEGRITY_V2 = "report_integrity_v2.json"
 M5B_START_GATE = "m5b_start_gate.json"
 M5B_IMPLEMENTATION_GATE = "m5b_implementation_gate.json"
 M5A_PARENT_GATE_NOT_PASSED = "M5A_PARENT_GATE_NOT_PASSED"
@@ -361,7 +361,7 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
     m5a_data_quality, m5a_data_quality_error = _load_json(current_dir / M5A_DATA_QUALITY_GATE)
     m5a_dup_gate, m5a_dup_gate_error = _load_json(current_dir / M5A_DUPLICATE_DETECTOR_GATE)
     m5a_metadata_gate, m5a_metadata_gate_error = _load_json(current_dir / M5A_METADATA_DETECTOR_GATE)
-    report_integrity, report_integrity_error = _load_json(current_dir / REPORT_INTEGRITY_PRE_M5A)
+    report_integrity, report_integrity_error = _load_json(current_dir / REPORT_INTEGRITY_V2)
     m5b_start, m5b_start_error = _load_json(current_dir / M5B_START_GATE)
     gate_hierarchy, gate_hierarchy_error = _load_json(HIERARCHY_JSON)
     m3a_parent_validation, m3a_parent_validation_error = _parent_validation("m3a", current_dir, generated_at)
@@ -393,7 +393,7 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
         M5A_DATA_QUALITY_GATE: m5a_data_quality_error,
         M5A_DUPLICATE_DETECTOR_GATE: m5a_dup_gate_error,
         M5A_METADATA_DETECTOR_GATE: m5a_metadata_gate_error,
-        REPORT_INTEGRITY_PRE_M5A: report_integrity_error,
+        REPORT_INTEGRITY_V2: report_integrity_error,
         M5B_START_GATE: m5b_start_error,
         "docs/gate_hierarchy.json": gate_hierarchy_error,
     })
@@ -766,7 +766,7 @@ def evaluate(current_dir: Path = CURRENT_DIR, *, timestamp: str | None = None) -
             M5A_DATA_QUALITY_GATE: _summary(m5a_data_quality, m5a_data_quality_error),
             M5A_DUPLICATE_DETECTOR_GATE: _summary(m5a_dup_gate, m5a_dup_gate_error),
             M5A_METADATA_DETECTOR_GATE: _summary(m5a_metadata_gate, m5a_metadata_gate_error),
-            REPORT_INTEGRITY_PRE_M5A: _summary(report_integrity, report_integrity_error),
+            REPORT_INTEGRITY_V2: _summary(report_integrity, report_integrity_error),
             M5B_START_GATE: _summary(m5b_start, m5b_start_error),
             M5B_IMPLEMENTATION_GATE: _summary(m5b_implementation_gate, m5b_implementation_gate_error),
             DOC_LINT: _summary(doc_lint, doc_error),

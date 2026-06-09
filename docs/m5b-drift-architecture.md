@@ -1,19 +1,20 @@
 # M5b Drift Architecture
 
-Stand: 2026-06-03
+Stand: 2026-06-08
 
-Status: `DRAFT` (Planungsartefakt; keine Implementierungsfreigabe, siehe `reports/current/m5b_start_gate.json`).
+Status: `DRAFT` (Planungsartefakt; keine `PREPARED`-Freigabe, kein `GO`, keine Implementierung, siehe `reports/current/m5b_start_gate.json`).
 
 Scope: architecture phase only. No implementation, no migration, no API endpoint, no repair action.
 
-This draft is allowed independently of the M5b start gate because it is planning-only. It does not authorize detector implementation, schema changes, background jobs, API routes, dashboard work, reindexing, cleanup, repair, or any mutating operation.
+This draft is allowed independently of the M5b start gate because it is planning-only. It does not authorize detector implementation, schema changes, background jobs, API routes, dashboard work, reindexing, cleanup, repair, or any mutating operation. While the M5a parent gate is not `PASS`, every M5b planning artifact remains `DRAFT`.
 
 ## Gate Status Model
 
 - `DRAFT`: Architekturplanung ist erlaubt und unabhaengig vom Start-Gate.
-- `PREPARED`: M5b darf nur dann vorbereitet sein, wenn `reports/current/m5b_start_gate.json` dies meldet.
+- `PREPARED`: M5b darf nur dann vorbereitet sein, wenn `reports/current/m5b_start_gate.json` dies meldet und das M5a Parent-Gate `PASS` ist.
 - M5b Start-Gate darf erst `PREPARED` werden, wenn M5a Gesamt-`PASS` ist. M5a Gesamt-`PASS` setzt das Parent-Gate `m5a` nach `docs/gate_hierarchy.json` und `reports/current/m5a_data_quality_gate.json` voraus.
 - Ein M5a Slice-`PASS` reicht nicht fuer M5b `PREPARED`.
+- Solange M5a Parent-Gate nicht `PASS` ist: `DRAFT`, kein `PREPARED`, kein `GO`, keine Implementierung.
 - Diese Architektur enthaelt keine globale Prozent- oder Vollstaendigkeitsfreigabe.
 
 M5b defines drift as a time-based divergence between expected system state and observed system state. It is different from M5a Data Quality: M5a checks the current state of data quality findings; M5b checks whether previously valid document, metadata, lifecycle, source-status, or retrieval state has degraded over time.

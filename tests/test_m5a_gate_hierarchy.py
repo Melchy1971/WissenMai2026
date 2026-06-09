@@ -61,6 +61,7 @@ def _documentation_lint(status: str = "PASS") -> dict:
         "report_name": "documentation_truth_lint",
         "generated_by": "documentation_truth_linter",
         "timestamp": "2026-06-03T08:00:00+00:00",
+        "report_type": "supporting",
         "status": status,
         "result": status,
         "summary": {"errors": 0 if passed else 1},
@@ -73,6 +74,7 @@ def _data_quality_report(score: float = 94.0, *, timestamp: str = "2026-06-03T08
     return {
         "report_schema_version": 2,
         "report_name": "data_quality_report",
+        "report_type": "supporting",
         "generated_by": "run_data_quality_cli",
         "timestamp": timestamp,
         "run_id": "run-1",
@@ -122,7 +124,7 @@ def test_report_integrity_blocked_blocks_m5a_data_quality_gate(tmp_path: Path) -
 
     assert payload["status"] == "BLOCKED"
     assert payload["decision"]["go_no_go"] == "NO_GO"
-    assert any(blocker.get("child_gate_id") == "report_integrity_pre_m5a" for blocker in payload["blockers"])
+    assert any(blocker.get("child_gate_id") == "report_integrity_v2" for blocker in payload["blockers"])
 
 
 def test_missing_child_gate_blocks_m5a_data_quality_gate(tmp_path: Path) -> None:
@@ -185,4 +187,4 @@ def test_slice_gate_pass_but_mandatory_parent_child_fail_blocks_gate(tmp_path: P
     assert payload["status"] == "FAIL"
     assert payload["decision"]["required_slices_all_pass"] is True
     assert payload["gate_decision_trace"]["final_status"] == "FAIL"
-    assert any(blocker.get("child_gate_id") == "report_integrity_pre_m5a" for blocker in payload["blockers"])
+    assert any(blocker.get("child_gate_id") == "report_integrity_v2" for blocker in payload["blockers"])

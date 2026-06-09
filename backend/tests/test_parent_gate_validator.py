@@ -60,7 +60,7 @@ def _data_quality(score: float = 94.0) -> dict:
 
 def _write_m5a_children(report_dir: Path) -> None:
     _write(report_dir / "m5a_start_gate.json", _gate(collected=12))
-    _write(report_dir / "report_integrity_pre_m5a.json", _gate(collected=8))
+    _write(report_dir / "report_integrity_v2.json", _gate(collected=8))
     _write(report_dir / "documentation_truth_lint.json", {
         "generated_by": "documentation_truth_linter",
         "timestamp": "2026-06-03T08:00:00+00:00",
@@ -120,27 +120,27 @@ def test_parent_gate_blocks_blocked_child_without_manual_override(tmp_path: Path
     _write_m5a_children(tmp_path)
     blocked = _gate(status="BLOCKED", decision="NO_GO")
     blocked["manual_override"] = True
-    _write(tmp_path / "report_integrity_pre_m5a.json", blocked)
+    _write(tmp_path / "report_integrity_v2.json", blocked)
 
     payload = validator.validate_parent_gate("m5a", report_dir=tmp_path)
 
     assert payload["status"] == "BLOCKED"
     assert payload["decision"]["manual_override_allowed"] is False
-    assert payload["child_results"]["report_integrity_pre_m5a"]["validation_status"] == "BLOCKED"
-    assert any(blocker["child_gate_id"] == "report_integrity_pre_m5a" for blocker in payload["blockers"])
+    assert payload["child_results"]["report_integrity_v2"]["validation_status"] == "BLOCKED"
+    assert any(blocker["child_gate_id"] == "report_integrity_v2" for blocker in payload["blockers"])
     assert payload["gate_decision_trace"]["final_status"] == "BLOCKED"
 
 
 def test_parent_gate_fails_when_child_fails(tmp_path: Path) -> None:
     _write_m5a_children(tmp_path)
-    _write(tmp_path / "report_integrity_pre_m5a.json", _gate(status="FAIL", decision="NO_GO"))
+    _write(tmp_path / "report_integrity_v2.json", _gate(status="FAIL", decision="NO_GO"))
 
     payload = validator.validate_parent_gate("m5a", report_dir=tmp_path)
 
     assert payload["status"] == "FAIL"
     assert payload["decision"]["go_no_go"] == "NO_GO"
-    assert payload["child_results"]["report_integrity_pre_m5a"]["validation_status"] == "FAIL"
-    assert payload["gate_decision_trace"]["failing_children"] == ["report_integrity_pre_m5a"]
+    assert payload["child_results"]["report_integrity_v2"]["validation_status"] == "FAIL"
+    assert payload["gate_decision_trace"]["failing_children"] == ["report_integrity_v2"]
 
 
 def test_parent_gate_allows_configured_non_pass_status(tmp_path: Path) -> None:

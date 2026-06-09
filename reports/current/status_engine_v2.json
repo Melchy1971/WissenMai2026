@@ -1,0 +1,183 @@
+{
+  "report_schema_version": 1,
+  "report_name": "status_engine_v2",
+  "report_type": "status",
+  "layer": "status",
+  "generated_by": "status_engine_v2",
+  "timestamp": "2026-06-09T07:27:43.280453+00:00",
+  "status": "blocked",
+  "result": "blocked",
+  "inputs": {
+    "gate_layer": {
+      "source": "gate_engine",
+      "timestamp": "2026-06-09T07:27:43.280453+00:00",
+      "parent_gates": [
+        "m3a",
+        "m4",
+        "m5a"
+      ]
+    }
+  },
+  "parent_gate_statuses": {
+    "m3a": "BLOCKED",
+    "m4": "PASS",
+    "m5a": "BLOCKED"
+  },
+  "phases": {
+    "m3a": {
+      "id": "m3a",
+      "label": "M3a",
+      "status": "blocked",
+      "decision": "NO_GO",
+      "gate_status": "BLOCKED",
+      "source": "gate_engine:m3a",
+      "blockers": [
+        {
+          "id": "documentation_truth_lint",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting",
+          "source": "gate_engine:m3a",
+          "child_gate_id": "documentation_truth_lint"
+        }
+      ]
+    },
+    "m4": {
+      "id": "m4",
+      "label": "M4",
+      "status": "gate_passed",
+      "decision": "GO",
+      "gate_status": "PASS",
+      "source": "gate_engine:m4",
+      "blockers": []
+    },
+    "m5a": {
+      "id": "m5a",
+      "label": "M5a",
+      "status": "blocked",
+      "decision": "NO_GO",
+      "gate_status": "BLOCKED",
+      "source": "gate_engine:m5a",
+      "blockers": [
+        {
+          "id": "report_integrity_v2",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "report_integrity_v2: child status is blocking (['BLOCKED'])",
+          "source": "gate_engine:m5a",
+          "child_gate_id": "report_integrity_v2"
+        },
+        {
+          "id": "documentation_truth_lint",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting",
+          "source": "gate_engine:m5a",
+          "child_gate_id": "documentation_truth_lint"
+        },
+        {
+          "id": "data_quality_report",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "data_quality_report: passing child report requires collected > 0 or report_type=supporting",
+          "source": "gate_engine:m5a",
+          "child_gate_id": "data_quality_report"
+        },
+        {
+          "id": "source_status_integrity_gate",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "source_status_integrity_gate: child status is blocking (['BLOCKED'])",
+          "source": "gate_engine:m5a",
+          "child_gate_id": "source_status_integrity_gate"
+        },
+        {
+          "id": "orphan_detector_gate",
+          "type": "gate",
+          "severity": "blocking",
+          "detail": "orphan_detector_gate: child status is blocking (['BLOCKED'])",
+          "source": "gate_engine:m5a",
+          "child_gate_id": "orphan_detector_gate"
+        }
+      ]
+    }
+  },
+  "m5": {
+    "preparation_allowed": true,
+    "slice_work_allowed": true,
+    "m5a_status": "BLOCKED",
+    "m5b_prepared": false,
+    "m5b_implementation_allowed": false
+  },
+  "release_allowed": false,
+  "blockers": [
+    {
+      "id": "documentation_truth_lint",
+      "type": "gate",
+      "severity": "blocking",
+      "detail": "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting",
+      "source": "gate_engine:m3a",
+      "child_gate_id": "documentation_truth_lint"
+    },
+    {
+      "id": "report_integrity_v2",
+      "type": "gate",
+      "severity": "blocking",
+      "detail": "report_integrity_v2: child status is blocking (['BLOCKED'])",
+      "source": "gate_engine:m5a",
+      "child_gate_id": "report_integrity_v2"
+    },
+    {
+      "id": "documentation_truth_lint",
+      "type": "gate",
+      "severity": "blocking",
+      "detail": "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting",
+      "source": "gate_engine:m5a",
+      "child_gate_id": "documentation_truth_lint"
+    },
+    {
+      "id": "data_quality_report",
+      "type": "gate",
+      "severity": "blocking",
+      "detail": "data_quality_report: passing child report requires collected > 0 or report_type=supporting",
+      "source": "gate_engine:m5a",
+      "child_gate_id": "data_quality_report"
+    },
+    {
+      "id": "source_status_integrity_gate",
+      "type": "gate",
+      "severity": "blocking",
+      "detail": "source_status_integrity_gate: child status is blocking (['BLOCKED'])",
+      "source": "gate_engine:m5a",
+      "child_gate_id": "source_status_integrity_gate"
+    },
+    {
+      "id": "orphan_detector_gate",
+      "type": "gate",
+      "severity": "blocking",
+      "detail": "orphan_detector_gate: child status is blocking (['BLOCKED'])",
+      "source": "gate_engine:m5a",
+      "child_gate_id": "orphan_detector_gate"
+    },
+    {
+      "id": "m5a_parent_not_pass",
+      "type": "gate",
+      "severity": "blocking",
+      "detail": "M5a remains blocked until the m5a parent gate is PASS.",
+      "source": "gate_engine:m5a"
+    },
+    {
+      "id": "m5b_implementation_gate_required",
+      "type": "gate",
+      "severity": "blocking",
+      "detail": "M5b implementation requires a separate PASS gate in the gate layer.",
+      "source": "status_engine_v2"
+    }
+  ],
+  "architecture": {
+    "gate_layer": "Gate Engine / parent gate aggregation",
+    "status_layer": "status_engine_v2",
+    "masterplan_layer": "masterplan_status_v2",
+    "direct_report_reads_in_masterplan": false
+  }
+}

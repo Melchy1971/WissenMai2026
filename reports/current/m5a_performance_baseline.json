@@ -1,0 +1,210 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5a_performance_baseline",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-09T07:53:57.212746Z",
+  "environment": "local",
+  "report_type": "status",
+  "status": "PASS",
+  "result": "PASS",
+  "source_command": "python scripts\\generate_m5a_performance_baseline.py --output reports\\current\\m5a_performance_baseline.json",
+  "methodology": {
+    "database": "SQLite in-memory",
+    "document_counts": [
+      100,
+      1000,
+      5000,
+      10000
+    ],
+    "constraints": [
+      "Document content_hash unique constraint removed for benchmark schema creation to exercise duplicate detection.",
+      "Foreign-key enforcement is not enabled, so orphan detector scenarios can be seeded."
+    ],
+    "metrics": [
+      "seed_time_ms",
+      "runtime_ms",
+      "tracemalloc_peak_mb",
+      "findings.total",
+      "findings.by_type",
+      "score_calculation.time_ms"
+    ]
+  },
+  "measurements": [
+    {
+      "documents": 100,
+      "seed": {
+        "documents": 100,
+        "versions": 101,
+        "chunks": 101,
+        "citations": 5,
+        "duplicate_seed_docs": 10,
+        "metadata_seed_docs": 5,
+        "lifecycle_seed_docs": 4,
+        "orphan_seed_rows_per_type": 1,
+        "seed_time_ms": 38.12
+      },
+      "runtime_ms": 702.46,
+      "memory": {
+        "tracemalloc_current_mb": 1.15,
+        "tracemalloc_peak_mb": 1.26
+      },
+      "findings": {
+        "total": 41,
+        "by_type": {
+          "DUPLICATE_DOCUMENT": 6,
+          "INVALID_LIFECYCLE": 8,
+          "INVALID_SOURCE_STATUS": 4,
+          "MISSING_METADATA": 20,
+          "ORPHAN_CHUNK": 1,
+          "ORPHAN_FINDING": 1,
+          "ORPHAN_VERSION": 1
+        }
+      },
+      "score_calculation": {
+        "time_ms": 0.0709,
+        "score": 37.5,
+        "category_counts": {
+          "duplicate": 6,
+          "metadata": 20,
+          "lifecycle": 8,
+          "source_status": 4,
+          "orphan": 3
+        }
+      }
+    },
+    {
+      "documents": 1000,
+      "seed": {
+        "documents": 1000,
+        "versions": 1010,
+        "chunks": 1010,
+        "citations": 50,
+        "duplicate_seed_docs": 100,
+        "metadata_seed_docs": 50,
+        "lifecycle_seed_docs": 40,
+        "orphan_seed_rows_per_type": 10,
+        "seed_time_ms": 132.97
+      },
+      "runtime_ms": 1577.96,
+      "memory": {
+        "tracemalloc_current_mb": 1.45,
+        "tracemalloc_peak_mb": 2.58
+      },
+      "findings": {
+        "total": 410,
+        "by_type": {
+          "DUPLICATE_DOCUMENT": 60,
+          "INVALID_LIFECYCLE": 80,
+          "INVALID_SOURCE_STATUS": 40,
+          "MISSING_METADATA": 200,
+          "ORPHAN_CHUNK": 10,
+          "ORPHAN_FINDING": 10,
+          "ORPHAN_VERSION": 10
+        }
+      },
+      "score_calculation": {
+        "time_ms": 0.131,
+        "score": 0.0,
+        "category_counts": {
+          "duplicate": 60,
+          "metadata": 200,
+          "lifecycle": 80,
+          "source_status": 40,
+          "orphan": 30
+        }
+      }
+    },
+    {
+      "documents": 5000,
+      "seed": {
+        "documents": 5000,
+        "versions": 5050,
+        "chunks": 5050,
+        "citations": 250,
+        "duplicate_seed_docs": 500,
+        "metadata_seed_docs": 250,
+        "lifecycle_seed_docs": 200,
+        "orphan_seed_rows_per_type": 50,
+        "seed_time_ms": 445.8
+      },
+      "runtime_ms": 1824.24,
+      "memory": {
+        "tracemalloc_current_mb": 3.09,
+        "tracemalloc_peak_mb": 8.76
+      },
+      "findings": {
+        "total": 2000,
+        "by_type": {
+          "DUPLICATE_DOCUMENT": 300,
+          "INVALID_LIFECYCLE": 400,
+          "INVALID_SOURCE_STATUS": 200,
+          "MISSING_METADATA": 950,
+          "ORPHAN_CHUNK": 50,
+          "ORPHAN_FINDING": 50,
+          "ORPHAN_VERSION": 50
+        }
+      },
+      "score_calculation": {
+        "time_ms": 0.4526,
+        "score": 0.0,
+        "category_counts": {
+          "duplicate": 300,
+          "metadata": 950,
+          "lifecycle": 400,
+          "source_status": 200,
+          "orphan": 150
+        }
+      }
+    },
+    {
+      "documents": 10000,
+      "seed": {
+        "documents": 10000,
+        "versions": 10100,
+        "chunks": 10100,
+        "citations": 500,
+        "duplicate_seed_docs": 500,
+        "metadata_seed_docs": 500,
+        "lifecycle_seed_docs": 400,
+        "orphan_seed_rows_per_type": 100,
+        "seed_time_ms": 684.45
+      },
+      "runtime_ms": 1826.27,
+      "memory": {
+        "tracemalloc_current_mb": 3.92,
+        "tracemalloc_peak_mb": 13.78
+      },
+      "findings": {
+        "total": 3300,
+        "by_type": {
+          "DUPLICATE_DOCUMENT": 100,
+          "INVALID_LIFECYCLE": 800,
+          "INVALID_SOURCE_STATUS": 400,
+          "MISSING_METADATA": 1700,
+          "ORPHAN_CHUNK": 100,
+          "ORPHAN_FINDING": 100,
+          "ORPHAN_VERSION": 100
+        }
+      },
+      "score_calculation": {
+        "time_ms": 0.6711,
+        "score": 0.0,
+        "category_counts": {
+          "duplicate": 100,
+          "metadata": 1700,
+          "lifecycle": 800,
+          "source_status": 400,
+          "orphan": 300
+        }
+      }
+    }
+  ],
+  "recommendations": [
+    "Treat this file as a local SQLite baseline; compare future M5a changes against the same command and machine class.",
+    "Keep DataQualityRunner memory under observation at 10000 documents; regressions above 20 percent should trigger detector profiling.",
+    "DuplicateDetector scales with duplicate groups; replace per-hash follow-up queries if duplicate-heavy corpora become common.",
+    "Score calculation is not the current bottleneck; prioritize detector queries and finding persistence first.",
+    "Run python scripts\\generate_m5a_performance_baseline.py after detector or score changes and review runtime_ms, peak memory, findings, and score_calculation.time_ms."
+  ],
+  "blockers": []
+}

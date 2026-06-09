@@ -20,7 +20,7 @@ METADATA_GATE = "m5a_metadata_detector_gate.json"
 LIFECYCLE_GATE = "m5a_lifecycle_integrity_gate.json"
 DATA_QUALITY_REPORT = "data_quality_report.json"
 DOC_TRUTH_LINT = "documentation_truth_lint.json"
-REPORT_INTEGRITY = "report_integrity_pre_m5a.json"
+REPORT_INTEGRITY = "report_integrity_v2.json"
 CHILD_GATE_MATRIX = "m5a_child_gate_matrix.json"
 
 OUTPUT_GATE = "m5a_data_quality_gate.json"
@@ -244,7 +244,7 @@ def _child_gate_trace(
                 "status": matrix.get("status") if isinstance(matrix, dict) else None,
                 "timestamp": matrix.get("timestamp") if isinstance(matrix, dict) else None,
             },
-            "report_integrity_pre_m5a": {
+            "report_integrity_v2": {
                 "source": f"reports/current/{REPORT_INTEGRITY}",
                 "status": report_integrity.get("status") if isinstance(report_integrity, dict) else None,
                 "timestamp": report_integrity.get("timestamp") if isinstance(report_integrity, dict) else None,
@@ -361,7 +361,7 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
     MANDATORY_GATE_IDS = frozenset({
         "m5a_start_gate_pass",
         "documentation_truth_lint_pass",
-        "report_integrity_pre_m5a_pass",
+        "report_integrity_v2_pass",
         "parent_gate_validation_pass",
     })
 
@@ -384,8 +384,8 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
             "evidence": "PASS" if doc_lint_pass else str((doc_lint or {}).get("status") or "MISSING"),
         },
         {
-            "id": "report_integrity_pre_m5a_pass",
-            "label": "Report Integrity Pre-M5a",
+            "id": "report_integrity_v2_pass",
+            "label": "Report Integrity v2",
             "mandatory": True,
             "passed": report_integrity_pass,
             "source": f"reports/current/{REPORT_INTEGRITY}",
@@ -532,7 +532,7 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
             "global_m5_release_allowed": False,
             "no_invalid_json_reports": no_invalid_json,
             "documentation_truth_lint_pass": doc_lint_pass,
-            "report_integrity_pre_m5a_pass": report_integrity_pass,
+            "report_integrity_v2_pass": report_integrity_pass,
             "parent_gate_validation_pass": parent_validation_pass,
             "child_gate_matrix_status": child_gate_matrix.get("status") if isinstance(child_gate_matrix, dict) else None,
         },
@@ -544,7 +544,7 @@ def build_gate_report(current_dir: Path = CURRENT_DIR, *, timestamp: str | None 
             "lifecycle_slice_gate": f"reports/current/{LIFECYCLE_GATE}",
             "data_quality_report": f"reports/current/{DATA_QUALITY_REPORT}",
             "documentation_truth_lint": f"reports/current/{DOC_TRUTH_LINT}",
-            "report_integrity_pre_m5a": f"reports/current/{REPORT_INTEGRITY}",
+            "report_integrity_v2": f"reports/current/{REPORT_INTEGRITY}",
             "gate_hierarchy": "docs/gate_hierarchy.json",
         },
         "criteria": criteria,

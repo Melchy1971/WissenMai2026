@@ -25,6 +25,8 @@ def _write(path: Path, payload: dict) -> None:
 
 
 def _m5a_gate(status: str = "PASS", decision: str = "GO") -> dict:
+    parent_status = "PASS" if status == "PASS" and decision == "GO" else "BLOCKED"
+    parent_decision = "GO" if parent_status == "PASS" else "NO_GO"
     return {
         "report_schema_version": 1,
         "report_name": "m5a_data_quality_gate",
@@ -40,6 +42,11 @@ def _m5a_gate(status: str = "PASS", decision: str = "GO") -> dict:
         "skipped": 0,
         "exit_code": 0 if status == "PASS" else 1,
         "blockers": [],
+        "parent_gate_validation": {
+            "status": parent_status,
+            "result": parent_status,
+            "decision": {"go_no_go": parent_decision},
+        },
     }
 
 
@@ -81,7 +88,8 @@ def test_m5b_start_gate_blocks_until_m5a_pass(tmp_path: Path) -> None:
 
     payload = generator.build_m5b_start_gate(tmp_path, timestamp="2026-06-05T10:00:00+00:00")
 
-    assert payload["status"] == "BLOCKED"
+    assert payload["status"] == "DRAFT"
+    assert payload["decision"]["go_no_go"] == "NO_GO"
     assert payload["decision"]["m5b_preparation_allowed"] is False
     assert payload["blockers"][0]["id"] == "M5A_PARENT_GATE_NOT_PASSED"
 

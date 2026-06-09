@@ -1,0 +1,101 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5a_regression_report",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-09T06:56:22.8895797Z",
+  "environment": "local",
+  "report_type": "status_report",
+  "status": "PASS",
+  "result": "PASS",
+  "source_command": "python -m pytest tests\\m5a_regression -q",
+  "summary": {
+    "required_areas": 7,
+    "covered_areas": 7,
+    "suite_files": 8,
+    "tests_collected": 122,
+    "tests_passed": 122,
+    "tests_failed": 0,
+    "warnings": 4,
+    "blocker_count": 0
+  },
+  "regression_areas": [
+    {
+      "area": "duplicate_detection",
+      "suite_file": "tests/m5a_regression/test_01_duplicate_detection.py",
+      "source_tests": [
+        "backend/tests/test_duplicate_detector.py"
+      ],
+      "tests_collected": 23,
+      "status": "PASS"
+    },
+    {
+      "area": "metadata_detection",
+      "suite_file": "tests/m5a_regression/test_02_metadata_detection.py",
+      "source_tests": [
+        "backend/tests/test_metadata_quality_detector.py"
+      ],
+      "tests_collected": 20,
+      "status": "PASS"
+    },
+    {
+      "area": "lifecycle_integrity",
+      "suite_file": "tests/m5a_regression/test_03_lifecycle_integrity.py",
+      "source_tests": [
+        "backend/tests/test_lifecycle_integrity_detector.py"
+      ],
+      "tests_collected": 12,
+      "status": "PASS"
+    },
+    {
+      "area": "source_status_integrity",
+      "suite_file": "tests/m5a_regression/test_04_source_status_integrity.py",
+      "source_tests": [
+        "backend/tests/test_source_status_integrity_detector.py"
+      ],
+      "tests_collected": 11,
+      "status": "PASS"
+    },
+    {
+      "area": "orphan_detection",
+      "suite_file": "tests/m5a_regression/test_05_orphan_detection.py",
+      "source_tests": [
+        "backend/tests/test_orphan_detector.py"
+      ],
+      "tests_collected": 9,
+      "status": "PASS"
+    },
+    {
+      "area": "quality_score",
+      "suite_file": "tests/m5a_regression/test_06_quality_score.py",
+      "source_tests": [
+        "backend/tests/test_m5a_quality_score.py"
+      ],
+      "tests_collected": 8,
+      "status": "PASS"
+    },
+    {
+      "area": "data_quality_report",
+      "suite_file": "tests/m5a_regression/test_07_data_quality_report.py",
+      "source_tests": [
+        "backend/tests/test_data_quality_runner.py",
+        "backend/tests/test_run_data_quality_report_v2.py"
+      ],
+      "tests_collected": 24,
+      "status": "PASS",
+      "notes": [
+        "Regression wrapper replaces one obsolete SQLite invalid-lifecycle seed with an equivalent CHECK-bypass seed."
+      ]
+    }
+  ],
+  "suite_integrity": {
+    "manifest_file": "tests/m5a_regression/test_00_suite_manifest.py",
+    "manifest_tests_collected": 15,
+    "all_required_areas_registered": true,
+    "all_suite_files_collectable": true,
+    "all_source_tests_present": true
+  },
+  "blockers": [],
+  "recommendations": [
+    "Run python -m pytest tests\\m5a_regression -q before merging changes that touch M5a detectors, quality scoring, or data quality report generation."
+  ]
+}

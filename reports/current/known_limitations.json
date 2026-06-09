@@ -28,20 +28,22 @@
     "doc_lint_errors": 0
   },
   "collected": 6,
-  "open": 3,
+  "open": 4,
   "deferred": 2,
-  "non_blocking": 1,
+  "non_blocking": 3,
   "blocking": 3,
   "limitations": [
     {
       "id": "KL-M5-T-001",
       "title": "M5 Entropy-/Drift-Truth-Failures blockieren Slice-Start",
       "status": "open",
+      "severity": "high",
       "category": "M5 blocker",
       "description": "15 M5 Entropy-/Drift-Truth-Failures in aktueller PostgreSQL-Truth-Suite. Kein M5-Slice darf produktiv gehen, bevor sein Truth-Block gruen ist.",
       "blocks_gate": [
         "m5_truth_gate"
       ],
+      "owner": "m5_truth_owner",
       "target_phase": "M5",
       "evidence_report": "reports/current/m4_truth_report.json",
       "next_action": "M5-Truth-Failures isoliert reparieren; pytest --pg tests/truth/m5/ -k <slice> ausfuehren; Slice erst nach gruenem Truth-Block aktivieren."
@@ -50,11 +52,13 @@
       "id": "KL-M5-T-002",
       "title": "Drei Pflicht-Artefakte pro M5-Slice fehlen vor Slice-Start",
       "status": "open",
+      "severity": "high",
       "category": "M5 blocker",
       "description": "Vor Start jedes M5-Slices fehlen drei Pflicht-Artefakte: (1) Retrieval-Baseline, (2) Cleanup Dry-Run mit blocked_count=0, (3) PostgreSQL-Truth-Block gruen.",
       "blocks_gate": [
         "m5_slice_start_gate"
       ],
+      "owner": "m5_slice_owner",
       "target_phase": "M5",
       "evidence_report": "docs/m5-preparation.md",
       "next_action": "Slice-sequenziell: Truth-Block gruen -> python -m app.cli m5 retrieval-benchmark --set-baseline -> python -m app.cli m5 cleanup-dry-run --workspace <id>."
@@ -63,11 +67,13 @@
       "id": "KL-GOV-001",
       "title": "Mutierende Admin-Aktionen ohne Runbook und Gate-Freigabe gesperrt",
       "status": "open",
+      "severity": "high",
       "category": "operational governance",
       "description": "Mutierende Admin-Aktionen (Repair, Cleanup-Loeschen, forced Reindex) duerfen nicht ueber Web-Admin ausgeloest werden. M4d bleibt read-only; operativer Mutationspfad braucht explizites Runbook und Freigabe.",
       "blocks_gate": [
         "operational_governance_gate"
       ],
+      "owner": "operations_owner",
       "target_phase": "M5 Operations",
       "evidence_report": "docs/m4d-admin-diagnostics.md",
       "next_action": "Fuer jeden Mutationspfad eigenes Runbook schreiben. Runbook vor produktiver Nutzung freigeben. Keine Web-Admin-Buttons ohne Gate-Freigabe."
@@ -76,9 +82,11 @@
       "id": "KL-DEF-001",
       "title": "OCR fuer gescannte PDFs nicht Teil von V1",
       "status": "deferred",
+      "severity": "low",
       "category": "explicitly deferred",
       "description": "OCR fuer gescannte PDFs ist nicht Teil von V1. PDFs ohne extrahierbaren Text bleiben OCR_REQUIRED.",
       "blocks_gate": [],
+      "owner": "product_owner",
       "target_phase": "Post-M4 feature",
       "evidence_report": "masterplan.md",
       "next_action": "OCR als eigenes Feature-Paket konzipieren und priorisieren."
@@ -87,9 +95,11 @@
       "id": "KL-DEF-002",
       "title": "Embeddings und Vektorsuche optional und nicht V1-kritisch",
       "status": "deferred",
+      "severity": "low",
       "category": "explicitly deferred",
       "description": "Embeddings und Vektorsuche sind optional und nicht V1-kritisch.",
       "blocks_gate": [],
+      "owner": "architecture_owner",
       "target_phase": "Post-V1 or M5+",
       "evidence_report": "masterplan.md",
       "next_action": "FTS-Baseline weiter nutzen; Vektorsuche separat konzipieren."
@@ -98,9 +108,11 @@
       "id": "KL-NB-001",
       "title": "API-Alias /api/v1/documents nicht durchgaengig verfuegbar",
       "status": "open",
+      "severity": "low",
       "category": "non-blocking debt",
       "description": "Der Alias /api/v1/documents ist nicht durchgaengig verfuegbar; Pfade nutzen teilweise /documents.",
       "blocks_gate": [],
+      "owner": "api_owner",
       "target_phase": "M4/M5 API hardening",
       "evidence_report": "docs/api.md",
       "next_action": "Vor neuer Clientbindung API-Vertrag pruefen; Alias oder Routing konsolidieren."

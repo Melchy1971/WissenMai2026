@@ -138,8 +138,8 @@ def test_blocks_on_invalid_slice_gate_json(tmp_path: Path) -> None:
 
 # ---------------------------------------------------------------------------
 # Regression tests for mandatory gate enforcement
-# Bug: report_integrity_pre_m5a=BLOCKED was not a criterion, so gate could
-#      incorrectly report PASS while decision.report_integrity_pre_m5a_pass=false.
+# Bug: report_integrity_v2=BLOCKED was not a criterion, so gate could
+#      incorrectly report PASS while decision.report_integrity_v2_pass=false.
 # ---------------------------------------------------------------------------
 
 def _write_required_slice_gates_with_report_integrity(
@@ -188,7 +188,7 @@ def _write_required_slice_gates_with_report_integrity(
 def test_regression_report_integrity_blocked_makes_gate_blocked(tmp_path: Path) -> None:
     """
     Regression: Previously all 9 implementation criteria could pass while
-    report_integrity_pre_m5a was BLOCKED, causing the gate to output PASS.
+    report_integrity_v2 was BLOCKED, causing the gate to output PASS.
     The gate must output BLOCKED when any mandatory gate is not PASS.
     """
     _write_required_slice_gates_with_report_integrity(
@@ -199,21 +199,21 @@ def test_regression_report_integrity_blocked_makes_gate_blocked(tmp_path: Path) 
     payload = gate.build_gate_report(tmp_path, timestamp="2026-06-01T00:00:00+00:00")
 
     assert payload["status"] == "BLOCKED", (
-        f"Expected BLOCKED when report_integrity_pre_m5a is BLOCKED, got {payload['status']}"
+        f"Expected BLOCKED when report_integrity_v2 is BLOCKED, got {payload['status']}"
     )
     assert payload["decision"]["go_no_go"] == "NO_GO"
-    assert payload["decision"]["report_integrity_pre_m5a_pass"] is False
+    assert payload["decision"]["report_integrity_v2_pass"] is False
     blocker_ids = [b["id"] for b in payload["blockers"]]
-    assert "child_gate_report_integrity_pre_m5a" in blocker_ids, (
-        f"report_integrity_pre_m5a must be a child-gate blocker, got: {blocker_ids}"
+    assert "child_gate_report_integrity_v2" in blocker_ids, (
+        f"report_integrity_v2 must be a child-gate blocker, got: {blocker_ids}"
     )
     # Verify criterion is present in criteria list
     criterion_ids = [c["id"] for c in payload["criteria"]]
-    assert "report_integrity_pre_m5a_pass" in criterion_ids
+    assert "report_integrity_v2_pass" in criterion_ids
 
 
 def test_regression_report_integrity_fail_makes_gate_fail(tmp_path: Path) -> None:
-    """report_integrity_pre_m5a=FAIL makes the parent gate FAIL."""
+    """report_integrity_v2=FAIL makes the parent gate FAIL."""
     _write_required_slice_gates_with_report_integrity(
         tmp_path, report_integrity_status="FAIL"
     )
@@ -273,7 +273,7 @@ def test_mandatory_gates_all_pass_allows_pass(tmp_path: Path) -> None:
 
     payload = gate.build_gate_report(tmp_path, timestamp="2026-06-01T00:00:00+00:00")
 
-    assert payload["decision"]["report_integrity_pre_m5a_pass"] is True
+    assert payload["decision"]["report_integrity_v2_pass"] is True
     assert payload["decision"]["m5a_start_gate_pass"] is True
     assert payload["decision"]["documentation_truth_lint_pass"] is True
     assert payload["status"] == "PASS"
@@ -289,6 +289,6 @@ def test_criteria_list_contains_all_mandatory_gates(tmp_path: Path) -> None:
     criterion_ids = {c["id"] for c in payload["criteria"]}
     assert "m5a_start_gate_pass" in criterion_ids
     assert "documentation_truth_lint_pass" in criterion_ids
-    assert "report_integrity_pre_m5a_pass" in criterion_ids
+    assert "report_integrity_v2_pass" in criterion_ids
     assert "parent_gate_validation_pass" in criterion_ids
     assert len(payload["criteria"]) == 13

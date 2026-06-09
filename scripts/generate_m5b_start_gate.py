@@ -60,6 +60,17 @@ def _is_pass_gate(report: dict[str, Any] | None) -> bool:
     )
 
 
+def _m5a_parent_gate_passed(report: dict[str, Any] | None) -> bool:
+    if report is None:
+        return False
+    parent_validation = report.get("parent_gate_validation")
+    if isinstance(parent_validation, dict):
+        parent_status = _status(parent_validation)
+        parent_decision = _decision(parent_validation)
+        return parent_status == "PASS" and parent_decision in {None, "GO"}
+    return False
+
+
 def _architecture_status() -> str:
     if not M5B_ARCHITECTURE.exists():
         return "MISSING"
@@ -77,26 +88,27 @@ def build_m5b_start_gate(
     retrieval, retrieval_error = _load_json(report_dir / RETRIEVAL_BASELINE)
     doc_lint, doc_error = _load_json(report_dir / DOCUMENTATION_TRUTH_LINT)
 
-    m5a_pass = m5a_error is None and _is_pass_gate(m5a)
+    m5a_gate_pass = m5a_error is None and _is_pass_gate(m5a)
+    m5a_parent_pass = m5a_gate_pass and _m5a_parent_gate_passed(m5a)
     architecture_status = _architecture_status()
     retrieval_decision = _decision(retrieval)
     retrieval_release_grade = bool((retrieval or {}).get("decision", {}).get("baseline_release_grade")) if isinstance((retrieval or {}).get("decision"), dict) else False
 
     blockers: list[dict[str, Any]] = []
-    if not m5a_pass:
+    if not m5a_parent_pass:
         blockers.append(
             {
                 "id": M5A_BLOCKER_ID,
                 "severity": "blocking",
                 "reason": (
-                    "M5b bleibt BLOCKED bis reports/current/m5a_data_quality_gate.json "
-                    "status=PASS und decision.go_no_go=GO meldet."
+                    "M5b bleibt DRAFT bis reports/current/m5a_data_quality_gate.json "
+                    "status=PASS, decision.go_no_go=GO und parent_gate_validation.status=PASS meldet."
                 ),
                 "source": f"reports/current/{M5A_DATA_QUALITY_GATE}",
             }
         )
 
-    status = "PREPARED" if m5a_pass else "BLOCKED"
+    status = "PREPARED" if m5a_parent_pass else "DRAFT"
     implementation_blockers = [
         {
             "id": M5B_IMPLEMENTATION_GATE_REQUIRED,
@@ -150,10 +162,11 @@ def build_m5b_start_gate(
                 "report": f"reports/current/{M5A_DATA_QUALITY_GATE}",
                 "status": _status(m5a),
                 "decision": _decision(m5a),
+                "parent_gate_status": _status((m5a or {}).get("parent_gate_validation") if isinstance((m5a or {}).get("parent_gate_validation"), dict) else None),
                 "timestamp": (m5a or {}).get("timestamp") or (m5a or {}).get("generated_at"),
-                "passed": m5a_pass,
+                "passed": m5a_parent_pass,
                 "error": m5a_error,
-                "rule": "M5b darf erst PREPARED werden, wenn m5a_data_quality_gate PASS/GO meldet.",
+                "rule": "M5b darf erst PREPARED werden, wenn m5a_data_quality_gate PASS/GO und parent_gate_validation.status=PASS meldet.",
             },
             "retrieval_quality_baseline_report": {
                 "report": f"reports/current/{RETRIEVAL_BASELINE}",
@@ -183,9 +196,9 @@ def build_m5b_start_gate(
         "implementation_blockers": implementation_blockers,
         "blockers": blockers,
         "rule": (
-            "Wenn m5a_data_quality_gate nicht PASS/GO ist, bleibt M5b BLOCKED mit "
-            "M5A_PARENT_GATE_NOT_PASSED. Bei M5a PASS darf M5b PREPARED werden; "
-            "Implementierung erfordert ein separates M5b Implementation Gate."
+            "Solange das M5a Parent-Gate nicht PASS ist, bleiben M5b-Artefakte DRAFT: "
+            "keine PREPARED-Freigabe, kein GO und keine Implementierung. Bei M5a Parent-PASS "
+            "darf M5b PREPARED werden; Implementierung erfordert ein separates M5b Implementation Gate."
         ),
         "collected": 1,
         "passed": 1 if status == "PREPARED" else 0,

@@ -1,0 +1,357 @@
+{
+  "report_schema_version": 1,
+  "report_name": "report_integrity_v2",
+  "gate": "report_integrity_v2",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-08T10:06:51.584041+00:00",
+  "environment": "local",
+  "report_type": "gate",
+  "status": "BLOCKED",
+  "result": "BLOCKED",
+  "decision": {
+    "go_no_go": "NO_GO",
+    "result": "NO_GO",
+    "manual_override_allowed": false
+  },
+  "collected": 7,
+  "passed": 6,
+  "failed": 1,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "source_command": "python scripts/generate_report_integrity_v2.py",
+  "checks": [
+    {
+      "id": "json_validity",
+      "passed": true
+    },
+    {
+      "id": "schema_validity",
+      "passed": true
+    },
+    {
+      "id": "timestamp",
+      "passed": true
+    },
+    {
+      "id": "generated_by",
+      "passed": true
+    },
+    {
+      "id": "status_consistency",
+      "passed": true
+    },
+    {
+      "id": "gate_consistency",
+      "passed": true
+    },
+    {
+      "id": "child_gate_consistency",
+      "passed": false
+    }
+  ],
+  "blockers": [
+    {
+      "id": "child_gate_consistency_m5a_source_status_integrity_gate_child_blocks_parent",
+      "check": "child_gate_consistency",
+      "file": "reports/current/m5a_source_status_integrity_gate.json",
+      "code": "child_blocks_parent",
+      "severity": "blocking",
+      "detail": "source_status_integrity_gate has blocking status ['BLOCKED']",
+      "repair_action": "Resolve blockers in reports/current/m5a_source_status_integrity_gate.json before parent gate PASS."
+    },
+    {
+      "id": "child_gate_consistency_m5a_orphan_detector_gate_child_blocks_parent",
+      "check": "child_gate_consistency",
+      "file": "reports/current/m5a_orphan_detector_gate.json",
+      "code": "child_blocks_parent",
+      "severity": "blocking",
+      "detail": "orphan_detector_gate has blocking status ['BLOCKED']",
+      "repair_action": "Resolve blockers in reports/current/m5a_orphan_detector_gate.json before parent gate PASS."
+    }
+  ],
+  "blocker_details": [
+    {
+      "id": "child_gate_consistency_m5a_source_status_integrity_gate_child_blocks_parent",
+      "check": "child_gate_consistency",
+      "file": "reports/current/m5a_source_status_integrity_gate.json",
+      "code": "child_blocks_parent",
+      "severity": "blocking",
+      "detail": "source_status_integrity_gate has blocking status ['BLOCKED']",
+      "repair_action": "Resolve blockers in reports/current/m5a_source_status_integrity_gate.json before parent gate PASS."
+    },
+    {
+      "id": "child_gate_consistency_m5a_orphan_detector_gate_child_blocks_parent",
+      "check": "child_gate_consistency",
+      "file": "reports/current/m5a_orphan_detector_gate.json",
+      "code": "child_blocks_parent",
+      "severity": "blocking",
+      "detail": "orphan_detector_gate has blocking status ['BLOCKED']",
+      "repair_action": "Resolve blockers in reports/current/m5a_orphan_detector_gate.json before parent gate PASS."
+    }
+  ],
+  "warnings": [
+    {
+      "id": "gate_consistency_current_scope_validation_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/current_scope_validation.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='current_scope_validator' and report_name='current_scope_validation' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_final_status_report_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/final_status_report.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='final_pre_m5_status_refresh' and report_name='final_status_report' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_gate_closure_sprint_report_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/gate_closure_sprint_report.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='gate_closure_sprint' and report_name='gate_closure_sprint_report' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_gate_hierarchy_result_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/gate_hierarchy_result.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='gate_hierarchy' and report_name='gate_hierarchy_result' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m3a_release_candidate_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m3a_release_candidate.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m3a' and report_name='m3a_release_candidate' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4_truth_report_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m4_truth_report.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m4_crosscutting_gate' and report_name='m4_truth_report' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4a_auth_single_issue_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m4a_auth_single_issue.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m4a' and report_name='m4a_auth_single_issue' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4a_auth_truth_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m4a_auth_truth.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m4a' and report_name='m4a_auth_truth' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4b_upload_queue_truth_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m4b_upload_queue_truth.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m4b' and report_name='m4b_upload_queue_truth' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4c_lifecycle_retrieval_truth_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m4c_lifecycle_retrieval_truth.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m4c' and report_name='m4c_lifecycle_retrieval_truth' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4c_marker_mapping_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m4c_marker_mapping.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m4c' and report_name='m4c_marker_mapping' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4e_backup_restore_truth_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m4e_backup_restore_truth.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m4e' and report_name='m4e_backup_restore_truth' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4e_operations_release_gate_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m4e_operations_release_gate.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m4e_operations_release' and report_name='m4e_operations_release_gate' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4e_operations_release_report_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m4e_operations_release_report.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m4e_operations_release' and report_name='m4e_operations_release_report' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m5a_start_validation_report_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/m5a_start_validation_report.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='m5a_start_gate' and report_name='m5a_start_validation_report' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_report_integrity_pre_m5a_archive_log_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/report_integrity_pre_m5a_archive_log.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='report_integrity_pre_m5a' and report_name='report_integrity_pre_m5a_archive_log' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_runtime_connectivity_report_gate_report_name_mismatch",
+      "check": "gate_consistency",
+      "file": "reports/current/runtime_connectivity_report.json",
+      "code": "gate_report_name_mismatch",
+      "severity": "warning",
+      "detail": "gate='runtime_connectivity_gate' and report_name='runtime_connectivity_report' are inconsistent",
+      "repair_action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    }
+  ],
+  "repair_actions": [
+    {
+      "id": "gate_consistency_current_scope_validation_gate_report_name_mismatch",
+      "file": "reports/current/current_scope_validation.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_final_status_report_gate_report_name_mismatch",
+      "file": "reports/current/final_status_report.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_gate_closure_sprint_report_gate_report_name_mismatch",
+      "file": "reports/current/gate_closure_sprint_report.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_gate_hierarchy_result_gate_report_name_mismatch",
+      "file": "reports/current/gate_hierarchy_result.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m3a_release_candidate_gate_report_name_mismatch",
+      "file": "reports/current/m3a_release_candidate.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4_truth_report_gate_report_name_mismatch",
+      "file": "reports/current/m4_truth_report.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4a_auth_single_issue_gate_report_name_mismatch",
+      "file": "reports/current/m4a_auth_single_issue.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4a_auth_truth_gate_report_name_mismatch",
+      "file": "reports/current/m4a_auth_truth.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4b_upload_queue_truth_gate_report_name_mismatch",
+      "file": "reports/current/m4b_upload_queue_truth.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4c_lifecycle_retrieval_truth_gate_report_name_mismatch",
+      "file": "reports/current/m4c_lifecycle_retrieval_truth.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4c_marker_mapping_gate_report_name_mismatch",
+      "file": "reports/current/m4c_marker_mapping.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4e_backup_restore_truth_gate_report_name_mismatch",
+      "file": "reports/current/m4e_backup_restore_truth.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4e_operations_release_gate_gate_report_name_mismatch",
+      "file": "reports/current/m4e_operations_release_gate.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m4e_operations_release_report_gate_report_name_mismatch",
+      "file": "reports/current/m4e_operations_release_report.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_m5a_start_validation_report_gate_report_name_mismatch",
+      "file": "reports/current/m5a_start_validation_report.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_report_integrity_pre_m5a_archive_log_gate_report_name_mismatch",
+      "file": "reports/current/report_integrity_pre_m5a_archive_log.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "gate_consistency_runtime_connectivity_report_gate_report_name_mismatch",
+      "file": "reports/current/runtime_connectivity_report.json",
+      "action": "Use a canonical gate id that matches report_name unless this is an intentional aggregate report."
+    },
+    {
+      "id": "child_gate_consistency_m5a_source_status_integrity_gate_child_blocks_parent",
+      "file": "reports/current/m5a_source_status_integrity_gate.json",
+      "action": "Resolve blockers in reports/current/m5a_source_status_integrity_gate.json before parent gate PASS."
+    },
+    {
+      "id": "child_gate_consistency_m5a_orphan_detector_gate_child_blocks_parent",
+      "file": "reports/current/m5a_orphan_detector_gate.json",
+      "action": "Resolve blockers in reports/current/m5a_orphan_detector_gate.json before parent gate PASS."
+    }
+  ],
+  "summary": {
+    "json_files_checked": 48,
+    "json_valid": 48,
+    "schema_valid": 48,
+    "timestamps_valid": 48,
+    "generated_by_valid": 48,
+    "status_consistent": 48,
+    "gate_consistent": 31,
+    "blocker_count": 2,
+    "warning_count": 17,
+    "repair_action_count": 19
+  }
+}

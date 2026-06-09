@@ -1,20 +1,29 @@
 from __future__ import annotations
 
 import argparse
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 import json
 from pathlib import Path
+import sys
 from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
+from gate_engine import (  # noqa: E402
+    ChildGateReference,
+    GateDefinition,
+    evaluate_gate,
+    parse_timestamp as _parse_timestamp,
+)
+
 REPORTS_DIR = REPO_ROOT / "reports"
 CURRENT_DIR = REPORTS_DIR / "current"
 ARCHIVE_DIR = REPORTS_DIR / "archive"
 HIERARCHY_JSON = REPO_ROOT / "docs" / "gate_hierarchy.json"
-CHILD_BLOCKING_STATUSES = {"BLOCKED", "INVALID", "STALE"}
-CHILD_FAIL_STATUSES = {"FAIL", "FAILED"}
-PARENT_BLOCKING_STATUSES = {"BLOCKED", "MISSING", "INVALID", "STALE"}
 DEFAULT_MAX_REPORT_AGE_HOURS = 168
 
 
@@ -49,46 +58,6 @@ def _report_dir_policy_errors(report_dir: Path) -> list[str]:
     return []
 
 
-def _parse_timestamp(value: Any) -> datetime | None:
-    if not isinstance(value, str) or not value:
-        return None
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        return parsed.replace(tzinfo=UTC)
-    return parsed.astimezone(UTC)
-
-
-def _as_int(value: Any) -> int | None:
-    if isinstance(value, bool):
-        return None
-    return value if isinstance(value, int) else None
-
-
-def _nested(payload: dict[str, Any], key_path: str) -> Any:
-    current: Any = payload
-    for key in key_path.split("."):
-        if not isinstance(current, dict):
-            return None
-        current = current.get(key)
-    return current
-
-
-def _status_values(report: dict[str, Any]) -> set[str]:
-    values: set[str] = set()
-    for key in ("status", "result"):
-        value = report.get(key)
-        if isinstance(value, str) and value:
-            values.add(value.upper().replace("-", "_"))
-    for key_path in ("decision.go_no_go", "decision.result"):
-        value = _nested(report, key_path)
-        if isinstance(value, str) and value:
-            values.add(value.upper().replace("-", "_"))
-    return values
-
-
 def _report_name(report_path: str) -> str:
     return Path(report_path).name
 
@@ -100,166 +69,6 @@ def _load_hierarchy(path: Path) -> dict[str, Any]:
     if not isinstance(hierarchy.get("parents"), dict) or not isinstance(hierarchy.get("children"), dict):
         raise ValueError("gate_hierarchy.json must define parents and children objects")
     return hierarchy
-
-
-def _counter_blockers(report_name: str, report: dict[str, Any], required: bool) -> list[str]:
-    if not required and not any(key in report for key in ("collected", "passed", "failed", "errors", "skipped")):
-        return []
-
-    blockers: list[str] = []
-    collected = _as_int(report.get("collected"))
-    passed = _as_int(report.get("passed"))
-    failed = _as_int(report.get("failed"))
-    errors = _as_int(report.get("errors"))
-    skipped = _as_int(report.get("skipped"))
-    exit_code = _as_int(report.get("exit_code"))
-
-    if collected is None or collected <= 0:
-        blockers.append(f"{report_name}: collected must be > 0")
-    if passed != collected:
-        blockers.append(f"{report_name}: passed must equal collected")
-    if failed != 0:
-        blockers.append(f"{report_name}: failed must be 0")
-    if errors != 0:
-        blockers.append(f"{report_name}: errors must be 0")
-    if skipped != 0:
-        blockers.append(f"{report_name}: skipped must be 0")
-    if exit_code != 0:
-        blockers.append(f"{report_name}: exit_code must be 0")
-    return blockers
-
-
-def _is_supporting_report(report: dict[str, Any]) -> bool:
-    return str(report.get("report_type") or "").lower() == "supporting"
-
-
-def _child_blockers(
-    child_id: str,
-    child_spec: dict[str, Any],
-    report: dict[str, Any],
-    *,
-    now: datetime,
-    max_report_age_hours: int | None,
-) -> tuple[str, list[str]]:
-    report_path = str(child_spec.get("report") or "")
-    report_name = _report_name(report_path)
-    accepted_statuses = {
-        str(value).upper().replace("-", "_")
-        for value in child_spec.get("accepted_statuses", ["PASS"])
-    }
-    statuses = _status_values(report)
-    blockers: list[str] = []
-
-    if statuses & CHILD_BLOCKING_STATUSES:
-        return "BLOCKED", [f"{child_id}: child status is blocking ({sorted(statuses & CHILD_BLOCKING_STATUSES)})"]
-    if statuses & CHILD_FAIL_STATUSES:
-        return "FAIL", [f"{child_id}: child status is FAIL ({sorted(statuses & CHILD_FAIL_STATUSES)})"]
-    if statuses.isdisjoint(accepted_statuses):
-        blockers.append(
-            f"{child_id}: status/result must be one of {sorted(accepted_statuses)}, got {sorted(statuses)}"
-        )
-
-    invalid_blockers: list[str] = []
-    if not report.get("generated_by"):
-        invalid_blockers.append(f"{child_id}: generated_by must be set")
-
-    timestamp = _parse_timestamp(report.get("timestamp") or report.get("generated_at"))
-    if timestamp is None:
-        return "STALE", [f"{child_id}: timestamp must be machine-readable"]
-
-    collected = _as_int(report.get("collected"))
-    if not _is_supporting_report(report) and (collected is None or collected <= 0):
-        invalid_blockers.append(
-            f"{child_id}: passing child report requires collected > 0 or report_type=supporting"
-        )
-
-    if invalid_blockers:
-        return "INVALID", invalid_blockers
-
-    required_decision = child_spec.get("required_decision")
-    if required_decision is not None:
-        decision = _nested(report, "decision.go_no_go")
-        if str(decision).upper().replace("-", "_") != str(required_decision).upper().replace("-", "_"):
-            blockers.append(f"{child_id}: decision.go_no_go must be {required_decision}")
-
-    counter_required = child_spec.get("counter_validation") == "required"
-    blockers.extend(_counter_blockers(report_name, report, required=counter_required))
-
-    summary_errors = _nested(report, "summary.errors")
-    if isinstance(summary_errors, int) and summary_errors != 0:
-        blockers.append(f"{child_id}: summary.errors must be 0")
-
-    if report.get("failed_tests") not in ([], None):
-        blockers.append(f"{child_id}: failed_tests must be empty")
-    if report.get("blockers") not in ([], None):
-        blockers.append(f"{child_id}: blockers must be empty")
-
-    for field in child_spec.get("optional_true_fields", []):
-        if field in report and report.get(field) is not True:
-            blockers.append(f"{child_id}: {field} must be true when present")
-
-    min_quality_score = child_spec.get("min_quality_score")
-    if min_quality_score is not None:
-        score = report.get("quality_score")
-        if not isinstance(score, (int, float)) or score < float(min_quality_score):
-            blockers.append(f"{child_id}: quality_score must be >= {min_quality_score}")
-
-    if max_report_age_hours is not None:
-        if now - timestamp > timedelta(hours=max_report_age_hours):
-            return "STALE", [f"{child_id}: report is older than {max_report_age_hours} hours"]
-
-    return ("PASS" if not blockers else "FAIL"), blockers
-
-
-def _parent_status(child_results: dict[str, dict[str, Any]]) -> str:
-    statuses = {str(item["validation_status"]) for item in child_results.values()}
-    if statuses & PARENT_BLOCKING_STATUSES:
-        return "BLOCKED"
-    if "FAIL" in statuses:
-        return "FAIL"
-    return "PASS"
-
-
-def _decision_trace(
-    parent_gate_id: str,
-    child_results: dict[str, dict[str, Any]],
-    status: str,
-) -> dict[str, Any]:
-    evaluated_children = [
-        {
-            "child_gate_id": child_id,
-            "validation_status": result["validation_status"],
-            "effect": (
-                "blocks_parent"
-                if result["validation_status"] in PARENT_BLOCKING_STATUSES
-                else "fails_parent"
-                if result["validation_status"] == "FAIL"
-                else "passes_parent"
-            ),
-            "blockers": result.get("blockers", []),
-        }
-        for child_id, result in child_results.items()
-    ]
-    return {
-        "parent_gate": parent_gate_id,
-        "rule": (
-            "Missing child, invalid child JSON, child BLOCKED/INVALID/STALE, or invalid PASS evidence "
-            "=> parent BLOCKED; child FAIL => parent FAIL; child PASS counts only with generated_by, "
-            "timestamp, and collected > 0 or report_type=supporting."
-        ),
-        "evaluated_children": evaluated_children,
-        "blocking_children": [
-            item["child_gate_id"]
-            for item in evaluated_children
-            if item["validation_status"] in PARENT_BLOCKING_STATUSES
-        ],
-        "failing_children": [
-            item["child_gate_id"]
-            for item in evaluated_children
-            if item["validation_status"] == "FAIL"
-        ],
-        "final_status": status,
-    }
 
 
 def validate_parent_gate(
@@ -279,8 +88,8 @@ def validate_parent_gate(
     now_text = timestamp or datetime.now(UTC).isoformat()
     now = _parse_timestamp(now_text) or datetime.now(UTC)
     policy_errors = _report_dir_policy_errors(report_dir)
-    child_results: dict[str, dict[str, Any]] = {}
-    blockers: list[dict[str, Any]] = []
+    child_references: list[ChildGateReference] = []
+    child_inputs: dict[str, dict[str, Any]] = {}
 
     mandatory_children = parents[parent_gate_id].get("mandatory_children")
     if not isinstance(mandatory_children, list) or not mandatory_children:
@@ -289,71 +98,36 @@ def validate_parent_gate(
     for child_id in mandatory_children:
         child_spec = children.get(child_id)
         if not isinstance(child_spec, dict):
-            child_results[child_id] = {
-                "child_gate_id": child_id,
-                "validation_status": "INVALID",
-                "blockers": [f"{child_id}: missing child definition"],
-            }
+            child_references.append(ChildGateReference(child_gate_id=child_id, report=""))
+            child_inputs[child_id] = {"error": "invalid: missing child definition"}
+            continue
+
+        reference = ChildGateReference.from_spec(child_id, child_spec)
+        child_references.append(reference)
+        report_path = reference.report
+        report_name = _report_name(report_path)
+        if not report_path.startswith("reports/current/"):
+            child_inputs[child_id] = {"error": "invalid: report source must be reports/current"}
+        elif policy_errors:
+            child_inputs[child_id] = {"error": f"blocked: {'; '.join(policy_errors)}"}
         else:
-            report_path = str(child_spec.get("report") or "")
-            report_name = _report_name(report_path)
-            if not report_path.startswith("reports/current/"):
-                child_results[child_id] = {
-                    "child_gate_id": child_id,
-                    "report": report_path,
-                    "validation_status": "INVALID",
-                    "blockers": [f"{child_id}: report source must be reports/current"],
-                }
-            elif policy_errors:
-                child_results[child_id] = {
-                    "child_gate_id": child_id,
-                    "report": report_path,
-                    "validation_status": "BLOCKED",
-                    "blockers": policy_errors,
-                }
-            else:
-                report, error = _load_json(report_dir / report_name)
-                if error or report is None:
-                    status = "MISSING" if error == "missing" else "INVALID"
-                    child_results[child_id] = {
-                        "child_gate_id": child_id,
-                        "report": report_path,
-                        "validation_status": status,
-                        "blockers": [f"{child_id}: {error}"],
-                    }
-                else:
-                    status, child_blockers = _child_blockers(
-                        child_id,
-                        child_spec,
-                        report,
-                        now=now,
-                        max_report_age_hours=max_report_age_hours,
-                    )
-                    child_results[child_id] = {
-                        "child_gate_id": child_id,
-                        "report": report_path,
-                        "validation_status": status,
-                        "report_status": report.get("status"),
-                        "report_result": report.get("result"),
-                        "decision": _nested(report, "decision.go_no_go"),
-                        "timestamp": report.get("timestamp") or report.get("generated_at"),
-                        "generated_by": report.get("generated_by"),
-                        "collected": report.get("collected"),
-                        "report_type": report.get("report_type"),
-                        "blockers": child_blockers,
-                    }
+            report, error = _load_json(report_dir / report_name)
+            child_inputs[child_id] = {"report": report, "error": error}
 
-        child_result = child_results[child_id]
-        if child_result["validation_status"] != "PASS":
-            blockers.append({
-                "id": child_id,
-                "child_gate_id": child_id,
-                "severity": "blocking",
-                "reason": "; ".join(child_result["blockers"]),
-            })
-
-    status = _parent_status(child_results)
-    gate_decision_trace = _decision_trace(parent_gate_id, child_results, status)
+    gate_definition = GateDefinition(
+        parent_gate_id=parent_gate_id,
+        mandatory_children=tuple(child_references),
+        hierarchy_source=hierarchy_path.relative_to(REPO_ROOT).as_posix()
+        if _is_relative_to(hierarchy_path, REPO_ROOT)
+        else str(hierarchy_path),
+    )
+    gate_result = evaluate_gate(
+        gate_definition,
+        child_inputs,
+        now=now,
+        max_report_age_hours=max_report_age_hours,
+    )
+    status = gate_result.status
     return {
         "report_schema_version": 1,
         "report_name": "parent_gate_validation",
@@ -364,21 +138,21 @@ def validate_parent_gate(
         "result": status,
         "decision": {
             "go_no_go": "GO" if status == "PASS" else "NO_GO",
-            "manual_override_allowed": False,
+            "manual_override_allowed": gate_result.manual_override_allowed,
         },
-        "collected": len(mandatory_children),
-        "passed": sum(1 for item in child_results.values() if item["validation_status"] == "PASS"),
-        "failed": len(blockers),
-        "errors": 0,
-        "skipped": 0,
-        "exit_code": 0 if status == "PASS" else 1,
+        "collected": gate_result.collected,
+        "passed": gate_result.passed,
+        "failed": gate_result.failed,
+        "errors": gate_result.errors,
+        "skipped": gate_result.skipped,
+        "exit_code": gate_result.exit_code,
         "hierarchy_source": hierarchy_path.relative_to(REPO_ROOT).as_posix(),
         "report_dir": report_dir.relative_to(REPO_ROOT).as_posix() if _is_relative_to(report_dir, REPO_ROOT) else str(report_dir),
         "no_manual_override": True,
         "mandatory_children": mandatory_children,
-        "child_results": child_results,
-        "blockers": blockers,
-        "gate_decision_trace": gate_decision_trace,
+        "child_results": gate_result.child_results,
+        "blockers": gate_result.blockers,
+        "gate_decision_trace": gate_result.decision_trace.to_dict(),
     }
 
 

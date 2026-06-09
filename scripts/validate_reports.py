@@ -255,7 +255,7 @@ def validate_payload(report: dict[str, Any]) -> list[ValidationIssue]:
         if field in report and (not isinstance(report[field], str) or not report[field].strip()):
             issues.append(ValidationIssue("invalid_type", f"{field} must be a non-empty string"))
 
-    if report.get("status") not in {"PASS", "FAIL", "BLOCKED", "INFO", "PREPARED"}:
+    if report.get("status") not in {"PASS", "FAIL", "BLOCKED", "INFO", "PREPARED", "DRAFT"}:
         issues.append(ValidationIssue("invalid_status", f"invalid status: {report.get('status')!r}"))
 
     generated_by = report.get("generated_by")

@@ -2,18 +2,18 @@
   "report_schema_version": 1,
   "report_name": "m5b_start_gate",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-05T15:33:38.425088+00:00",
-  "generated_at": "2026-06-05T15:33:38.425088+00:00",
+  "timestamp": "2026-06-08T09:15:03.279598+00:00",
+  "generated_at": "2026-06-08T09:15:03.279598+00:00",
   "gate": "m5b_start_gate",
   "environment": "local",
   "report_type": "gate",
-  "status": "PREPARED",
-  "result": "PREPARED",
+  "status": "DRAFT",
+  "result": "DRAFT",
   "decision": {
-    "go_no_go": "GO",
-    "result": "GO",
-    "preparation_status": "PREPARED",
-    "m5b_preparation_allowed": true,
+    "go_no_go": "NO_GO",
+    "result": "NO_GO",
+    "preparation_status": "DRAFT",
+    "m5b_preparation_allowed": false,
     "m5b_implementation_allowed": false,
     "m5b_implementation_gate_required": true,
     "implementation_state": "NOT_IMPLEMENTING",
@@ -22,12 +22,13 @@
   "preconditions": {
     "m5a_data_quality_gate": {
       "report": "reports/current/m5a_data_quality_gate.json",
-      "status": "PASS",
-      "decision": "GO",
-      "timestamp": "2026-06-05T11:38:52.0389260+02:00",
-      "passed": true,
+      "status": "BLOCKED",
+      "decision": "NO_GO",
+      "parent_gate_status": "BLOCKED",
+      "timestamp": "2026-06-08T07:32:45.339823+00:00",
+      "passed": false,
       "error": null,
-      "rule": "M5b darf erst PREPARED werden, wenn m5a_data_quality_gate PASS/GO meldet."
+      "rule": "M5b darf erst PREPARED werden, wenn m5a_data_quality_gate PASS/GO und parent_gate_validation.status=PASS meldet."
     },
     "retrieval_quality_baseline_report": {
       "report": "reports/current/retrieval_quality_baseline_report.json",
@@ -74,13 +75,20 @@
       "source": "docs/m5b-drift-architecture.md"
     }
   ],
-  "blockers": [],
-  "rule": "Wenn m5a_data_quality_gate nicht PASS/GO ist, bleibt M5b BLOCKED mit M5A_PARENT_GATE_NOT_PASSED. Bei M5a PASS darf M5b PREPARED werden; Implementierung erfordert ein separates M5b Implementation Gate.",
+  "blockers": [
+    {
+      "id": "M5A_PARENT_GATE_NOT_PASSED",
+      "severity": "blocking",
+      "reason": "M5b bleibt DRAFT bis reports/current/m5a_data_quality_gate.json status=PASS, decision.go_no_go=GO und parent_gate_validation.status=PASS meldet.",
+      "source": "reports/current/m5a_data_quality_gate.json"
+    }
+  ],
+  "rule": "Solange das M5a Parent-Gate nicht PASS ist, bleiben M5b-Artefakte DRAFT: keine PREPARED-Freigabe, kein GO und keine Implementierung. Bei M5a Parent-PASS darf M5b PREPARED werden; Implementierung erfordert ein separates M5b Implementation Gate.",
   "collected": 1,
-  "passed": 1,
-  "failed": 0,
+  "passed": 0,
+  "failed": 1,
   "errors": 0,
   "skipped": 0,
-  "exit_code": 0,
+  "exit_code": 1,
   "source_command": "python scripts/generate_m5b_start_gate.py"
 }

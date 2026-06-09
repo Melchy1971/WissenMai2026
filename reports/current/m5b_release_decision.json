@@ -1,0 +1,137 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5b_release_decision",
+  "gate": "m5b_release_decision",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-09T08:22:08.5662449Z",
+  "environment": "local",
+  "report_type": "gate",
+  "status": "BLOCKED",
+  "result": "BLOCKED",
+  "decision": {
+    "status": "BLOCKED",
+    "go_no_go": "NO_GO",
+    "prepared_allowed": false,
+    "go_allowed": false,
+    "manual_override_allowed": false,
+    "rule": "M5b PREPARED requires M5a PASS, no critical limitations, and Report Integrity PASS."
+  },
+  "source_command": "m5b_release_decision_from_m5a_final_readiness_masterplan_known_limitations",
+  "inputs": {
+    "m5a_final_readiness_review": "reports/current/m5a_final_readiness_review.json",
+    "masterplan_status": "reports/current/masterplan_status.json",
+    "known_limitations": "reports/current/known_limitations.json"
+  },
+  "criteria": [
+    {
+      "id": "m5a_pass",
+      "label": "M5a PASS",
+      "required_for_prepared": true,
+      "passed": false,
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "evidence": {
+        "readiness": "BLOCKED",
+        "ready_for_m5b": false,
+        "masterplan_m5a_status": "BLOCKED",
+        "m5a_data_quality_gate_status": "BLOCKED"
+      }
+    },
+    {
+      "id": "no_critical_limitations",
+      "label": "Keine kritischen Limitations",
+      "required_for_prepared": true,
+      "passed": false,
+      "source": "reports/current/known_limitations.json",
+      "evidence": {
+        "critical_open_limitations": [
+          "KL-M5-T-001",
+          "KL-M5-T-002",
+          "KL-GOV-001"
+        ],
+        "critical_definition": "status=open and severity=high and blocks_gate is non-empty"
+      }
+    },
+    {
+      "id": "report_integrity_pass",
+      "label": "Report Integrity PASS",
+      "required_for_prepared": true,
+      "passed": false,
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "evidence": {
+        "m5a_review_report_integrity_status": "BLOCKED",
+        "masterplan_report_integrity_v2_status": "BLOCKED"
+      }
+    }
+  ],
+  "decision_trace": [
+    {
+      "step": "read_m5a_final_readiness_review",
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "observed_status": "BLOCKED",
+      "effect": "blocks_prepared"
+    },
+    {
+      "step": "read_masterplan_status",
+      "source": "reports/current/masterplan_status.json",
+      "observed_m5a_status": "BLOCKED",
+      "observed_m5b_status": "DRAFT",
+      "effect": "blocks_prepared"
+    },
+    {
+      "step": "read_known_limitations",
+      "source": "reports/current/known_limitations.json",
+      "observed_blocking_count": 3,
+      "effect": "blocks_prepared"
+    },
+    {
+      "step": "apply_release_rule",
+      "rule": "All PREPARED criteria must pass.",
+      "criteria_passed": 0,
+      "criteria_required": 3,
+      "final_status": "BLOCKED"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "M5A_NOT_PASS",
+      "severity": "blocking",
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "detail": "M5a Final Readiness Review is BLOCKED; M5b cannot become PREPARED."
+    },
+    {
+      "id": "MASTERPLAN_M5A_BLOCKED",
+      "severity": "blocking",
+      "source": "reports/current/masterplan_status.json",
+      "detail": "Masterplan reports m5a_status=BLOCKED and m5b_status=DRAFT."
+    },
+    {
+      "id": "CRITICAL_LIMITATIONS_OPEN",
+      "severity": "blocking",
+      "source": "reports/current/known_limitations.json",
+      "detail": "Open high-severity limitations still block gates: KL-M5-T-001, KL-M5-T-002, KL-GOV-001."
+    },
+    {
+      "id": "REPORT_INTEGRITY_NOT_PASS",
+      "severity": "blocking",
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "detail": "Report Integrity evidence is BLOCKED, not PASS."
+    }
+  ],
+  "allowed_next_actions": [
+    "Keep M5b documents in DRAFT only.",
+    "Resolve M5a parent-gate blockers.",
+    "Close or defer critical blocking limitations through their owning gates.",
+    "Regenerate Report Integrity and M5a readiness after blockers are resolved."
+  ],
+  "not_allowed": [
+    "M5b PREPARED",
+    "M5b GO",
+    "M5b implementation"
+  ],
+  "summary": {
+    "prepared_criteria_required": 3,
+    "prepared_criteria_passed": 0,
+    "blocker_count": 4,
+    "final_status": "BLOCKED"
+  }
+}

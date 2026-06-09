@@ -147,7 +147,7 @@ def _m5b_start_gate(status: str = "PREPARED") -> dict:
 
 def _write_m5a_pass_inputs(report_dir: Path) -> None:
     _write(report_dir / engine.M5A_START_GATE, _m5a_start_gate("GO"))
-    _write(report_dir / "report_integrity_pre_m5a.json", _rc())
+    _write(report_dir / "report_integrity_v2.json", _rc())
     _write(report_dir / "data_quality_report.json", _data_quality_report())
     _write(report_dir / "m5a_duplicate_detector_gate.json", _rc())
     _write(report_dir / "m5a_metadata_detector_gate.json", _rc())
@@ -213,6 +213,8 @@ def test_v3_blocks_release_when_m3a_rc_is_not_pass(tmp_path: Path) -> None:
     assert payload["phases"]["m4"]["decision"] == "GO"
     assert payload["m5"]["preparation_allowed"] is True
     assert payload["overall"]["release_allowed"] is False
+    assert payload["timestamp"] == "2026-05-29T08:00:00+00:00"
+    assert payload["status"] == payload["overall"]["status"]
 
 
 def test_v3_m5_preparation_depends_on_m4e_operations_not_m4_alone(tmp_path: Path) -> None:
@@ -354,3 +356,5 @@ def test_v3_allows_m5b_prepared_after_m5a_pass_without_implementation(tmp_path: 
     assert payload["gate_hierarchy"]["m5b_implementation_gate"]["status"] == "BLOCKED"
     assert payload["overall"]["release_allowed"] is False
     assert payload["overall"]["progress_percent"] < 100
+    assert payload["progress_model"]["m5_complete"] is False
+    assert payload["progress_model"]["documentation_pass_counted"] is False

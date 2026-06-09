@@ -8,7 +8,7 @@ Quelle: `docs/gate_hierarchy.json`.
 |---|---|
 | M3a | `runtime_connectivity_gate`, `frontend_full_suite_staged`, `documentation_truth_lint` |
 | M4 | `m4a_auth_truth`, `m4b_upload_queue_truth`, `m4c_lifecycle_retrieval_truth`, `m4e_backup_restore_truth`, `report_truth_preflight` |
-| M5a | `m5a_start_gate`, `report_integrity_pre_m5a`, `documentation_truth_lint`, `data_quality_report`, `duplicate_detector_gate`, `metadata_detector_gate`, `lifecycle_integrity_gate`, `source_status_integrity_gate`, `orphan_detector_gate` |
+| M5a | `m5a_start_gate`, `report_integrity_v2`, `documentation_truth_lint`, `data_quality_report`, `duplicate_detector_gate`, `metadata_detector_gate`, `lifecycle_integrity_gate`, `source_status_integrity_gate`, `orphan_detector_gate` |
 
 ## Validator-Regeln
 

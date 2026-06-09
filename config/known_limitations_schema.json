@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "schema_name": "known_limitations_schema",
+  "root": {
+    "required": [
+      "report_schema_version",
+      "report_name",
+      "generated_by",
+      "timestamp",
+      "status",
+      "limitations"
+    ],
+    "allowed": [
+      "report_schema_version",
+      "report_name",
+      "generated_by",
+      "generated_at",
+      "timestamp",
+      "environment",
+      "report_type",
+      "gate",
+      "status",
+      "result",
+      "source_command",
+      "authority",
+      "generated_from",
+      "evaluation_basis",
+      "collected",
+      "open",
+      "deferred",
+      "non_blocking",
+      "blocking",
+      "limitations",
+      "blockers"
+    ],
+    "types": {
+      "report_schema_version": "integer",
+      "report_name": "string",
+      "generated_by": "string",
+      "generated_at": "string",
+      "timestamp": "string",
+      "environment": "string",
+      "report_type": "string",
+      "gate": "string",
+      "status": "string",
+      "result": "string",
+      "source_command": "string",
+      "authority": "string",
+      "generated_from": "array:string",
+      "evaluation_basis": "object",
+      "collected": "integer",
+      "open": "integer",
+      "deferred": "integer",
+      "non_blocking": "integer",
+      "blocking": "integer",
+      "limitations": "array:object",
+      "blockers": "array"
+    },
+    "status_values": [
+      "PASS",
+      "FAIL",
+      "BLOCKED",
+      "INFO",
+      "WARN"
+    ]
+  },
+  "limitation": {
+    "required": [
+      "id",
+      "title",
+      "status",
+      "severity",
+      "blocks_gate",
+      "owner",
+      "evidence_report",
+      "next_action"
+    ],
+    "allowed": [
+      "id",
+      "title",
+      "status",
+      "severity",
+      "blocks_gate",
+      "owner",
+      "evidence_report",
+      "next_action",
+      "category",
+      "description",
+      "target_phase"
+    ],
+    "types": {
+      "id": "string",
+      "title": "string",
+      "status": "string",
+      "severity": "string",
+      "blocks_gate": "array:string",
+      "owner": "string",
+      "evidence_report": "string",
+      "next_action": "string",
+      "category": "string",
+      "description": "string",
+      "target_phase": "string"
+    },
+    "status_values": [
+      "open",
+      "deferred",
+      "resolved"
+    ],
+    "severity_values": [
+      "critical",
+      "high",
+      "medium",
+      "low",
+      "info"
+    ]
+  }
+}
