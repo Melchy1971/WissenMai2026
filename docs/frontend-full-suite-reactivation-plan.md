@@ -30,15 +30,15 @@ python scripts\run_frontend_full_suite_staged.py --start-api --start-frontend
 ```
 
 Outputs:
-- `reports/current/frontend_full_suite_activation_plan.json`
-- `reports/current/frontend_truth_groups/01_auth_report.json`
-- `reports/current/frontend_truth_groups/02_workspace_report.json`
-- `reports/current/frontend_truth_groups/03_documents_report.json`
-- `reports/current/frontend_truth_groups/04_upload_report.json`
-- `reports/current/frontend_truth_groups/05_search_report.json`
-- `reports/current/frontend_truth_groups/06_chat_report.json`
-- `reports/current/frontend_truth_groups/07_lifecycle_report.json`
-- `reports/current/frontend_truth_groups/08_diagnostics_report.json`
-- `reports/current/frontend_truth_groups/09_error_states_report.json`
-- `reports/current/frontend_truth_groups/10_concurrency_report.json`
-- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_activation_plan.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/01_auth_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/02_workspace_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/03_documents_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/04_upload_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/05_search_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/06_chat_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/07_lifecycle_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/08_diagnostics_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/09_error_states_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_truth_groups/10_concurrency_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`

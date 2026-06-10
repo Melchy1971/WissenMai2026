@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DRAFT",
+  "generated_by": "manual",
+  "created_at": "2026-06-10",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "doc_ref": "docs/m5b-reporting.md",
+
+  "global_required_fields": [
+    "report_schema_version",
+    "report_name",
+    "generated_by",
+    "timestamp",
+    "workspace_id",
+    "run_id",
+    "status"
+  ],
+
+  "schema_registry": {
+    "description": "All reports must have report_schema_version matching registry version",
+    "reports": {
+      "drift_report": { "current_version": 1, "gate_relevant": true },
+      "drift_summary": { "current_version": 1, "gate_relevant": true },
+      "drift_history": { "current_version": 1, "gate_relevant": false },
+      "drift_gate_report": { "current_version": 1, "gate_relevant": true, "primary_gate_source": true }
+    }
+  },
+
+  "reports": [
+    {
+      "name": "drift_report",
+      "file": "drift_report.json",
+      "purpose": "Full finding list per run per workspace; operator analysis source",
+      "gate_relevant": true,
+      "contains_findings": true,
+      "findings_order": "severity DESC, drift_type ASC",
+      "required_fields": [
+        "report_schema_version", "report_name", "generated_by", "timestamp",
+        "workspace_id", "run_id", "status", "total_findings", "findings", "gate_effect"
+      ]
+    },
+    {
+      "name": "drift_summary",
+      "file": "drift_summary.json",
+      "purpose": "Aggregated metrics per run; monitoring and trend analysis",
+      "gate_relevant": true,
+      "contains_findings": false,
+      "required_fields": [
+        "report_schema_version", "report_name", "generated_by", "timestamp",
+        "workspace_id", "run_id", "status", "metrics", "findings_by_type", "findings_by_severity"
+      ],
+      "metrics_ref": "drift_metrics.schema.json"
+    },
+    {
+      "name": "drift_history",
+      "file": "drift_history.json",
+      "purpose": "Trend data across multiple runs; diagnostic only",
+      "gate_relevant": false,
+      "contains_findings": false,
+      "required_fields": [
+        "report_schema_version", "report_name", "generated_by", "timestamp",
+        "workspace_id", "status", "runs_included", "trend_summary", "run_history"
+      ],
+      "note": "No direct gate effect; trend indicators can trigger CRITICAL escalation via drift_severity_matrix.json"
+    },
+    {
+      "name": "drift_gate_report",
+      "file": "drift_gate_report.json",
+      "purpose": "Minimal gate decision basis; primary source for gate validator",
+      "gate_relevant": true,
+      "primary_gate_source": true,
+      "contains_findings": false,
+      "gate_criteria": [
+        { "id": "DGC-01", "name": "no_critical_findings", "threshold": 0, "effect_if_failed": "NO_GO_FREEZE" },
+        { "id": "DGC-02", "name": "no_error_findings", "threshold": 0, "effect_if_failed": "NO_GO" },
+        { "id": "DGC-03", "name": "no_lifecycle_drift", "threshold": 0.0, "effect_if_failed": "NO_GO" },
+        { "id": "DGC-04", "name": "no_phantom_chunks", "threshold": 0, "effect_if_failed": "NO_GO_FREEZE" },
+        { "id": "DGC-05", "name": "retrieval_baseline_delta_within_threshold", "threshold": 0.05, "effect_if_exceeded": "NO_GO" }
+      ],
+      "required_fields": [
+        "report_schema_version", "report_name", "generated_by", "timestamp",
+        "workspace_id", "run_id", "gate", "gate_decision", "criteria", "blockers", "watch_flags"
+      ]
+    }
+  ],
+
+  "storage": {
+    "current_run": "reports/current/",
+    "archive": "reports/archive/<run_id>/",
+    "mutation_rule": "Only gate validator may write to reports/current/; direct writes are PROHIBIT-08"
+  },
+
+  "constraints": [
+    "generated_by must not be empty string",
+    "report_schema_version must match schema registry version",
+    "Reports are read-only after creation",
+    "workspace_id is immutable after creation",
+    "No report mutates database state"
+  ]
+}

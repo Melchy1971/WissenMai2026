@@ -7,7 +7,7 @@ Stand: 2026-05-19
 ### Added
 
 - `docs/frontend-truth-full-suite-scope.md` definiert die 15 Pflichtflows, die Testfallliste und die Akzeptanzkriterien fuer Full-Suite-Frontend-Truth.
-- `reports/current/frontend_full_suite_activation_plan.json` stellt den Scope maschinenlesbar bereit.
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_activation_plan.json` stellt den Scope maschinenlesbar bereit.
 
 ### Decision
 
@@ -161,7 +161,7 @@ Stand: 2026-05-19
 
 - `masterplan.md`, `docs/status.md`, `docs/frontend.md` und `docs/api.md` unterscheiden jetzt explizit zwischen vorhandener GUI und stabilisierter GUI.
 - M3a wird nicht mehr als abgeschlossen, freigegeben oder stabilisiert beschrieben.
-- `reports/current/frontend_full_suite_staged_report.json` und `reports/current/gate_hierarchy_result.json` sind als verbindliche Nachweise referenziert.
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json` und `reports/current/gate_hierarchy_result.json` sind als verbindliche Nachweise referenziert.
 - Offene GUI-Blocker sind sichtbar dokumentiert.
 
 ### Findings

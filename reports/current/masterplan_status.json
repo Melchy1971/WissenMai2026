@@ -2,8 +2,8 @@
   "report_schema_version": 3,
   "report_name": "masterplan_status",
   "generated_by": "masterplan_status_engine_v3",
-  "generated_at": "2026-06-08T10:07:06.754746+00:00",
-  "timestamp": "2026-06-08T10:07:06.754746+00:00",
+  "generated_at": "2026-06-10T08:49:46.556653+00:00",
+  "timestamp": "2026-06-10T08:49:46.556653+00:00",
   "status": "blocked",
   "result": "blocked",
   "authority": {
@@ -156,13 +156,43 @@
         "status": "BLOCKED",
         "result": "BLOCKED",
         "decision": "NO_GO",
-        "collected": 7,
-        "passed": 6,
-        "failed": 1,
+        "collected": 5,
+        "passed": 3,
+        "failed": 2,
         "errors": 0,
         "skipped": 0,
         "exit_code": 1,
-        "timestamp": "2026-06-08T10:06:51.584041+00:00"
+        "timestamp": "2026-06-10T08:20:21.778522+00:00"
+      },
+      "m5a_final_readiness_review.json": {
+        "available": true,
+        "report_name": "m5a_final_readiness_review",
+        "gate": null,
+        "status": "BLOCKED",
+        "result": "BLOCKED",
+        "decision": "NO_GO",
+        "collected": 4,
+        "passed": 2,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "exit_code": 1,
+        "timestamp": "2026-06-10T08:27:14.000890+00:00"
+      },
+      "m5b_release_decision.json": {
+        "available": true,
+        "report_name": "m5b_release_decision",
+        "gate": "m5b_release_decision",
+        "status": "BLOCKED",
+        "result": "BLOCKED",
+        "decision": "NO_GO",
+        "collected": null,
+        "passed": null,
+        "failed": null,
+        "errors": null,
+        "skipped": null,
+        "exit_code": null,
+        "timestamp": "2026-06-09T08:22:08.5662449Z"
       },
       "m5b_start_gate.json": {
         "available": true,
@@ -180,8 +210,17 @@
         "timestamp": "2026-06-08T09:15:03.279598+00:00"
       },
       "m5b_implementation_gate.json": {
-        "available": false,
-        "error": "missing"
+        "available": true,
+        "report_name": "m5b_implementation_gate",
+        "gate": "m5b_implementation_gate",
+        "status": "NO_GO",
+        "result": "NO_GO",
+        "decision": "NO_GO",
+        "implementation_allowed": false,
+        "criteria_passed": 1,
+        "criteria_total": 4,
+        "timestamp": "2026-06-10T00:00:00Z",
+        "generated_by": "manual"
       },
       "documentation_truth_lint.json": {
         "available": true,
@@ -196,23 +235,17 @@
         "errors": null,
         "skipped": null,
         "exit_code": 0,
-        "timestamp": "2026-06-03T09:36:32.001820+00:00"
+        "timestamp": "2026-06-10T08:49:25.259368+00:00"
       },
       "known_limitations.json": {
         "available": true,
         "error": null,
         "total": 6,
-        "active": 4,
-        "blocking": 3,
-        "blocking_ids": [
-          "KL-M5-T-001",
-          "KL-M5-T-002",
-          "KL-GOV-001"
-        ],
-        "m5_slice_blocking_ids": [
-          "KL-M5-T-001",
-          "KL-M5-T-002"
-        ],
+        "active": 3,
+        "blocking": 0,
+        "blocking_ids": [],
+        "m5a_blocking_ids": [],
+        "m5_slice_blocking_ids": [],
         "operations_explicitly_released": true,
         "operations_open_ids": []
       },
@@ -228,7 +261,7 @@
     "status": "blocked",
     "progress_percent": 50.0,
     "release_allowed": false,
-    "blocker_count": 3
+    "blocker_count": 4
   },
   "progress_model": {
     "progress_percent": 50.0,
@@ -337,8 +370,13 @@
       "effective_status": "BLOCKED",
       "not_run": false
     },
+    "final_readiness": {
+      "report": "reports/current/m5a_final_readiness_review.json",
+      "ready_for_m5b": false,
+      "status": "BLOCKED"
+    },
     "overall_m5a_pass": false,
-    "rule": "M5a ist PARTIAL_PASS oder BLOCKED, solange m5a_data_quality_gate nicht PASS ist; globale M5-Freigabe erst bei M5a PASS."
+    "rule": "M5a PASS wird aus m5a_final_readiness_review READY_FOR_M5B abgeleitet. M5b-only und Governance-Limitations blockieren M5a nicht."
   },
   "m5": {
     "status": "SLICE_IMPLEMENTING",
@@ -358,10 +396,10 @@
     "slice_start_allowed": true,
     "slice_gate_passed": false,
     "m5a_status": "BLOCKED",
-    "m5b_status": "DRAFT",
+    "m5b_status": "BLOCKED",
     "m5b_implementation_allowed": false,
     "m5b_implementation_gate_required": true,
-    "rule": "M5 Gesamt wird nicht automatisch PASS; M5b PREPARED erfordert M5a Parent-Gate PASS. M5b Implementierung erfordert ein separates M5b Implementation Gate."
+    "rule": "M5 Gesamt bleibt phasenbasiert: M5a READY_FOR_M5B => M5a PASS; M5b PREPARED erlaubt Drift-Architektur, aber keine Implementierung; M5b GO erlaubt M5b Implementierung."
   },
   "documentation_lint": {
     "status": "PASS",
@@ -369,23 +407,27 @@
   },
   "known_limitations": {
     "total": 6,
-    "active": 4,
-    "blocking": 3,
-    "blocking_ids": [
-      "KL-M5-T-001",
-      "KL-M5-T-002",
-      "KL-GOV-001"
-    ],
-    "m5_slice_blocking_ids": [
-      "KL-M5-T-001",
-      "KL-M5-T-002"
-    ],
+    "active": 3,
+    "blocking": 0,
+    "blocking_ids": [],
+    "m5a_blocking_ids": [],
+    "m5_slice_blocking_ids": [],
     "operations_explicitly_released": true,
     "operations_open_ids": []
   },
   "input_integrity_issues": [],
   "report_contradictions": [],
   "blockers": [
+    {
+      "id": "m3a_rc_stale",
+      "type": "stale_guard",
+      "severity": "blocking",
+      "detail": "M3a RC is STALE: mandatory input reports are newer than the RC. Regenerate with: python scripts/generate_m3a_release_candidate.py (documentation_truth_lint_newer_than_rc (2026-06-10T08:49:25.259368+00:00 > 2026-06-05T10:06:18.467008+00:00))",
+      "source": "reports/current/m3a_release_candidate.json",
+      "stale_reasons": [
+        "documentation_truth_lint_newer_than_rc (2026-06-10T08:49:25.259368+00:00 > 2026-06-05T10:06:18.467008+00:00)"
+      ]
+    },
     {
       "id": "m3a_parent_child_documentation_truth_lint",
       "type": "parent_gate",
@@ -398,8 +440,8 @@
       "id": "m5a_overall_not_pass",
       "type": "gate",
       "severity": "blocking",
-      "detail": "Global release remains blocked until m5a_data_quality_gate is PASS.",
-      "source": "reports/current/m5a_data_quality_gate.json"
+      "detail": "Global release remains blocked until m5a_final_readiness_review is READY_FOR_M5B.",
+      "source": "reports/current/m5a_final_readiness_review.json"
     },
     {
       "id": "M5B_IMPLEMENTATION_GATE_REQUIRED",
@@ -414,7 +456,7 @@
       "report_schema_version": 1,
       "report_name": "parent_gate_validation",
       "generated_by": "gate_validator",
-      "timestamp": "2026-06-08T10:07:06.754746+00:00",
+      "timestamp": "2026-06-10T08:49:46.556653+00:00",
       "parent_gate": "m3a",
       "status": "BLOCKED",
       "result": "BLOCKED",
@@ -470,7 +512,7 @@
           "report_status": "PASS",
           "report_result": "PASS",
           "decision": null,
-          "timestamp": "2026-06-03T09:36:32.001820+00:00",
+          "timestamp": "2026-06-10T08:49:25.259368+00:00",
           "generated_by": "documentation_truth_linter",
           "collected": null,
           "report_type": null,
@@ -523,7 +565,7 @@
       "report_schema_version": 1,
       "report_name": "parent_gate_validation",
       "generated_by": "gate_validator",
-      "timestamp": "2026-06-08T10:07:06.754746+00:00",
+      "timestamp": "2026-06-10T08:49:46.556653+00:00",
       "parent_gate": "m4",
       "status": "PASS",
       "result": "PASS",
@@ -659,7 +701,7 @@
       "report_schema_version": 1,
       "report_name": "parent_gate_validation",
       "generated_by": "gate_validator",
-      "timestamp": "2026-06-08T10:07:06.754746+00:00",
+      "timestamp": "2026-06-10T08:49:46.556653+00:00",
       "parent_gate": "m5a",
       "status": "BLOCKED",
       "result": "BLOCKED",
@@ -708,9 +750,9 @@
           "report_status": "BLOCKED",
           "report_result": "BLOCKED",
           "decision": "NO_GO",
-          "timestamp": "2026-06-08T10:06:51.584041+00:00",
+          "timestamp": "2026-06-10T08:20:21.778522+00:00",
           "generated_by": "gate_validator",
-          "collected": 7,
+          "collected": 5,
           "report_type": "gate",
           "blockers": [
             "report_integrity_v2: child status is blocking (['BLOCKED'])"
@@ -723,7 +765,7 @@
           "report_status": "PASS",
           "report_result": "PASS",
           "decision": null,
-          "timestamp": "2026-06-03T09:36:32.001820+00:00",
+          "timestamp": "2026-06-10T08:49:25.259368+00:00",
           "generated_by": "documentation_truth_linter",
           "collected": null,
           "report_type": null,
@@ -945,6 +987,16 @@
       "source": "reports/current/m3a_release_candidate.json",
       "blockers": [
         {
+          "id": "m3a_rc_stale",
+          "type": "stale_guard",
+          "severity": "blocking",
+          "detail": "M3a RC is STALE: mandatory input reports are newer than the RC. Regenerate with: python scripts/generate_m3a_release_candidate.py (documentation_truth_lint_newer_than_rc (2026-06-10T08:49:25.259368+00:00 > 2026-06-05T10:06:18.467008+00:00))",
+          "source": "reports/current/m3a_release_candidate.json",
+          "stale_reasons": [
+            "documentation_truth_lint_newer_than_rc (2026-06-10T08:49:25.259368+00:00 > 2026-06-05T10:06:18.467008+00:00)"
+          ]
+        },
+        {
           "id": "m3a_parent_child_documentation_truth_lint",
           "type": "parent_gate",
           "severity": "blocking",
@@ -987,8 +1039,8 @@
           "id": "m5_implementation_global_not_pass",
           "type": "gate",
           "severity": "blocking",
-          "detail": "M5 Implementierung ist nicht global PASS, solange m5a_data_quality_gate nicht PASS ist.",
-          "source": "reports/current/m5a_data_quality_gate.json"
+          "detail": "M5 Implementierung ist nicht global PASS, solange M5a Final Readiness nicht READY_FOR_M5B ist.",
+          "source": "reports/current/m5a_final_readiness_review.json"
         }
       ]
     },
@@ -997,56 +1049,23 @@
       "label": "M5a Data Quality",
       "status": "blocked",
       "decision": "NO_GO",
-      "gate_id": "m5a_data_quality_gate",
+      "gate_id": "m5a_final_readiness_review",
       "gate_status": "BLOCKED",
-      "source": "reports/current/m5a_data_quality_gate.json",
+      "source": "reports/current/m5a_final_readiness_review.json",
       "blockers": [
         {
-          "id": "m5a_data_quality_gate_not_pass",
+          "id": "M5A_DATA_QUALITY_GATE_NOT_PASS",
           "type": "gate",
           "severity": "blocking",
-          "detail": "M5a Data Quality gate is not PASS.",
+          "detail": "m5a_data_quality_gate.status=BLOCKED; READY_FOR_M5B requires PASS.",
           "source": "reports/current/m5a_data_quality_gate.json"
         },
         {
-          "id": "m5a_parent_child_report_integrity_v2",
-          "type": "parent_gate",
+          "id": "REPORT_INTEGRITY_V2_NOT_PASS",
+          "type": "gate",
           "severity": "blocking",
-          "detail": "report_integrity_v2: child status is blocking (['BLOCKED'])",
-          "source": "docs/gate_hierarchy.json",
-          "child_gate_id": "report_integrity_v2"
-        },
-        {
-          "id": "m5a_parent_child_documentation_truth_lint",
-          "type": "parent_gate",
-          "severity": "blocking",
-          "detail": "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting",
-          "source": "docs/gate_hierarchy.json",
-          "child_gate_id": "documentation_truth_lint"
-        },
-        {
-          "id": "m5a_parent_child_data_quality_report",
-          "type": "parent_gate",
-          "severity": "blocking",
-          "detail": "data_quality_report: passing child report requires collected > 0 or report_type=supporting",
-          "source": "docs/gate_hierarchy.json",
-          "child_gate_id": "data_quality_report"
-        },
-        {
-          "id": "m5a_parent_child_source_status_integrity_gate",
-          "type": "parent_gate",
-          "severity": "blocking",
-          "detail": "source_status_integrity_gate: child status is blocking (['BLOCKED'])",
-          "source": "docs/gate_hierarchy.json",
-          "child_gate_id": "source_status_integrity_gate"
-        },
-        {
-          "id": "m5a_parent_child_orphan_detector_gate",
-          "type": "parent_gate",
-          "severity": "blocking",
-          "detail": "orphan_detector_gate: child status is blocking (['BLOCKED'])",
-          "source": "docs/gate_hierarchy.json",
-          "child_gate_id": "orphan_detector_gate"
+          "detail": "report_integrity_v2.status=BLOCKED; READY_FOR_M5B requires PASS.",
+          "source": "reports/current/report_integrity_v2.json"
         }
       ]
     },
@@ -1055,23 +1074,23 @@
       "label": "M5b Drift",
       "status": "blocked",
       "decision": "NO_GO",
-      "gate_id": "m5b_start_gate",
-      "gate_status": "DRAFT",
-      "source": "reports/current/m5b_start_gate.json",
+      "gate_id": "m5b_release_decision",
+      "gate_status": "BLOCKED",
+      "source": "reports/current/m5b_release_decision.json",
       "blockers": [
         {
           "id": "M5A_PARENT_GATE_NOT_PASSED",
           "type": "dependency",
           "severity": "blocking",
-          "detail": "M5b bleibt BLOCKED bis m5a_data_quality_gate PASS/GO meldet.",
-          "source": "reports/current/m5a_data_quality_gate.json"
+          "detail": "M5b bleibt BLOCKED bis m5a_final_readiness_review READY_FOR_M5B meldet.",
+          "source": "reports/current/m5a_final_readiness_review.json"
         },
         {
-          "id": "M5A_PARENT_GATE_NOT_PASSED",
+          "id": "REPORT_INTEGRITY_NOT_PASS",
           "type": "gate",
           "severity": "blocking",
-          "detail": "M5b bleibt DRAFT bis reports/current/m5a_data_quality_gate.json status=PASS, decision.go_no_go=GO und parent_gate_validation.status=PASS meldet.",
-          "source": "reports/current/m5a_data_quality_gate.json"
+          "detail": "Report Integrity evidence is BLOCKED, not PASS.",
+          "source": "reports/current/report_integrity_v2.json"
         }
       ]
     }
@@ -1088,6 +1107,7 @@
       "m3a_release_candidate_gate": {
         "status": "FAIL",
         "blockers": [
+          "M3a RC is STALE: mandatory input reports are newer than the RC. Regenerate with: python scripts/generate_m3a_release_candidate.py (documentation_truth_lint_newer_than_rc (2026-06-10T08:49:25.259368+00:00 > 2026-06-05T10:06:18.467008+00:00))",
           "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting"
         ]
       },
@@ -1102,33 +1122,127 @@
       "m5_implementation_gate": {
         "status": "BLOCKED",
         "blockers": [
-          "M5 Implementierung ist nicht global PASS, solange m5a_data_quality_gate nicht PASS ist."
+          "M5 Implementierung ist nicht global PASS, solange M5a Final Readiness nicht READY_FOR_M5B ist."
         ]
       },
-      "m5a_data_quality_gate": {
+      "m5a_final_readiness_review": {
         "status": "BLOCKED",
         "blockers": [
-          "M5a Data Quality gate is not PASS.",
-          "report_integrity_v2: child status is blocking (['BLOCKED'])",
-          "documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting",
-          "data_quality_report: passing child report requires collected > 0 or report_type=supporting",
-          "source_status_integrity_gate: child status is blocking (['BLOCKED'])",
-          "orphan_detector_gate: child status is blocking (['BLOCKED'])"
+          "m5a_data_quality_gate.status=BLOCKED; READY_FOR_M5B requires PASS.",
+          "report_integrity_v2.status=BLOCKED; READY_FOR_M5B requires PASS."
         ]
       },
-      "m5b_start_gate": {
-        "status": "DRAFT",
+      "m5b_release_decision": {
+        "status": "BLOCKED",
         "blockers": [
-          "M5b bleibt BLOCKED bis m5a_data_quality_gate PASS/GO meldet.",
-          "M5b bleibt DRAFT bis reports/current/m5a_data_quality_gate.json status=PASS, decision.go_no_go=GO und parent_gate_validation.status=PASS meldet."
+          "M5b bleibt BLOCKED bis m5a_final_readiness_review READY_FOR_M5B meldet.",
+          "Report Integrity evidence is BLOCKED, not PASS."
         ]
       }
     },
     "m5b_implementation_gate": {
-      "status": "BLOCKED",
+      "status": "NO_GO",
+      "criteria_passed": 1,
+      "criteria_total": 4,
       "blockers": [
-        "M5b Implementierung erfordert ein separates m5b_implementation_gate PASS/GO."
+        "IG-01: Start-Gate ist DRAFT/NO_GO",
+        "IG-02: KL-M5-T-001 und KL-M5-T-002 high/open",
+        "IG-04: KL-GOV-001 nicht explizit abgegrenzt fuer read-only Drift Checks"
       ]
     }
+  },
+  "m5b_preparation_addendum": {
+    "addendum_generated_at": "2026-06-10T00:00:00Z",
+    "addendum_generated_by": "manual",
+    "note": "Ergaenzung zur maschinengenerierten Statusmatrix. Dokumentiert M5b Preparation-Artefakt-Vollstaendigkeit.",
+    "preparation_artifacts_complete": true,
+    "preparation_artifacts_count": 10,
+    "formal_prepared_status": "BLOCKED",
+    "formal_prepared_blocked_by": ["SG-01 M5a READY_FOR_M5B", "SG-02 Report Integrity PASS"],
+    "implementation_status": "NO_GO",
+    "implementation_allowed": false,
+    "drift_code_implemented": false,
+    "repair_code_implemented": false,
+    "preparation_artifacts": [
+      { "id": "PREP-01", "artifact": "docs/m5b-preparation-boundary.md" },
+      { "id": "PREP-02", "artifact": "m5b_boundary_report.json" },
+      { "id": "PREP-03", "artifact": "docs/m5b-drift-types.md" },
+      { "id": "PREP-04", "artifact": "schemas/drift_types.schema.json" },
+      { "id": "PREP-05", "artifact": "reports/current/m5b_gate_criteria.json" },
+      { "id": "PREP-06", "artifact": "docs/m5b-gates.md" },
+      { "id": "PREP-07", "artifact": "docs/m5b-test-strategy.md" },
+      { "id": "PREP-08", "artifact": "test_matrix_m5b.json" },
+      { "id": "PREP-09", "artifact": "docs/m5b-risk-matrix.md" },
+      { "id": "PREP-10", "artifact": "m5b_risk_matrix.json" }
+    ],
+    "invariant": "PREPARED != IMPLEMENTED. Preparation-Artefakte vollstaendig bedeutet nicht M5b freigegeben."
+  },
+  "m5b_architecture_addendum": {
+    "addendum_generated_at": "2026-06-10T14:00:00Z",
+    "addendum_generated_by": "manual",
+    "note": "Ergaenzung zur maschinengenerierten Statusmatrix. Dokumentiert M5b Architecture Review Ergebnis (8/8 Artefakte vollstaendig) und erweiterte Preparation-Artefakte (PREP-11 bis PREP-27).",
+    "architecture_review_status": "COMPLETE",
+    "architecture_review_score": "8/8 artifacts complete; 3 open decisions; 0 structural gaps",
+    "architecture_review_ref": "reports/current/m5b_architecture_review.json",
+    "architecture_complete": true,
+    "structural_gaps": 0,
+    "open_decisions_count": 3,
+    "open_decisions": [
+      { "id": "OD-01", "description": "Search index technology not yet determined", "must_resolve_before": "Implementation Gate GO" },
+      { "id": "OD-02", "description": "DriftSnapshot retention upper bound not defined", "must_resolve_before": "Implementation Gate GO" },
+      { "id": "OD-03", "description": "Feature flag storage mechanism not specified", "must_resolve_before": "Implementation Gate GO" }
+    ],
+    "blocking_risks_count": 2,
+    "blocking_risks": [
+      { "id": "CCR-02", "description": "KL-GOV-001 not scoped against read-only Drift Checks", "action": "Declare non-applicable in known_limitations.json before Implementation Gate GO" },
+      { "id": "CCR-03", "description": "External preconditions unmet: M5a READY_FOR_M5B and Report Integrity PASS", "action": "External preconditions must be resolved to reach PREPARED" }
+    ],
+    "preparation_artifacts_total": 27,
+    "new_artifacts_this_phase": 17,
+    "new_artifacts_range": "PREP-11 through PREP-27",
+    "formal_m5b_status": "BLOCKED",
+    "formal_m5b_blocked_by": ["SG-01 M5a READY_FOR_M5B", "SG-02 Report Integrity PASS"],
+    "implementation_gate_status": "NO_GO",
+    "implementation_allowed": false,
+    "drift_code_implemented": false,
+    "repair_code_implemented": false,
+    "invariant": "Architecture COMPLETE bedeutet nicht Implementation freigegeben. Implementation Gate bleibt NO_GO bis alle 4 Kriterien erfuellt sind."
+  },
+  "m5b_alpha_addendum": {
+    "addendum_version": 1,
+    "generated_at": "2026-06-10T16:00:00Z",
+    "generated_by": "manual",
+    "phase": "post_alpha_evaluation",
+    "alpha_validation_status": "BLOCKED",
+    "alpha_validation_source": "reports/current/m5b_alpha_validation_report.json",
+    "alpha_validation_blocked_by": [
+      "m5b_implementation_gate_alpha.json nicht vorhanden",
+      "drift_report.json nicht vorhanden",
+      "drift_summary.json nicht vorhanden",
+      "Alpha-Implementierung nicht vorhanden (Implementation Gate NO_GO)"
+    ],
+    "beta_start_gate_status": "BLOCKED",
+    "beta_start_gate_source": "reports/current/m5b_beta_start_gate.json",
+    "beta_start_gate_criteria_passed": 3,
+    "beta_start_gate_criteria_total": 6,
+    "beta_start_gate_passed_criteria": ["BSG-04", "BSG-05", "BSG-06"],
+    "beta_start_gate_failed_criteria": ["BSG-01", "BSG-02", "BSG-03"],
+    "beta_allowed": false,
+    "m5c_status": "NOT_STARTED",
+    "m5c_gate": "NO_GO",
+    "m5_overall_status": "OPEN",
+    "implementation_gate_status": "NO_GO",
+    "drift_code_implemented": false,
+    "new_planning_artifacts_this_phase": [
+      "docs/m5b-drift-dashboard-scope.md",
+      "dashboard_testids.md",
+      "docs/m5b-drift-api-scope.md",
+      "openapi_drift_scope.json",
+      "docs/m5b-beta-boundary.md",
+      "reports/current/m5b_alpha_validation_report.json",
+      "reports/current/m5b_beta_start_gate.json"
+    ],
+    "new_planning_artifacts_count": 7,
+    "invariant": "Alpha BLOCKED bedeutet nicht Fehler — Alpha setzt Implementation Gate GO voraus. Keine Implementierung ohne Gate GO. Beta setzt Alpha PASS voraus. M5c setzt Beta PASS voraus. Keine Phase kann uebersprungen werden."
   }
 }

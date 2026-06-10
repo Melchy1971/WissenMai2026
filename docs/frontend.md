@@ -6,7 +6,7 @@ Stand: 2026-05-19
 
 Die GUI ist als read-only Basis umgesetzt, wurde fuer M3b um Retrieval-Suche erweitert, fuer M3c um eine dokumentgestuetzte Chat-Oberflaeche ergaenzt und in M4 um Upload-, Lifecycle- sowie read-only Admin-Diagnostics-Slices erweitert. Das belegt: GUI vorhanden. Der aktuelle M3a Release Candidate `reports/current/m3a_release_candidate.json` steht auf `PASS/GO`; damit ist M3a Frontend Foundation abgeschlossen.
 
-Verbindliche Nachweisgrenze: Gruene Aussagen zum Frontend duerfen nur aus aktuellen Reports abgeleitet werden. Der aktuelle Full-Suite-Frontend-Truth-Lauf liegt in `reports/current/frontend_full_suite_staged_report.json` mit `132 collected`, `132 passed`, `0 failed`, `0 skipped`, echter API, echter PostgreSQL-Testdatenbank und gruenem `/health/db`. Die Gate-Regel ist in `docs/m3a-gate-policy.md` dokumentiert.
+Verbindliche Nachweisgrenze: Gruene Aussagen zum Frontend duerfen nur aus aktuellen Reports abgeleitet werden. Der aktuelle Full-Suite-Frontend-Truth-Lauf liegt in `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json` mit `132 collected`, `132 passed`, `0 failed`, `0 skipped`, echter API, echter PostgreSQL-Testdatenbank und gruenem `/health/db`. Die Gate-Regel ist in `docs/m3a-gate-policy.md` dokumentiert.
 
 Fehlkopplungsregel: `reports/current/m4_truth_report.json` ist fuer M3a Frontend Foundation keine blockierende Quelle. Der rote PostgreSQL-Truth-Gesamtstatus bleibt M4 Backend Truth/M5 Operational Truth und darf M3a nur blockieren, wenn API-Erreichbarkeit, echte DB, Contract Tests oder relevante M3a-Endpunktflows verletzt sind.
 
@@ -193,8 +193,8 @@ Bekannte Einschraenkungen im Lifecycle-Slice:
 - Screen-Tests fuer Chat-Sessionliste, Chat-Nachrichten, Quellenanzeige und Insufficient-Context-Zustand: vorhanden.
 - Screen-Tests fuer neue Session, Frage senden, Assistant-Antwort mit Quellen und Chat-Fehlercodes: vorhanden.
 - Historische Screen- und Unit-Tests sind vorhanden, ersetzen aber keinen gruenen Frontend Truth Report.
-- Full-Suite-Frontend-Truth: `reports/current/frontend_full_suite_staged_report.json`, Stand 2026-05-29 (Timestamp 2026-05-28), `132 collected`, `132 passed`, `0 failed`, `0 skipped`, Browser `chromium`, API `http://127.0.0.1:8001`, echte PostgreSQL-DB nachgewiesen.
-- GUI Chaos Truth: `reports/current/frontend_full_suite_staged_report.json`, `8 collected`, `8 passed`, `0 failed`.
+- Full-Suite-Frontend-Truth: `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`, Stand 2026-05-29 (Timestamp 2026-05-28), `132 collected`, `132 passed`, `0 failed`, `0 skipped`, Browser `chromium`, API `http://127.0.0.1:8001`, echte PostgreSQL-DB nachgewiesen.
+- GUI Chaos Truth: `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`, `8 collected`, `8 passed`, `0 failed`.
 - M3a Gate: `reports/current/m3a_release_candidate.json`, `PASS/GO`.
 - Finales M3a Gate: `reports/current/m3a_release_candidate.json`, `PASS`, Score `100.0`, M3a abgeschlossen.
 

@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DRAFT",
+  "generated_by": "manual",
+  "created_at": "2026-06-10",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "doc_ref": "docs/m5b-drift-api-scope.md",
+
+  "api_prefix": "/api/v1/drift",
+  "workspace_scoped": true,
+  "workspace_id_source": "auth_context_only",
+  "cross_workspace_queries": false,
+  "read_only": true,
+
+  "endpoints": [
+    {
+      "id": "EP-01",
+      "method": "GET",
+      "path": "/api/v1/drift/runs",
+      "description": "List DriftRuns for current workspace",
+      "auth_required": true,
+      "workspace_scoped": true,
+      "mutating": false,
+      "query_params": [
+        { "name": "limit", "type": "integer", "required": false, "default": 20, "min": 1, "max": 100 },
+        { "name": "offset", "type": "integer", "required": false, "default": 0, "min": 0 }
+      ],
+      "response_200_fields": ["workspace_id", "total", "runs"],
+      "error_codes": ["WORKSPACE_REQUIRED", "INVALID_PAGINATION", "SERVICE_UNAVAILABLE"]
+    },
+    {
+      "id": "EP-02",
+      "method": "GET",
+      "path": "/api/v1/drift/runs/{run_id}",
+      "description": "Get full DriftRun with all findings",
+      "auth_required": true,
+      "workspace_scoped": true,
+      "mutating": false,
+      "path_params": [
+        { "name": "run_id", "type": "uuid", "required": true }
+      ],
+      "response_200_fields": ["run_id", "workspace_id", "started_at", "completed_at", "status", "metrics", "findings", "gate_decision"],
+      "error_codes": ["DRIFT_RUN_NOT_FOUND", "WORKSPACE_REQUIRED"]
+    },
+    {
+      "id": "EP-03",
+      "method": "GET",
+      "path": "/api/v1/drift/findings",
+      "description": "List findings across runs with filters",
+      "auth_required": true,
+      "workspace_scoped": true,
+      "mutating": false,
+      "query_params": [
+        { "name": "limit", "type": "integer", "required": false, "default": 50, "min": 1, "max": 200 },
+        { "name": "offset", "type": "integer", "required": false, "default": 0, "min": 0 },
+        { "name": "severity", "type": "string", "required": false, "enum": ["info", "warning", "error", "critical"] },
+        { "name": "drift_type", "type": "string", "required": false, "enum": ["DOCUMENT_DRIFT", "CHUNK_DRIFT", "METADATA_DRIFT", "LIFECYCLE_DRIFT", "SOURCE_STATUS_DRIFT", "SEARCH_INDEX_DRIFT", "RETRIEVAL_DRIFT"] },
+        { "name": "run_id", "type": "uuid", "required": false }
+      ],
+      "response_200_fields": ["workspace_id", "total", "findings"],
+      "error_codes": ["WORKSPACE_REQUIRED", "INVALID_PAGINATION", "INVALID_FILTER"]
+    },
+    {
+      "id": "EP-04",
+      "method": "GET",
+      "path": "/api/v1/drift/summary",
+      "description": "Get drift summary for latest completed run",
+      "auth_required": true,
+      "workspace_scoped": true,
+      "mutating": false,
+      "query_params": [],
+      "response_200_fields": ["workspace_id", "run_id", "generated_at", "metrics", "gate_decision", "gate_report_ref"],
+      "error_codes": ["WORKSPACE_REQUIRED", "DRIFT_SUMMARY_NOT_FOUND"]
+    }
+  ],
+
+  "prohibited_endpoints": [
+    { "method": "POST", "path": "/api/v1/drift/repair", "reason": "PROHIBIT-06" },
+    { "method": "POST", "path": "/api/v1/drift/reindex", "reason": "PROHIBIT-03" },
+    { "method": "PATCH", "path": "/api/v1/drift/findings/{id}", "reason": "PROHIBIT-05" },
+    { "method": "DELETE", "path": "/api/v1/drift/runs/{id}", "reason": "immutability invariant" },
+    { "method": "PUT", "path": "/api/v1/drift/lifecycle", "reason": "PROHIBIT-01" },
+    { "method": "POST", "path": "/api/v1/drift/cleanup", "reason": "PROHIBIT-02/03" }
+  ],
+
+  "error_codes": [
+    { "code": "WORKSPACE_REQUIRED", "http": 400 },
+    { "code": "INVALID_PAGINATION", "http": 400 },
+    { "code": "INVALID_FILTER", "http": 400 },
+    { "code": "DRIFT_RUN_NOT_FOUND", "http": 404 },
+    { "code": "DRIFT_SUMMARY_NOT_FOUND", "http": 404 },
+    { "code": "SERVICE_UNAVAILABLE", "http": 503 }
+  ],
+
+  "x-governance": {
+    "read_only": true,
+    "workspace_scoped": true,
+    "cross_workspace_query_forbidden": true,
+    "auto_repair_forbidden": true,
+    "auto_reindex_forbidden": true,
+    "lifecycle_mutation_forbidden": true
+  }
+}

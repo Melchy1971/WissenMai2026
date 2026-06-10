@@ -1,0 +1,111 @@
+{
+  "report_schema_version": 1,
+  "report_name": "kl_gov_001_scope_decision",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-06-10T08:07:10.7933508Z",
+  "timestamp": "2026-06-10T08:07:10.7933508Z",
+  "environment": "local",
+  "report_type": "decision_log",
+  "gate": "known_limitations",
+  "status": "PASS",
+  "result": "PASS",
+  "source_command": "kl_gov_001_scope_decision_20260610",
+  "limitation_id": "KL-GOV-001",
+  "inputs": [
+    "reports/current/known_limitations.json",
+    "docs/m4d-admin-diagnostics.md",
+    "reports/current/m4e_operations_release_gate.json",
+    "reports/current/m5a_final_readiness_review.json",
+    "reports/current/m5b_start_gate.json",
+    "docs/runbooks/m5-drift-repair-strategy.md",
+    "docs/runbooks/cleanup-governance.md"
+  ],
+  "original_classification": {
+    "status": "deferred",
+    "severity": "high",
+    "blocks_gate": [],
+    "blocks_gate_effective": false,
+    "target_phase": "GOVERNANCE",
+    "scope": "Governance/Operations allgemein"
+  },
+  "decision": {
+    "blocks_m5a_readiness": false,
+    "blocks_m5b_preparation": false,
+    "blocks_m5b_implementation": false,
+    "blocks_mutating_admin_actions": true,
+    "blocks_cleanup_repair_execution": true,
+    "blocks_gate_after": [],
+    "blocks_gate_effective_after": false,
+    "target_phase_after": "GOVERNANCE",
+    "status_after": "deferred",
+    "resolved": false
+  },
+  "scope_checks": [
+    {
+      "scope": "M5a Readiness",
+      "blocks": false,
+      "rationale": "M5a ist read-only Data Quality und fuehrt keine Repair-, Cleanup-, Delete-, Restore- oder Reindex-Mutationen aus. Governance fuer mutierende Aktionen darf deshalb M5a nicht blockieren."
+    },
+    {
+      "scope": "M5b Preparation",
+      "blocks": false,
+      "rationale": "M5b Start/Preparation bewertet Drift-/Retrieval-Readiness und verweist mutierende Ausfuehrung in spaetere Implementierungs- oder Governance-Gates."
+    },
+    {
+      "scope": "M5b Implementation",
+      "blocks": false,
+      "rationale": "Nicht-mutierende M5b Implementation wird nicht blockiert. Wenn eine konkrete M5b-Implementierung Repair, Cleanup, forced Reindex, Restore oder Backfill ausfuehrt, wird KL-GOV-001 zur Governance-Voraussetzung fuer genau diese Mutation."
+    },
+    {
+      "scope": "mutierende Adminaktionen",
+      "blocks": true,
+      "rationale": "Mutierende Adminaktionen duerfen erst mit dediziertem Runbook, Dry-Run-Nachweis, Auth-/Redaction-/Audit-/Failure-Tests und operational_governance_gate PASS/GO freigegeben werden."
+    },
+    {
+      "scope": "Cleanup/Repair",
+      "blocks": true,
+      "rationale": "Cleanup/Repair-Ausfuehrung ist potenziell destruktiv und bleibt dry-run-first mit Audit, Approval und Rollback-/Failure-Governance. Reine Analyse, Planning und Dry-Run ohne Mutation bleiben nicht gate-blocking."
+    }
+  ],
+  "evidence_summary": [
+    {
+      "path": "docs/m4d-admin-diagnostics.md",
+      "finding": "M4d ist read-only; Repair, Reindex, Cleanup, Backup, Restore und andere Mutationen sind explizit nicht im Scope und brauchen spaetere API-, Auth-, Audit- und Failure-Evidence."
+    },
+    {
+      "path": "reports/current/m4e_operations_release_gate.json",
+      "finding": "Operations Gate ist PASS/GO und erlaubt keine mutierenden Adminaktionen ohne Governance; automatische Repair-Aktionen sind out of scope."
+    },
+    {
+      "path": "reports/current/m5a_final_readiness_review.json",
+      "finding": "KL-GOV-001 ist dort nicht als M5a-Blocker bewertet; M5a bleibt auf read-only Data Quality begrenzt."
+    },
+    {
+      "path": "reports/current/m5b_start_gate.json",
+      "finding": "M5b Start-Gate verweist Implementierungsfreigaben auf spaetere Gates und nennt KL-GOV-001 nicht als aktuellen Start-Blocker."
+    },
+    {
+      "path": "docs/runbooks/m5-drift-repair-strategy.md",
+      "finding": "Drift Repair bleibt dry-run-first; jede Mutation braucht Scope, Audit, Backup-/Rollback-Pruefung und explizite Freigabe."
+    },
+    {
+      "path": "docs/runbooks/cleanup-governance.md",
+      "finding": "Cleanup ist potenziell destruktiv und darf nur mit Dry-Run, Audit Trail, technischer Freigabe und Safety Checks ausgefuehrt werden."
+    }
+  ],
+  "known_limitations_update": {
+    "id": "KL-GOV-001",
+    "status": "deferred",
+    "target_phase": "GOVERNANCE",
+    "blocks_gate": [],
+    "blocks_gate_effective": false,
+    "owner": "operations_owner",
+    "severity": "high"
+  },
+  "validation": {
+    "gate_mapping": "PASS",
+    "only_matching_gate_can_block": true,
+    "m5a_read_only_rule_applied": true,
+    "fixlist": []
+  }
+}

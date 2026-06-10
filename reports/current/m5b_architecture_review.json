@@ -1,0 +1,173 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5b_architecture_review",
+  "generated_by": "manual",
+  "timestamp": "2026-06-10T14:00:00Z",
+  "status": "COMPLETE",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "implementation_gate": "reports/current/m5b_implementation_gate.json",
+  "review_scope": "M5b Drift Detection Architecture — all DRAFT planning artifacts",
+
+  "review_score": {
+    "total_artifacts": 8,
+    "artifacts_present": 8,
+    "artifacts_complete": 8,
+    "artifacts_with_gaps": 0,
+    "open_decisions": 3,
+    "score": "8/8 artifacts complete; 3 open decisions; 0 structural gaps",
+    "verdict": "Architecture fully documented at DRAFT level; implementation remains NO-GO pending external preconditions"
+  },
+
+  "artifacts": [
+    {
+      "id": "ART-01",
+      "name": "Drift Governance",
+      "files": ["docs/m5b-drift-governance.md", "drift_governance.schema.json"],
+      "status": "complete",
+      "assessment": "10 required fields defined; 8 PROHIBIT rules machine-readable; remediation_hint pattern constraints present; read-only invariant established",
+      "gaps": [],
+      "risks": ["R-07 (Repair without Governance) directly addressed"]
+    },
+    {
+      "id": "ART-02",
+      "name": "Severity Model",
+      "files": ["docs/m5b-drift-severity.md", "drift_severity_matrix.json"],
+      "status": "complete",
+      "assessment": "4 severity levels; 7 drift types with standard severity and escalation rules; WARNING binding rule explicit (no auto-block); CRITICAL gate freeze defined; aggregation logic workspace-scoped",
+      "gaps": [],
+      "risks": ["R-01 (False Positive) and R-02 (False Negative) addressed via escalation thresholds"]
+    },
+    {
+      "id": "ART-03",
+      "name": "Entity Mapping",
+      "files": ["docs/m5b-entity-mapping.md", "drift_entity_mapping.json"],
+      "status": "complete",
+      "assessment": "7 entities mapped; drift types, data sources, validation logic, and reports defined per entity; workspace isolation explicit; Lifecycle treated as logical entity (not DB table)",
+      "gaps": [],
+      "open_decision": {
+        "id": "OD-01",
+        "description": "SearchIndex entity: concrete index technology (e.g. pgvector, Elasticsearch) not yet determined. Entity mapping is technology-agnostic; read-only workspace-scoped query assumed.",
+        "impact": "low; validation logic adapts to technology at implementation time"
+      }
+    },
+    {
+      "id": "ART-04",
+      "name": "Drift Metrics",
+      "files": ["docs/m5b-drift-metrics.md", "drift_metrics.schema.json"],
+      "status": "complete",
+      "assessment": "8 metrics with formula, data source, target value, and warning threshold; lifecycle_drift_rate zero-tolerance stated; warning_drifts auto-block constraint explicit; cross-workspace aggregation forbidden",
+      "gaps": [],
+      "risks": []
+    },
+    {
+      "id": "ART-05",
+      "name": "Drift History Model",
+      "files": ["docs/m5b-drift-history.md", "drift_history_model.json"],
+      "status": "complete",
+      "assessment": "3 entities (DriftRun, DriftFinding, DriftSnapshot); no deletion policy; immutability fields defined; trend analysis patterns (growing index divergence, persistent retrieval degradation) machine-readable; workspace isolation enforced",
+      "gaps": [],
+      "open_decision": {
+        "id": "OD-02",
+        "description": "DriftSnapshot retention policy: default is unlimited. Configurable retention needs explicit upper bound or archival strategy for large workspaces.",
+        "impact": "medium; storage planning concern; no architectural impact on detection logic"
+      }
+    },
+    {
+      "id": "ART-06",
+      "name": "Reporting Architecture",
+      "files": ["docs/m5b-reporting.md", "reporting_architecture.json"],
+      "status": "complete",
+      "assessment": "4 report types defined; schema registry version enforcement; drift_gate_report.json as primary gate source; PROHIBIT-08 compliance explicit; finding ordering defined; report structure complete",
+      "gaps": [],
+      "risks": []
+    },
+    {
+      "id": "ART-07",
+      "name": "Testdata Strategy",
+      "files": ["docs/m5b-testdata-strategy.md", "drift_test_dataset_plan.json"],
+      "status": "complete",
+      "assessment": "6 scenarios covering all critical drift types; expected gate decisions specified; WARNING binding rule scenario (SC05) explicitly tests no-auto-block constraint; SC06 tests Phantom-chunk CRITICAL; PostgreSQL truth constraint maintained; connectivity stub correctly distinguished from mock",
+      "gaps": [],
+      "risks": [
+        "SC05a (METADATA_DRIFT error via relevance impact): 'affects_search_relevance' detection logic not yet designed; needs concrete field-to-relevance mapping at implementation time"
+      ]
+    },
+    {
+      "id": "ART-08",
+      "name": "Rollback Strategy",
+      "files": ["docs/m5b-rollback.md", "rollback_strategy.json"],
+      "status": "complete",
+      "assessment": "3 independent rollback components (Detector, Reporting, Gate); no PostgreSQL mutation required; audit trail immutable; Gate bypass requires operator decision; cumulative rollback defined",
+      "gaps": [],
+      "open_decision": {
+        "id": "OD-03",
+        "description": "Feature flag storage mechanism not specified (environment variable, config file, database flag). Implementation must choose a mechanism consistent with existing system configuration patterns.",
+        "impact": "low; architectural decision for implementation phase only"
+      }
+    }
+  ],
+
+  "open_decisions": [
+    {
+      "id": "OD-01",
+      "artifact": "ART-03",
+      "description": "Search index technology not yet determined",
+      "impact": "low",
+      "must_resolve_before": "Implementation Gate GO"
+    },
+    {
+      "id": "OD-02",
+      "artifact": "ART-05",
+      "description": "DriftSnapshot retention upper bound not defined",
+      "impact": "medium",
+      "must_resolve_before": "Implementation Gate GO"
+    },
+    {
+      "id": "OD-03",
+      "artifact": "ART-08",
+      "description": "Feature flag storage mechanism not specified",
+      "impact": "low",
+      "must_resolve_before": "Implementation Gate GO"
+    }
+  ],
+
+  "cross_cutting_risks": [
+    {
+      "id": "CCR-01",
+      "description": "drift_schema.json still has 5 types; authoritative schemas/drift_types.schema.json has 7. Alignment required at PREPARED transition.",
+      "source": "SG-05 in m5b_gate_criteria.json",
+      "severity": "medium",
+      "blocker": false,
+      "action": "Extend drift_schema.json to 7 types before PREPARED transition"
+    },
+    {
+      "id": "CCR-02",
+      "description": "KL-GOV-001 (mutierende Admin-Aktionen ohne Runbook) not yet scoped against read-only Drift Checks. Architecture confirms Drift Detection is fully read-only; explicit declaration needed.",
+      "source": "IG-04 in m5b_gate_criteria.json",
+      "severity": "high",
+      "blocker": true,
+      "action": "Declare KL-GOV-001 non-applicable for read-only Drift Checks in known_limitations.json before Implementation Gate GO"
+    },
+    {
+      "id": "CCR-03",
+      "description": "All 8 artifacts are DRAFT. External preconditions (M5a READY_FOR_M5B, Report Integrity PASS) remain unmet.",
+      "source": "m5b_preparation_gate.json",
+      "severity": "high",
+      "blocker": true,
+      "action": "External preconditions must be resolved to reach PREPARED"
+    }
+  ],
+
+  "summary": {
+    "architecture_complete": true,
+    "structural_gaps": 0,
+    "open_decisions": 3,
+    "cross_cutting_risks": 3,
+    "blocking_risks": 2,
+    "implementation_allowed": false,
+    "reason_implementation_blocked": "Implementation Gate NO-GO; external preconditions unmet (M5a READY_FOR_M5B, Report Integrity); KL-GOV-001 not scoped",
+    "next_step": "Resolve CCR-02 (KL-GOV-001 scoping) and external preconditions; open decisions OD-01..OD-03 resolve at implementation phase",
+    "drift_code_implemented": false,
+    "repair_code_exists": false
+  }
+}

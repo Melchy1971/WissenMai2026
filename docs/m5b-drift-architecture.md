@@ -2,19 +2,20 @@
 
 Stand: 2026-06-08
 
-Status: `DRAFT` (Planungsartefakt; keine `PREPARED`-Freigabe, kein `GO`, keine Implementierung, siehe `reports/current/m5b_start_gate.json`).
+Status: `DRAFT` (Planungsartefakt; keine `PREPARED`-Freigabe, kein `GO`, keine Implementierung, siehe `reports/current/m5b_release_decision.json`).
 
 Scope: architecture phase only. No implementation, no migration, no API endpoint, no repair action.
 
-This draft is allowed independently of the M5b start gate because it is planning-only. It does not authorize detector implementation, schema changes, background jobs, API routes, dashboard work, reindexing, cleanup, repair, or any mutating operation. While the M5a parent gate is not `PASS`, every M5b planning artifact remains `DRAFT`.
+This draft is planning-only. It does not authorize detector implementation, schema changes, background jobs, API routes, dashboard work, reindexing, cleanup, repair, or any mutating operation. While `reports/current/m5a_final_readiness_review.json` is not `READY_FOR_M5B`, every M5b planning artifact remains `DRAFT`.
 
 ## Gate Status Model
 
-- `DRAFT`: Architekturplanung ist erlaubt und unabhaengig vom Start-Gate.
-- `PREPARED`: M5b darf nur dann vorbereitet sein, wenn `reports/current/m5b_start_gate.json` dies meldet und das M5a Parent-Gate `PASS` ist.
-- M5b Start-Gate darf erst `PREPARED` werden, wenn M5a Gesamt-`PASS` ist. M5a Gesamt-`PASS` setzt das Parent-Gate `m5a` nach `docs/gate_hierarchy.json` und `reports/current/m5a_data_quality_gate.json` voraus.
+- `DRAFT`: Architekturplanung ist erlaubt; keine Implementierung.
+- `PREPARED`: Vorbereitung ist erlaubt, aber weiterhin keine Implementierung.
+- `GO`: M5b Implementierung ist erlaubt, wenn `reports/current/m5b_release_decision.json` dies meldet.
+- M5b darf erst `PREPARED` werden, wenn M5a ueber `reports/current/m5a_final_readiness_review.json` `READY_FOR_M5B` meldet.
 - Ein M5a Slice-`PASS` reicht nicht fuer M5b `PREPARED`.
-- Solange M5a Parent-Gate nicht `PASS` ist: `DRAFT`, kein `PREPARED`, kein `GO`, keine Implementierung.
+- Solange M5a Final Readiness nicht `READY_FOR_M5B` ist: `DRAFT`, kein `PREPARED`, kein `GO`, keine Implementierung.
 - Diese Architektur enthaelt keine globale Prozent- oder Vollstaendigkeitsfreigabe.
 
 M5b defines drift as a time-based divergence between expected system state and observed system state. It is different from M5a Data Quality: M5a checks the current state of data quality findings; M5b checks whether previously valid document, metadata, lifecycle, source-status, or retrieval state has degraded over time.
@@ -178,7 +179,7 @@ Allowed subtypes:
 
 ### Escalation
 
-Any `critical` Chunk Drift blocks M5b planning promotion and requires workspace-isolation review according to `docs/gate_hierarchy.json` and `reports/current/m5b_start_gate.json`. `error` findings require technical review before retrieval completeness or lifecycle visibility can be declared green. This draft does not authorize automatic rechunking, reindexing, deletion, merge, or repair.
+Any `critical` Chunk Drift blocks M5b planning promotion and requires workspace-isolation review according to `docs/gate_hierarchy.json` and `reports/current/m5b_release_decision.json`. `error` findings require technical review before retrieval completeness or lifecycle visibility can be declared green. This draft does not authorize automatic rechunking, reindexing, deletion, merge, or repair.
 
 Chunk Drift error rate above 2 percent of eligible active chunks is a planned gate blocker. Warning-level drift remains report-visible and review-required.
 
@@ -241,7 +242,7 @@ Allowed subtypes:
 
 ### Escalation
 
-Metadata Drift does not automatically authorize metadata repair. `error` findings require review before metadata-dependent retrieval, filtering, or dashboards are declared green according to `docs/gate_hierarchy.json` and `reports/current/m5b_start_gate.json`. `critical` findings freeze affected workspace reporting because they can indicate isolation failure.
+Metadata Drift does not automatically authorize metadata repair. `error` findings require review before metadata-dependent retrieval, filtering, or dashboards are declared green according to `docs/gate_hierarchy.json` and `reports/current/m5b_release_decision.json`. `critical` findings freeze affected workspace reporting because they can indicate isolation failure.
 
 Metadata Drift becomes a gate blocker when metadata-drift errors affect more than 2 percent of active documents or any cross-workspace reference appears.
 
@@ -373,7 +374,7 @@ Allowed subtypes:
 
 ### Escalation
 
-`critical` Source Status Drift blocks M5b and requires workspace-isolation review according to `docs/gate_hierarchy.json` and `reports/current/m5b_start_gate.json`. `error` findings require review before citation-dependent UX or reports are declared green. Warning-level drift is visible in reports but does not authorize mutation.
+`critical` Source Status Drift blocks M5b and requires workspace-isolation review according to `docs/gate_hierarchy.json` and `reports/current/m5b_release_decision.json`. `error` findings require review before citation-dependent UX or reports are declared green. Warning-level drift is visible in reports but does not authorize mutation.
 
 A source-status error rate above 10 percent of non-missing citations triggers escalation to technical review.
 

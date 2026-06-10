@@ -1,14 +1,19 @@
 # M5 Drift Detection
 
-Stand: 2026-05-29
+Stand: 2026-06-10
 
 ## Status
 
-- Phase: Vorbereitung laut `reports/current/m5a_start_gate.json` bewertet
-- Implementierung: nicht gestartet
-- Freigabestatus: kein produktiver Betrieb bis PostgreSQL-Truth-Block `drift_detection` gruen
-- Drift Detection bleibt im ersten M5-Slice read-only
-- Repair wird getrennt dokumentiert und nicht durch dieses Dokument freigegeben
+- Phase: DRAFT — Planungsartefakte vollstaendig (Stand 2026-06-10)
+- Implementierung: **nicht gestartet, NO-GO** (siehe `reports/current/m5b_implementation_gate.json`)
+- Formales PREPARED: BLOCKED (M5a READY_FOR_M5B und Report Integrity fehlen)
+- Drift Detection Code: nicht vorhanden
+- Repair Code: nicht vorhanden; kein Repair-Scope in M5b
+- Freigabestatus: kein produktiver Betrieb bis Implementation Gate explizit PASS/GO
+- Drift Detection bleibt read-only; keine Repair-Aktionen in M5b
+
+> **Authoritative Drift-Typen:** Die nachfolgende alte Drift-Typen-Tabelle (6 Typen) ist konzeptioneller Vorlaeufер. Die finale Typdefinition mit 7 Typen befindet sich in `docs/m5b-drift-types.md` und `schemas/drift_types.schema.json`.
+> Bekannte Risiken: `docs/m5b-risk-matrix.md`
 
 ---
 
@@ -95,9 +100,26 @@ Repair ist explizit ausgelöst, nie automatisch.
 
 ---
 
-## Implementierungsanker
+## Implementierungsanker (geplant; kein Code vorhanden)
 
-- CLI: `python -m app.cli m5 drift-check --workspace <id>`
+- CLI (geplant): `python -m app.cli m5 drift-check --workspace <id>`
 - Geplantes Report-Artefakt: `m5_drift_report.json`
-- Repair-Strategie: `docs/runbooks/m5-drift-repair-strategy.md`
-- Truth-Test-Block: `drift_detection`
+- Repair-Strategie: ausserhalb M5b-Scope; kein Repair ohne separates Governance-Gate
+- Truth-Test-Block: `drift_detection` (geplant; siehe `docs/m5b-test-strategy.md`)
+
+---
+
+## M5b Preparation-Referenzen (Stand 2026-06-10)
+
+| Artefakt | Zweck |
+|----------|-------|
+| `docs/m5b-preparation-boundary.md` | Erlaubt/Verboten-Scope |
+| `docs/m5b-drift-types.md` | Finale 7 Drift-Typen |
+| `schemas/drift_types.schema.json` | Autoritative Typdefinition |
+| `docs/m5b-gates.md` | Gate-Kriterien |
+| `docs/m5b-test-strategy.md` | Teststrategie |
+| `docs/m5b-risk-matrix.md` | Risikoanalyse |
+| `reports/current/m5b_preparation_gate.json` | Preparation-Gate-Status |
+| `reports/current/m5b_implementation_gate.json` | Implementation-Gate NO-GO |
+| `docs/m5b-drift-governance.md` | Governance: Drift Detection darf nur erkennen, nie korrigieren |
+| `drift_governance.schema.json` | JSON Schema: DriftFinding, alle Pflichtfelder, verbotene Operationen |

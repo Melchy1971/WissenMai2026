@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "document": "m5b_risk_matrix",
+  "generated_at": "2026-06-10T00:00:00Z",
+  "status": "DRAFT",
+  "reference_doc": "docs/m5b-risk-matrix.md",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "rating_schema": {
+    "probability": ["low", "medium", "high"],
+    "impact": ["low", "medium", "high", "critical"],
+    "gate_effect": ["none", "blocking", "escalation"]
+  },
+  "risks": [
+    {
+      "id": "R-01",
+      "title": "False Positive Drift",
+      "probability": "medium",
+      "impact": "medium",
+      "gate_effect": "blocking",
+      "cause": "Detektor klassifiziert valide DB-Zustaende als Drift. Beispiel: Batch-Import-Timestamp loest lifecycle_timestamp_mismatch aus.",
+      "early_indicator": [
+        "TS-02-01 liefert drift_score > 0.0 auf sauberem Workspace",
+        "warning-Findings bei leerem Testzustand"
+      ],
+      "countermeasure": [
+        "Schwellenwerte pro Typ in x-gate-threshold dokumentieren",
+        "TS-07-01 (sauberer State = GO) als Gate-Test",
+        "Subtypes mit Latenztoleranz kennzeichnen"
+      ],
+      "gate_criteria_affected": ["SG-01", "IG-01"],
+      "limitations_referenced": []
+    },
+    {
+      "id": "R-02",
+      "title": "False Negative Drift",
+      "probability": "medium",
+      "impact": "critical",
+      "gate_effect": "escalation",
+      "cause": "Detektor erkennt tatsaechlichen Drift nicht. Beispiel: deleted_document_searchable bei fehlerhaftem JOIN nicht erkannt.",
+      "early_indicator": [
+        "TS-03-01 liefert 0 findings statt critical",
+        "TS-04-03 liefert 0 findings statt critical"
+      ],
+      "countermeasure": [
+        "Alle Injektionstests muessen exakte Finding-Counts liefern",
+        "Postgres-Truth-Tests gegen echte DB, keine Mocks",
+        "Pro Drift-Typ: mindestens ein critical-Injektionstest als Gate-Bedingung"
+      ],
+      "gate_criteria_affected": ["IG-01", "IG-02"],
+      "limitations_referenced": ["KL-M5-T-001"]
+    },
+    {
+      "id": "R-03",
+      "title": "Performance bei grossen Datenmengen",
+      "probability": "high",
+      "impact": "medium",
+      "gate_effect": "blocking",
+      "cause": "Drift-Scan ohne workspace_id-Index; N+1-Queries. Laufzeit bei grossen Workspaces inakzeptabel.",
+      "early_indicator": [
+        "TS-02 bis TS-04 auf Workspace mit 1000 Chunks > 5 Sekunden Laufzeit",
+        "EXPLAIN zeigt Seq Scan ohne workspace_id-Index"
+      ],
+      "countermeasure": [
+        "workspace_id als erster Query-Filter",
+        "Performance-Baseline bei PREPARED messen",
+        "Obergrenze in x-gate-threshold pro Drift-Typ dokumentieren"
+      ],
+      "gate_criteria_affected": ["IG-02"],
+      "limitations_referenced": ["KL-M5-T-001"]
+    },
+    {
+      "id": "R-04",
+      "title": "Retrieval Regression",
+      "probability": "high",
+      "impact": "high",
+      "gate_effect": "blocking",
+      "cause": "RETRIEVAL_DRIFT setzt valide Baseline voraus. Fehlende oder veraltete Baseline macht Erkennung blind.",
+      "early_indicator": [
+        "retrieval_quality_baseline_report.json fehlt oder baseline_release_grade=false",
+        "TS-05-05: warning statt auswertbarem Ergebnis"
+      ],
+      "countermeasure": [
+        "Baseline als explizite Precondition in TS-05 dokumentiert",
+        "Kein Test darf Baseline automatisch aktualisieren",
+        "Baseline-Aenderungen erfordern explizite Freigabe"
+      ],
+      "gate_criteria_affected": ["IG-02"],
+      "limitations_referenced": ["KL-M5-T-001", "KL-M5-T-002"]
+    },
+    {
+      "id": "R-05",
+      "title": "Gate-Blockade durch optionale Reports",
+      "probability": "medium",
+      "impact": "medium",
+      "gate_effect": "none",
+      "cause": "Gate-Kriterium referenziert Report, der zu spat generiert wird oder noch nicht existiert.",
+      "early_indicator": [
+        "m5b_gate_criteria.json: passed=false, aber Report nicht in reports/current/",
+        "Start-Gate SG-02 aktuell BLOCKED wegen Report-Integritaet"
+      ],
+      "countermeasure": [
+        "Gate-Kriterien bei PREPARED-Uebergang gegen vorhandene Reports pruefen",
+        "Optionale Reports, die Gate-relevant werden, als Required-Precondition eintragen",
+        "Kein Gate-Kriterium auf Report setzen, der erst durch Implementierung entsteht"
+      ],
+      "gate_criteria_affected": ["SG-01", "SG-02"],
+      "limitations_referenced": []
+    },
+    {
+      "id": "R-06",
+      "title": "Cleanup-Verwechslung",
+      "probability": "low",
+      "impact": "high",
+      "gate_effect": "blocking",
+      "cause": "remediation_hint mit Aktionsverben wird als ausloesbarer Befehl interpretiert. Downstream-Systeme fuehren Repair/Cleanup aus.",
+      "early_indicator": [
+        "TS-06-04 schlaegt fehl: remediation_hint enthaelt verbotene Strings",
+        "Report-Text mit 'Fuehre Reindex aus' oder 'Loesche verwaiste Eintraege'"
+      ],
+      "forbidden_strings_in_remediation_hint": [
+        "auto-repair",
+        "reindex",
+        "delete",
+        "cleanup",
+        "automatisch",
+        "korrigiere",
+        "fuehre aus"
+      ],
+      "countermeasure": [
+        "remediation_hint ausschliesslich deskriptiv",
+        "TS-06-04 als Gate-Test fuer Report-Schema"
+      ],
+      "gate_criteria_affected": ["IG-03"],
+      "boundary_reference": "FORBID-03 in docs/m5b-preparation-boundary.md",
+      "limitations_referenced": ["KL-GOV-001"]
+    },
+    {
+      "id": "R-07",
+      "title": "Repair ohne Governance",
+      "probability": "medium",
+      "impact": "critical",
+      "gate_effect": "blocking",
+      "cause": "Manuelle oder halbautomatische Repair-Aktionen auf Basis von Drift-Findings ohne Runbook, Gate-Freigabe oder Audit-Trail.",
+      "early_indicator": [
+        "remediation_hint mit Aktionsverben (siehe R-06)",
+        "KL-GOV-001 high/deferred ohne explizite Abgrenzung fuer Drift Checks"
+      ],
+      "countermeasure": [
+        "M5b Drift Detection ist explizit read-only; keine Repair-Funktion",
+        "KL-GOV-001 vor GO als nicht-anwendbar fuer read-only Drift Checks deklarieren",
+        "Repair-Prozesse ausserhalb M5b-Scope dokumentieren"
+      ],
+      "gate_criteria_affected": ["IG-04"],
+      "limitations_referenced": ["KL-GOV-001"]
+    }
+  ],
+  "summary": {
+    "total_risks": 7,
+    "by_probability": { "low": 1, "medium": 4, "high": 2 },
+    "by_impact": { "low": 0, "medium": 3, "high": 2, "critical": 2 },
+    "by_gate_effect": { "none": 1, "blocking": 5, "escalation": 1 },
+    "highest_priority": ["R-02", "R-07"],
+    "note": "R-02 (False Negative) und R-07 (Repair ohne Governance) haben critical impact. Beide beeinflussen gate-relevante Kriterien."
+  }
+}

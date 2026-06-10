@@ -1,0 +1,123 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DRAFT",
+  "generated_by": "manual",
+  "created_at": "2026-06-10",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "governance_ref": "drift_governance.schema.json",
+  "metrics_ref": "drift_metrics.schema.json",
+  "doc_ref": "docs/m5b-drift-history.md",
+
+  "entities": {
+    "DriftRun": {
+      "description": "Metadaten eines einzelnen Scan-Durchlaufs für einen Workspace",
+      "workspace_scoped": true,
+      "immutable_after_creation": ["run_id", "workspace_id", "started_at", "snapshot_id"],
+      "fields": {
+        "run_id": { "type": "uuid", "required": true },
+        "workspace_id": { "type": "uuid", "required": true },
+        "started_at": { "type": "date-time", "required": true },
+        "completed_at": { "type": "date-time", "required": false, "nullable": true },
+        "status": {
+          "type": "string",
+          "enum": ["running", "completed", "failed"],
+          "required": true
+        },
+        "total_checks": { "type": "integer", "minimum": 0, "required": true },
+        "total_findings": { "type": "integer", "minimum": 0, "required": true },
+        "snapshot_id": { "type": "uuid", "required": true, "fk": "DriftSnapshot.snapshot_id" },
+        "metrics": { "type": "object", "ref": "drift_metrics.schema.json", "required": true }
+      },
+      "rules": [
+        "failed Run is fully historized; no retroactive correction",
+        "completed_at remains null until run actually finishes",
+        "Run without completed_at after configured timeout counts as failed"
+      ]
+    },
+
+    "DriftFinding": {
+      "description": "Unveränderlicher Befund einer Abweichung, erzeugt innerhalb eines DriftRun",
+      "workspace_scoped": true,
+      "schema_authority": "drift_governance.schema.json",
+      "immutable_after_creation": ["drift_id", "workspace_id", "entity_id", "entity_type", "drift_type", "expected_state", "actual_state", "created_at"],
+      "fields": {
+        "drift_id": { "type": "uuid", "required": true, "stability": "stable across runs while (workspace_id, entity_type, entity_id, drift_type) combination unchanged" },
+        "run_id": { "type": "uuid", "required": true, "fk": "DriftRun.run_id" },
+        "drift_type": { "type": "string", "enum": ["DOCUMENT_DRIFT","CHUNK_DRIFT","METADATA_DRIFT","LIFECYCLE_DRIFT","SOURCE_STATUS_DRIFT","SEARCH_INDEX_DRIFT","RETRIEVAL_DRIFT"], "required": true },
+        "severity": { "type": "string", "enum": ["info","warning","error","critical"], "required": true },
+        "workspace_id": { "type": "uuid", "required": true },
+        "entity_type": { "type": "string", "enum": ["document","chunk","source","index_entry","metadata_record"], "required": true },
+        "entity_id": { "type": "uuid", "required": true },
+        "expected_state": { "type": "object", "required": true },
+        "actual_state": { "type": "object", "required": true },
+        "remediation_hint": { "type": "string", "required": true },
+        "created_at": { "type": "date-time", "required": true },
+        "first_seen_run_id": { "type": "uuid", "required": true, "fk": "DriftRun.run_id" },
+        "last_seen_run_id": { "type": "uuid", "required": true, "fk": "DriftRun.run_id" },
+        "occurrence_count": { "type": "integer", "minimum": 1, "required": true }
+      },
+      "deletion_policy": "forbidden without operator_decision + audit_entry (PROHIBIT-05)"
+    },
+
+    "DriftSnapshot": {
+      "description": "Zustandsabbild eines Workspace zum Erkennungszeitpunkt; Vergleichsbasis für Trendanalyse",
+      "workspace_scoped": true,
+      "immutable_after_creation": ["snapshot_id", "workspace_id", "captured_at", "content_hash_digest"],
+      "fields": {
+        "snapshot_id": { "type": "uuid", "required": true },
+        "workspace_id": { "type": "uuid", "required": true },
+        "captured_at": { "type": "date-time", "required": true },
+        "document_count": { "type": "integer", "minimum": 0, "required": true },
+        "chunk_count": { "type": "integer", "minimum": 0, "required": true },
+        "indexed_chunk_count": { "type": "integer", "minimum": 0, "required": true },
+        "active_source_count": { "type": "integer", "minimum": 0, "required": true },
+        "content_hash_digest": { "type": "string", "description": "Deterministic aggregate hash over all content_hash values", "required": true },
+        "baseline_ref": { "type": "string", "required": false, "nullable": true, "description": "Reference to baseline file for RETRIEVAL_DRIFT comparison" }
+      },
+      "creation_rule": "Created exclusively at start of DriftRun; no manual creation",
+      "deletion_policy": "never deleted; retention configurable (default: unlimited)"
+    }
+  },
+
+  "retention": {
+    "DriftRun": "unlimited",
+    "DriftFinding": "unlimited",
+    "DriftSnapshot": "unlimited_default",
+    "reports_current": "latest_run_only"
+  },
+
+  "trend_analysis": {
+    "workspace_scoped": true,
+    "cross_workspace_forbidden": true,
+    "mutates_findings": false,
+    "triggers_auto_correction": false,
+    "trends": [
+      {
+        "name": "growing_index_divergence",
+        "detection": "SEARCH_INDEX_DRIFT absolute_delta increasing over >= 2 consecutive runs",
+        "escalation": "CRITICAL after 2 runs"
+      },
+      {
+        "name": "persistent_retrieval_degradation",
+        "detection": "RETRIEVAL_DRIFT negative delta in >= 3 consecutive runs",
+        "escalation": "CRITICAL"
+      },
+      {
+        "name": "increasing_lifecycle_drift_rate",
+        "detection": "lifecycle_drift_rate rising across runs",
+        "escalation": "operator_flag"
+      },
+      {
+        "name": "decreasing_scan_completeness",
+        "detection": "total_checks < expected_checks",
+        "escalation": "warn_flag"
+      }
+    ]
+  },
+
+  "workspace_isolation": {
+    "rule": "All history queries are workspace-scoped",
+    "cross_workspace_aggregation": false,
+    "workspace_id_immutable": true
+  }
+}

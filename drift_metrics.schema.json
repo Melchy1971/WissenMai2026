@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "drift_metrics.schema.json",
+  "title": "DriftMetrics",
+  "description": "Schema für M5b Drift Detection Kennzahlen. Status: DRAFT.",
+  "type": "object",
+  "status": "DRAFT",
+  "x-governance": {
+    "schema_version": "1.0.0",
+    "gate_authority": "reports/current/m5b_gate_criteria.json",
+    "severity_ref": "drift_severity_matrix.json",
+    "doc_ref": "docs/m5b-drift-metrics.md",
+    "workspace_scoped": true,
+    "cross_workspace_aggregation_forbidden": true
+  },
+  "required": [
+    "workspace_id",
+    "run_id",
+    "run_timestamp",
+    "total_checks",
+    "total_drifts",
+    "critical_drifts",
+    "warning_drifts",
+    "drift_rate",
+    "retrieval_drift_rate",
+    "lifecycle_drift_rate",
+    "source_status_drift_rate"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "workspace_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Workspace-Scope; alle Metriken beziehen sich auf diesen Workspace"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Referenz auf DriftRun"
+    },
+    "run_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Zeitstempel des DriftRun"
+    },
+    "total_checks": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Anzahl ausgeführter Einzelprüfungen. Formula: COUNT(validation_steps_executed)",
+      "x-target": null,
+      "x-warning_threshold": {
+        "condition": "total_checks < expected_checks",
+        "effect": "warn_flag_incomplete_scan"
+      }
+    },
+    "total_drifts": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Anzahl aller erzeugten Findings. Formula: COUNT(findings)",
+      "x-target": 0,
+      "x-warning_threshold": {
+        "condition": "total_drifts > 0",
+        "effect": "watch_flag"
+      }
+    },
+    "critical_drifts": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Anzahl Findings mit severity=critical. Formula: COUNT(findings WHERE severity='critical')",
+      "x-target": 0,
+      "x-warning_threshold": {
+        "condition": "critical_drifts >= 1",
+        "effect": "NO_GO_FREEZE"
+      }
+    },
+    "warning_drifts": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Anzahl Findings mit severity=warning. Formula: COUNT(findings WHERE severity='warning')",
+      "x-target": 0,
+      "x-warning_threshold": {
+        "condition": "warning_drifts > 5",
+        "effect": "elevated_watch_flag"
+      },
+      "x-constraint": "warning_drifts darf unter keinen Umständen allein eine Gate-Blockade auslösen"
+    },
+    "drift_rate": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Anteil Entitäten mit Finding. Formula: COUNT(distinct entity_id WITH findings) / total_checks",
+      "x-target": 0.0,
+      "x-warning_threshold": {
+        "condition": "drift_rate > 0.01",
+        "effect": "elevated_watch_flag"
+      },
+      "x-note": "Diagnostischer Indikator; löst allein keine Gate-Entscheidung aus"
+    },
+    "retrieval_drift_rate": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Anteil Retrieval-Queries über Warnschwelle. Formula: COUNT(queries WHERE metric_delta > warning_threshold) / COUNT(all_test_queries)",
+      "x-target": 0.0,
+      "x-thresholds": {
+        "warning": {
+          "condition": "retrieval_drift_rate > 0.0",
+          "effect": "watch_flag"
+        },
+        "error": {
+          "condition": "retrieval_drift_rate > 0.05",
+          "effect": "NO_GO"
+        },
+        "critical": {
+          "condition": "retrieval_drift_rate > 0.15 OR consecutive_negative_runs >= 3",
+          "effect": "NO_GO_FREEZE"
+        }
+      }
+    },
+    "lifecycle_drift_rate": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Anteil gelöschter/archivierter Dokumente, die noch suchbar sind. Formula: COUNT(lifecycle IN (archived,deleted) AND (is_searchable=true OR in_index=true)) / COUNT(lifecycle IN (archived,deleted))",
+      "x-target": 0.0,
+      "x-warning_threshold": {
+        "condition": "lifecycle_drift_rate > 0.0",
+        "effect": "NO_GO"
+      },
+      "x-note": "Kein tolerierter Wert > 0; jede Abweichung ist error oder critical"
+    },
+    "source_status_drift_rate": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Anteil aktiver Quellen mit Konnektivitätsproblem. Formula: COUNT(source_status=active AND (unreachable=true OR corrupted=true)) / COUNT(source_status=active)",
+      "x-target": 0.0,
+      "x-thresholds": {
+        "warning": {
+          "condition": "source_status_drift_rate > 0.0 AND within_retry_window=true",
+          "effect": "watch_flag"
+        },
+        "error": {
+          "condition": "source_status_drift_rate > 0.0 AND beyond_configured_timeout=true",
+          "effect": "NO_GO"
+        }
+      }
+    }
+  }
+}

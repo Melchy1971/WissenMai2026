@@ -17,6 +17,9 @@ CLAUDE_FLOW_MODE = "v3"
 CLAUDE_FLOW_TOPOLOGY = "hierarchical-mesh"
 npm_config_update_notifier = "false"
 
+[mcp_servers.claude-flow.tools.browser_session_record]
+approval_mode = "approve"
+
 [mcp_servers.ruflo]
 args = ["@claude-flow/cli@latest"]
 command = "npx"

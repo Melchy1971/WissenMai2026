@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "report_name": "report_integrity_required_set",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-10T08:12:00+00:00",
+  "status": "ACTIVE",
+  "parent_gate": "m5a",
+  "max_age_hours": 168,
+  "rules": {
+    "required_invalid_missing_stale": "BLOCKED",
+    "supporting_invalid_when_parent_referenced": "BLOCKED",
+    "optional_invalid": "WARNING",
+    "legacy_reports": "archive"
+  },
+  "required_reports": [
+    {
+      "id": "m5a_start_gate",
+      "file": "reports/current/m5a_start_gate.json",
+      "accepted_statuses": ["PASS"],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    {
+      "id": "report_integrity_v2",
+      "file": "reports/current/report_integrity_v2.json",
+      "accepted_statuses": ["PASS"],
+      "required_decision": "GO",
+      "counter_validation": "required",
+      "self_report": true
+    },
+    {
+      "id": "documentation_truth_lint",
+      "file": "reports/current/documentation_truth_lint.json",
+      "accepted_statuses": ["PASS"]
+    },
+    {
+      "id": "data_quality_report",
+      "file": "reports/current/data_quality_report.json",
+      "accepted_statuses": ["COMPLETED"],
+      "min_quality_score": 90
+    },
+    {
+      "id": "duplicate_detector_gate",
+      "file": "reports/current/m5a_duplicate_detector_gate.json",
+      "accepted_statuses": ["PASS"],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    {
+      "id": "metadata_detector_gate",
+      "file": "reports/current/m5a_metadata_detector_gate.json",
+      "accepted_statuses": ["PASS"],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    {
+      "id": "lifecycle_integrity_gate",
+      "file": "reports/current/m5a_lifecycle_integrity_gate.json",
+      "accepted_statuses": ["PASS"],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    {
+      "id": "source_status_integrity_gate",
+      "file": "reports/current/m5a_source_status_integrity_gate.json",
+      "accepted_statuses": ["PASS"],
+      "required_decision": "GO",
+      "counter_validation": "required",
+      "blockers_must_be_empty": true
+    },
+    {
+      "id": "orphan_detector_gate",
+      "file": "reports/current/m5a_orphan_detector_gate.json",
+      "accepted_statuses": ["PASS"],
+      "required_decision": "GO",
+      "counter_validation": "required",
+      "blockers_must_be_empty": true
+    }
+  ],
+  "supporting_reports": [
+    {
+      "id": "masterplan_status",
+      "file": "reports/current/masterplan_status.json",
+      "referenced_by_parent_gate": true
+    },
+    {
+      "id": "m5a_data_quality_gate",
+      "file": "reports/current/m5a_data_quality_gate.json",
+      "referenced_by_parent_gate": true,
+      "accepted_statuses": ["PASS"],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    {
+      "id": "m5a_final_readiness_review",
+      "file": "reports/current/m5a_final_readiness_review.json",
+      "referenced_by_parent_gate": true,
+      "accepted_statuses": ["PASS"],
+      "required_decision": "GO",
+      "counter_validation": "required"
+    },
+    {
+      "id": "known_limitations",
+      "file": "reports/current/known_limitations.json",
+      "referenced_by_parent_gate": true
+    },
+    {
+      "id": "gate_hierarchy_result",
+      "file": "reports/current/gate_hierarchy_result.json",
+      "referenced_by_parent_gate": true,
+      "accepted_statuses": ["PASS"]
+    }
+  ],
+  "optional_reports": [
+    {
+      "id": "archive_log",
+      "file": "reports/current/archive_log.json"
+    },
+    {
+      "id": "cleanup_log",
+      "file": "reports/current/cleanup_log.json"
+    },
+    {
+      "id": "normalized_reports_log",
+      "file": "reports/current/normalized_reports_log.json"
+    },
+    {
+      "id": "operations_selftest_report",
+      "file": "reports/current/operations_selftest_report.json"
+    }
+  ],
+  "legacy_reports": [
+    {
+      "id": "report_integrity_pre_m5a",
+      "file": "reports/current/report_integrity_pre_m5a.json",
+      "reason": "Superseded by report_integrity_v2 required-set evaluation."
+    },
+    {
+      "id": "report_integrity_pre_m5a_archive_log",
+      "file": "reports/current/report_integrity_pre_m5a_archive_log.json",
+      "reason": "Historical archive log for superseded report_integrity_pre_m5a."
+    },
+    {
+      "id": "report_integrity_root_cause",
+      "file": "reports/current/report_integrity_root_cause.json",
+      "reason": "Historical root-cause report for superseded report_integrity_pre_m5a."
+    }
+  ]
+}

@@ -31,9 +31,9 @@ Nicht erforderlich fuer M3a:
 
 ## Blockierende M3a-Quellen
 
-- `reports/current/frontend_full_suite_staged_report.json`
-- `reports/current/frontend_full_suite_staged_report.json`
-- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`
 - `reports/current/m3a_release_candidate.json`
 - `reports/current/gate_hierarchy_result.json`
 

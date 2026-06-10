@@ -1,0 +1,82 @@
+{
+  "report_schema_version": 1,
+  "report_name": "kl_m5_t_001_decision_log",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-06-10T07:58:39.3783333Z",
+  "timestamp": "2026-06-10T07:58:39.3783333Z",
+  "environment": "local",
+  "report_type": "decision_log",
+  "status": "PASS",
+  "result": "PASS",
+  "source_command": "kl_m5_t_001_scope_decision_20260610",
+  "limitation_id": "KL-M5-T-001",
+  "inputs": {
+    "known_limitations": "reports/current/known_limitations.json",
+    "primary_evidence_report": "reports/current/pre_m5_decision_report.json",
+    "m5a_final_readiness_review": "reports/current/m5a_final_readiness_review.json",
+    "gate_hierarchy": "docs/gate_hierarchy.json",
+    "m4_truth_report": "reports/current/m4_truth_report.json"
+  },
+  "original_classification": {
+    "status": "open",
+    "blocks_gate": [
+      "m5_truth_gate"
+    ],
+    "target_phase": "M5A",
+    "category": "M5a Parent-Gate"
+  },
+  "decision": {
+    "blocks_m5a_final_readiness": false,
+    "blocks_m5b_start_gate": false,
+    "blocks_later_implementation": true,
+    "status_after": "open",
+    "resolved": false,
+    "blocks_gate_after": [],
+    "target_phase_after": "M5B_IMPL",
+    "category_after": "spätere M5b Implementierung"
+  },
+  "evidence_summary": [
+    {
+      "source": "reports/current/pre_m5_decision_report.json",
+      "finding": "KL-M5-T-001 is listed as an active slice-level blocker under m5_truth_gate. The report states M5 implementation is GO, while slice start remains NO-GO until Truth-Block plus baseline plus dry-run are available.",
+      "effect": "Supports later implementation or slice activation blocking, not M5a Parent-Gate blocking."
+    },
+    {
+      "source": "docs/gate_hierarchy.json",
+      "finding": "M5a mandatory children do not include m5_truth_gate.",
+      "effect": "m5_truth_gate cannot be treated as an M5a Parent-Gate child from the current hierarchy."
+    },
+    {
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "finding": "The review currently marks KL-M5-T-001 as M5a-blocking because known_limitations.json had blocks_gate=[m5_truth_gate].",
+      "effect": "This is circular evidence from the previous classification and is superseded by this decision log."
+    },
+    {
+      "source": "reports/current/m4_truth_report.json",
+      "finding": "M4 Truth is PASS and explicitly excludes M5 governance.",
+      "effect": "Does not resolve KL-M5-T-001; confirms no current green M5 Truth evidence exists."
+    }
+  ],
+  "rationale": "KL-M5-T-001 remains a real open M5 Truth prerequisite, but the available evidence maps it to later M5b implementation or slice activation. It is not a current M5a Final Readiness blocker because the M5a hierarchy does not include m5_truth_gate and the primary evidence calls it slice-level.",
+  "known_limitations_updates": {
+    "blocking": {
+      "before": 1,
+      "after": 0
+    },
+    "non_blocking": {
+      "before": 5,
+      "after": 6
+    },
+    "kl_m5_t_001": {
+      "blocks_gate_before": [
+        "m5_truth_gate"
+      ],
+      "blocks_gate_after": [],
+      "target_phase_before": "M5A",
+      "target_phase_after": "M5B_IMPL",
+      "status_after": "open"
+    }
+  },
+  "next_action": "Generate a current reports/current/m5_truth_report.json with status=PASS, failed=0, errors=0, blockers=[] before later M5b implementation or slice activation. Do not mark KL-M5-T-001 resolved until that resolving report exists.",
+  "blockers": []
+}

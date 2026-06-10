@@ -1,0 +1,153 @@
+{
+  "report_schema_version": 1,
+  "report_name": "known_limitations_reclassification_report",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-06-10T06:58:50.9946547Z",
+  "timestamp": "2026-06-10T06:58:50.9946547Z",
+  "environment": "local",
+  "report_type": "audit_report",
+  "status": "PASS",
+  "result": "PASS",
+  "source_command": "known_limitations_reclassification_20260610",
+  "inputs": {
+    "known_limitations": "reports/current/known_limitations.json",
+    "requested_gate_hierarchy": {
+      "path": "reports/current/gate_hierarchy.json",
+      "available": false,
+      "note": "reports/current/gate_hierarchy.json is absent; hierarchy evidence was taken from docs/gate_hierarchy.json and reports/current/gate_hierarchy_result.json."
+    },
+    "gate_hierarchy": "docs/gate_hierarchy.json",
+    "gate_hierarchy_result": "reports/current/gate_hierarchy_result.json",
+    "masterplan_status": "reports/current/masterplan_status.json"
+  },
+  "rule": "blocks_gate remains array:string for schema compatibility. Effective boolean semantics are blocks_gate_effective=true when blocks_gate is non-empty and false when blocks_gate is empty.",
+  "summary": {
+    "limitations_total": 6,
+    "blocking_after_reclassification": 1,
+    "non_blocking_after_reclassification": 5,
+    "current_gate_blocking_ids": [
+      "KL-M5-T-001"
+    ],
+    "current_gate_blocking_gates": [
+      "m5_truth_gate"
+    ],
+    "scope_counts": {
+      "M5a Parent-Gate": 1,
+      "M5b Start-Gate": 0,
+      "spätere M5b Implementierung": 1,
+      "Governance/Operations allgemein": 1,
+      "non-blocking technical debt": 3
+    },
+    "target_phase_counts": {
+      "M5A": 1,
+      "M5B_PREP": 0,
+      "M5B_IMPL": 1,
+      "M5C_PLUS": 3,
+      "GOVERNANCE": 1
+    }
+  },
+  "reclassifications": [
+    {
+      "id": "KL-M5-T-001",
+      "scope": "M5a Parent-Gate",
+      "target_phase": "M5A",
+      "old_blocks_gate": [
+        "m5_truth_gate"
+      ],
+      "new_blocks_gate": [
+        "m5_truth_gate"
+      ],
+      "blocks_gate_effective": true,
+      "evidence": [
+        "reports/current/known_limitations.json",
+        "reports/current/m5a_final_readiness_review.json",
+        "reports/current/masterplan_status.json"
+      ],
+      "rationale": "Open high-severity M5 truth readiness issue remains relevant to current M5a/M5 truth gating."
+    },
+    {
+      "id": "KL-M5-T-002",
+      "scope": "spätere M5b Implementierung",
+      "target_phase": "M5B_IMPL",
+      "old_blocks_gate": [
+        "m5b_implementation_gate"
+      ],
+      "new_blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence": [
+        "reports/current/m5b_start_gate.json",
+        "reports/current/masterplan_status.json"
+      ],
+      "rationale": "Required retrieval baseline, cleanup dry-run, and M5b truth evidence are implementation prerequisites, not current M5a Parent-Gate or M5b Start-Gate blockers."
+    },
+    {
+      "id": "KL-GOV-001",
+      "scope": "Governance/Operations allgemein",
+      "target_phase": "GOVERNANCE",
+      "old_blocks_gate": [
+        "operational_governance_gate"
+      ],
+      "new_blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence": [
+        "docs/m4d-admin-diagnostics.md",
+        "reports/current/masterplan_status.json"
+      ],
+      "rationale": "Mutating admin operations are deferred governance requirements and do not block current M5a or M5b DRAFT/PREPARED decisions."
+    },
+    {
+      "id": "KL-DEF-001",
+      "scope": "non-blocking technical debt",
+      "target_phase": "M5C_PLUS",
+      "old_blocks_gate": [],
+      "new_blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence": [
+        "masterplan.md"
+      ],
+      "rationale": "OCR for scanned PDFs is explicitly deferred and not part of the current gate scope."
+    },
+    {
+      "id": "KL-DEF-002",
+      "scope": "non-blocking technical debt",
+      "target_phase": "M5C_PLUS",
+      "old_blocks_gate": [],
+      "new_blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence": [
+        "masterplan.md"
+      ],
+      "rationale": "Embeddings and vector search remain optional and non-critical for the current release path."
+    },
+    {
+      "id": "KL-NB-001",
+      "scope": "non-blocking technical debt",
+      "target_phase": "M5C_PLUS",
+      "old_blocks_gate": [],
+      "new_blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence": [
+        "docs/api.md"
+      ],
+      "rationale": "The API alias gap is hardening debt before new client binding, not a current gate blocker."
+    }
+  ],
+  "validation": {
+    "blocks_gate_type_preserved": "array:string",
+    "only_current_m5a_truth_remains_gate_blocking": true,
+    "current_gate_blocking_ids": [
+      "KL-M5-T-001"
+    ],
+    "current_gate_blocking_gates": [
+      "m5_truth_gate"
+    ],
+    "expected_known_limitations_counters": {
+      "collected": 6,
+      "open": 3,
+      "deferred": 3,
+      "blocking": 1,
+      "non_blocking": 5
+    }
+  },
+  "blockers": []
+}

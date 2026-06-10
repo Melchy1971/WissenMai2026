@@ -2,9 +2,9 @@
   "report_schema_version": 1,
   "report_name": "m5a_final_readiness_review",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-09T13:29:27.4224508Z",
+  "timestamp": "2026-06-10T08:27:14.000890+00:00",
   "environment": "local",
-  "report_type": "status_report",
+  "report_type": "diagnostic",
   "status": "BLOCKED",
   "result": "BLOCKED",
   "decision": {
@@ -12,59 +12,96 @@
     "ready_for_m5b": false,
     "go_no_go": "NO_GO",
     "manual_override_allowed": false,
-    "rule": "READY_FOR_M5B requires m5a_data_quality_gate PASS, report_integrity_v2 PASS, no critical M5a-blocking known limitations, and documentation_truth_lint PASS. Any missing, BLOCKED, FAIL, INVALID, STALE, or M5a-blocking critical limitation blocks readiness."
+    "rule": "READY_FOR_M5B requires m5a_data_quality_gate PASS, report_integrity_v2 PASS, documentation_truth_lint PASS, and zero open known limitations where target_phase=M5A and blocks_gate is effectively true."
+  },
+  "collected": 4,
+  "passed": 2,
+  "failed": 2,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "source_command": "m5a_final_readiness_without_m5b_only_blockers_20260610",
+  "inputs": {
+    "m5a_data_quality_gate": "reports/current/m5a_data_quality_gate.json",
+    "report_integrity_v2": "reports/current/report_integrity_v2.json",
+    "documentation_truth_lint": "reports/current/documentation_truth_lint.json",
+    "known_limitations": "reports/current/known_limitations.json"
   },
   "diagnostics": {
-    "score": 50.0,
-    "score_model": {
-      "method": "equal_weighted_review_areas",
-      "areas": 6,
-      "points_per_area": 16.6667,
-      "pass_value": 100,
-      "blocked_value": 0,
-      "note": "Score measures review evidence completeness. Readiness remains hard-gated by blockers and does not pass by score alone."
-    },
-    "non_blocking_pass_evidence": [
-      {
-        "id": "documentation_truth_lint_pass",
-        "source": "reports/current/documentation_truth_lint.json"
-      },
-      {
-        "id": "m5a_regression_suite_pass",
-        "source": "reports/current/m5a_regression_report.json"
-      },
-      {
-        "id": "m5a_performance_baseline_pass",
-        "source": "reports/current/m5a_performance_baseline.json"
-      }
-    ],
     "known_limitations_scope": {
-      "m5a_blocking": [
-        {
-          "id": "KL-M5-T-001",
-          "blocks_gate": [
-            "m5_truth_gate"
-          ],
-          "reason": "Open high-severity M5 truth limitation; still blocks M5a/M5 truth readiness."
-        }
-      ],
+      "m5a_blocking": [],
       "not_m5a_blocking": [
         {
+          "id": "KL-M5-T-001",
+          "status": "open",
+          "severity": "high",
+          "target_phase": "M5B_IMPL",
+          "blocks_gate": [],
+          "blocks_gate_effective": false,
+          "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+        },
+        {
           "id": "KL-M5-T-002",
-          "blocks_gate": [
-            "m5b_implementation_gate"
-          ],
-          "reason": "Mapped to M5b implementation; does not block M5a Parent Gate."
+          "status": "open",
+          "severity": "high",
+          "target_phase": "M5B_IMPL",
+          "blocks_gate": [],
+          "blocks_gate_effective": false,
+          "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
         },
         {
           "id": "KL-GOV-001",
-          "blocks_gate": [
-            "operational_governance_gate"
-          ],
-          "reason": "Deferred to later mutating admin actions; does not block M5a or M5b DRAFT/PREPARED."
+          "status": "deferred",
+          "severity": "high",
+          "target_phase": "GOVERNANCE",
+          "blocks_gate": [],
+          "blocks_gate_effective": false,
+          "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+        },
+        {
+          "id": "KL-DEF-001",
+          "status": "deferred",
+          "severity": "low",
+          "target_phase": "M5C_PLUS",
+          "blocks_gate": [],
+          "blocks_gate_effective": false,
+          "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+        },
+        {
+          "id": "KL-DEF-002",
+          "status": "deferred",
+          "severity": "low",
+          "target_phase": "M5C_PLUS",
+          "blocks_gate": [],
+          "blocks_gate_effective": false,
+          "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+        },
+        {
+          "id": "KL-NB-001",
+          "status": "open",
+          "severity": "low",
+          "target_phase": "M5C_PLUS",
+          "blocks_gate": [],
+          "blocks_gate_effective": false,
+          "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+        }
+      ],
+      "governance_read_only_excluded": [
+        {
+          "id": "KL-GOV-001",
+          "status": "deferred",
+          "severity": "high",
+          "target_phase": "GOVERNANCE",
+          "blocks_gate": [],
+          "blocks_gate_effective": false,
+          "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
         }
       ]
-    }
+    },
+    "blocking_inputs": [
+      "reports/current/m5a_data_quality_gate.json",
+      "reports/current/report_integrity_v2.json"
+    ]
   },
   "checks": [
     {
@@ -94,38 +131,27 @@
       "evidence": {
         "status": "BLOCKED",
         "result": "BLOCKED",
-        "checks_collected": 7,
-        "checks_passed": 6,
-        "checks_failed": 1,
-        "blocker_count": 2,
+        "decision": "NO_GO",
+        "checks_collected": 5,
+        "checks_passed": 3,
+        "checks_failed": 2,
+        "blocker_count": 29,
         "blocking_files": [
+          "reports/current/data_quality_report.json",
+          "reports/current/m5a_data_quality_gate.json",
+          "reports/current/m5a_duplicate_detector_gate.json",
+          "reports/current/m5a_final_readiness_review.json",
+          "reports/current/m5a_lifecycle_integrity_gate.json",
+          "reports/current/m5a_metadata_detector_gate.json",
+          "reports/current/m5a_orphan_detector_gate.json",
           "reports/current/m5a_source_status_integrity_gate.json",
-          "reports/current/m5a_orphan_detector_gate.json"
+          "reports/current/m5a_start_gate.json"
         ]
       }
     },
     {
-      "id": "known_limitations_m5a",
-      "label": "Keine kritischen M5a-blockierenden Known Limitations",
-      "status": "BLOCKED",
-      "score": 0,
-      "source": "reports/current/known_limitations.json",
-      "evidence": {
-        "critical_m5a_blocking_limitations": [
-          "KL-M5-T-001"
-        ],
-        "non_m5a_blocking_open_limitations": [
-          "KL-M5-T-002"
-        ],
-        "deferred_governance_limitations": [
-          "KL-GOV-001"
-        ],
-        "rule": "Only open high-severity limitations that block M5a or M5 truth readiness block this review. KL-M5-T-002 is mapped to m5b_implementation_gate; KL-GOV-001 is deferred to operational_governance_gate for later mutating admin actions."
-      }
-    },
-    {
       "id": "documentation_truth_lint",
-      "label": "Documentation Truth",
+      "label": "Documentation Truth Lint",
       "status": "PASS",
       "score": 100,
       "source": "reports/current/documentation_truth_lint.json",
@@ -139,37 +165,81 @@
       }
     },
     {
-      "id": "regression_suite",
-      "label": "Regression Suite",
+      "id": "known_limitations_m5a_scope",
+      "label": "No M5a-Blocking Known Limitations",
       "status": "PASS",
       "score": 100,
-      "source": "reports/current/m5a_regression_report.json",
+      "source": "reports/current/known_limitations.json",
       "evidence": {
-        "status": "PASS",
-        "required_areas": 7,
-        "covered_areas": 7,
-        "tests_collected": 122,
-        "tests_passed": 122,
-        "tests_failed": 0
-      }
-    },
-    {
-      "id": "performance_baseline",
-      "label": "Performance Baseline",
-      "status": "PASS",
-      "score": 100,
-      "source": "reports/current/m5a_performance_baseline.json",
-      "evidence": {
-        "status": "PASS",
-        "document_counts": [
-          100,
-          1000,
-          5000,
-          10000
+        "m5a_blocking_limitations": [],
+        "non_m5a_blocking_limitations": [
+          {
+            "id": "KL-M5-T-001",
+            "status": "open",
+            "severity": "high",
+            "target_phase": "M5B_IMPL",
+            "blocks_gate": [],
+            "blocks_gate_effective": false,
+            "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+          },
+          {
+            "id": "KL-M5-T-002",
+            "status": "open",
+            "severity": "high",
+            "target_phase": "M5B_IMPL",
+            "blocks_gate": [],
+            "blocks_gate_effective": false,
+            "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+          },
+          {
+            "id": "KL-GOV-001",
+            "status": "deferred",
+            "severity": "high",
+            "target_phase": "GOVERNANCE",
+            "blocks_gate": [],
+            "blocks_gate_effective": false,
+            "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+          },
+          {
+            "id": "KL-DEF-001",
+            "status": "deferred",
+            "severity": "low",
+            "target_phase": "M5C_PLUS",
+            "blocks_gate": [],
+            "blocks_gate_effective": false,
+            "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+          },
+          {
+            "id": "KL-DEF-002",
+            "status": "deferred",
+            "severity": "low",
+            "target_phase": "M5C_PLUS",
+            "blocks_gate": [],
+            "blocks_gate_effective": false,
+            "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+          },
+          {
+            "id": "KL-NB-001",
+            "status": "open",
+            "severity": "low",
+            "target_phase": "M5C_PLUS",
+            "blocks_gate": [],
+            "blocks_gate_effective": false,
+            "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+          }
         ],
-        "max_runtime_ms": 1826.27,
-        "max_peak_memory_mb": 13.78,
-        "blockers": []
+        "governance_read_only_excluded": [
+          {
+            "id": "KL-GOV-001",
+            "status": "deferred",
+            "severity": "high",
+            "target_phase": "GOVERNANCE",
+            "blocks_gate": [],
+            "blocks_gate_effective": false,
+            "reason": "Not M5a-blocking under rule: only open target_phase=M5A limitations with effective blocks_gate=true block M5a."
+          }
+        ],
+        "rule": "Only open limitations with target_phase=M5A and effective blocks_gate=true block M5a. M5B_PREP/M5B_IMPL do not block M5a; GOVERNANCE for mutating actions does not block M5a read-only Data Quality."
       }
     }
   ],
@@ -184,63 +254,27 @@
       "id": "REPORT_INTEGRITY_V2_NOT_PASS",
       "severity": "blocking",
       "source": "reports/current/report_integrity_v2.json",
-      "detail": "report_integrity_v2.status=BLOCKED; child gate consistency still blocks on source status integrity and orphan detector gates."
-    },
-    {
-      "id": "CRITICAL_M5A_KNOWN_LIMITATION_OPEN",
-      "severity": "blocking",
-      "source": "reports/current/known_limitations.json",
-      "detail": "KL-M5-T-001 remains open, high severity, and blocks m5_truth_gate for M5a/M5 truth readiness.",
-      "limitation_id": "KL-M5-T-001"
-    },
-    {
-      "id": "SOURCE_STATUS_INTEGRITY_GATE_BLOCKED",
-      "severity": "blocking",
-      "source": "reports/current/m5a_source_status_integrity_gate.json",
-      "detail": "Source Status Integrity Gate is BLOCKED; required truth execution is not proven."
-    },
-    {
-      "id": "ORPHAN_DETECTOR_GATE_BLOCKED",
-      "severity": "blocking",
-      "source": "reports/current/m5a_orphan_detector_gate.json",
-      "detail": "Orphan Detector Gate is BLOCKED; required truth execution is not proven."
-    },
-    {
-      "id": "STALE_OR_INVALID_PARENT_CHILD_EVIDENCE",
-      "severity": "blocking",
-      "source": "reports/current/m5a_data_quality_gate.json",
-      "detail": "Parent validation in the M5a gate still reports stale child gates and invalid PASS evidence for documentation_truth_lint/data_quality_report."
+      "detail": "report_integrity_v2.status=BLOCKED; READY_FOR_M5B requires PASS."
     }
   ],
-  "required_actions_before_m5a": [
-    "Make m5a_data_quality_gate PASS by resolving current child-gate blockers and rerunning parent gate validation.",
-    "Make m5a_source_status_integrity_gate PASS by executing/proving the required Source Status Integrity tests.",
-    "Make m5a_orphan_detector_gate PASS by executing/proving the required Orphan Detector tests.",
-    "Regenerate report_integrity_v2 after source status and orphan gates are no longer BLOCKED.",
-    "Resolve KL-M5-T-001 with a current M5 truth report showing status=PASS, failed=0, errors=0, blockers=[].",
-    "Refresh stale M5a child gate reports and normalize parent PASS evidence for documentation_truth_lint and data_quality_report.",
-    "Rerun this readiness review after all prerequisite reports are PASS."
+  "required_actions_before_m5b": [
+    "m5a_data_quality_gate.status=BLOCKED; READY_FOR_M5B requires PASS.",
+    "report_integrity_v2.status=BLOCKED; READY_FOR_M5B requires PASS."
   ],
-  "inputs": {
-    "m5a_data_quality_gate": "reports/current/m5a_data_quality_gate.json",
-    "report_integrity": "reports/current/report_integrity_v2.json",
-    "known_limitations": "reports/current/known_limitations.json",
-    "documentation_truth": "reports/current/documentation_truth_lint.json",
-    "regression_suite": "reports/current/m5a_regression_report.json",
-    "performance_baseline": "reports/current/m5a_performance_baseline.json"
-  },
   "summary": {
     "final_decision": "BLOCKED",
     "ready_for_m5b": false,
-    "passed_review_areas": 3,
-    "blocked_review_areas": 3,
-    "m5a_blocking_known_limitations": 1,
-    "blocker_count": 6,
+    "passed_review_areas": 2,
+    "blocked_review_areas": 2,
+    "m5a_blocking_known_limitations": 0,
+    "m5b_only_limitations_excluded": 2,
+    "governance_limitations_excluded": 1,
+    "blocker_count": 2,
     "ready_for_m5b_requires": [
       "m5a_data_quality_gate PASS",
       "report_integrity_v2 PASS",
-      "no critical M5a-blocking known limitations",
-      "documentation_truth_lint PASS"
+      "documentation_truth_lint PASS",
+      "no open known limitations with target_phase=M5A and effective blocks_gate=true"
     ]
   }
 }

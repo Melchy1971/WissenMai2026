@@ -1,0 +1,188 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5b_boundary_report",
+  "report_type": "preparation_boundary",
+  "generated_at": "2026-06-10T00:00:00Z",
+  "generated_by": "manual",
+  "environment": "local",
+  "status": "DRAFT",
+  "result": "DRAFT",
+  "decision": {
+    "preparation_allowed": true,
+    "implementation_allowed": false,
+    "go_allowed": false,
+    "manual_override_allowed": false,
+    "rule": "M5b PREPARED erfordert M5a READY_FOR_M5B. Solange m5b_release_decision.json BLOCKED meldet, bleibt jedes M5b-Artefakt DRAFT."
+  },
+  "boundary_document": "docs/m5b-preparation-boundary.md",
+  "gate_authority": "reports/current/m5b_release_decision.json",
+  "allowed": {
+    "items": [
+      {
+        "id": "PREP-01",
+        "label": "Architektur-Dokument",
+        "description": "docs/m5b-drift-architecture.md darf fortgefuehrt, praezisiert und versioniert werden.",
+        "allowed": true
+      },
+      {
+        "id": "PREP-02",
+        "label": "Drift-Typen",
+        "description": "Drift-Typen (document, chunk, metadata, lifecycle, source_status, retrieval) duerfen dokumentiert und architectural spezifiziert werden.",
+        "allowed": true,
+        "drift_types": [
+          "document",
+          "chunk",
+          "metadata",
+          "lifecycle",
+          "source_status",
+          "retrieval"
+        ]
+      },
+      {
+        "id": "PREP-03",
+        "label": "Report-Schema",
+        "description": "JSON Report-Schema fuer m5b_drift_report darf definiert und dokumentiert werden.",
+        "allowed": true,
+        "schema_fields": [
+          "report_schema_version",
+          "report_type",
+          "report_name",
+          "generated_at",
+          "generated_by",
+          "environment",
+          "workspace_id",
+          "status",
+          "drift_score",
+          "counters",
+          "findings"
+        ]
+      },
+      {
+        "id": "PREP-04",
+        "label": "Gate-Kriterien",
+        "description": "Gate-Kriterien und Schwellen fuer M5b duerfen definiert werden.",
+        "allowed": true,
+        "gate_criteria": [
+          { "criterion": "document_drift_errors", "threshold": 0, "effect": "blocks_gate" },
+          { "criterion": "lifecycle_exclusion_violations", "threshold": 0, "effect": "blocks_gate" },
+          { "criterion": "chunk_integrity_errors", "threshold": 0, "effect": "blocks_gate" },
+          { "criterion": "critical_findings", "threshold": 0, "effect": "freeze_and_escalate" },
+          { "criterion": "retrieval_baseline_delta", "threshold": 0.05, "effect": "blocks_gate_if_exceeded" },
+          { "criterion": "source_status_violations", "threshold": 0, "effect": "blocks_gate" },
+          { "criterion": "metadata_completeness_failures", "threshold": 0, "effect": "blocks_gate" }
+        ]
+      },
+      {
+        "id": "PREP-05",
+        "label": "Risiken",
+        "description": "Risikoanalyse fuer M5b-Scope darf dokumentiert werden.",
+        "allowed": true,
+        "risk_ids": [
+          "R-M5B-01",
+          "R-M5B-02",
+          "R-M5B-03",
+          "R-M5B-04",
+          "R-M5B-05",
+          "R-M5B-06"
+        ]
+      },
+      {
+        "id": "PREP-06",
+        "label": "Teststrategie",
+        "description": "Testplanung und Testspezifikation (Unit, Fixture, Boundary, Integration, Regression) darf dokumentiert werden. Keine Testimplementierung, keine Ausfuehrung gegen Produktionsdaten.",
+        "allowed": true
+      },
+      {
+        "id": "PREP-07",
+        "label": "Nicht-Scope",
+        "description": "Explizite Abgrenzung des Nicht-Scope darf dokumentiert werden.",
+        "allowed": true
+      }
+    ]
+  },
+  "not_allowed": {
+    "items": [
+      {
+        "id": "FORBID-01",
+        "label": "Drift Detection Code",
+        "description": "Keine Implementierung von Detector-Logik, Detector-Klassen oder -Funktionen.",
+        "allowed": false,
+        "violation_severity": "blocking"
+      },
+      {
+        "id": "FORBID-02",
+        "label": "Repair Code",
+        "description": "Kein Reindex-, Snapshot-Repair-, Queue-Recovery- oder Backup-Refresh-Code.",
+        "allowed": false,
+        "violation_severity": "blocking"
+      },
+      {
+        "id": "FORBID-03",
+        "label": "Cleanup Code",
+        "description": "Kein Cleanup-Code, der Daten mutiert oder loescht.",
+        "allowed": false,
+        "violation_severity": "blocking"
+      },
+      {
+        "id": "FORBID-04",
+        "label": "Neue Adminaktionen",
+        "description": "Keine neuen Web-Admin-Aktionen, API-Endpunkte oder Dashboard-Operationen fuer Drift.",
+        "allowed": false,
+        "violation_severity": "blocking"
+      },
+      {
+        "id": "FORBID-05",
+        "label": "Automatische Korrekturen",
+        "description": "Kein automatischer Repair. Repair ist explizit ausgeloest, nie automatisch.",
+        "allowed": false,
+        "violation_severity": "blocking",
+        "source": "docs/drift.md"
+      }
+    ]
+  },
+  "blockers": [
+    {
+      "id": "M5A_NOT_READY_FOR_M5B",
+      "severity": "blocking",
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "detail": "M5a Final Readiness Review ist BLOCKED; M5b kann nicht PREPARED werden."
+    },
+    {
+      "id": "REPORT_INTEGRITY_NOT_PASS",
+      "severity": "blocking",
+      "source": "reports/current/report_integrity_v2.json",
+      "detail": "Report Integrity evidence ist BLOCKED, nicht PASS."
+    },
+    {
+      "id": "CRITICAL_LIMITATIONS_OPEN",
+      "severity": "blocking",
+      "source": "reports/current/known_limitations.json",
+      "detail": "Offene kritische Limitations: KL-M5-T-001, KL-M5-T-002, KL-GOV-001."
+    }
+  ],
+  "boundary_violation_definition": {
+    "triggers": [
+      "Code gegen FORBID-01 bis FORBID-05 wird committed, solange m5b_release_decision.json nicht GO meldet",
+      "remediation_hint impliziert automatische Aktion",
+      "Detector-Lauf mutiert Daten",
+      "Admin-Endpunkt fuer Drift-Operationen wird ohne GO registriert",
+      "Repair-Logik in Detektor eingebaut"
+    ],
+    "escalation": "Sofortige Reversion; keine manuelle Override-Erlaubnis"
+  },
+  "sources": [
+    { "path": "reports/current/m5b_release_decision.json", "role": "Gate-Authority" },
+    { "path": "reports/current/m5b_start_gate.json", "role": "Startzustand" },
+    { "path": "docs/m5b-drift-architecture.md", "role": "Architektur-Referenz" },
+    { "path": "docs/drift.md", "role": "Drift-Typen und Repair-Steuerung" },
+    { "path": "reports/current/m5a_final_readiness_review.json", "role": "PREPARED-Voraussetzung" }
+  ],
+  "summary": {
+    "allowed_count": 7,
+    "forbidden_count": 5,
+    "blocker_count": 3,
+    "current_status": "DRAFT",
+    "implementation_gate_required": true,
+    "next_milestone": "M5a READY_FOR_M5B fuer PREPARED-Freigabe"
+  }
+}

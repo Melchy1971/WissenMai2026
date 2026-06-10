@@ -1,0 +1,153 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5b_beta_start_gate",
+  "report_type": "gate_evaluation",
+  "generated_at": "2026-06-10T15:00:00Z",
+  "generated_by": "manual",
+  "environment": "local",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+
+  "decision": {
+    "status": "BLOCKED",
+    "beta_allowed": false,
+    "implementation_allowed": false,
+    "reason": "M5b Alpha Validation ist BLOCKED (reports/current/m5b_alpha_validation_report.json). Beta setzt Alpha PASS voraus. Alle Beta-Kriterien koennen erst nach Alpha PASS geprueft werden."
+  },
+
+  "boundary_rule": "Beta-Implementierung erfordert Beta Start Gate PASS. Beta Start Gate erfordert Alpha Validation PASS. Alpha Validation erfordert Implementation Gate GO. Kein Schritt darf uebersprungen werden.",
+
+  "criteria": [
+    {
+      "id": "BSG-01",
+      "label": "M5b Alpha Validation PASS",
+      "required": true,
+      "passed": false,
+      "source": "reports/current/m5b_alpha_validation_report.json",
+      "observed": {
+        "status": "BLOCKED",
+        "inputs_found": 1,
+        "inputs_missing": 3,
+        "alpha_implementation_exists": false
+      },
+      "pass_condition": "m5b_alpha_validation_report.decision.status = PASS",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "BSG-02",
+      "label": "Drift Regression Suite PASS",
+      "required": true,
+      "passed": false,
+      "source": "reports/current/m5b_drift_regression_report.json",
+      "observed": {
+        "file_found": false,
+        "note": "Regression Suite nicht vorhanden. Test-Code darf erst nach Implementation Gate GO geschrieben werden."
+      },
+      "pass_condition": "m5b_drift_regression_report.status = PASS",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "BSG-03",
+      "label": "Drift Report Schema Validation PASS",
+      "required": true,
+      "passed": false,
+      "source": "reports/current/drift_report_schema_validation.json",
+      "observed": {
+        "file_found": false,
+        "note": "Schema Validator nicht vorhanden. Setzt Alpha-Implementierung voraus."
+      },
+      "pass_condition": "drift_report_schema_validation.status = PASS",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "BSG-04",
+      "label": "Drift API Scope definiert",
+      "required": true,
+      "passed": true,
+      "source": "docs/m5b-drift-api-scope.md",
+      "source_secondary": "openapi_drift_scope.json",
+      "observed": {
+        "file_exists": true,
+        "schema_exists": true,
+        "endpoints_count": 4,
+        "mutating_endpoints": 0,
+        "prohibited_endpoints_count": 6
+      },
+      "pass_condition": "docs/m5b-drift-api-scope.md und openapi_drift_scope.json vorhanden",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "BSG-05",
+      "label": "Drift Dashboard Scope definiert",
+      "required": true,
+      "passed": true,
+      "source": "docs/m5b-drift-dashboard-scope.md",
+      "source_secondary": "dashboard_testids.md",
+      "observed": {
+        "file_exists": true,
+        "testids_exists": true,
+        "widgets_count": 6,
+        "repair_buttons": 0,
+        "cleanup_buttons": 0
+      },
+      "pass_condition": "docs/m5b-drift-dashboard-scope.md und dashboard_testids.md vorhanden",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "BSG-06",
+      "label": "Documentation Truth PASS",
+      "required": true,
+      "passed": true,
+      "source": "reports/current/documentation_truth_lint.json",
+      "observed": {
+        "status": "PASS",
+        "errors": 0,
+        "warnings": 0,
+        "implementation_false_claims": 0
+      },
+      "pass_condition": "documentation_truth_lint.status = PASS",
+      "blocker_if_failed": true
+    }
+  ],
+
+  "summary": {
+    "criteria_total": 6,
+    "criteria_passed": 3,
+    "criteria_failed": 3,
+    "beta_allowed": false,
+    "blockers_count": 3
+  },
+
+  "blockers": [
+    {
+      "id": "BSG-BLOCKER-01",
+      "criterion": "BSG-01",
+      "severity": "blocking",
+      "source": "reports/current/m5b_alpha_validation_report.json",
+      "detail": "Alpha Validation BLOCKED: m5b_implementation_gate_alpha.json, drift_report.json, drift_summary.json fehlen. Keine Alpha-Implementierung vorhanden."
+    },
+    {
+      "id": "BSG-BLOCKER-02",
+      "criterion": "BSG-02",
+      "severity": "blocking",
+      "source": "reports/current/m5b_drift_regression_report.json",
+      "detail": "Drift Regression Suite nicht vorhanden. Setzt Implementation Gate GO und Alpha PASS voraus."
+    },
+    {
+      "id": "BSG-BLOCKER-03",
+      "criterion": "BSG-03",
+      "severity": "blocking",
+      "source": "reports/current/drift_report_schema_validation.json",
+      "detail": "Schema Validation Report nicht vorhanden. Setzt laufende Drift Reports voraus."
+    }
+  ],
+
+  "path_to_beta_go": [
+    "1. Implementation Gate GO erreichen (aktuell: 1/4 Kriterien)",
+    "2. Alpha-Implementierung: Domain Model, Alembic Migration, Detectoren, Drift Runner",
+    "3. Alpha Validation: drift_report.json und drift_summary.json erzeugen",
+    "4. m5b_implementation_gate_alpha.json erstellen und Alpha Validation ausfuehren → PASS",
+    "5. Drift Regression Suite schreiben und laufen lassen → PASS",
+    "6. Schema Validation laufen lassen → PASS",
+    "7. Beta Start Gate neu evaluieren → PASS"
+  ]
+}

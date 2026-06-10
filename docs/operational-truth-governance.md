@@ -113,9 +113,9 @@ Dokumentation darf M4 nur dann als gruen beschreiben, wenn sie diesen Report und
 
 Quelle:
 
-- `reports/current/frontend_full_suite_staged_report.json`
-- `reports/current/frontend_full_suite_staged_report.json`
-- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`
 - `reports/current/m3a_release_candidate.json`
 - `reports/current/gate_hierarchy_result.json`
 - Detailregel: `docs/m3a-gate-policy.md`
@@ -300,7 +300,7 @@ Diese Regeln gelten verpflichtend fuer M3a und alle spaeteren GUI-Slices mit pro
 
 ### Pflichtartefakte
 
-- `reports/current/frontend_full_suite_staged_report.json` ist das primaere Truth-Artefakt fuer GUI-Verhalten
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json` ist das primaere Truth-Artefakt fuer GUI-Verhalten
 - `reports/current/m3a_release_candidate.json` ist Pflichtartefakt fuer Frontend/Backend-Contract-Stabilitaet
 - `reports/current/gate_hierarchy_result.json` oder ein nachfolgender GUI-Gate-Report ist Pflichtartefakt fuer die integrierte Gate-Entscheidung
 

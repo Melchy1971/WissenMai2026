@@ -2,21 +2,23 @@
   "report_schema_version": 1,
   "report_name": "known_limitations",
   "generated_by": "gate_validator",
-  "generated_at": "2026-06-09T13:27:00.4095343Z",
-  "timestamp": "2026-06-09T13:27:00.4095343Z",
+  "generated_at": "2026-06-10T08:07:10.7933508Z",
+  "timestamp": "2026-06-10T08:07:10.7933508Z",
   "environment": "local",
   "report_type": "informational",
   "gate": "known_limitations",
   "status": "INFO",
   "result": "INFO",
-  "source_command": "known_limitations_update_KL-M5-T-001_T-002_GOV-001_20260609",
+  "source_command": "kl_gov_001_scope_decision_20260610",
   "authority": "Nur maschinenlesbare Reports sind autoritativ. Manuelle Statusaussagen in dieser Datei duerfen keinen Gate-Status setzen.",
   "generated_from": [
     "reports/current/m3a_release_candidate.json",
     "reports/current/m4_backend_release_candidate.json",
     "reports/current/m4e_operations_release_gate.json",
     "reports/current/masterplan_status.json",
-    "reports/current/documentation_truth_lint.json"
+    "reports/current/documentation_truth_lint.json",
+    "docs/gate_hierarchy.json",
+    "reports/current/gate_hierarchy_result.json"
   ],
   "evaluation_basis": {
     "m3a_rc": "PASS",
@@ -30,64 +32,58 @@
   "collected": 6,
   "open": 3,
   "deferred": 3,
-  "non_blocking": 3,
-  "blocking": 3,
+  "non_blocking": 6,
+  "blocking": 0,
   "limitations": [
     {
       "id": "KL-M5-T-001",
       "title": "M5 Entropy-/Drift-Truth-Failures blockieren Slice-Start",
       "status": "open",
       "severity": "high",
-      "category": "M5 blocker",
-      "description": "M5 Entropy-/Drift-Truth ist weiterhin nicht freigegeben: reports/current/m4_truth_report.json ist PASS, schliesst M5-Governance aber explizit aus; ein aktueller gruenser M5-Truth-Block fehlt. Kein M5-Slice darf produktiv gehen, bevor sein M5-Truth-Block PASS/GO ist.",
-      "blocks_gate": [
-        "m5_truth_gate"
-      ],
+      "category": "spätere M5b Implementierung",
+      "description": "M5 Entropy-/Drift-Truth ist weiterhin nicht freigegeben: reports/current/m4_truth_report.json ist PASS, schliesst M5-Governance aber explizit aus; ein aktueller gruenser M5-Truth-Block fehlt. Diese Limitation blockiert nicht das M5a Parent-Gate; sie bleibt eine spaetere M5b-Implementierungs-/Slice-Aktivierungs-Voraussetzung.",
+      "blocks_gate": [],
       "owner": "m5_truth_owner",
-      "target_phase": "M5a Data Quality / M5 Slice Start",
+      "target_phase": "M5B_IMPL",
       "evidence_report": "reports/current/pre_m5_decision_report.json",
-      "next_action": "Aktuellen M5-Truth-Nachweis erzeugen: pytest --pg tests/truth/m5/ ausfuehren, daraus reports/current/m5_truth_report.json mit status=PASS, failed=0, errors=0, blockers=[] generieren und m5_truth_gate erst danach freigeben. Bis dahin bleibt blocks_gate=[\"m5_truth_gate\"] bestehen."
+      "next_action": "Nicht als M5a-Final-Readiness-Blocker zaehlen. Vor spaeterer M5b-Implementierung oder Slice-Aktivierung aktuellen M5-Truth-Nachweis erzeugen: pytest --pg tests/truth/m5/ ausfuehren, daraus reports/current/m5_truth_report.json mit status=PASS, failed=0, errors=0, blockers=[] generieren und erst danach die jeweilige Implementierungsfreigabe bewerten."
     },
     {
       "id": "KL-M5-T-002",
       "title": "Drei Pflicht-Artefakte pro M5-Slice fehlen vor Slice-Start",
       "status": "open",
       "severity": "high",
-      "category": "M5b implementation blocker",
-      "description": "Die fehlenden Slice-Artefakte betreffen die M5b-Implementierungsfreigabe, nicht das M5a Parent-Gate: Retrieval-Baseline ist aktuell nur WARN/nicht release-grade, Cleanup Dry-Run mit blocked_count=0 fehlt als Implementierungsfreigabe, und der passende PostgreSQL-Truth-Block muss vor M5b-Slice-Implementierung PASS/GO sein.",
-      "blocks_gate": [
-        "m5b_implementation_gate"
-      ],
+      "category": "spätere M5b Implementierung",
+      "description": "Die fehlenden Slice-Artefakte betreffen die spaetere M5b-Implementierungsfreigabe, nicht Report Integrity, nicht das M5a Data Quality Gate und nicht das M5b Start-Gate. Die aktuelle Evidence verweist auf M5b Drift/Retrieval-Readiness: Retrieval-Baseline ist WARN/nicht release-grade, M5b Drift Architecture ist DRAFT, und Cleanup-Dry-Run sowie passende PostgreSQL-Truth-Bloecke bleiben spaetere Implementierungsnachweise.",
+      "blocks_gate": [],
       "owner": "m5_slice_owner",
-      "target_phase": "M5b Drift / M5b Slice Implementation",
+      "target_phase": "M5B_IMPL",
       "evidence_report": "reports/current/m5b_start_gate.json",
-      "next_action": "M5a nicht durch diese Limitation blockieren. Fuer M5b-Implementierung: reports/current/retrieval_quality_baseline_report.json auf release-grade PASS bringen, Cleanup-Dry-Run-Report mit blocked_count=0 erzeugen, passenden M5b-Truth-Block PASS/GO nachweisen und danach m5b_implementation_gate neu bewerten."
+      "next_action": "Nicht als aktuelles Gate-Blocking zaehlen. Fuer spaetere M5b-Implementierung: reports/current/retrieval_quality_baseline_report.json auf release-grade PASS bringen, M5b Drift Architecture von DRAFT auf freigegeben bringen, Cleanup-Dry-Run-Report mit blocked_count=0 erzeugen, passenden M5b-Truth-Block PASS/GO nachweisen und danach ein eigenes m5b_implementation_gate bewerten."
     },
     {
       "id": "KL-GOV-001",
       "title": "Mutierende Admin-Aktionen ohne Runbook und Gate-Freigabe gesperrt",
       "status": "deferred",
       "severity": "high",
-      "category": "deferred operational governance",
-      "description": "Mutierende Admin-Aktionen (Repair, Cleanup-Loeschen, forced Reindex) sind nicht Teil von M5a und nicht Voraussetzung fuer M5b DRAFT/PREPARED. M4d bleibt read-only; jede spaetere mutierende Adminaktion braucht vor Freigabe ein eigenes Runbook, Audit-Regel und operational_governance_gate.",
-      "blocks_gate": [
-        "operational_governance_gate"
-      ],
+      "category": "Governance/Operations allgemein",
+      "description": "Mutierende Admin-Aktionen (Repair, Cleanup-Loeschen, forced Reindex, Restore/Backfill-Ausfuehrung) sind nicht Teil von M5a und nicht Voraussetzung fuer M5b Preparation oder nicht-mutierende M5b Implementation. M5a bleibt read-only Data Quality und fuehrt keine Repair-/Cleanup-Aktionen aus; KL-GOV-001 blockiert daher kein aktuelles M5a- oder M5b-Gate. Jede spaetere mutierende Adminaktion braucht vor Freigabe ein eigenes Runbook, Dry-Run, Audit-Regel und operational_governance_gate.",
+      "blocks_gate": [],
       "owner": "operations_owner",
-      "target_phase": "Post-M5 mutating admin actions",
+      "target_phase": "GOVERNANCE",
       "evidence_report": "docs/m4d-admin-diagnostics.md",
-      "next_action": "Keine M5a- oder M5b-Freigabe durch KL-GOV-001 blockieren. Erst wenn Repair, Cleanup-Loeschen, forced Reindex oder aehnliche Web-Admin-Mutationen implementiert werden sollen: dediziertes Runbook, Auth-/Redaction-/Audit-Tests und operational_governance_gate PASS/GO erzeugen."
+      "next_action": "Keine M5a-Readiness, M5b-Preparation oder nicht-mutierende M5b-Implementation durch KL-GOV-001 blockieren. Erst wenn Repair, Cleanup-Loeschen, forced Reindex, Restore/Backfill oder aehnliche Web-Admin-Mutationen ausgefuehrt werden sollen: dediziertes Runbook, Dry-Run-Nachweis, Auth-/Redaction-/Audit-/Failure-Tests und operational_governance_gate PASS/GO erzeugen."
     },
     {
       "id": "KL-DEF-001",
       "title": "OCR fuer gescannte PDFs nicht Teil von V1",
       "status": "deferred",
       "severity": "low",
-      "category": "explicitly deferred",
+      "category": "non-blocking technical debt",
       "description": "OCR fuer gescannte PDFs ist nicht Teil von V1. PDFs ohne extrahierbaren Text bleiben OCR_REQUIRED.",
       "blocks_gate": [],
       "owner": "product_owner",
-      "target_phase": "Post-M4 feature",
+      "target_phase": "M5C_PLUS",
       "evidence_report": "masterplan.md",
       "next_action": "OCR als eigenes Feature-Paket konzipieren und priorisieren."
     },
@@ -96,11 +92,11 @@
       "title": "Embeddings und Vektorsuche optional und nicht V1-kritisch",
       "status": "deferred",
       "severity": "low",
-      "category": "explicitly deferred",
+      "category": "non-blocking technical debt",
       "description": "Embeddings und Vektorsuche sind optional und nicht V1-kritisch.",
       "blocks_gate": [],
       "owner": "architecture_owner",
-      "target_phase": "Post-V1 or M5+",
+      "target_phase": "M5C_PLUS",
       "evidence_report": "masterplan.md",
       "next_action": "FTS-Baseline weiter nutzen; Vektorsuche separat konzipieren."
     },
@@ -109,11 +105,11 @@
       "title": "API-Alias /api/v1/documents nicht durchgaengig verfuegbar",
       "status": "open",
       "severity": "low",
-      "category": "non-blocking debt",
+      "category": "non-blocking technical debt",
       "description": "Der Alias /api/v1/documents ist nicht durchgaengig verfuegbar; Pfade nutzen teilweise /documents.",
       "blocks_gate": [],
       "owner": "api_owner",
-      "target_phase": "M4/M5 API hardening",
+      "target_phase": "M5C_PLUS",
       "evidence_report": "docs/api.md",
       "next_action": "Vor neuer Clientbindung API-Vertrag pruefen; Alias oder Routing konsolidieren."
     }

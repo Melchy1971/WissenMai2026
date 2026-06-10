@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DRAFT",
+  "generated_by": "manual",
+  "created_at": "2026-06-10",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "test_matrix_ref": "test_matrix_m5b.json",
+  "doc_ref": "docs/m5b-testdata-strategy.md",
+
+  "principles": [
+    "Deterministic: all fixture IDs are static and versioned",
+    "PostgreSQL as final truth: no mock as final basis for gate-relevant tests",
+    "Workspace isolation: dedicated workspace_id per scenario",
+    "Teardown mandatory: no persistent state after test completion",
+    "No production data"
+  ],
+
+  "not_scope": [
+    "mocks as final truth for gate-relevant tests",
+    "production data as test basis",
+    "automatic baseline updates from test results",
+    "cross-workspace fixtures",
+    "tests that directly mutate reports/current/"
+  ],
+
+  "scenarios": [
+    {
+      "id": "SC01",
+      "name": "Korrekte Daten (Baseline / Happy Path)",
+      "fixture_prefix": "SC01_",
+      "workspace_id_placeholder": "11111111-1111-1111-1111-111111111111",
+      "pytest_markers": ["m5b_truth", "drift_detection"],
+      "state": {
+        "documents": "N active documents; is_searchable=true for all chunks",
+        "chunks": "chunk_count matches expected_chunk_count",
+        "search_index": "in sync with document_chunks",
+        "sources": "all reachable; source_status=active",
+        "retrieval": "metric_delta <= 0.0 against baseline",
+        "metadata": "all required fields set"
+      },
+      "expected_result": {
+        "total_drifts": 0,
+        "gate_decision": "GO"
+      },
+      "purpose": "Verifies no False Positives in clean workspace"
+    },
+    {
+      "id": "SC02",
+      "name": "Lifecycle Drift",
+      "fixture_prefix": "SC02_",
+      "workspace_id_placeholder": "22222222-2222-2222-2222-222222222222",
+      "pytest_markers": ["m5b_truth", "drift_detection"],
+      "state": {
+        "documents": "1 document with lifecycle_status=deleted",
+        "chunks": "associated chunks have is_searchable=true",
+        "search_index": "deleted document present in index"
+      },
+      "expected_result": {
+        "drift_type": "LIFECYCLE_DRIFT",
+        "severity": "critical",
+        "gate_decision": "NO_GO_FREEZE"
+      },
+      "variants": [
+        {
+          "id": "SC02a",
+          "state": "lifecycle_status=archived; chunks is_searchable=true; not in index",
+          "expected_severity": "error",
+          "expected_gate": "NO_GO"
+        }
+      ],
+      "purpose": "Verifies LIFECYCLE_DRIFT detection; critical when deleted document is searchable"
+    },
+    {
+      "id": "SC03",
+      "name": "Source Status Drift",
+      "fixture_prefix": "SC03_",
+      "workspace_id_placeholder": "33333333-3333-3333-3333-333333333333",
+      "pytest_markers": ["m5b_truth", "drift_detection"],
+      "state": {
+        "sources": "1 source with source_status=active; connectivity check fails; last_successful_sync beyond configured timeout"
+      },
+      "expected_result": {
+        "drift_type": "SOURCE_STATUS_DRIFT",
+        "severity": "error",
+        "gate_decision": "NO_GO"
+      },
+      "notes": "Connectivity check uses test stub for external network response only; PostgreSQL data_sources is authoritative",
+      "purpose": "Verifies SOURCE_STATUS_DRIFT detection; stub is not a mock for final truth"
+    },
+    {
+      "id": "SC04",
+      "name": "Retrieval Drift",
+      "fixture_prefix": "SC04_",
+      "workspace_id_placeholder": "44444444-4444-4444-4444-444444444444",
+      "pytest_markers": ["m5b_truth", "drift_detection"],
+      "state": {
+        "baseline": "drift_baseline.json with defined retrieval metrics",
+        "chunks": "stale chunks indexed; content outdated",
+        "retrieval": "metric_delta > 0.05 on test queries"
+      },
+      "expected_result": {
+        "drift_type": "RETRIEVAL_DRIFT",
+        "severity": "error",
+        "gate_decision": "NO_GO"
+      },
+      "variants": [
+        {
+          "id": "SC04a",
+          "state": "metric_delta <= 0.05",
+          "expected_severity": "warning",
+          "expected_gate": "GO_WITH_WATCH_FLAG",
+          "note": "warning must not block gate"
+        }
+      ],
+      "purpose": "Verifies RETRIEVAL_DRIFT detection with threshold-based escalation"
+    },
+    {
+      "id": "SC05",
+      "name": "Metadata Drift",
+      "fixture_prefix": "SC05_",
+      "workspace_id_placeholder": "55555555-5555-5555-5555-555555555555",
+      "pytest_markers": ["m5b_truth", "drift_detection"],
+      "state": {
+        "documents": "N documents with import_status=completed; required field 'language' missing on all",
+        "other": "no other drift present"
+      },
+      "expected_result": {
+        "drift_type": "METADATA_DRIFT",
+        "severity": "warning",
+        "gate_decision": "GO_WITH_WATCH_FLAG"
+      },
+      "critical_test": "Verifies WARNING binding rule: gate must NOT switch to NO_GO on warning-only findings",
+      "variants": [
+        {
+          "id": "SC05a",
+          "state": "missing field affects relevance scoring",
+          "expected_severity": "error",
+          "expected_gate": "NO_GO"
+        }
+      ],
+      "purpose": "Verifies METADATA_DRIFT detection AND warning-does-not-block constraint"
+    },
+    {
+      "id": "SC06",
+      "name": "Search Index Drift",
+      "fixture_prefix": "SC06_",
+      "workspace_id_placeholder": "66666666-6666-6666-6666-666666666666",
+      "pytest_markers": ["m5b_truth", "drift_detection"],
+      "state": {
+        "search_index": "contains chunk_ids not in document_chunks (Phantom chunks)",
+        "document_chunks": "contains chunk_ids without search index entry (Missing chunks)"
+      },
+      "expected_result": {
+        "findings": [
+          { "drift_type": "SEARCH_INDEX_DRIFT", "severity": "critical", "reason": "Phantom chunks" },
+          { "drift_type": "SEARCH_INDEX_DRIFT", "severity": "error", "reason": "Missing chunks" }
+        ],
+        "gate_decision": "NO_GO_FREEZE"
+      },
+      "variants": [
+        {
+          "id": "SC06a",
+          "state": "only missing chunks; no phantoms",
+          "expected_severity": "error",
+          "expected_gate": "NO_GO"
+        }
+      ],
+      "purpose": "Verifies SEARCH_INDEX_DRIFT detection including Phantom-chunk critical escalation"
+    }
+  ]
+}

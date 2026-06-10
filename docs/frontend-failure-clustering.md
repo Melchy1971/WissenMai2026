@@ -3,12 +3,12 @@
 `scripts/cluster_frontend_failures.py` classifies Frontend Truth failures after a Playwright run.
 
 Input:
-- Playwright or Frontend Truth JSON report, default `reports/current/m3a_frontend_truth.json`
+- Playwright or Frontend Truth JSON report, default `reports/archive/legacy/20260605T100000Z/m3a_frontend_truth.json`
 - Playwright artifacts from `frontend/test-results`
 - Error contexts, screenshots, traces, console errors, and network errors when present
 
 Output:
-- `reports/current/frontend_failure_clusters.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_failure_clusters.json`
 
 Clusters:
 - Setup Failure

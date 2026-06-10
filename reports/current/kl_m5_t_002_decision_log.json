@@ -1,0 +1,107 @@
+{
+  "report_schema_version": 1,
+  "report_name": "kl_m5_t_002_decision_log",
+  "generated_by": "gate_validator",
+  "generated_at": "2026-06-10T08:02:27.6254436Z",
+  "timestamp": "2026-06-10T08:02:27.6254436Z",
+  "environment": "local",
+  "report_type": "decision_log",
+  "status": "PASS",
+  "result": "PASS",
+  "source_command": "kl_m5_t_002_scope_decision_20260610",
+  "limitation_id": "KL-M5-T-002",
+  "inputs": {
+    "known_limitations": "reports/current/known_limitations.json",
+    "primary_evidence_report": "reports/current/m5b_start_gate.json",
+    "retrieval_quality_baseline_report": "reports/current/retrieval_quality_baseline_report.json",
+    "m5b_drift_architecture": "docs/m5b-drift-architecture.md",
+    "m5a_final_readiness_review": "reports/current/m5a_final_readiness_review.json",
+    "report_integrity_v2": "reports/current/report_integrity_v2.json",
+    "masterplan_status": "reports/current/masterplan_status.json"
+  },
+  "original_classification": {
+    "status": "open",
+    "blocks_gate": [],
+    "target_phase": "M5B_IMPL",
+    "category": "spätere M5b Implementierung"
+  },
+  "decision": {
+    "blocks_m5a_final_readiness": false,
+    "blocks_m5b_start_gate": false,
+    "blocks_later_implementation": true,
+    "status_after": "open",
+    "resolved": false,
+    "blocks_gate_after": [],
+    "target_phase_after": "M5B_IMPL",
+    "category_after": "spätere M5b Implementierung"
+  },
+  "scope_checks": {
+    "report_integrity": {
+      "applies": false,
+      "evidence": "reports/current/report_integrity_v2.json is BLOCKED by source_status_integrity_gate and orphan_detector_gate child consistency, not by KL-M5-T-002 artifacts.",
+      "effect": "Do not map KL-M5-T-002 to Report Integrity."
+    },
+    "data_quality_gate": {
+      "applies": false,
+      "evidence": "reports/current/m5b_start_gate.json depends on m5a_data_quality_gate for M5b PREPARED, but KL-M5-T-002 describes later implementation artifacts.",
+      "effect": "Do not map KL-M5-T-002 to M5a Data Quality Gate."
+    },
+    "drift_detection": {
+      "applies": true,
+      "evidence": "reports/current/m5b_start_gate.json lists m5b_architecture_draft and docs/m5b-drift-architecture.md is DRAFT planning-only.",
+      "effect": "Keep target_phase M5B_IMPL; M5b Drift implementation remains later work."
+    },
+    "later_cleanup_repair_actions": {
+      "applies": true,
+      "evidence": "pre-M5 and governance docs require cleanup dry-run and truth evidence before cleanup-capable slices; docs/m5b-drift-architecture.md explicitly excludes repair and mutating cleanup from the planning phase.",
+      "effect": "Treat cleanup/repair items as later implementation prerequisites, not current gate blockers."
+    }
+  },
+  "evidence_summary": [
+    {
+      "source": "reports/current/m5b_start_gate.json",
+      "finding": "M5b Start remains DRAFT because M5a Parent-Gate is not PASS. Implementation blockers include missing m5b_implementation_gate, retrieval_baseline_not_release_grade, and m5b_architecture_draft.",
+      "effect": "KL-M5-T-002 does not block M5b Start-Gate directly; it belongs to later implementation readiness."
+    },
+    {
+      "source": "reports/current/retrieval_quality_baseline_report.json",
+      "finding": "status=WARN, decision.go_no_go=NO_GO, baseline_release_grade=false, requires_golden_retrieval_benchmark=true.",
+      "effect": "Retrieval baseline is a real M5b implementation prerequisite."
+    },
+    {
+      "source": "docs/m5b-drift-architecture.md",
+      "finding": "Status is DRAFT and scope is planning-only: no implementation, migration, API endpoint, cleanup, repair, or mutating operation.",
+      "effect": "Drift detection is later M5b implementation work, not current M5a or M5b Start-Gate blocking evidence."
+    },
+    {
+      "source": "reports/current/report_integrity_v2.json",
+      "finding": "Report Integrity blockers are source_status_integrity_gate and orphan_detector_gate child consistency.",
+      "effect": "KL-M5-T-002 is not a Report Integrity limitation."
+    },
+    {
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "finding": "KL-M5-T-002 is listed as not M5a-blocking.",
+      "effect": "Confirms KL-M5-T-002 should not block M5a Final Readiness."
+    }
+  ],
+  "rationale": "KL-M5-T-002 remains open because M5b implementation prerequisites are not satisfied. It is not resolved and does not currently block M5a Final Readiness or M5b Start-Gate. The concrete scope is later M5b implementation: retrieval baseline promotion, M5b drift architecture finalization, cleanup dry-run evidence, and matching M5b truth blocks.",
+  "known_limitations_updates": {
+    "blocking": {
+      "before": 0,
+      "after": 0
+    },
+    "non_blocking": {
+      "before": 6,
+      "after": 6
+    },
+    "kl_m5_t_002": {
+      "blocks_gate_before": [],
+      "blocks_gate_after": [],
+      "target_phase_before": "M5B_IMPL",
+      "target_phase_after": "M5B_IMPL",
+      "status_after": "open"
+    }
+  },
+  "next_action": "Before later M5b implementation, make retrieval_quality_baseline_report release-grade PASS, finalize M5b Drift Architecture, produce cleanup dry-run evidence with blocked_count=0 where cleanup is in scope, and generate matching M5b truth PASS/GO reports.",
+  "blockers": []
+}

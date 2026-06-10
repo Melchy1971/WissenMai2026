@@ -1,0 +1,155 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5b_implementation_gate",
+  "report_type": "gate_evaluation",
+  "generated_at": "2026-06-10T00:00:00Z",
+  "generated_by": "manual",
+  "environment": "local",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+
+  "decision": {
+    "status": "NO_GO",
+    "implementation_allowed": false,
+    "prepared_allowed": false,
+    "reason": "Explizites NO-GO. 4 von 4 Kriterien nicht erfuellt. Start-Gate ist BLOCKED; M5a nicht READY_FOR_M5B; 2 kritische Limitations offen (KL-M5-T-001, KL-M5-T-002); KL-GOV-001 nicht abgegrenzt."
+  },
+
+  "boundary_rule": "Auch wenn M5b Preparation PREPARED waere: M5b Implementation bleibt NO-GO bis dieses Gate explizit PASS ist. PREPARED != IMPLEMENTED.",
+
+  "criteria": [
+    {
+      "id": "IG-01",
+      "label": "Start-Gate GO",
+      "required": true,
+      "passed": false,
+      "source": "reports/current/m5b_start_gate.json",
+      "observed": {
+        "status": "DRAFT",
+        "go_no_go": "NO_GO",
+        "m5b_implementation_allowed": false,
+        "note": "Start-Gate ist BLOCKED wegen SG-01 (M5a) und SG-02 (Report Integrity)"
+      },
+      "pass_condition": "m5b_start_gate.decision.go_no_go = GO und m5b_start_gate.status = PASS",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "IG-02",
+      "label": "Keine kritischen M5B_IMPL Limitations",
+      "required": true,
+      "passed": false,
+      "source": "reports/current/known_limitations.json",
+      "observed": {
+        "open_high_m5b_impl_limitations": [
+          {
+            "id": "KL-M5-T-001",
+            "title": "M5 Entropy-/Drift-Truth-Failures blockieren Slice-Start",
+            "severity": "high",
+            "status": "open",
+            "category": "spaetere M5b Implementierung"
+          },
+          {
+            "id": "KL-M5-T-002",
+            "title": "Drei Pflicht-Artefakte pro M5-Slice fehlen vor Slice-Start",
+            "severity": "high",
+            "status": "open",
+            "category": "spaetere M5b Implementierung"
+          }
+        ],
+        "count": 2
+      },
+      "pass_condition": "Keine open high-severity Limitation mit category 'spaetere M5b Implementierung'",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "IG-03",
+      "label": "Teststrategie vorhanden",
+      "required": true,
+      "passed": true,
+      "source": "docs/m5b-test-strategy.md",
+      "source_secondary": "test_matrix_m5b.json",
+      "observed": {
+        "file_exists": true,
+        "test_matrix_exists": true,
+        "drift_types_covered": 7,
+        "gate_relevant_test_suites": 4,
+        "repair_actions_in_tests": false
+      },
+      "pass_condition": "docs/m5b-test-strategy.md vorhanden mit Testplaenen fuer alle 7 Drift-Typen",
+      "blocker_if_failed": true,
+      "note": "Einzig bestandenes Kriterium. Teststrategie komplett."
+    },
+    {
+      "id": "IG-04",
+      "label": "Keine offenen Governance-Blocker fuer Drift Checks",
+      "required": true,
+      "passed": false,
+      "source": "reports/current/known_limitations.json",
+      "observed": {
+        "governance_blockers": [
+          {
+            "id": "KL-GOV-001",
+            "title": "Mutierende Admin-Aktionen ohne Runbook und Gate-Freigabe gesperrt",
+            "severity": "high",
+            "status": "deferred",
+            "category": "Governance/Operations allgemein",
+            "read_only_drift_checks_explicitly_excluded": false
+          }
+        ],
+        "count": 1,
+        "note": "KL-GOV-001 ist high/deferred. Read-only Drift Checks sind von der Limitation sachlich nicht betroffen, aber die Nicht-Anwendbarkeit ist nicht explizit dokumentiert. Muss vor GO formell abgegrenzt werden."
+      },
+      "pass_condition": "KL-GOV-001 geschlossen oder explizit als nicht-anwendbar fuer read-only Drift Checks deklariert",
+      "blocker_if_failed": true
+    }
+  ],
+
+  "summary": {
+    "criteria_total": 4,
+    "criteria_passed": 1,
+    "criteria_failed": 3,
+    "implementation_allowed": false,
+    "blockers_count": 3
+  },
+
+  "blockers": [
+    {
+      "id": "IG-BLOCKER-01",
+      "criterion": "IG-01",
+      "severity": "blocking",
+      "source": "reports/current/m5b_start_gate.json",
+      "detail": "Start-Gate ist DRAFT/NO_GO. M5a nicht READY_FOR_M5B. Report Integrity BLOCKED."
+    },
+    {
+      "id": "IG-BLOCKER-02",
+      "criterion": "IG-02",
+      "severity": "blocking",
+      "source": "reports/current/known_limitations.json",
+      "detail": "KL-M5-T-001 (high/open): M5 Entropy-/Drift-Truth-Failures blockieren Slice-Start. KL-M5-T-002 (high/open): Pflicht-Artefakte pro M5-Slice fehlen."
+    },
+    {
+      "id": "IG-BLOCKER-03",
+      "criterion": "IG-04",
+      "severity": "blocking",
+      "source": "reports/current/known_limitations.json",
+      "detail": "KL-GOV-001 (high/deferred): Keine explizite Abgrenzung fuer read-only Drift Checks. Governance-Abgrenzung muss dokumentiert werden."
+    }
+  ],
+
+  "path_to_go": [
+    "1. M5a alle Slice-Gates PASS → m5a_final_readiness_review.json READY_FOR_M5B",
+    "2. report_integrity_v2.json → PASS",
+    "3. m5b_start_gate.json → PASS/GO",
+    "4. KL-M5-T-001 schliessen",
+    "5. KL-M5-T-002 schliessen",
+    "6. KL-GOV-001 fuer read-only Drift Checks explizit als nicht-anwendbar deklarieren",
+    "7. Implementation Gate neu evaluieren → PASS/GO"
+  ],
+
+  "not_allowed_until_go": [
+    "Drift Detection Code implementieren",
+    "Repair Code implementieren",
+    "Cleanup Code implementieren",
+    "neue Admin-Aktionen fuer Drift",
+    "automatische Korrekturen"
+  ]
+}

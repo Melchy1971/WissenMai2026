@@ -1,0 +1,223 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DRAFT",
+  "generated_by": "manual",
+  "created_at": "2026-06-10",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "governance_ref": "drift_governance.schema.json",
+  "type_authority": "schemas/drift_types.schema.json",
+  "doc_ref": "docs/m5b-drift-severity.md",
+
+  "severity_levels": {
+    "info": {
+      "code": 0,
+      "gate_effect": "none",
+      "auto_block": false,
+      "description": "Abweichung bekannt; kein Handlungsbedarf"
+    },
+    "warning": {
+      "code": 1,
+      "gate_effect": "watch_flag",
+      "auto_block": false,
+      "description": "Beobachtenswert; kein automatisches Blocking erlaubt",
+      "binding_rule": "WARNING darf unter keinen Umständen automatisch Gate blockieren"
+    },
+    "error": {
+      "code": 2,
+      "gate_effect": "NO_GO",
+      "auto_block": true,
+      "description": "Gate NO_GO; Operator-Entscheidung erforderlich"
+    },
+    "critical": {
+      "code": 3,
+      "gate_effect": "NO_GO_FREEZE",
+      "auto_block": true,
+      "description": "Gate NO_GO + Workspace-Scope Freeze bis Operator-Freigabe",
+      "binding_rule": "CRITICAL kann Implementation Gate blockieren; ein einzelnes Finding reicht"
+    }
+  },
+
+  "drift_types": [
+    {
+      "drift_type": "DOCUMENT_DRIFT",
+      "standard_severity": "warning",
+      "escalation_rules": [
+        {
+          "target_severity": "error",
+          "condition": "import_status=completed AND content_hash_mismatch=true",
+          "description": "Dokument abgeschlossen importiert; Content-Hash weicht ab"
+        },
+        {
+          "target_severity": "critical",
+          "condition": "lifecycle_status=deleted AND content_hash_mismatch=true AND is_searchable=true",
+          "description": "Gelöschtes Dokument mit geändertem Inhalt ist weiterhin suchbar"
+        }
+      ],
+      "gate_effects": {
+        "warning": "watch_flag",
+        "error": "NO_GO",
+        "critical": "NO_GO_FREEZE"
+      },
+      "notes": "critical erfordert gleichzeitiges Lifecycle-Problem und Content-Abweichung"
+    },
+    {
+      "drift_type": "CHUNK_DRIFT",
+      "standard_severity": "warning",
+      "escalation_rules": [
+        {
+          "target_severity": "error",
+          "condition": "chunk_count_divergence > 0 AND validation_window_elapsed=true",
+          "description": "Chunk-Anzahl-Divergenz nach Ablauf des Validierungsfensters (typ. 10 min nach Import)"
+        },
+        {
+          "target_severity": "critical",
+          "condition": "orphaned_chunks_in_index=true",
+          "description": "Chunks im Search Index vorhanden, die nicht in document_chunks existieren (Phantom-Chunks)"
+        }
+      ],
+      "gate_effects": {
+        "warning": "watch_flag",
+        "error": "NO_GO",
+        "critical": "NO_GO_FREEZE"
+      },
+      "notes": "Phantom-Chunks sind unmittelbarer Integritätsbruch; CRITICAL ohne weiteres Kriterium"
+    },
+    {
+      "drift_type": "METADATA_DRIFT",
+      "standard_severity": "info",
+      "escalation_rules": [
+        {
+          "target_severity": "warning",
+          "condition": "required_fields_missing=true AND import_status=completed",
+          "description": "Pflichtfelder fehlen bei abgeschlossenem Import"
+        },
+        {
+          "target_severity": "error",
+          "condition": "missing_fields_affect_search_relevance=true OR missing_fields_affect_filter_logic=true",
+          "description": "Fehlende Metadaten beeinflussen Relevanz-Scoring oder Filterlogik"
+        }
+      ],
+      "gate_effects": {
+        "info": "none",
+        "warning": "watch_flag",
+        "error": "NO_GO"
+      },
+      "critical_possible": false,
+      "notes": "METADATA_DRIFT kann kein CRITICAL erreichen; Metadaten sind beschreibend, nicht integritätskritisch"
+    },
+    {
+      "drift_type": "LIFECYCLE_DRIFT",
+      "standard_severity": "error",
+      "escalation_rules": [
+        {
+          "target_severity": "critical",
+          "condition": "lifecycle_status=deleted AND entity_in_search_index=true",
+          "description": "Gelöschte Entität ist im Search Index auffindbar (Datenschutz/Compliance)"
+        }
+      ],
+      "gate_effects": {
+        "error": "NO_GO",
+        "critical": "NO_GO_FREEZE"
+      },
+      "notes": "Standard-Severity ist error, da lifecycle_status=archived+is_searchable=true bereits ein Integritätsbruch ist; warning ist für diesen Typ semantisch falsch"
+    },
+    {
+      "drift_type": "SOURCE_STATUS_DRIFT",
+      "standard_severity": "warning",
+      "escalation_rules": [
+        {
+          "target_severity": "error",
+          "condition": "source_unreachable_duration > configured_timeout AND source_status=active",
+          "description": "Quelle länger als konfigurierten Timeout nicht erreichbar; Status weiterhin active"
+        },
+        {
+          "target_severity": "critical",
+          "condition": "source_delivers_corrupted_data=true AND source_status=active AND chunks_imported=true",
+          "description": "Quelle liefert korrumpierte Daten; Chunks wurden bereits importiert"
+        }
+      ],
+      "gate_effects": {
+        "warning": "watch_flag",
+        "error": "NO_GO",
+        "critical": "NO_GO_FREEZE"
+      },
+      "notes": "Timeout-Schwelle ist konfigurierbar; Standard-Wert aus schemas/drift_types.schema.json x-gate-threshold"
+    },
+    {
+      "drift_type": "SEARCH_INDEX_DRIFT",
+      "standard_severity": "error",
+      "escalation_rules": [
+        {
+          "target_severity": "critical",
+          "condition": "divergence_growing_across_runs=true AND consecutive_runs >= 2",
+          "description": "Divergenz wächst über aufeinander folgende Runs"
+        },
+        {
+          "target_severity": "critical",
+          "condition": "absolute_delta > configured_critical_threshold",
+          "description": "Absoluter Delta überschreitet kritischen Schwellenwert"
+        }
+      ],
+      "gate_effects": {
+        "error": "NO_GO",
+        "critical": "NO_GO_FREEZE"
+      },
+      "notes": "Standard-Severity error, da jede Index-DB-Divergenz die Retrieval-Qualität direkt degradiert; warning wäre Falschbewertung"
+    },
+    {
+      "drift_type": "RETRIEVAL_DRIFT",
+      "standard_severity": "warning",
+      "escalation_rules": [
+        {
+          "target_severity": "error",
+          "condition": "baseline_delta > 0.05",
+          "description": "Metrik-Delta überschreitet 0.05 in einem einzelnen Run"
+        },
+        {
+          "target_severity": "critical",
+          "condition": "baseline_delta > 0.15",
+          "description": "Metrik-Delta überschreitet 0.15"
+        },
+        {
+          "target_severity": "critical",
+          "condition": "consecutive_negative_runs >= 3",
+          "description": "3 oder mehr aufeinander folgende Runs mit negativem Delta (unabhängig vom Absolutwert)"
+        }
+      ],
+      "gate_effects": {
+        "warning": "watch_flag",
+        "error": "NO_GO",
+        "critical": "NO_GO_FREEZE"
+      },
+      "notes": "Standard warning wegen legitimem Metrik-Rauschen bei Einzelmessungen; Eskalation erfordert Schwellenwert oder Persistenz"
+    }
+  ],
+
+  "aggregation_logic": {
+    "order_of_precedence": [
+      {
+        "step": 1,
+        "condition": "any finding with severity=critical",
+        "gate_result": "NO_GO_FREEZE"
+      },
+      {
+        "step": 2,
+        "condition": "any finding with severity=error (and no critical)",
+        "gate_result": "NO_GO"
+      },
+      {
+        "step": 3,
+        "condition": "only warning and/or info findings",
+        "gate_result": "GO_WITH_WATCH_FLAG"
+      },
+      {
+        "step": 4,
+        "condition": "no findings",
+        "gate_result": "GO"
+      }
+    ],
+    "scope": "workspace",
+    "cross_workspace_aggregation": false,
+    "note": "Aggregation ist workspace-scoped; kein Cross-Workspace-Vergleich erlaubt"
+  }
+}

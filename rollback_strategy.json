@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DRAFT",
+  "generated_by": "manual",
+  "created_at": "2026-06-10",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "doc_ref": "docs/m5b-rollback.md",
+
+  "invariant": "No rollback step requires or permits database mutation in PostgreSQL",
+
+  "components": [
+    {
+      "id": "RB-01",
+      "component": "detector",
+      "flag": "drift_detection_enabled",
+      "disable_value": false,
+      "enable_value": true,
+      "effects_when_disabled": [
+        "No new DriftRuns started",
+        "Running scan completes current run then stops",
+        "reports/current/ remains unchanged (last complete report persists)",
+        "History data fully preserved",
+        "No PostgreSQL mutation"
+      ],
+      "database_mutation_required": false
+    },
+    {
+      "id": "RB-02",
+      "component": "reporting",
+      "flag": "drift_reporting_enabled",
+      "disable_value": false,
+      "enable_value": true,
+      "effects_when_disabled": [
+        "Scans may still run if detector is active",
+        "Findings not persisted to reports",
+        "reports/current/ frozen at last state",
+        "Gate validator reads frozen last report",
+        "No data loss; findings not published"
+      ],
+      "database_mutation_required": false,
+      "note": "Disabling reporting alone does not disable the detector"
+    },
+    {
+      "id": "RB-03",
+      "component": "gate",
+      "flag": "drift_gate_active",
+      "flag_location": "reports/current/m5b_gate_criteria.json",
+      "disable_value": false,
+      "enable_value": true,
+      "requires_operator_decision": true,
+      "effects_when_disabled": [
+        "Gate validator does not evaluate drift_gate_report.json",
+        "M5b Drift Gate status = BYPASSED (explicit, not silent)",
+        "All other gates remain active",
+        "Bypass entry logged in reports/current/m5b_gate_criteria.json with timestamp and operator_id"
+      ],
+      "database_mutation_required": false,
+      "audit_trail_immutable": true
+    }
+  ],
+
+  "scenarios": [
+    {
+      "symptom": "Detector produces False Positives on known-clean data",
+      "recommended_rollback": ["RB-01"],
+      "cumulative": false
+    },
+    {
+      "symptom": "Reports contain inconsistent or corrupted data",
+      "recommended_rollback": ["RB-02"],
+      "cumulative": false
+    },
+    {
+      "symptom": "Gate incorrectly blocks despite known-correct state",
+      "recommended_rollback": ["RB-03"],
+      "cumulative": false
+    },
+    {
+      "symptom": "All three problems simultaneously",
+      "recommended_rollback": ["RB-01", "RB-02", "RB-03"],
+      "cumulative": true
+    }
+  ],
+
+  "audit_trail": {
+    "required_fields": ["component", "action", "timestamp", "operator_id", "reason"],
+    "action_values": ["disabled", "enabled"],
+    "immutable": true,
+    "deletion_forbidden": true
+  },
+
+  "prohibited_rollback_actions": [
+    "Setting lifecycle_status",
+    "Changing is_searchable",
+    "Deleting chunks or documents",
+    "Triggering reindex",
+    "Changing source_status",
+    "Any PostgreSQL mutation"
+  ]
+}

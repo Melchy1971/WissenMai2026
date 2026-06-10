@@ -1,0 +1,185 @@
+{
+  "schema_version": 1,
+  "document": "test_matrix_m5b",
+  "generated_at": "2026-06-10T00:00:00Z",
+  "status": "DRAFT",
+  "reference_doc": "docs/m5b-test-strategy.md",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "principles": [
+    "Keine Mocks fuer finale Truth Tests",
+    "PostgreSQL ist die finale Wahrheit fuer Gate-relevante Ergebnisse",
+    "Alle Drift-Pruefungen sind read-only",
+    "Kein Test loest Repair, Reindex, Cleanup oder mutierende Operationen aus",
+    "Fixtures sind workspace-scoped und deterministisch"
+  ],
+  "pytest_markers_to_register": [
+    { "marker": "m5b_truth", "description": "M5b Drift Detection postgres_truth Tests; blockiert M5b Gate", "gate_relevant": true },
+    { "marker": "m5b_unit",  "description": "Schnelle Unit Tests ohne DB; non-blocking", "gate_relevant": false },
+    { "marker": "m5b_schema","description": "Report-Schema-Validierungstests; non-blocking", "gate_relevant": false },
+    { "marker": "drift_detection", "description": "Sub-Kategorie; immer mit m5b_truth kombiniert", "gate_relevant": false }
+  ],
+  "test_suites": [
+    {
+      "id": "TS-01",
+      "label": "Unit Tests pro Drift Detector",
+      "type": "unit",
+      "db_required": false,
+      "gate_relevant": false,
+      "markers": ["m5b_unit"],
+      "files": [
+        "backend/tests/test_m5b_document_drift_unit.py",
+        "backend/tests/test_m5b_chunk_drift_unit.py",
+        "backend/tests/test_m5b_metadata_drift_unit.py",
+        "backend/tests/test_m5b_lifecycle_drift_unit.py",
+        "backend/tests/test_m5b_source_status_drift_unit.py",
+        "backend/tests/test_m5b_search_index_drift_unit.py",
+        "backend/tests/test_m5b_retrieval_drift_unit.py"
+      ],
+      "cases": [
+        { "id": "TS-01-01", "drift_type": "DOCUMENT_DRIFT",      "description": "Severity-Zuordnung alle Subtypes", "expected": "korrekte Severity pro Subtype" },
+        { "id": "TS-01-02", "drift_type": "CHUNK_DRIFT",         "description": "critical bei chunk_workspace_mismatch", "expected": "critical" },
+        { "id": "TS-01-03", "drift_type": "METADATA_DRIFT",      "description": "error bei retrieval_filter_metadata_loss", "expected": "error" },
+        { "id": "TS-01-04", "drift_type": "LIFECYCLE_DRIFT",     "description": "critical bei deleted_document_searchable", "expected": "critical" },
+        { "id": "TS-01-05", "drift_type": "SOURCE_STATUS_DRIFT", "description": "critical bei cross_workspace_citation_source", "expected": "critical" },
+        { "id": "TS-01-06", "drift_type": "SEARCH_INDEX_DRIFT",  "description": "critical bei deleted content im Index", "expected": "critical" },
+        { "id": "TS-01-07", "drift_type": "RETRIEVAL_DRIFT",     "description": "critical bei lifecycle_exclusion_failure", "expected": "critical" },
+        { "id": "TS-01-08", "drift_type": "ALL",                 "description": "remediation_hint enthaelt keine Repair-Anweisung", "expected": "kein auto-repair, kein reindex" }
+      ]
+    },
+    {
+      "id": "TS-02",
+      "label": "Integration Tests mit PostgreSQL",
+      "type": "integration",
+      "db_required": true,
+      "db_type": "postgresql",
+      "mocks_allowed": false,
+      "gate_relevant": true,
+      "markers": ["m5b_truth", "postgres_truth", "drift_detection"],
+      "files": [
+        "backend/tests/postgres_truth/test_m5b_drift_truth.py"
+      ],
+      "cases": [
+        { "id": "TS-02-01", "description": "Sauberer Workspace: keine Findings, drift_score=0.0", "expected": "0 findings, status=ok" },
+        { "id": "TS-02-02", "description": "Injizierter DOCUMENT_DRIFT: broken_version_reference", "expected": "1 error finding" },
+        { "id": "TS-02-03", "description": "Injizierter CHUNK_DRIFT: chunk_workspace_mismatch", "expected": "1 critical finding" },
+        { "id": "TS-02-04", "description": "workspace_id korrekt isoliert; kein Cross-Workspace-Leak", "expected": "findings nur im Ziel-Workspace" },
+        { "id": "TS-02-05", "description": "findings_by_drift_type Counts stimmen mit tatsaechlichen Findings ueberein", "expected": "exakte Counts" }
+      ]
+    },
+    {
+      "id": "TS-03",
+      "label": "Lifecycle Drift Tests",
+      "type": "integration",
+      "db_required": true,
+      "db_type": "postgresql",
+      "mocks_allowed": false,
+      "gate_relevant": true,
+      "markers": ["m5b_truth", "postgres_truth", "drift_detection"],
+      "files": [
+        "backend/tests/postgres_truth/test_m5b_lifecycle_drift_truth.py"
+      ],
+      "cases": [
+        { "id": "TS-03-01", "subtype": "deleted_document_searchable",  "injected_state": "lifecycle_status=deleted, is_searchable=true",  "expected_severity": "critical" },
+        { "id": "TS-03-02", "subtype": "archived_document_searchable", "injected_state": "lifecycle_status=archived, is_searchable=true", "expected_severity": "error" },
+        { "id": "TS-03-03", "subtype": "active_document_not_searchable","injected_state": "lifecycle_status=active, is_searchable=false, import=completed", "expected_severity": "error" },
+        { "id": "TS-03-04", "subtype": "lifecycle_timestamp_mismatch", "injected_state": "archived_at gesetzt, lifecycle_status=active", "expected_severity": "warning" },
+        { "id": "TS-03-05", "subtype": "clean_state",                  "injected_state": "alle Constraints erfuellt",                     "expected_severity": "none" }
+      ],
+      "repair_allowed": false
+    },
+    {
+      "id": "TS-04",
+      "label": "Search Index Drift Tests",
+      "type": "integration",
+      "db_required": true,
+      "db_type": "postgresql",
+      "index_required": true,
+      "mocks_allowed": "partial",
+      "mocks_note": "Test-Double fuer Index-Abfrage erlaubt; PostgreSQL bleibt Wahrheit fuer DB-Counts. Finale Gate-Tests laufen gegen echten Index.",
+      "gate_relevant": true,
+      "markers": ["m5b_truth", "postgres_truth", "drift_detection"],
+      "files": [
+        "backend/tests/postgres_truth/test_m5b_search_index_drift_truth.py"
+      ],
+      "cases": [
+        { "id": "TS-04-01", "subtype": "stale_index_entry",                        "injected_state": "Chunk im Index, nicht in DB",                "expected_severity": "warning" },
+        { "id": "TS-04-02", "subtype": "missing_index_entry",                      "injected_state": "Eligible Chunk in DB, fehlt im Index",       "expected_severity": "error" },
+        { "id": "TS-04-03", "subtype": "lifecycle_excluded_deleted_in_index",      "injected_state": "Geloeschter Chunk im Index abrufbar",         "expected_severity": "critical" },
+        { "id": "TS-04-04", "subtype": "lifecycle_excluded_archived_in_index",     "injected_state": "Archivierter Chunk im Index aktiv",           "expected_severity": "error" },
+        { "id": "TS-04-05", "subtype": "index_count_discrepancy",                  "injected_state": "Index-Count weicht > 5% von DB-Count ab",     "expected_severity": "warning" },
+        { "id": "TS-04-06", "subtype": "clean_state",                              "injected_state": "Index und DB synchron",                       "expected_severity": "none" }
+      ]
+    },
+    {
+      "id": "TS-05",
+      "label": "Retrieval Drift Tests",
+      "type": "integration",
+      "db_required": true,
+      "db_type": "postgresql",
+      "mocks_allowed": false,
+      "gate_relevant": true,
+      "markers_quality": ["m5b_truth", "slow_truth"],
+      "markers_lifecycle": ["m5b_truth", "postgres_truth", "drift_detection"],
+      "files": [
+        "backend/tests/retrieval_benchmark/test_m5b_retrieval_drift.py",
+        "backend/tests/postgres_truth/test_m5b_retrieval_lifecycle_truth.py"
+      ],
+      "cases": [
+        { "id": "TS-05-01", "description": "Golden-Query-Metriken bleiben <= baseline + 0.05", "expected": "score_delta <= 0.05" },
+        { "id": "TS-05-02", "description": "Delta > 0.25 auf einer Query erzeugt error",        "expected": "error finding" },
+        { "id": "TS-05-03", "description": "Geloeschtes Dokument in Retrieval",                 "expected_severity": "critical" },
+        { "id": "TS-05-04", "description": "Archiviertes Dokument in Default-Retrieval",        "expected_severity": "error" },
+        { "id": "TS-05-05", "description": "Baseline nicht verfuegbar",                         "expected_severity": "warning" }
+      ],
+      "baseline_precondition": "retrieval_quality_baseline_report.json baseline_release_grade=true"
+    },
+    {
+      "id": "TS-06",
+      "label": "Report Schema Tests",
+      "type": "schema_validation",
+      "db_required": false,
+      "gate_relevant": false,
+      "markers": ["m5b_schema"],
+      "files": [
+        "backend/tests/test_m5b_drift_report_schema.py"
+      ],
+      "cases": [
+        { "id": "TS-06-01", "description": "Jeder Report valides JSON gegen drift_schema.json",                    "expected": "schema valid" },
+        { "id": "TS-06-02", "description": "Alle finding_type-Werte in drift_types.schema.json registriert",       "expected": "alle 7 Typen registriert" },
+        { "id": "TS-06-03", "description": "Pflichtfelder vollstaendig: drift_id, workspace_id, severity, etc.",   "expected": "keine fehlenden Felder" },
+        { "id": "TS-06-04", "description": "remediation_hint ohne verbotene Repair-Strings",                        "expected": "kein auto-repair, reindex, delete, cleanup als Aktion" },
+        { "id": "TS-06-05", "description": "Leerer Workspace: total_findings=0, status=ok",                        "expected": "status=ok" },
+        { "id": "TS-06-06", "description": "critical-Finding: status=blocked",                                      "expected": "status=blocked" },
+        { "id": "TS-06-07", "description": "Schema-Gap-Test: CHUNK_DRIFT und SEARCH_INDEX_DRIFT in drift_types.schema.json", "expected": "beide registriert" }
+      ]
+    },
+    {
+      "id": "TS-07",
+      "label": "Gate Tests",
+      "type": "unit",
+      "db_required": false,
+      "gate_relevant": false,
+      "markers": ["m5b_unit"],
+      "files": [
+        "backend/tests/test_m5b_gate_logic.py"
+      ],
+      "cases": [
+        { "id": "TS-07-01", "input": "total_findings=0",                                     "expected_gate": "GO" },
+        { "id": "TS-07-02", "input": "1 error Finding",                                      "expected_gate": "NO_GO" },
+        { "id": "TS-07-03", "input": "1 critical Finding",                                   "expected_gate": "NO_GO", "expected_freeze": true },
+        { "id": "TS-07-04", "input": "DOCUMENT_DRIFT errors > 5% aktiver Dokumente",         "expected_gate": "BLOCKED" },
+        { "id": "TS-07-05", "input": "nur warning und info",                                  "expected_gate": "GO", "expected_status": "watch" },
+        { "id": "TS-07-06", "input": "CHUNK_DRIFT critical chunk_workspace_mismatch",        "expected_gate": "NO_GO", "expected_escalation": true },
+        { "id": "TS-07-07", "input": "SEARCH_INDEX_DRIFT missing_index_entry > 0",           "expected_gate": "BLOCKED" },
+        { "id": "TS-07-08", "input": "RETRIEVAL_DRIFT baseline_delta > 0.05",                "expected_gate": "BLOCKED" }
+      ]
+    }
+  ],
+  "not_scope": [
+    "Tests die Repair ausloesen",
+    "Tests gegen Produktionsdaten",
+    "Automatische Baseline-Updates durch Tests",
+    "Direkte Mutation von reports/current/ durch Tests",
+    "Cross-Workspace-Aggregationsqueries"
+  ]
+}

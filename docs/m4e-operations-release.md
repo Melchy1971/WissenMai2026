@@ -83,7 +83,7 @@ Diagnose-Endpunkte sind verfuegbar. Mutierende Aktionen ueber die GUI sind nicht
 - Admin-Diagnostics-GUI zeigt Systemzustand, loest aber keine Mutationen aus
 - Kein Repair-, Cleanup- oder Reindex-Button ohne Governance-Freigabe
 
-**Nachweise:** `reports/current/frontend_full_suite_staged_report.json`, `docs/m4d-admin-diagnostics.md`
+**Nachweise:** `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`, `docs/m4d-admin-diagnostics.md`
 
 ---
 

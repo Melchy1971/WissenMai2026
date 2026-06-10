@@ -1,0 +1,445 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "drift_types_v1",
+  "title": "M5b Drift Type Registry V1",
+  "description": "Autoritative Typdefinition fuer alle 7 M5b Drift-Typen. Read-only, workspace-scoped, nicht-mutierend. Status: DRAFT. Kein PREPARED, kein GO, keine Implementierung. drift_schema.json muss bei PREPARED-Uebergang auf 7 Typen erweitert werden.",
+  "status": "DRAFT",
+  "gate_authority": "reports/current/m5b_release_decision.json",
+  "reference_doc": "docs/m5b-drift-types.md",
+
+  "$defs": {
+
+    "Severity": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "critical"],
+      "description": "info: Trend beobachten. warning: Review erforderlich. error: Blockiert Gate. critical: Freeze + sofortige Eskalation."
+    },
+
+    "CommonFindingFields": {
+      "type": "object",
+      "required": [
+        "drift_id",
+        "drift_type",
+        "drift_subtype",
+        "workspace_id",
+        "severity",
+        "expected_state",
+        "observed_state",
+        "detection_strategy",
+        "remediation_hint",
+        "escalation",
+        "created_at"
+      ],
+      "properties": {
+        "drift_id":           { "type": "string", "format": "uuid" },
+        "drift_type":         { "$ref": "#/$defs/DriftTypeName" },
+        "drift_subtype":      { "type": "string", "minLength": 1 },
+        "workspace_id":       { "type": "string", "format": "uuid" },
+        "severity":           { "$ref": "#/$defs/Severity" },
+        "entity":             { "$ref": "#/$defs/EntityRef" },
+        "expected_state":     { "type": ["string", "object"] },
+        "observed_state":     { "type": ["string", "object"] },
+        "detection_strategy": { "type": "string", "minLength": 1 },
+        "remediation_hint":   {
+          "type": "string",
+          "minLength": 1,
+          "description": "Handlungsempfehlung. Darf keine automatische Aktion implizieren."
+        },
+        "escalation":         { "type": "string", "minLength": 1 },
+        "created_at":         { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "EntityRef": {
+      "type": "object",
+      "properties": {
+        "document_id":  { "type": ["string", "null"], "format": "uuid" },
+        "version_id":   { "type": ["string", "null"], "format": "uuid" },
+        "chunk_id":     { "type": ["string", "null"], "format": "uuid" },
+        "citation_id":  { "type": ["string", "null"], "format": "uuid" },
+        "message_id":   { "type": ["string", "null"], "format": "uuid" },
+        "query_id":     { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+
+    "DriftTypeName": {
+      "type": "string",
+      "enum": [
+        "DOCUMENT_DRIFT",
+        "CHUNK_DRIFT",
+        "METADATA_DRIFT",
+        "LIFECYCLE_DRIFT",
+        "SOURCE_STATUS_DRIFT",
+        "SEARCH_INDEX_DRIFT",
+        "RETRIEVAL_DRIFT"
+      ]
+    },
+
+    "DOCUMENT_DRIFT": {
+      "description": "Dokument weicht von seinem kanonischen Strukturzustand ab (Versionszeiger, Chunk-Set, Hash-Vertrag).",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/CommonFindingFields" }],
+      "properties": {
+        "drift_type": { "const": "DOCUMENT_DRIFT" },
+        "drift_subtype": {
+          "type": "string",
+          "enum": [
+            "missing_current_version",
+            "broken_version_reference",
+            "active_document_without_chunks",
+            "version_sequence_gap",
+            "version_sequence_duplicate",
+            "hash_contract_mismatch",
+            "timestamp_without_version_event"
+          ]
+        },
+        "document_id": { "type": "string", "format": "uuid" },
+        "version_id":  { "type": ["string", "null"], "format": "uuid" }
+      },
+      "required": ["document_id"],
+      "x-severity-map": {
+        "broken_version_reference":        "error",
+        "missing_current_version":         "error",
+        "active_document_without_chunks":  "error",
+        "version_sequence_gap":            "warning",
+        "version_sequence_duplicate":      "warning",
+        "hash_contract_mismatch":          "warning",
+        "timestamp_without_version_event": "info"
+      },
+      "x-affected-tables": [
+        "documents",
+        "document_versions",
+        "document_chunks"
+      ],
+      "x-affected-fields": {
+        "documents":         ["id", "workspace_id", "current_version_id", "content_hash", "import_status", "lifecycle_status", "updated_at"],
+        "document_versions": ["id", "document_id", "version_number", "markdown_hash"],
+        "document_chunks":   ["id", "document_id", "document_version_id", "chunk_index"]
+      },
+      "x-gate-effects": {
+        "m5b_release_decision": "errors > 5% aktiver Dokumente blockieren PREPARED",
+        "m5b_start_gate":       "errors blockieren Implementierungsfreigabe"
+      },
+      "x-gate-threshold": "error_rate > 5% aktiver Dokumente",
+      "x-critical-possible": false
+    },
+
+    "CHUNK_DRIFT": {
+      "description": "Chunk-Set einer Version weicht von erwartetem Zustand ab (Ownership, Reihenfolge, Hash, is_searchable).",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/CommonFindingFields" }],
+      "properties": {
+        "drift_type": { "const": "CHUNK_DRIFT" },
+        "drift_subtype": {
+          "type": "string",
+          "enum": [
+            "chunk_missing_from_current_version",
+            "chunk_wrong_version_reference",
+            "chunk_position_gap",
+            "chunk_position_duplicate",
+            "chunk_hash_changed_without_event",
+            "chunk_workspace_mismatch",
+            "chunk_searchability_mismatch",
+            "chunk_baseline_missing"
+          ]
+        },
+        "chunk_id":    { "type": "string", "format": "uuid" },
+        "document_id": { "type": "string", "format": "uuid" },
+        "version_id":  { "type": ["string", "null"], "format": "uuid" }
+      },
+      "required": ["chunk_id", "document_id"],
+      "x-severity-map": {
+        "chunk_missing_from_current_version":  "error",
+        "chunk_wrong_version_reference":       "error",
+        "chunk_searchability_mismatch":        "error",
+        "chunk_workspace_mismatch":            "critical",
+        "chunk_position_gap":                  "warning",
+        "chunk_position_duplicate":            "warning",
+        "chunk_hash_changed_without_event":    "warning",
+        "chunk_baseline_missing":              "info"
+      },
+      "x-affected-tables": [
+        "document_chunks",
+        "document_versions",
+        "documents"
+      ],
+      "x-affected-fields": {
+        "document_chunks":   ["id", "document_id", "document_version_id", "chunk_index", "content_hash", "is_searchable", "metadata", "created_at"],
+        "document_versions": ["id", "document_id", "version_number"],
+        "documents":         ["id", "workspace_id", "current_version_id", "lifecycle_status"]
+      },
+      "x-gate-effects": {
+        "m5b_release_decision": "critical sofort; errors > 2% eligibler aktiver Chunks blockieren Gate",
+        "m5b_start_gate":       "critical blockiert Implementierungsfreigabe"
+      },
+      "x-gate-threshold": "critical immer; error_rate > 2% eligibler aktiver Chunks",
+      "x-critical-possible": true
+    },
+
+    "METADATA_DRIFT": {
+      "description": "Metadaten haben sich ohne valides Versionierungs- oder Import-Event verschlechtert.",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/CommonFindingFields" }],
+      "properties": {
+        "drift_type": { "const": "METADATA_DRIFT" },
+        "drift_subtype": {
+          "type": "string",
+          "enum": [
+            "metadata_key_regression",
+            "metadata_type_regression",
+            "metadata_timestamp_drift",
+            "document_version_metadata_mismatch",
+            "retrieval_filter_metadata_loss",
+            "cross_workspace_metadata_reference"
+          ]
+        },
+        "document_id":          { "type": "string", "format": "uuid" },
+        "version_id":           { "type": "string", "format": "uuid" },
+        "previous_version_id":  { "type": ["string", "null"], "format": "uuid" },
+        "affected_fields":      { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      },
+      "required": ["document_id", "version_id", "affected_fields"],
+      "x-severity-map": {
+        "metadata_key_regression":              "warning",
+        "metadata_type_regression":             "warning",
+        "metadata_timestamp_drift":             "info",
+        "document_version_metadata_mismatch":   "warning",
+        "retrieval_filter_metadata_loss":       "error",
+        "cross_workspace_metadata_reference":   "critical"
+      },
+      "x-affected-tables": [
+        "document_versions",
+        "documents"
+      ],
+      "x-affected-fields": {
+        "document_versions": ["id", "document_id", "version_number", "metadata", "created_at"],
+        "documents":         ["id", "workspace_id", "title", "updated_at"]
+      },
+      "x-gate-effects": {
+        "m5b_release_decision": "errors blockieren PREPARED; critical Workspace-Reporting-Freeze",
+        "m5b_start_gate":       "critical blockiert Implementierungsfreigabe"
+      },
+      "x-gate-threshold": "error_rate > 2% aktiver Dokumente; critical immer",
+      "x-critical-possible": true
+    },
+
+    "LIFECYCLE_DRIFT": {
+      "description": "Lifecycle-Status und Verhalten abhaengiger Systeme divergieren ueber Zeit.",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/CommonFindingFields" }],
+      "properties": {
+        "drift_type": { "const": "LIFECYCLE_DRIFT" },
+        "drift_subtype": {
+          "type": "string",
+          "enum": [
+            "deleted_document_searchable",
+            "archived_document_searchable",
+            "active_document_not_searchable",
+            "lifecycle_timestamp_mismatch",
+            "chunk_searchability_mismatch",
+            "missing_lifecycle_audit_evidence",
+            "restore_lifecycle_visibility_mismatch"
+          ]
+        },
+        "document_id":       { "type": "string", "format": "uuid" },
+        "lifecycle_status":  { "type": "string", "enum": ["active", "archived", "deleted", "pending"] },
+        "import_status":     { "type": "string" },
+        "chunk_id":          { "type": ["string", "null"], "format": "uuid" }
+      },
+      "required": ["document_id", "lifecycle_status", "import_status"],
+      "x-severity-map": {
+        "deleted_document_searchable":             "critical",
+        "archived_document_searchable":            "error",
+        "active_document_not_searchable":          "error",
+        "lifecycle_timestamp_mismatch":            "warning",
+        "chunk_searchability_mismatch":            "error",
+        "missing_lifecycle_audit_evidence":        "warning",
+        "restore_lifecycle_visibility_mismatch":   "error"
+      },
+      "x-affected-tables": [
+        "documents",
+        "document_chunks"
+      ],
+      "x-affected-fields": {
+        "documents":       ["id", "workspace_id", "lifecycle_status", "import_status", "archived_at", "deleted_at"],
+        "document_chunks": ["id", "document_id", "is_searchable"]
+      },
+      "x-gate-effects": {
+        "m5b_release_decision": "critical und errors blockieren PREPARED; Freeze mutierende Operationen bei critical",
+        "m5b_start_gate":       "critical blockiert Implementierungsfreigabe"
+      },
+      "x-gate-threshold": "critical immer; error_rate > 2% aktiver Dokumente",
+      "x-critical-possible": true
+    },
+
+    "SOURCE_STATUS_DRIFT": {
+      "description": "Citation source_status spiegelt nicht mehr aktuellen Lifecycle-Status des Dokuments wider.",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/CommonFindingFields" }],
+      "properties": {
+        "drift_type": { "const": "SOURCE_STATUS_DRIFT" },
+        "drift_subtype": {
+          "type": "string",
+          "enum": [
+            "source_status_stale",
+            "active_citation_deleted_source",
+            "active_citation_archived_source",
+            "missing_document_not_flagged",
+            "missing_status_but_document_exists",
+            "cross_workspace_citation_source"
+          ]
+        },
+        "citation_id":              { "type": "string", "format": "uuid" },
+        "message_id":               { "type": ["string", "null"], "format": "uuid" },
+        "document_id":              { "type": "string", "format": "uuid" },
+        "chunk_id":                 { "type": ["string", "null"], "format": "uuid" },
+        "current_source_status":    { "type": "string", "enum": ["active", "archived", "deleted", "missing"] },
+        "current_lifecycle_status": { "type": "string", "enum": ["active", "archived", "deleted"] }
+      },
+      "required": ["citation_id", "document_id", "current_source_status", "current_lifecycle_status"],
+      "x-severity-map": {
+        "active_citation_deleted_source":     "error",
+        "active_citation_archived_source":    "warning",
+        "missing_document_not_flagged":       "error",
+        "cross_workspace_citation_source":    "critical",
+        "source_status_stale":                "warning",
+        "missing_status_but_document_exists": "info"
+      },
+      "x-affected-tables": [
+        "chat_citations",
+        "chat_messages",
+        "chat_sessions",
+        "documents"
+      ],
+      "x-affected-fields": {
+        "chat_citations": ["id", "message_id", "chunk_id", "document_id", "source_status", "document_title", "quote_preview"],
+        "chat_messages":  ["id", "session_id", "role"],
+        "chat_sessions":  ["id", "workspace_id", "owner_user_id"],
+        "documents":      ["id", "workspace_id", "lifecycle_status"]
+      },
+      "x-gate-effects": {
+        "m5b_release_decision": "critical und errors blockieren PREPARED",
+        "m5b_start_gate":       "critical blockiert Implementierungsfreigabe"
+      },
+      "x-gate-threshold": "critical immer; error_rate > 10% non-missing Citations → Technical Review",
+      "x-critical-possible": true
+    },
+
+    "SEARCH_INDEX_DRIFT": {
+      "description": "Strukturelle Abweichung zwischen Suchindex und DB (stale/missing entries, lifecycle-excluded content im Index).",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/CommonFindingFields" }],
+      "properties": {
+        "drift_type": { "const": "SEARCH_INDEX_DRIFT" },
+        "drift_subtype": {
+          "type": "string",
+          "enum": [
+            "stale_index_entry",
+            "missing_index_entry",
+            "lifecycle_excluded_content_in_index",
+            "index_count_discrepancy"
+          ]
+        },
+        "chunk_id":              { "type": ["string", "null"], "format": "uuid" },
+        "document_id":           { "type": ["string", "null"], "format": "uuid" },
+        "index_count":           { "type": "integer", "minimum": 0 },
+        "db_count":              { "type": "integer", "minimum": 0 },
+        "discrepancy_percent":   { "type": ["number", "null"], "minimum": 0.0 }
+      },
+      "required": ["index_count", "db_count"],
+      "x-severity-map": {
+        "lifecycle_excluded_content_in_index": "critical",
+        "missing_index_entry":                 "error",
+        "lifecycle_excluded_content_active":   "error",
+        "stale_index_entry":                   "warning",
+        "index_count_discrepancy":             "warning"
+      },
+      "x-note-critical-split": "deleted content in index = critical; archived content in index = error",
+      "x-affected-tables": [
+        "document_chunks",
+        "documents"
+      ],
+      "x-affected-fields": {
+        "document_chunks": ["id", "document_id", "document_version_id", "is_searchable"],
+        "documents":       ["id", "workspace_id", "lifecycle_status", "import_status", "current_version_id"]
+      },
+      "x-external-components": ["Search-Index (kein DB-Table)"],
+      "x-gate-effects": {
+        "m5b_release_decision": "missing_index_entry > 0 und critical blockieren PREPARED (ausser genehmigtem Maintenance-Window)",
+        "m5b_start_gate":       "critical blockiert Implementierungsfreigabe"
+      },
+      "x-gate-threshold": "missing_index_entry > 0 fuer eligible aktive Chunks; discrepancy_percent > 5%; critical immer",
+      "x-critical-possible": true
+    },
+
+    "RETRIEVAL_DRIFT": {
+      "description": "Retrieval-Qualitaet weicht von genehmigter Golden-Query-Baseline ab oder Lifecycle-Ausschlussregeln werden verletzt.",
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/CommonFindingFields" }],
+      "properties": {
+        "drift_type": { "const": "RETRIEVAL_DRIFT" },
+        "drift_subtype": {
+          "type": "string",
+          "enum": [
+            "golden_query_quality_regression",
+            "retrieval_lifecycle_exclusion_failure",
+            "retrieval_baseline_missing"
+          ]
+        },
+        "query_id":       { "type": ["string", "null"] },
+        "baseline_score": { "type": "number", "minimum": 0.0 },
+        "current_score":  { "type": "number", "minimum": 0.0 }
+      },
+      "required": ["baseline_score", "current_score"],
+      "x-severity-map": {
+        "retrieval_lifecycle_exclusion_failure": "critical",
+        "golden_query_quality_regression":       "error_or_warning",
+        "retrieval_baseline_missing":            "warning"
+      },
+      "x-severity-detail": {
+        "golden_query_quality_regression": "error wenn delta > 25% oder Lifecycle-Exclusion-Failure; warning wenn delta > 10%",
+        "retrieval_lifecycle_exclusion_failure_deleted":  "critical",
+        "retrieval_lifecycle_exclusion_failure_archived": "error"
+      },
+      "x-affected-tables": [
+        "documents",
+        "document_chunks"
+      ],
+      "x-affected-fields": {
+        "documents":       ["id", "lifecycle_status"],
+        "document_chunks": ["id", "is_searchable"]
+      },
+      "x-external-components": ["Retrieval-Pipeline", "Golden-Query-Benchmark-Set"],
+      "x-gate-effects": {
+        "m5b_release_decision": "critical, errors und Baseline-Delta > 5% blockieren PREPARED",
+        "m5b_start_gate":       "retrieval_quality_baseline_report muss baseline_release_grade=true vor Implementierungsstart"
+      },
+      "x-gate-threshold": "baseline_delta > 0.05; regression > 25% auf mehr als einer Golden-Query; lifecycle_exclusion_failure immer",
+      "x-critical-possible": true
+    }
+  },
+
+  "type": "object",
+  "description": "Typ-Registry. Kein eigenstaendiges Report-Envelope-Schema. Fuer den Report-Envelope: drift_schema.json.",
+  "properties": {
+    "drift_type_names": {
+      "type": "array",
+      "description": "Finale Liste aller 7 M5b Drift-Typen.",
+      "items": { "$ref": "#/$defs/DriftTypeName" },
+      "const": [
+        "DOCUMENT_DRIFT",
+        "CHUNK_DRIFT",
+        "METADATA_DRIFT",
+        "LIFECYCLE_DRIFT",
+        "SOURCE_STATUS_DRIFT",
+        "SEARCH_INDEX_DRIFT",
+        "RETRIEVAL_DRIFT"
+      ]
+    },
+    "schema_note": {
+      "type": "string",
+      "const": "drift_schema.json kennt aktuell 5 Typen (ohne CHUNK_DRIFT, SEARCH_INDEX_DRIFT). Bei PREPARED-Uebergang muss drift_schema.json auf 7 Typen erweitert werden."
+    }
+  }
+}

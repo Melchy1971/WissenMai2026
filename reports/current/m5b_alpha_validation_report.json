@@ -1,0 +1,127 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5b_alpha_validation_report",
+  "report_type": "gate_evaluation",
+  "generated_at": "2026-06-10T15:00:00Z",
+  "generated_by": "manual",
+  "environment": "local",
+  "gate_authority": "reports/current/m5b_implementation_gate.json",
+
+  "decision": {
+    "status": "BLOCKED",
+    "implementation_allowed": false,
+    "reason": "Alle 3 Implementierungs-Input-Dateien fehlen. Keine Alpha-Implementierung vorhanden. Implementation Gate ist NO_GO (1/4 Kriterien; reports/current/m5b_implementation_gate.json). Eine Alpha-Validierung setzt eine vorhandene Implementierung voraus — diese existiert nicht und darf nicht existieren, bis das Implementation Gate explizit GO ist."
+  },
+
+  "precondition_check": {
+    "implementation_gate_status": "NO_GO",
+    "implementation_gate_criteria_passed": 1,
+    "implementation_gate_criteria_total": 4,
+    "implementation_allowed": false,
+    "alpha_implementation_may_exist": false,
+    "note": "Eine Alpha-Implementierung vor Implementation Gate GO ist eine Gate-Verletzung. Die fehlenden Input-Dateien sind konsistent mit dem erwarteten Zustand: kein Code existiert."
+  },
+
+  "inputs": [
+    {
+      "file": "m5b_implementation_gate_alpha.json",
+      "required": true,
+      "found": false,
+      "result": "BLOCKED"
+    },
+    {
+      "file": "drift_report.json",
+      "required": true,
+      "found": false,
+      "result": "BLOCKED"
+    },
+    {
+      "file": "drift_summary.json",
+      "required": true,
+      "found": false,
+      "result": "BLOCKED"
+    },
+    {
+      "file": "reports/current/documentation_truth_lint.json",
+      "required": true,
+      "found": true,
+      "status": "PASS",
+      "result": "PASS"
+    }
+  ],
+
+  "checks": [
+    {
+      "id": "AV-01",
+      "label": "Domain Model vorhanden",
+      "result": "BLOCKED",
+      "reason": "Keine Implementierung vorhanden; m5b_implementation_gate_alpha.json fehlt. Keine Aussage moeglich."
+    },
+    {
+      "id": "AV-02",
+      "label": "Alembic Migration erfolgreich",
+      "result": "BLOCKED",
+      "reason": "Keine Migration vorhanden; kein Migrations-Evidence-Report gefunden."
+    },
+    {
+      "id": "AV-03",
+      "label": "Detectoren vorhanden",
+      "result": "BLOCKED",
+      "reason": "drift_code_implemented=false (masterplan_status.json, m5b_architecture_review.json). Kein Detector-Code existiert. Erwarteter Zustand bei Implementation Gate NO_GO."
+    },
+    {
+      "id": "AV-04",
+      "label": "Drift Runner vorhanden",
+      "result": "BLOCKED",
+      "reason": "drift_report.json fehlt. Kein Drift Runner hat gelaufen. Kein Run-Evidence vorhanden."
+    },
+    {
+      "id": "AV-05",
+      "label": "Drift Report valide",
+      "result": "BLOCKED",
+      "reason": "drift_report.json fehlt. Validierung gegen reporting_architecture.json und Schema Registry nicht moeglich."
+    },
+    {
+      "id": "AV-06",
+      "label": "Keine Repair-/Cleanup-Aktionen",
+      "result": "NOT_APPLICABLE",
+      "reason": "Kein Code vorhanden. Keine Aktionen pruefbar. Governance-Invariante aus drift_governance.schema.json bleibt gueltig."
+    },
+    {
+      "id": "AV-07",
+      "label": "Workspace Isolation",
+      "result": "BLOCKED",
+      "reason": "Kein Code vorhanden. Keine Workspace-Isolation verifizierbar."
+    },
+    {
+      "id": "AV-08",
+      "label": "Read-only Verhalten",
+      "result": "NOT_APPLICABLE",
+      "reason": "Kein Code vorhanden. Read-only-Constraint aus PROHIBIT-01..08 (drift_governance.schema.json) bleibt als Planungsartefakt definiert, aber nicht testbar."
+    }
+  ],
+
+  "summary": {
+    "checks_total": 8,
+    "checks_pass": 0,
+    "checks_blocked": 6,
+    "checks_not_applicable": 2,
+    "inputs_found": 1,
+    "inputs_missing": 3,
+    "final_result": "BLOCKED"
+  },
+
+  "gate_violation_check": {
+    "implementation_before_gate_go": false,
+    "note": "Fehlende Input-Dateien bestaetigen: keine vorzeitige Implementierung stattgefunden. Konsistent mit gate_authority."
+  },
+
+  "path_to_alpha_go": [
+    "1. Implementation Gate GO (reports/current/m5b_implementation_gate.json): aktuell 1/4 Kriterien",
+    "2. Detectoren implementieren (nach Gate GO)",
+    "3. Alembic Migration schreiben und laufen lassen",
+    "4. Drift Runner laufen lassen, drift_report.json erzeugen",
+    "5. m5b_implementation_gate_alpha.json erstellen",
+    "6. Alpha-Validierung erneut ausfuehren"
+  ]
+}

@@ -9,7 +9,7 @@ Dieses Dokument enthaelt die korrigierte M4-Gesamtmatrix auf Basis des aktuellen
 Massgebliche Quellen:
 
 - `reports/current/gate_hierarchy_result.json`
-- `reports/current/frontend_full_suite_staged_report.json`
+- `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`
 - `reports/current/m4_truth_report.json`
 - `reports/current/m4e_backup_restore_truth.json`
 - `docs/m4-gesamt-reconciliation.md`
@@ -29,7 +29,7 @@ Massgebliche Quellen:
 | Bereich | Aktueller Stand | Gate-/Freigabestatus | Nachweisquelle |
 |---|---|---|---|
 | M3a GUI Foundation | GUI stabilisiert im M3a-Scope | PASS, Score `100.0` | `reports/current/gate_hierarchy_result.json` |
-| Frontend Truth | Full-Suite gruen | PASS (`82/82`, `0 failed`, `0 skipped`) | `reports/current/frontend_full_suite_staged_report.json`, `reports/current/frontend_full_suite_staged_report.json` |
+| Frontend Truth | Full-Suite gruen | PASS (`82/82`, `0 failed`, `0 skipped`) | `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json`, `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json` |
 | PostgreSQL Truth | echte PostgreSQL-DB genutzt, aber rot | FAIL (`120/138`, `16 failed`, `2 errors`) | `reports/current/m4_truth_report.json` |
 | M4a Auth/Workspace | Markergruppe ueber Schwelle | BLOCKED durch M4 Backend Truth | `reports/current/m4_truth_report.json` |
 | M4b Upload/Queue | Markergruppe ueber Schwelle | BLOCKED durch M4 Backend Truth | `reports/current/m4_truth_report.json` |

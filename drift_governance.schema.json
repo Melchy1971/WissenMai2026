@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "drift_governance.schema.json",
+  "title": "DriftFinding",
+  "description": "Governance-Schema für M5b Drift Findings. Status: DRAFT. Kein Code darf dieses Schema implementieren, solange reports/current/m5b_implementation_gate.json kein GO meldet.",
+  "type": "object",
+  "status": "DRAFT",
+  "x-governance": {
+    "schema_version": "1.0.0",
+    "gate_authority": "reports/current/m5b_gate_criteria.json",
+    "implementation_gate": "reports/current/m5b_implementation_gate.json",
+    "release_decision": "reports/current/m5b_release_decision.json",
+    "read_only": true,
+    "auto_repair_forbidden": true,
+    "auto_lifecycle_change_forbidden": true,
+    "auto_metadata_change_forbidden": true,
+    "auto_reindex_forbidden": true,
+    "cross_workspace_query_forbidden": true,
+    "drift_types_authority": "schemas/drift_types.schema.json",
+    "governance_doc": "docs/m5b-drift-governance.md",
+    "risk_matrix": "docs/m5b-risk-matrix.md",
+    "related_risks": ["R-06", "R-07"]
+  },
+  "required": [
+    "drift_id",
+    "drift_type",
+    "severity",
+    "workspace_id",
+    "entity_type",
+    "entity_id",
+    "expected_state",
+    "actual_state",
+    "remediation_hint",
+    "created_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "drift_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Eindeutiger Identifier des Findings. Unveränderlich nach Erstellung. Stabil über Report-Generierungsläufe, solange der Zustand unverändert ist."
+    },
+    "drift_type": {
+      "type": "string",
+      "enum": [
+        "DOCUMENT_DRIFT",
+        "CHUNK_DRIFT",
+        "METADATA_DRIFT",
+        "LIFECYCLE_DRIFT",
+        "SOURCE_STATUS_DRIFT",
+        "SEARCH_INDEX_DRIFT",
+        "RETRIEVAL_DRIFT"
+      ],
+      "description": "Drift-Typ. Autoritative Typdefinition: schemas/drift_types.schema.json. 7 finale Typen ab Stand 2026-06-10."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "critical"],
+      "description": "Schweregrad. info: kein Gate-Effekt. warning: Watch-Flag. error: Gate NO_GO. critical: Gate NO_GO + Freeze."
+    },
+    "workspace_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Workspace-Scope des Findings. Kein Cross-Workspace-Zugriff erlaubt. Detector-Scope ist immer ein einzelner Workspace."
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": ["document", "chunk", "source", "index_entry", "metadata_record"],
+      "description": "Typ der betroffenen Entität."
+    },
+    "entity_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Primärschlüssel der betroffenen Entität. Zu interpretieren im Kontext von workspace_id."
+    },
+    "expected_state": {
+      "type": "object",
+      "description": "Erwarteter Systemzustand zum Erkennungszeitpunkt. Read-only Snapshot; darf nach created_at nicht geändert werden.",
+      "minProperties": 1
+    },
+    "actual_state": {
+      "type": "object",
+      "description": "Tatsächlich vorgefundener Systemzustand. Read-only Snapshot; darf nach created_at nicht geändert werden.",
+      "minProperties": 1
+    },
+    "remediation_hint": {
+      "type": "string",
+      "description": "Deskriptiver Hinweis auf die Abweichung. Keine Aktionsanweisung. Erlaubt: beschreibende Formulierungen. Verboten: Imperativverben, auto-repair, auto-reindex, auto-fix, reindex/delete/cleanup als Verb, API-Referenzen für mutierende Aktionen.",
+      "minLength": 10,
+      "maxLength": 1000,
+      "not": {
+        "anyOf": [
+          { "pattern": "(?i)\\bauto[-_]repair\\b" },
+          { "pattern": "(?i)\\bauto[-_]reindex\\b" },
+          { "pattern": "(?i)\\bauto[-_]fix\\b" },
+          { "pattern": "(?i)\\bwird automatisch korrigiert\\b" },
+          { "pattern": "(?i)\\bFühre aus\\b" },
+          { "pattern": "(?i)\\bStarte den\\b" },
+          { "pattern": "(?i)\\bLösche\\b" },
+          { "pattern": "(?i)\\bArchiviere\\b" }
+        ]
+      },
+      "x-forbidden-patterns": [
+        "auto-repair",
+        "auto-reindex",
+        "auto-fix",
+        "wird automatisch korrigiert",
+        "Führe aus",
+        "Starte",
+        "Lösche",
+        "Archiviere",
+        "reindex(",
+        "delete(",
+        "cleanup("
+      ],
+      "x-test-reference": "test_matrix_m5b.json#TS-06-04"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Zeitstempel der Erkennung. ISO 8601. Unveränderlich nach Erstellung."
+    }
+  },
+  "x-prohibited-operations": {
+    "description": "Operationen, die ein Drift Detector niemals ausführen darf",
+    "operations": [
+      {
+        "id": "PROHIBIT-01",
+        "action": "lifecycle_status_write",
+        "description": "lifecycle_status eines Dokuments oder Chunks schreiben oder ändern",
+        "reason": "Mutierende DB-Operation; außerhalb Detector-Scope"
+      },
+      {
+        "id": "PROHIBIT-02",
+        "action": "is_searchable_write",
+        "description": "is_searchable eines Chunks setzen",
+        "reason": "Mutierende DB-Operation"
+      },
+      {
+        "id": "PROHIBIT-03",
+        "action": "reindex_trigger",
+        "description": "Reindex eines Workspace oder Chunks auslösen",
+        "reason": "Mutierende Systemoperation"
+      },
+      {
+        "id": "PROHIBIT-04",
+        "action": "metadata_write",
+        "description": "Metadatenfelder schreiben oder überschreiben",
+        "reason": "Mutierende DB-Operation"
+      },
+      {
+        "id": "PROHIBIT-05",
+        "action": "finding_auto_close",
+        "description": "Finding automatisch schließen oder löschen",
+        "reason": "Audit-Trail-Verlust"
+      },
+      {
+        "id": "PROHIBIT-06",
+        "action": "repair_call",
+        "description": "Repair-Funktion aufrufen",
+        "reason": "Außerhalb M5b-Scope; kein Repair-Konzept in M5b"
+      },
+      {
+        "id": "PROHIBIT-07",
+        "action": "cross_workspace_query",
+        "description": "Daten aus anderen Workspaces abfragen",
+        "reason": "Workspace-Isolation; boundary_rule docs/m5b-preparation-boundary.md"
+      },
+      {
+        "id": "PROHIBIT-08",
+        "action": "reports_current_direct_write",
+        "description": "reports/current/ direkt mutieren außer durch Gate-Validator",
+        "reason": "Gate-Integrität; nur Gate-Validator darf reports/current/ schreiben"
+      }
+    ]
+  },
+  "x-gate-effects": {
+    "no_findings": "GO",
+    "only_info_warning": "GO_WITH_WATCH_FLAG",
+    "at_least_one_error": "NO_GO",
+    "at_least_one_critical": "NO_GO_FREEZE",
+    "error_rate_above_threshold": "BLOCKED"
+  },
+  "x-immutability": {
+    "fields_immutable_after_creation": [
+      "drift_id",
+      "created_at",
+      "expected_state",
+      "actual_state"
+    ],
+    "finding_deletion": "requires_operator_decision_and_audit_entry",
+    "stability_rule": "drift_id is stable across report runs while the underlying state is unchanged"
+  }
+}

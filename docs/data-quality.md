@@ -10,14 +10,15 @@ Alle Aussagen, Status und Gates werden ausschliesslich aus maschinenlesbaren Rep
 - M5a Start-Gate: Siehe `reports/current/m5a_start_gate.json`
 - Duplicate Detector Gate: Siehe `reports/current/m5a_duplicate_detector_gate.json`
 - Metadata Detector Gate: Siehe `reports/current/m5a_metadata_detector_gate.json`
-- M5a Gesamtgate: Siehe `reports/current/m5a_data_quality_gate.json`
+- M5a Data-Quality-Eingang: Siehe `reports/current/m5a_data_quality_gate.json`
+- M5a Final Readiness: Siehe `reports/current/m5a_final_readiness_review.json`
 - M5a Lifecycle Integrity Slice Gate: Siehe `reports/current/m5a_lifecycle_integrity_gate.json`
 - Parent-Gate-Hierarchie: Siehe `docs/gate_hierarchy.json`
 - CLI: `python scripts/run_data_quality.py --workspace <id>`
 
 ## M5a Start-Gate
 
-`reports/current/m5a_start_gate.json` entscheidet nur ueber den Slice-Start. Die M5a-Gesamtfreigabe entsteht nicht aus diesem Start-Gate, sondern aus `reports/current/m5a_data_quality_gate.json` und der Parent-Gate-Hierarchie in `docs/gate_hierarchy.json`.
+`reports/current/m5a_start_gate.json` entscheidet nur ueber den Slice-Start. Die M5a-Gesamtfreigabe entsteht nicht aus diesem Start-Gate und nicht allein aus `reports/current/m5a_data_quality_gate.json`, sondern nur aus `reports/current/m5a_final_readiness_review.json`, wenn dort `READY_FOR_M5B` gemeldet wird.
 
 ## Implementierter Scope (M5a Slice-Artefakte)
 
@@ -142,5 +143,5 @@ Nicht in diesem Slice und ohne separate Governance ausser Scope:
 - Metadata Detector Slice: Status siehe `reports/current/m5a_metadata_detector_gate.json`.
 - Lifecycle Integrity Slice: Status siehe `reports/current/m5a_lifecycle_integrity_gate.json`.
 - Slice-Regel: Ein Slice-Gate bewertet nur den jeweiligen Slice und ersetzt keinen M5a-Gesamt-`PASS`.
-- M5a Gesamtgate: Status siehe `reports/current/m5a_data_quality_gate.json`.
-- Parent-Gate-Regel: M5a darf nur Gesamt-`PASS` sein, wenn das Parent-Gate `m5a` nach `docs/gate_hierarchy.json` `PASS` ist.
+- M5a Data-Quality-Eingang: Status siehe `reports/current/m5a_data_quality_gate.json`.
+- M5a Gesamtregel: M5a darf nur Gesamt-`PASS` sein, wenn `reports/current/m5a_final_readiness_review.json` `READY_FOR_M5B` meldet.

@@ -1,0 +1,239 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5b_preparation_gate",
+  "report_type": "gate_evaluation",
+  "generated_at": "2026-06-10T00:00:00Z",
+  "generated_by": "manual",
+  "environment": "local",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+
+  "decision": {
+    "status": "BLOCKED",
+    "prepared": false,
+    "implementation_allowed": false,
+    "reason": "2 von 8 Kriterien nicht erfuellt. Start-Gate-Preconditions SG-01 und SG-02 sind BLOCKED. Preparation-Artefakte vollstaendig vorhanden, aber PREPARED-Status erfordert M5a READY_FOR_M5B und Report Integrity PASS."
+  },
+
+  "boundary_rule": "PREPARED erlaubt nur Planung und Architektur. PREPARED erlaubt keine Implementierung. Implementierung erfordert separates Implementation-Gate PASS.",
+
+  "criteria": [
+    {
+      "id": "PG-01",
+      "label": "Preparation Boundary definiert",
+      "required": true,
+      "passed": true,
+      "source": "docs/m5b-preparation-boundary.md",
+      "source_secondary": "m5b_boundary_report.json",
+      "observed": {
+        "file_exists": true,
+        "boundary_report_exists": true,
+        "erlaubt_count": 7,
+        "verboten_count": 5,
+        "forbidden_items": [
+          "FORBID-01: Drift Detection Code",
+          "FORBID-02: Repair Code",
+          "FORBID-03: Cleanup Code",
+          "FORBID-04: neue Admin-Aktionen",
+          "FORBID-05: automatische Korrekturen"
+        ]
+      },
+      "pass_condition": "docs/m5b-preparation-boundary.md vorhanden mit Erlaubt/Verboten-Scope",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "PG-02",
+      "label": "Drift Types definiert (alle 7)",
+      "required": true,
+      "passed": true,
+      "source": "docs/m5b-drift-types.md",
+      "source_secondary": "schemas/drift_types.schema.json",
+      "observed": {
+        "file_exists": true,
+        "schema_exists": true,
+        "types_count_doc": 7,
+        "types_count_schema": 7,
+        "types": [
+          "DOCUMENT_DRIFT",
+          "CHUNK_DRIFT",
+          "METADATA_DRIFT",
+          "LIFECYCLE_DRIFT",
+          "SOURCE_STATUS_DRIFT",
+          "SEARCH_INDEX_DRIFT",
+          "RETRIEVAL_DRIFT"
+        ],
+        "schema_gap_note": "drift_schema.json kennt 5 Typen; schemas/drift_types.schema.json ist autorative 7-Typ-Definition; Gap-Schliessen ist PREPARED-Uebergangs-Aktion."
+      },
+      "pass_condition": "docs/m5b-drift-types.md und schemas/drift_types.schema.json vorhanden, alle 7 Typen definiert",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "PG-03",
+      "label": "Gate-Kriterien definiert",
+      "required": true,
+      "passed": true,
+      "source": "reports/current/m5b_gate_criteria.json",
+      "source_secondary": "docs/m5b-gates.md",
+      "observed": {
+        "file_exists": true,
+        "start_gate_criteria_count": 6,
+        "implementation_gate_criteria_count": 4
+      },
+      "pass_condition": "reports/current/m5b_gate_criteria.json vorhanden mit Start-Gate und Implementation-Gate Kriterien",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "PG-04",
+      "label": "Teststrategie vorhanden",
+      "required": true,
+      "passed": true,
+      "source": "docs/m5b-test-strategy.md",
+      "source_secondary": "test_matrix_m5b.json",
+      "observed": {
+        "file_exists": true,
+        "test_matrix_exists": true,
+        "test_suites_count": 7,
+        "drift_types_covered": 7,
+        "gate_relevant_suites": ["TS-02", "TS-03", "TS-04", "TS-05"],
+        "non_blocking_suites": ["TS-01", "TS-06", "TS-07"],
+        "repair_actions_in_tests": false
+      },
+      "pass_condition": "docs/m5b-test-strategy.md vorhanden mit Testplaenen fuer alle 7 Drift-Typen",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "PG-05",
+      "label": "Risk Matrix vorhanden",
+      "required": true,
+      "passed": true,
+      "source": "docs/m5b-risk-matrix.md",
+      "source_secondary": "m5b_risk_matrix.json",
+      "observed": {
+        "file_exists": true,
+        "risk_matrix_exists": true,
+        "risks_count": 7,
+        "blocking_risks_count": 5,
+        "critical_impact_risks": ["R-02", "R-07"]
+      },
+      "pass_condition": "docs/m5b-risk-matrix.md und m5b_risk_matrix.json vorhanden mit allen 7 Risiken",
+      "blocker_if_failed": true
+    },
+    {
+      "id": "PG-06",
+      "label": "Architektur-Dokument vorhanden",
+      "required": true,
+      "passed": true,
+      "source": "docs/m5b-drift-architecture.md",
+      "observed": {
+        "file_exists": true
+      },
+      "pass_condition": "docs/m5b-drift-architecture.md vorhanden",
+      "blocker_if_failed": false,
+      "note": "Nicht-blockierend; ergaenzendes Architekturdokument"
+    },
+    {
+      "id": "PG-07",
+      "label": "M5a READY_FOR_M5B (Start-Gate SG-01)",
+      "required": true,
+      "passed": false,
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "observed": {
+        "status": "BLOCKED",
+        "ready_for_m5b": false
+      },
+      "pass_condition": "m5a_final_readiness_review.status = READY_FOR_M5B",
+      "blocker_if_failed": true,
+      "note": "Parent-Gate-Precondition. Kein PREPARED ohne READY_FOR_M5B."
+    },
+    {
+      "id": "PG-08",
+      "label": "Report Integrity PASS (Start-Gate SG-02)",
+      "required": true,
+      "passed": false,
+      "source": "reports/current/report_integrity_v2.json",
+      "observed": {
+        "status": "BLOCKED",
+        "result": "BLOCKED"
+      },
+      "pass_condition": "report_integrity_v2.status = PASS",
+      "blocker_if_failed": true,
+      "note": "Alle Preparation-Artefakte muessen verifiziert sein, bevor PREPARED gilt."
+    }
+  ],
+
+  "summary": {
+    "criteria_total": 8,
+    "criteria_passed": 6,
+    "criteria_failed": 2,
+    "preparation_artifacts_complete": true,
+    "preparation_artifacts_count": 27,
+    "blockers_count": 2,
+    "architecture_review_status": "COMPLETE",
+    "architecture_review_score": "8/8 artifacts complete; 3 open decisions; 0 structural gaps",
+    "architecture_review_ref": "reports/current/m5b_architecture_review.json"
+  },
+
+  "blockers": [
+    {
+      "id": "PG-BLOCKER-01",
+      "criterion": "PG-07",
+      "severity": "blocking",
+      "source": "reports/current/m5a_final_readiness_review.json",
+      "detail": "M5a Final Readiness Review ist BLOCKED; ready_for_m5b=false. PREPARED nicht moeglich."
+    },
+    {
+      "id": "PG-BLOCKER-02",
+      "criterion": "PG-08",
+      "severity": "blocking",
+      "source": "reports/current/report_integrity_v2.json",
+      "detail": "Report Integrity ist BLOCKED, nicht PASS. Artefakt-Verifikation ausstehend."
+    }
+  ],
+
+  "preparation_artifacts_present": [
+    { "id": "PREP-01", "artifact": "docs/m5b-preparation-boundary.md", "status": "DONE" },
+    { "id": "PREP-02", "artifact": "m5b_boundary_report.json", "status": "DONE" },
+    { "id": "PREP-03", "artifact": "docs/m5b-drift-types.md", "status": "DONE" },
+    { "id": "PREP-04", "artifact": "schemas/drift_types.schema.json", "status": "DONE" },
+    { "id": "PREP-05", "artifact": "reports/current/m5b_gate_criteria.json", "status": "DONE" },
+    { "id": "PREP-06", "artifact": "docs/m5b-gates.md", "status": "DONE" },
+    { "id": "PREP-07", "artifact": "docs/m5b-test-strategy.md", "status": "DONE" },
+    { "id": "PREP-08", "artifact": "test_matrix_m5b.json", "status": "DONE" },
+    { "id": "PREP-09", "artifact": "docs/m5b-risk-matrix.md", "status": "DONE" },
+    { "id": "PREP-10", "artifact": "m5b_risk_matrix.json", "status": "DONE" },
+    { "id": "PREP-11", "artifact": "docs/m5b-drift-governance.md", "status": "DONE" },
+    { "id": "PREP-12", "artifact": "drift_governance.schema.json", "status": "DONE" },
+    { "id": "PREP-13", "artifact": "docs/m5b-drift-severity.md", "status": "DONE" },
+    { "id": "PREP-14", "artifact": "drift_severity_matrix.json", "status": "DONE" },
+    { "id": "PREP-15", "artifact": "docs/m5b-entity-mapping.md", "status": "DONE" },
+    { "id": "PREP-16", "artifact": "drift_entity_mapping.json", "status": "DONE" },
+    { "id": "PREP-17", "artifact": "docs/m5b-drift-metrics.md", "status": "DONE" },
+    { "id": "PREP-18", "artifact": "drift_metrics.schema.json", "status": "DONE" },
+    { "id": "PREP-19", "artifact": "docs/m5b-drift-history.md", "status": "DONE" },
+    { "id": "PREP-20", "artifact": "drift_history_model.json", "status": "DONE" },
+    { "id": "PREP-21", "artifact": "docs/m5b-reporting.md", "status": "DONE" },
+    { "id": "PREP-22", "artifact": "reporting_architecture.json", "status": "DONE" },
+    { "id": "PREP-23", "artifact": "docs/m5b-testdata-strategy.md", "status": "DONE" },
+    { "id": "PREP-24", "artifact": "drift_test_dataset_plan.json", "status": "DONE" },
+    { "id": "PREP-25", "artifact": "docs/m5b-rollback.md", "status": "DONE" },
+    { "id": "PREP-26", "artifact": "rollback_strategy.json", "status": "DONE" },
+    { "id": "PREP-27", "artifact": "reports/current/m5b_architecture_review.json", "status": "DONE" }
+  ],
+
+  "pending_at_prepared_transition": [
+    {
+      "id": "TRANSITION-01",
+      "action": "drift_schema.json auf 7 Typen erweitern",
+      "details": "Fehlende Typen: CHUNK_DRIFT, SEARCH_INDEX_DRIFT (aktuell 5, benoetigt 7)",
+      "authority": "schemas/drift_types.schema.json"
+    }
+  ],
+
+  "not_allowed": [
+    "Drift Detection Code",
+    "Repair Code",
+    "Cleanup Code",
+    "neue Admin-Aktionen fuer Drift",
+    "automatische Korrekturen",
+    "Implementierung ohne Implementation-Gate PASS"
+  ]
+}

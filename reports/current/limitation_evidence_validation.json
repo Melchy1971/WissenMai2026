@@ -1,0 +1,145 @@
+{
+  "report_schema_version": 1,
+  "report_name": "limitation_evidence_validation",
+  "generated_by": "limitation_evidence_validator",
+  "generated_at": "2026-06-10T08:08:33.498390+00:00",
+  "timestamp": "2026-06-10T08:08:33.498390+00:00",
+  "environment": "local",
+  "report_type": "validation",
+  "status": "PASS",
+  "result": "PASS",
+  "source_command": "python scripts/validate_limitation_evidence.py",
+  "inputs": {
+    "known_limitations": "reports/current/known_limitations.json"
+  },
+  "rules": {
+    "open_blocking_required_fields": [
+      "evidence_report",
+      "next_action",
+      "target_phase",
+      "severity"
+    ],
+    "owner_required": false,
+    "resolved_required_fields": [
+      "resolved_at",
+      "resolving_report"
+    ],
+    "blocks_gate_semantics": "non-empty blocks_gate is effective true; empty blocks_gate is effective false",
+    "gate_mapping": {
+      "M5A": [
+        "data_quality_report",
+        "documentation_truth_lint",
+        "duplicate_detector_gate",
+        "lifecycle_integrity_gate",
+        "m5_truth_gate",
+        "m5a_data_quality_gate",
+        "m5a_start_gate",
+        "metadata_detector_gate",
+        "orphan_detector_gate",
+        "report_integrity_v2",
+        "source_status_integrity_gate"
+      ],
+      "M5B_PREP": [
+        "m5b_start_gate"
+      ],
+      "M5B_IMPL": [
+        "m5b_implementation_gate"
+      ],
+      "GOVERNANCE": [
+        "operational_governance_gate"
+      ],
+      "M5C_PLUS": []
+    }
+  },
+  "summary": {
+    "limitations_checked": 6,
+    "issues": 0,
+    "blocking_issues": 0,
+    "missing_evidence_count": 0,
+    "fix_count": 0
+  },
+  "checks": [
+    {
+      "id": "KL-M5-T-001",
+      "status": "open",
+      "severity": "high",
+      "target_phase": "M5B_IMPL",
+      "blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence_report": "reports/current/pre_m5_decision_report.json",
+      "evidence_json_valid": true,
+      "evidence_status": "PASS",
+      "valid": true,
+      "issues": []
+    },
+    {
+      "id": "KL-M5-T-002",
+      "status": "open",
+      "severity": "high",
+      "target_phase": "M5B_IMPL",
+      "blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence_report": "reports/current/m5b_start_gate.json",
+      "evidence_json_valid": true,
+      "evidence_status": "DRAFT",
+      "valid": true,
+      "issues": []
+    },
+    {
+      "id": "KL-GOV-001",
+      "status": "deferred",
+      "severity": "high",
+      "target_phase": "GOVERNANCE",
+      "blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence_report": "docs/m4d-admin-diagnostics.md",
+      "evidence_json_valid": null,
+      "evidence_status": null,
+      "valid": true,
+      "issues": []
+    },
+    {
+      "id": "KL-DEF-001",
+      "status": "deferred",
+      "severity": "low",
+      "target_phase": "M5C_PLUS",
+      "blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence_report": "masterplan.md",
+      "evidence_json_valid": null,
+      "evidence_status": null,
+      "valid": true,
+      "issues": []
+    },
+    {
+      "id": "KL-DEF-002",
+      "status": "deferred",
+      "severity": "low",
+      "target_phase": "M5C_PLUS",
+      "blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence_report": "masterplan.md",
+      "evidence_json_valid": null,
+      "evidence_status": null,
+      "valid": true,
+      "issues": []
+    },
+    {
+      "id": "KL-NB-001",
+      "status": "open",
+      "severity": "low",
+      "target_phase": "M5C_PLUS",
+      "blocks_gate": [],
+      "blocks_gate_effective": false,
+      "evidence_report": "docs/api.md",
+      "evidence_json_valid": null,
+      "evidence_status": null,
+      "valid": true,
+      "issues": []
+    }
+  ],
+  "missing_evidence": [],
+  "fix_list": [],
+  "issues": [],
+  "blockers": []
+}

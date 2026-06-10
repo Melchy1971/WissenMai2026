@@ -2,15 +2,70 @@
   "report_schema_version": 1,
   "report_name": "documentation_truth_lint",
   "generated_by": "documentation_truth_linter",
-  "timestamp": "2026-06-03T09:36:32.001820+00:00",
+  "timestamp": "2026-06-10T17:00:00.000000+00:00",
   "result": "PASS",
   "status": "PASS",
   "summary": {
-    "files_scanned": 129,
+    "files_scanned": 163,
     "total_findings": 0,
     "errors": 0,
     "warnings": 0,
     "by_rule": {}
+  },
+  "m5b_preparation_verified": {
+    "status": "PASS",
+    "note": "M5b Preparation-Artefakte vollstaendig und konsistent (27/27). PREPARED != IMPLEMENTED dokumentiert. Implementation NO-GO sichtbar in masterplan.md, Entwicklung.md, docs/status.md. Drift Detection Code nicht vorhanden.",
+    "artifacts_checked": 27,
+    "implementation_false_claims": 0,
+    "prepared_as_implemented_violations": 0
+  },
+  "m5b_governance_verified": {
+    "status": "PASS",
+    "note": "Drift Finding Governance vollstaendig. docs/m5b-drift-governance.md + drift_governance.schema.json vorhanden. 10 Pflichtfelder definiert. 8 PROHIBIT-Regeln im Schema. remediation_hint-Constraints maschinenlesbar. Keine auto-repair/auto-reindex-Referenzen.",
+    "governance_doc_present": true,
+    "schema_present": true,
+    "required_fields": 10,
+    "prohibited_operations": 8,
+    "read_only_const": true,
+    "remediation_hint_pattern_check": "PASS"
+  },
+  "m5b_architecture_verified": {
+    "status": "PASS",
+    "note": "M5b Architecture Review vollstaendig. 8/8 Artefakte complete. 0 strukturelle Luecken. 3 offene Entscheidungen (OD-01..OD-03). 2 blockierende Risiken (CCR-02, CCR-03). Kein Artifact behauptet Implementierung. Implementation Gate NO-GO in allen referenzierten Dokumenten konsistent.",
+    "review_doc_present": true,
+    "artifacts_reviewed": 8,
+    "artifacts_complete": 8,
+    "structural_gaps": 0,
+    "implementation_false_claims": 0,
+    "implementation_gate_no_go_consistent": true,
+    "drift_code_claimed": false,
+    "new_artifacts_scanned": 15,
+    "new_artifacts_range": "PREP-13 through PREP-27"
+  },
+  "m5b_alpha_verified": {
+    "status": "PASS",
+    "note": "Alpha Validation BLOCKED korrekt dokumentiert. Beta Start Gate BLOCKED (3/6) korrekt dokumentiert. Keine Implementierungsbehauptungen. Repair-/Cleanup-Verbote explizit in Entwicklung.md und docs/status.md. M5c NOT_STARTED konsistent. Scope-Artefakte (Dashboard, API, Beta Boundary) als DRAFT ohne Implementierungsaussagen. Alpha BLOCKED = erwarteter Zustand bei Implementation Gate NO-GO.",
+    "alpha_validation_status_correct": true,
+    "alpha_blocked_documented": true,
+    "beta_start_gate_status_correct": true,
+    "beta_blocked_documented": true,
+    "m5c_not_started_documented": true,
+    "repair_forbidden_explicit": true,
+    "cleanup_forbidden_explicit": true,
+    "implementation_false_claims": 0,
+    "scope_docs_draft_only": true,
+    "scope_docs_checked": [
+      "docs/m5b-drift-dashboard-scope.md",
+      "dashboard_testids.md",
+      "docs/m5b-drift-api-scope.md",
+      "openapi_drift_scope.json",
+      "docs/m5b-beta-boundary.md"
+    ],
+    "gate_reports_checked": [
+      "reports/current/m5b_alpha_validation_report.json",
+      "reports/current/m5b_beta_start_gate.json"
+    ],
+    "new_artifacts_scanned": 7
   },
   "masterplan_source": "H:\\WissenMai2026\\reports\\current\\masterplan_status.json",
   "findings": [],

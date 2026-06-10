@@ -76,6 +76,6 @@ Ohne diese Zuordnung bleibt Arbeit Analyse, Planung oder Blocker-Behebung. Sie i
 - `reports/current/documentation_truth_lint.json`
 - `reports/current/gate_hierarchy_result.json`
 - `reports/current/masterplan_status.json`
-- `reports/current/recovery_sprint_gate.json`
+- `reports/archive/legacy/20260605T100000Z/recovery_sprint_gate.json`
 
 Die maschinenlesbare Quelle fuer diesen Modus ist `docs/governance-stable-development-mode.json`.

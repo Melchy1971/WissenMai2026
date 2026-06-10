@@ -289,7 +289,7 @@ Invoke-RestMethod http://localhost:8001/health
 # Dann Frontend-Reload; API_UNREACHABLE darf nicht mehr erscheinen
 ```
 
-**Report-Artefakt:** `reports/current/frontend_full_suite_staged_report.json` (nach erneutem Truth-Lauf)
+**Report-Artefakt:** `reports/archive/legacy/20260605T100000Z/frontend_full_suite_staged_report.json` (nach erneutem Truth-Lauf)
 
 ---
 

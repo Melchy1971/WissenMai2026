@@ -1,0 +1,199 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DRAFT",
+  "generated_by": "manual",
+  "created_at": "2026-06-10",
+  "gate_authority": "reports/current/m5b_gate_criteria.json",
+  "type_authority": "schemas/drift_types.schema.json",
+  "severity_ref": "drift_severity_matrix.json",
+  "doc_ref": "docs/m5b-entity-mapping.md",
+
+  "entities": [
+    {
+      "entity_name": "Document",
+      "entity_type_value": "document",
+      "primary_table": "documents",
+      "workspace_scoped": true,
+      "possible_drift_types": ["DOCUMENT_DRIFT", "LIFECYCLE_DRIFT"],
+      "data_sources": [
+        {
+          "source": "documents (PostgreSQL)",
+          "fields": ["id", "content_hash", "lifecycle_status", "import_status", "current_version_id"]
+        },
+        {
+          "source": "search_index",
+          "fields": ["document_id", "is_indexed"]
+        }
+      ],
+      "validation_logic": [
+        "Compare content_hash against last DriftSnapshot",
+        "Check lifecycle_status against index searchability state",
+        "Check import_status=completed documents for required fields"
+      ],
+      "reports": ["drift_report.json", "drift_summary.json"]
+    },
+    {
+      "entity_name": "Version",
+      "entity_type_value": "document",
+      "primary_table": "document_versions",
+      "workspace_scoped": true,
+      "possible_drift_types": ["DOCUMENT_DRIFT"],
+      "data_sources": [
+        {
+          "source": "document_versions (PostgreSQL)",
+          "fields": ["id", "document_id", "version_hash", "finalized_at"]
+        },
+        {
+          "source": "documents",
+          "fields": ["current_version_id"]
+        }
+      ],
+      "validation_logic": [
+        "Check FK: current_version_id exists in document_versions",
+        "Check version_hash immutability after finalized_at",
+        "Check version chain for gaps"
+      ],
+      "entity_type_note": "Version maps to entity_type=document; no standalone entity_type category",
+      "reports": ["drift_report.json"]
+    },
+    {
+      "entity_name": "Chunk",
+      "entity_type_value": "chunk",
+      "primary_table": "document_chunks",
+      "workspace_scoped": true,
+      "possible_drift_types": ["CHUNK_DRIFT", "LIFECYCLE_DRIFT", "SEARCH_INDEX_DRIFT"],
+      "data_sources": [
+        {
+          "source": "document_chunks (PostgreSQL)",
+          "fields": ["id", "document_id", "chunk_hash", "is_searchable"]
+        },
+        {
+          "source": "documents",
+          "fields": ["expected_chunk_count", "lifecycle_status"]
+        },
+        {
+          "source": "search_index",
+          "fields": ["chunk_id", "is_indexed"]
+        }
+      ],
+      "validation_logic": [
+        "Count chunks per document_id; compare with expected_chunk_count",
+        "Check is_searchable of all chunks against parent document lifecycle_status",
+        "Workspace-scoped index-DB diff: index-only = Phantom; DB-only = Missing",
+        "Check chunk_hash immutability after indexing complete"
+      ],
+      "reports": ["drift_report.json", "drift_gate_report.json"]
+    },
+    {
+      "entity_name": "Citation",
+      "entity_type_value": "document",
+      "primary_table": "document_citations",
+      "workspace_scoped": true,
+      "possible_drift_types": ["DOCUMENT_DRIFT"],
+      "data_sources": [
+        {
+          "source": "document_citations (PostgreSQL)",
+          "fields": ["id", "document_id", "chunk_id", "snapshot_content_hash", "created_at"]
+        },
+        {
+          "source": "document_chunks",
+          "fields": ["chunk_hash"]
+        }
+      ],
+      "validation_logic": [
+        "Compare snapshot_content_hash against current chunk_hash",
+        "Divergence = citation snapshot is stale; chunk content has changed"
+      ],
+      "entity_type_note": "Citation maps to entity_type=document; not a standalone gate-relevant entity",
+      "reports": ["drift_report.json"]
+    },
+    {
+      "entity_name": "SourceStatus",
+      "entity_type_value": "source",
+      "primary_table": "data_sources",
+      "workspace_scoped": true,
+      "possible_drift_types": ["SOURCE_STATUS_DRIFT"],
+      "data_sources": [
+        {
+          "source": "data_sources (PostgreSQL)",
+          "fields": ["id", "source_status", "last_successful_sync"]
+        },
+        {
+          "source": "connectivity_check (read-only)",
+          "fields": ["reachable", "response_time_ms"]
+        }
+      ],
+      "validation_logic": [
+        "Read source_status and last_successful_sync per data_source in workspace",
+        "Perform read-only connectivity check (no writes)",
+        "source unreachable + source_status=active = SOURCE_STATUS_DRIFT",
+        "Check time delta since last_successful_sync against configured timeout"
+      ],
+      "reports": ["drift_report.json", "drift_summary.json"]
+    },
+    {
+      "entity_name": "Lifecycle",
+      "entity_type_value": "document",
+      "primary_table": "documents (lifecycle_status attribute) + document_chunks (is_searchable attribute)",
+      "workspace_scoped": true,
+      "possible_drift_types": ["LIFECYCLE_DRIFT"],
+      "data_sources": [
+        {
+          "source": "documents (PostgreSQL)",
+          "fields": ["lifecycle_status"]
+        },
+        {
+          "source": "document_chunks (PostgreSQL)",
+          "fields": ["is_searchable"]
+        },
+        {
+          "source": "search_index",
+          "fields": ["is_indexed"]
+        }
+      ],
+      "validation_logic": [
+        "Read all documents with lifecycle_status IN (archived, deleted) in workspace",
+        "Check associated chunks: is_searchable=true -> LIFECYCLE_DRIFT (error)",
+        "Check search index: deleted document with index entry -> LIFECYCLE_DRIFT (critical)",
+        "Check reverse: active document with is_searchable=false after completed import -> LIFECYCLE_DRIFT (warning candidate)"
+      ],
+      "entity_type_note": "Lifecycle is not a standalone DB table; logical entity spanning documents and document_chunks",
+      "reports": ["drift_report.json", "drift_gate_report.json", "drift_summary.json"]
+    },
+    {
+      "entity_name": "SearchIndex",
+      "entity_type_value": "index_entry",
+      "primary_table": "search_index (external) vs document_chunks (PostgreSQL)",
+      "workspace_scoped": true,
+      "possible_drift_types": ["SEARCH_INDEX_DRIFT", "RETRIEVAL_DRIFT"],
+      "data_sources": [
+        {
+          "source": "search_index (workspace-scoped read-only query)",
+          "fields": ["chunk_id", "workspace_id"]
+        },
+        {
+          "source": "document_chunks (PostgreSQL)",
+          "fields": ["id", "is_searchable", "workspace_id"]
+        },
+        {
+          "source": "drift_baseline.json",
+          "fields": ["retrieval_metrics", "baseline_timestamp"]
+        }
+      ],
+      "validation_logic": {
+        "SEARCH_INDEX_DRIFT": [
+          "Read all index_entry IDs in workspace from search index (read-only)",
+          "Read all document_chunks.id with is_searchable=true in workspace",
+          "Diff: index-only = Phantom; DB-only = Missing",
+          "Any Phantom or Missing entry -> SEARCH_INDEX_DRIFT"
+        ],
+        "RETRIEVAL_DRIFT": [
+          "Execute defined retrieval test queries against workspace (read-only)",
+          "Calculate metric delta against golden baseline",
+          "Delta > threshold -> RETRIEVAL_DRIFT"
+        ]
+      },
+      "reports": ["drift_report.json", "drift_gate_report.json", "drift_history.json"]
+    }
+  ]
+}
