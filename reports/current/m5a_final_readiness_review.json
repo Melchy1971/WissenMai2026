@@ -2,7 +2,7 @@
   "report_schema_version": 1,
   "report_name": "m5a_final_readiness_review",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-09T08:08:49.231365+00:00",
+  "timestamp": "2026-06-09T13:29:27.4224508Z",
   "environment": "local",
   "report_type": "status_report",
   "status": "BLOCKED",
@@ -12,76 +12,126 @@
     "ready_for_m5b": false,
     "go_no_go": "NO_GO",
     "manual_override_allowed": false,
-    "rule": "READY_FOR_M5B requires all review areas PASS and parent gate m5a PASS. Any BLOCKED, INVALID, STALE, or FAIL area blocks readiness."
+    "rule": "READY_FOR_M5B requires m5a_data_quality_gate PASS, report_integrity_v2 PASS, no critical M5a-blocking known limitations, and documentation_truth_lint PASS. Any missing, BLOCKED, FAIL, INVALID, STALE, or M5a-blocking critical limitation blocks readiness."
   },
-  "score": 50.0,
-  "score_model": {
-    "method": "equal_weighted_review_areas",
-    "areas": 6,
-    "points_per_area": 16.6667,
-    "pass_value": 100,
-    "blocked_value": 0,
-    "note": "Score measures review evidence completeness. Readiness remains hard-gated by blockers and does not pass by score alone."
+  "diagnostics": {
+    "score": 50.0,
+    "score_model": {
+      "method": "equal_weighted_review_areas",
+      "areas": 6,
+      "points_per_area": 16.6667,
+      "pass_value": 100,
+      "blocked_value": 0,
+      "note": "Score measures review evidence completeness. Readiness remains hard-gated by blockers and does not pass by score alone."
+    },
+    "non_blocking_pass_evidence": [
+      {
+        "id": "documentation_truth_lint_pass",
+        "source": "reports/current/documentation_truth_lint.json"
+      },
+      {
+        "id": "m5a_regression_suite_pass",
+        "source": "reports/current/m5a_regression_report.json"
+      },
+      {
+        "id": "m5a_performance_baseline_pass",
+        "source": "reports/current/m5a_performance_baseline.json"
+      }
+    ],
+    "known_limitations_scope": {
+      "m5a_blocking": [
+        {
+          "id": "KL-M5-T-001",
+          "blocks_gate": [
+            "m5_truth_gate"
+          ],
+          "reason": "Open high-severity M5 truth limitation; still blocks M5a/M5 truth readiness."
+        }
+      ],
+      "not_m5a_blocking": [
+        {
+          "id": "KL-M5-T-002",
+          "blocks_gate": [
+            "m5b_implementation_gate"
+          ],
+          "reason": "Mapped to M5b implementation; does not block M5a Parent Gate."
+        },
+        {
+          "id": "KL-GOV-001",
+          "blocks_gate": [
+            "operational_governance_gate"
+          ],
+          "reason": "Deferred to later mutating admin actions; does not block M5a or M5b DRAFT/PREPARED."
+        }
+      ]
+    }
   },
   "checks": [
     {
-      "id": "child_gates",
-      "label": "Alle Child Gates",
-      "status": "BLOCKED",
-      "score": 0,
-      "source": "python scripts\\parent_gate_validator.py m5a",
-      "evidence": {
-        "mandatory_children": 9,
-        "passed": 0,
-        "failed_or_blocking": 9,
-        "blocking_children": [
-          "m5a_start_gate",
-          "report_integrity_v2",
-          "documentation_truth_lint",
-          "data_quality_report",
-          "duplicate_detector_gate",
-          "metadata_detector_gate",
-          "lifecycle_integrity_gate",
-          "source_status_integrity_gate",
-          "orphan_detector_gate"
-        ]
-      }
-    },
-    {
-      "id": "parent_gate",
-      "label": "Parent Gate",
+      "id": "m5a_data_quality_gate",
+      "label": "M5a Data Quality Gate",
       "status": "BLOCKED",
       "score": 0,
       "source": "reports/current/m5a_data_quality_gate.json",
       "evidence": {
-        "parent_gate": "m5a",
-        "m5a_data_quality_gate_status": "BLOCKED",
-        "parent_gate_validation_status": "BLOCKED",
-        "decision": "NO_GO"
+        "status": "BLOCKED",
+        "result": "BLOCKED",
+        "decision": "NO_GO",
+        "collected": 9,
+        "passed": 1,
+        "failed": 8,
+        "blocker_count": 8,
+        "quality_score": 94.0,
+        "score_threshold": 90.0
       }
     },
     {
-      "id": "report_integrity",
-      "label": "Report Integrity",
+      "id": "report_integrity_v2",
+      "label": "Report Integrity v2",
       "status": "BLOCKED",
       "score": 0,
       "source": "reports/current/report_integrity_v2.json",
       "evidence": {
         "status": "BLOCKED",
+        "result": "BLOCKED",
         "checks_collected": 7,
         "checks_passed": 6,
         "checks_failed": 1,
-        "blocker_count": 2
+        "blocker_count": 2,
+        "blocking_files": [
+          "reports/current/m5a_source_status_integrity_gate.json",
+          "reports/current/m5a_orphan_detector_gate.json"
+        ]
       }
     },
     {
-      "id": "documentation_truth",
+      "id": "known_limitations_m5a",
+      "label": "Keine kritischen M5a-blockierenden Known Limitations",
+      "status": "BLOCKED",
+      "score": 0,
+      "source": "reports/current/known_limitations.json",
+      "evidence": {
+        "critical_m5a_blocking_limitations": [
+          "KL-M5-T-001"
+        ],
+        "non_m5a_blocking_open_limitations": [
+          "KL-M5-T-002"
+        ],
+        "deferred_governance_limitations": [
+          "KL-GOV-001"
+        ],
+        "rule": "Only open high-severity limitations that block M5a or M5 truth readiness block this review. KL-M5-T-002 is mapped to m5b_implementation_gate; KL-GOV-001 is deferred to operational_governance_gate for later mutating admin actions."
+      }
+    },
+    {
+      "id": "documentation_truth_lint",
       "label": "Documentation Truth",
       "status": "PASS",
       "score": 100,
       "source": "reports/current/documentation_truth_lint.json",
       "evidence": {
         "status": "PASS",
+        "result": "PASS",
         "files_scanned": 129,
         "errors": 0,
         "warnings": 0,
@@ -95,6 +145,7 @@
       "score": 100,
       "source": "reports/current/m5a_regression_report.json",
       "evidence": {
+        "status": "PASS",
         "required_areas": 7,
         "covered_areas": 7,
         "tests_collected": 122,
@@ -124,22 +175,23 @@
   ],
   "blockers": [
     {
-      "id": "M5A_CHILD_GATES_NOT_ALL_PASS",
-      "severity": "blocking",
-      "source": "python scripts\\parent_gate_validator.py m5a",
-      "detail": "Current parent-gate validation reports 0/9 mandatory child gates PASS."
-    },
-    {
-      "id": "M5A_PARENT_GATE_BLOCKED",
+      "id": "M5A_DATA_QUALITY_GATE_NOT_PASS",
       "severity": "blocking",
       "source": "reports/current/m5a_data_quality_gate.json",
-      "detail": "m5a_data_quality_gate.status=BLOCKED and parent_gate_validation.status=BLOCKED."
+      "detail": "m5a_data_quality_gate.status=BLOCKED; READY_FOR_M5B requires PASS."
     },
     {
-      "id": "REPORT_INTEGRITY_V2_BLOCKED",
+      "id": "REPORT_INTEGRITY_V2_NOT_PASS",
       "severity": "blocking",
       "source": "reports/current/report_integrity_v2.json",
-      "detail": "Report Integrity v2 is BLOCKED by child gate consistency: source_status_integrity_gate and orphan_detector_gate are BLOCKED."
+      "detail": "report_integrity_v2.status=BLOCKED; child gate consistency still blocks on source status integrity and orphan detector gates."
+    },
+    {
+      "id": "CRITICAL_M5A_KNOWN_LIMITATION_OPEN",
+      "severity": "blocking",
+      "source": "reports/current/known_limitations.json",
+      "detail": "KL-M5-T-001 remains open, high severity, and blocks m5_truth_gate for M5a/M5 truth readiness.",
+      "limitation_id": "KL-M5-T-001"
     },
     {
       "id": "SOURCE_STATUS_INTEGRITY_GATE_BLOCKED",
@@ -154,47 +206,41 @@
       "detail": "Orphan Detector Gate is BLOCKED; required truth execution is not proven."
     },
     {
-      "id": "STALE_CHILD_GATE_REPORTS",
+      "id": "STALE_OR_INVALID_PARENT_CHILD_EVIDENCE",
       "severity": "blocking",
-      "source": "python scripts\\parent_gate_validator.py m5a",
-      "detail": "m5a_start_gate, duplicate_detector_gate, metadata_detector_gate, and lifecycle_integrity_gate are older than the 168 hour freshness threshold."
-    },
-    {
-      "id": "PARENT_VALIDATION_PASS_EVIDENCE_INVALID",
-      "severity": "blocking",
-      "source": "python scripts\\parent_gate_validator.py m5a",
-      "detail": "documentation_truth_lint and data_quality_report are individually successful, but parent validation marks them INVALID because they do not provide collected > 0 or report_type=supporting."
+      "source": "reports/current/m5a_data_quality_gate.json",
+      "detail": "Parent validation in the M5a gate still reports stale child gates and invalid PASS evidence for documentation_truth_lint/data_quality_report."
     }
   ],
-  "non_blocking_pass_evidence": [
-    {
-      "id": "documentation_truth_lint_pass",
-      "source": "reports/current/documentation_truth_lint.json"
-    },
-    {
-      "id": "m5a_regression_suite_pass",
-      "source": "reports/current/m5a_regression_report.json"
-    },
-    {
-      "id": "m5a_performance_baseline_pass",
-      "source": "reports/current/m5a_performance_baseline.json"
-    }
-  ],
-  "required_actions": [
-    "Regenerate or refresh stale M5a child gate reports inside the 168 hour freshness window.",
+  "required_actions_before_m5a": [
+    "Make m5a_data_quality_gate PASS by resolving current child-gate blockers and rerunning parent gate validation.",
     "Make m5a_source_status_integrity_gate PASS by executing/proving the required Source Status Integrity tests.",
     "Make m5a_orphan_detector_gate PASS by executing/proving the required Orphan Detector tests.",
-    "Resolve report_integrity_v2 blockers after child gates are no longer BLOCKED.",
-    "Normalize parent-gate evidence for documentation_truth_lint and data_quality_report, or mark them as supporting reports according to the schema policy.",
-    "Regenerate m5a_data_quality_gate and rerun this readiness review."
+    "Regenerate report_integrity_v2 after source status and orphan gates are no longer BLOCKED.",
+    "Resolve KL-M5-T-001 with a current M5 truth report showing status=PASS, failed=0, errors=0, blockers=[].",
+    "Refresh stale M5a child gate reports and normalize parent PASS evidence for documentation_truth_lint and data_quality_report.",
+    "Rerun this readiness review after all prerequisite reports are PASS."
   ],
   "inputs": {
-    "child_gate_matrix": "reports/current/m5a_child_gate_matrix.json",
-    "parent_gate": "reports/current/m5a_data_quality_gate.json",
-    "parent_gate_validator": "python scripts\\parent_gate_validator.py m5a",
+    "m5a_data_quality_gate": "reports/current/m5a_data_quality_gate.json",
     "report_integrity": "reports/current/report_integrity_v2.json",
+    "known_limitations": "reports/current/known_limitations.json",
     "documentation_truth": "reports/current/documentation_truth_lint.json",
     "regression_suite": "reports/current/m5a_regression_report.json",
     "performance_baseline": "reports/current/m5a_performance_baseline.json"
+  },
+  "summary": {
+    "final_decision": "BLOCKED",
+    "ready_for_m5b": false,
+    "passed_review_areas": 3,
+    "blocked_review_areas": 3,
+    "m5a_blocking_known_limitations": 1,
+    "blocker_count": 6,
+    "ready_for_m5b_requires": [
+      "m5a_data_quality_gate PASS",
+      "report_integrity_v2 PASS",
+      "no critical M5a-blocking known limitations",
+      "documentation_truth_lint PASS"
+    ]
   }
 }

@@ -1,0 +1,360 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5a_readiness_root_cause",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-09T12:01:54.3513556Z",
+  "environment": "local",
+  "report_type": "diagnostic_report",
+  "status": "BLOCKED",
+  "result": "BLOCKED",
+  "source_command": "manual_root_cause_analysis_from_current_reports",
+  "inputs": [
+    "reports/current/m5a_final_readiness_review.json",
+    "reports/current/m5a_data_quality_gate.json",
+    "reports/current/report_integrity_v2.json",
+    "reports/current/masterplan_status.json",
+    "reports/current/known_limitations.json"
+  ],
+  "decision": {
+    "m5a_final_readiness": "BLOCKED",
+    "ready_for_m5b": false,
+    "go_no_go": "NO_GO",
+    "score": 50.0,
+    "manual_override_allowed": false
+  },
+  "summary": {
+    "direct_root_cause_count": 5,
+    "blocker_group_count": 5,
+    "known_blocking_limitations": 3,
+    "m5a_parent_status": "BLOCKED",
+    "report_integrity_v2_status": "BLOCKED",
+    "data_quality_score": 94.0,
+    "data_quality_score_threshold": 90.0,
+    "documentation_truth_lint_status": "PASS"
+  },
+  "root_causes": [
+    {
+      "id": "ROOT_SOURCE_STATUS_ORPHAN_NOT_EXECUTABLE",
+      "severity": "blocking",
+      "group": "Data Quality",
+      "description": "Source Status Integrity Gate and Orphan Detector Gate are valid reports but BLOCKED because truth execution is not proven.",
+      "evidence": [
+        "SOURCE_STATUS_INTEGRITY_GATE_BLOCKED",
+        "ORPHAN_DETECTOR_GATE_BLOCKED",
+        "child_gate_consistency_m5a_source_status_integrity_gate_child_blocks_parent",
+        "child_gate_consistency_m5a_orphan_detector_gate_child_blocks_parent"
+      ],
+      "impact": [
+        "m5a_data_quality_gate remains BLOCKED",
+        "report_integrity_v2 remains BLOCKED",
+        "m5a_final_readiness_review remains BLOCKED"
+      ]
+    },
+    {
+      "id": "ROOT_PARENT_PASS_EVIDENCE_INVALID",
+      "severity": "blocking",
+      "group": "Gate-Hierarchie",
+      "description": "Parent Gate v2 accepts PASS children only with generated_by, timestamp, and collected > 0 or report_type=supporting. documentation_truth_lint and data_quality_report fail this evidence rule.",
+      "evidence": [
+        "PARENT_VALIDATION_PASS_EVIDENCE_INVALID",
+        "m5a_parent_child_documentation_truth_lint",
+        "m5a_parent_child_data_quality_report",
+        "m3a_parent_child_documentation_truth_lint"
+      ],
+      "impact": [
+        "m5a parent validation blocks despite documentation truth PASS",
+        "m3a parent validation is also BLOCKED by the same documentation_truth_lint evidence mismatch"
+      ]
+    },
+    {
+      "id": "ROOT_STALE_CHILD_GATES",
+      "severity": "blocking",
+      "group": "Gate-Hierarchie",
+      "description": "Final readiness review reports stale mandatory M5a child gates older than 168 hours.",
+      "evidence": [
+        "STALE_CHILD_GATE_REPORTS",
+        "m5a_start_gate",
+        "duplicate_detector_gate",
+        "metadata_detector_gate",
+        "lifecycle_integrity_gate"
+      ],
+      "impact": [
+        "Stale child gates cannot contribute to M5a PASS under current parent policy"
+      ]
+    },
+    {
+      "id": "ROOT_REPORT_INTEGRITY_CHILD_CONSISTENCY",
+      "severity": "blocking",
+      "group": "Report-Integritaet",
+      "description": "Report Integrity v2 is blocked only by child gate consistency: source_status_integrity_gate and orphan_detector_gate are BLOCKED.",
+      "evidence": [
+        "REPORT_INTEGRITY_V2_BLOCKED",
+        "child_gate_consistency_m5a_source_status_integrity_gate_child_blocks_parent",
+        "child_gate_consistency_m5a_orphan_detector_gate_child_blocks_parent"
+      ],
+      "impact": [
+        "Report Integrity v2 cannot PASS until those child gates PASS",
+        "M5a parent gate blocks on report_integrity_v2"
+      ]
+    },
+    {
+      "id": "ROOT_BLOCKING_KNOWN_LIMITATIONS",
+      "severity": "blocking",
+      "group": "Known Limitations",
+      "description": "Known limitations contains three open high-severity limitations with blocks_gate set.",
+      "evidence": [
+        "KL-M5-T-001",
+        "KL-M5-T-002",
+        "KL-GOV-001"
+      ],
+      "impact": [
+        "M5b cannot be prepared while critical M5 limitations remain blocking"
+      ]
+    }
+  ],
+  "blocker_groups": {
+    "gate_hierarchy": {
+      "status": "BLOCKED",
+      "blockers": [
+        {
+          "id": "M5A_CHILD_GATES_NOT_ALL_PASS",
+          "source": "reports/current/m5a_final_readiness_review.json",
+          "detail": "Parent validation reported mandatory M5a child gates not all PASS."
+        },
+        {
+          "id": "M5A_PARENT_GATE_BLOCKED",
+          "source": "reports/current/m5a_final_readiness_review.json",
+          "detail": "m5a_data_quality_gate.status=BLOCKED and parent validation status=BLOCKED."
+        },
+        {
+          "id": "PARENT_VALIDATION_PASS_EVIDENCE_INVALID",
+          "source": "reports/current/m5a_final_readiness_review.json",
+          "detail": "documentation_truth_lint and data_quality_report are successful but invalid as parent children without collected > 0 or report_type=supporting."
+        },
+        {
+          "id": "STALE_CHILD_GATE_REPORTS",
+          "source": "reports/current/m5a_final_readiness_review.json",
+          "detail": "m5a_start_gate, duplicate_detector_gate, metadata_detector_gate, and lifecycle_integrity_gate are older than the 168h freshness window."
+        },
+        {
+          "id": "m5a_parent_child_report_integrity_v2",
+          "source": "reports/current/masterplan_status.json",
+          "detail": "report_integrity_v2 child status is BLOCKED."
+        },
+        {
+          "id": "m5a_parent_child_source_status_integrity_gate",
+          "source": "reports/current/masterplan_status.json",
+          "detail": "source_status_integrity_gate child status is BLOCKED."
+        },
+        {
+          "id": "m5a_parent_child_orphan_detector_gate",
+          "source": "reports/current/masterplan_status.json",
+          "detail": "orphan_detector_gate child status is BLOCKED."
+        },
+        {
+          "id": "M5A_PARENT_GATE_NOT_PASSED",
+          "source": "reports/current/masterplan_status.json",
+          "detail": "m5b_start_gate remains DRAFT/BLOCKED until m5a_data_quality_gate PASS/GO and parent validation PASS."
+        }
+      ]
+    },
+    "report_integrity": {
+      "status": "BLOCKED",
+      "blockers": [
+        {
+          "id": "REPORT_INTEGRITY_V2_BLOCKED",
+          "source": "reports/current/m5a_final_readiness_review.json",
+          "detail": "Report Integrity v2 has 7 checks, 6 passed, 1 failed, and 2 blockers."
+        },
+        {
+          "id": "child_gate_consistency_m5a_source_status_integrity_gate_child_blocks_parent",
+          "source": "reports/current/report_integrity_v2.json",
+          "file": "reports/current/m5a_source_status_integrity_gate.json",
+          "detail": "source_status_integrity_gate has blocking status BLOCKED."
+        },
+        {
+          "id": "child_gate_consistency_m5a_orphan_detector_gate_child_blocks_parent",
+          "source": "reports/current/report_integrity_v2.json",
+          "file": "reports/current/m5a_orphan_detector_gate.json",
+          "detail": "orphan_detector_gate has blocking status BLOCKED."
+        }
+      ],
+      "warnings": {
+        "count": 17,
+        "blocking": false,
+        "detail": "Gate/report_name mismatch warnings exist but are not the current BLOCKED cause."
+      }
+    },
+    "known_limitations": {
+      "status": "BLOCKING_LIMITATIONS_PRESENT",
+      "blockers": [
+        {
+          "id": "KL-M5-T-001",
+          "source": "reports/current/known_limitations.json",
+          "severity": "high",
+          "blocks_gate": [
+            "m5_truth_gate"
+          ],
+          "next_action": "Repair M5 truth failures and run the relevant PostgreSQL truth block until green."
+        },
+        {
+          "id": "KL-M5-T-002",
+          "source": "reports/current/known_limitations.json",
+          "severity": "high",
+          "blocks_gate": [
+            "m5_slice_start_gate"
+          ],
+          "next_action": "Produce retrieval baseline, cleanup dry-run with blocked_count=0, and green PostgreSQL truth block per M5 slice."
+        },
+        {
+          "id": "KL-GOV-001",
+          "source": "reports/current/known_limitations.json",
+          "severity": "high",
+          "blocks_gate": [
+            "operational_governance_gate"
+          ],
+          "next_action": "Provide and approve runbooks before mutating admin actions are enabled."
+        }
+      ],
+      "non_blocking_open_items": [
+        "KL-NB-001"
+      ],
+      "deferred_items": [
+        "KL-DEF-001",
+        "KL-DEF-002"
+      ]
+    },
+    "data_quality": {
+      "status": "BLOCKED",
+      "positive_evidence": [
+        "Data quality score is 94.0 and above the 90.0 threshold.",
+        "Duplicate, metadata, lifecycle, source status, orphan, quality score, and data quality report slice criteria are marked passing inside m5a_data_quality_gate decision criteria."
+      ],
+      "blockers": [
+        {
+          "id": "SOURCE_STATUS_INTEGRITY_GATE_BLOCKED",
+          "source": "reports/current/m5a_final_readiness_review.json",
+          "detail": "Source Status Integrity Gate is BLOCKED; truth execution not proven."
+        },
+        {
+          "id": "ORPHAN_DETECTOR_GATE_BLOCKED",
+          "source": "reports/current/m5a_final_readiness_review.json",
+          "detail": "Orphan Detector Gate is BLOCKED; truth execution not proven."
+        },
+        {
+          "id": "data_quality_report_invalid_parent_evidence",
+          "source": "reports/current/m5a_data_quality_gate.json",
+          "detail": "data_quality_report lacks collected > 0 or report_type=supporting for parent PASS evidence."
+        }
+      ]
+    },
+    "documentation": {
+      "status": "PASS_WITH_PARENT_EVIDENCE_BLOCKER",
+      "positive_evidence": [
+        "documentation_truth_lint status is PASS.",
+        "Documentation Truth reports files_scanned=129, errors=0, warnings=0, findings=0 in final readiness."
+      ],
+      "blockers": [
+        {
+          "id": "documentation_truth_lint_invalid_parent_evidence",
+          "source": "reports/current/masterplan_status.json",
+          "detail": "documentation_truth_lint lacks collected > 0 or report_type=supporting, so parent validation marks it INVALID."
+        }
+      ]
+    }
+  },
+  "prioritized_fix_list": [
+    {
+      "priority": 1,
+      "id": "FIX_SOURCE_STATUS_AND_ORPHAN_TRUTH",
+      "category": "Data Quality",
+      "action": "Make Source Status Integrity and Orphan Detector tests executable/proven, then regenerate reports/current/m5a_source_status_integrity_gate.json and reports/current/m5a_orphan_detector_gate.json as PASS.",
+      "unblocks": [
+        "SOURCE_STATUS_INTEGRITY_GATE_BLOCKED",
+        "ORPHAN_DETECTOR_GATE_BLOCKED",
+        "REPORT_INTEGRITY_V2_BLOCKED"
+      ]
+    },
+    {
+      "priority": 2,
+      "id": "FIX_PARENT_PASS_EVIDENCE",
+      "category": "Gate-Hierarchie",
+      "action": "Normalize documentation_truth_lint and data_quality_report parent evidence by adding collected > 0 where semantically correct or report_type=supporting for supporting reports, then regenerate parent validation.",
+      "unblocks": [
+        "PARENT_VALIDATION_PASS_EVIDENCE_INVALID",
+        "m5a_parent_child_documentation_truth_lint",
+        "m5a_parent_child_data_quality_report",
+        "m3a_parent_child_documentation_truth_lint"
+      ]
+    },
+    {
+      "priority": 3,
+      "id": "REFRESH_STALE_M5A_CHILD_GATES",
+      "category": "Gate-Hierarchie",
+      "action": "Regenerate stale M5a child gates inside the 168h freshness window: m5a_start_gate, m5a_duplicate_detector_gate, m5a_metadata_detector_gate, and m5a_lifecycle_integrity_gate.",
+      "unblocks": [
+        "STALE_CHILD_GATE_REPORTS"
+      ]
+    },
+    {
+      "priority": 4,
+      "id": "REGENERATE_REPORT_INTEGRITY_V2",
+      "category": "Report-Integritaet",
+      "action": "After source status and orphan gates PASS, regenerate reports/current/report_integrity_v2.json and require status=PASS, failed=0, blockers=[].",
+      "unblocks": [
+        "REPORT_INTEGRITY_V2_BLOCKED",
+        "m5a_parent_child_report_integrity_v2"
+      ]
+    },
+    {
+      "priority": 5,
+      "id": "RESOLVE_BLOCKING_KNOWN_LIMITATIONS",
+      "category": "Known Limitations",
+      "action": "Close, defer with non-blocking policy, or satisfy KL-M5-T-001, KL-M5-T-002, and KL-GOV-001 through their evidence reports and governing gates.",
+      "unblocks": [
+        "KL-M5-T-001",
+        "KL-M5-T-002",
+        "KL-GOV-001"
+      ]
+    },
+    {
+      "priority": 6,
+      "id": "REGENERATE_M5A_PARENT_AND_READINESS",
+      "category": "Gate-Hierarchie",
+      "action": "Regenerate reports/current/m5a_data_quality_gate.json, rerun parent gate validation, rerun reports/current/m5a_final_readiness_review.json, then regenerate reports/current/masterplan_status.json.",
+      "unblocks": [
+        "M5A_CHILD_GATES_NOT_ALL_PASS",
+        "M5A_PARENT_GATE_BLOCKED",
+        "m5a_overall_not_pass",
+        "M5A_PARENT_GATE_NOT_PASSED"
+      ]
+    },
+    {
+      "priority": 7,
+      "id": "RECHECK_M5B_RELEASE",
+      "category": "Gate-Hierarchie",
+      "action": "Only after M5a PASS and critical limitations are non-blocking, rerun M5b release decision. Expected status can move from BLOCKED/DRAFT to PREPARED; GO still requires the separate M5b implementation gate.",
+      "unblocks": [
+        "M5B_IMPLEMENTATION_GATE_REQUIRED"
+      ]
+    }
+  ],
+  "non_blocking_positive_evidence": [
+    {
+      "id": "DOCUMENTATION_TRUTH_CONTENT_PASS",
+      "detail": "Documentation Truth content check is PASS with zero findings; only parent evidence metadata blocks."
+    },
+    {
+      "id": "M5A_REGRESSION_SUITE_PASS",
+      "detail": "Regression suite is PASS with 122/122 tests passed."
+    },
+    {
+      "id": "M5A_PERFORMANCE_BASELINE_PASS",
+      "detail": "Performance baseline is PASS up to 10000 documents."
+    },
+    {
+      "id": "DATA_QUALITY_SCORE_PASS",
+      "detail": "Data quality score is 94.0, above threshold 90.0."
+    }
+  ]
+}
