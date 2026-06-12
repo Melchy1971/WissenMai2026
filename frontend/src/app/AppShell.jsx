@@ -14,13 +14,15 @@ function TelekomLogo() {
   );
 }
 
+// Navigation gemäß docs/navigation_simplification.md — max 7, keine technischen Labels
 const NAV_ITEMS = [
   { to: '/dashboard',   label: 'Dashboard' },
-  { to: '/chat',        label: 'Suche' },
   { to: '/documents',   label: 'Dokumente' },
+  { to: '/topics',      label: 'Themen' },
+  { to: '/import',      label: 'Import' },
+  { to: '/search',      label: 'Suche' },
   { to: '/rag',         label: 'Datenanalyse' },
-  { to: '/data-quality', label: 'Data Quality' },
-  { to: '/settings',   label: 'Einstellungen' },
+  { to: '/settings',    label: 'Einstellungen' },
 ];
 
 export function AppShell() {

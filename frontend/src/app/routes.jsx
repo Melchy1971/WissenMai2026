@@ -10,7 +10,10 @@ import { ChatPage } from '../pages/ChatPage.jsx';
 import { DashboardPage } from '../pages/DashboardPage.jsx';
 import { DataQualityPage } from '../pages/DataQualityPage.jsx';
 import { DocumentDetailPage } from '../pages/DocumentDetailPage.jsx';
-import { DocumentsPage } from '../pages/DocumentsPage.jsx';
+import { DocumentCenterPage } from '../pages/DocumentCenterPage.jsx';
+import { ImportCenterPage } from '../pages/ImportCenterPage.jsx';
+import { TopicsPage } from '../pages/TopicsPage.jsx';
+import { SearchPage } from '../pages/SearchPage.jsx';
 import { LoginPage } from '../pages/LoginPage.jsx';
 import { RAGCenterPage } from '../pages/RAGCenterPage.jsx';
 import { SettingsPage } from '../pages/SettingsPage.jsx';
@@ -72,8 +75,13 @@ export function AppRoutes() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/chat/:id" element={<ChatPage />} />
-        <Route path="/documents" element={<DocumentsPage />} />
+        {/* Dokumentenzentrum — neue 3-Panel-Ansicht */}
+        <Route path="/documents" element={<DocumentCenterPage />} />
+        {/* /documents-legacy kann bei Bedarf auf alte Seite verweisen */}
+        <Route path="/import" element={<ImportCenterPage />} />
         <Route path="/documents/:id" element={<DocumentDetailPage />} />
+        <Route path="/topics" element={<TopicsPage />} />
+        <Route path="/search" element={<SearchPage />} />
         <Route path="/rag" element={<RAGCenterPage />} />
         <Route path="/data-quality" element={<DataQualityPage />} />
         <Route path="/settings" element={<SettingsPage />} />

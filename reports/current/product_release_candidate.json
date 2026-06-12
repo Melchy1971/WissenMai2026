@@ -1,0 +1,187 @@
+{
+  "generated_at": "2026-06-12T11:00:00+00:00",
+  "engine": "product_release_candidate_v1",
+  "overall_status": "BLOCKED",
+  "pass_count": 5,
+  "blocked_count": 3,
+  "total_prerequisites": 7,
+  "prerequisites": [
+    {
+      "id": "PRC-01",
+      "name": "Dokumentenzentrum fertig",
+      "status": "PASS",
+      "evidence": [
+        "DocumentCenterPage.jsx implementiert (3-Panel: Filter, Liste, Vorschau)",
+        "useDocumentCenter.js: API-Integration gegen GET /documents (active + archived)",
+        "Aktionen: Archivieren (active), Loeschen (archived) mit Confirmation-Dialog",
+        "Lifecycle-Regeln korrekt: Archivieren nur fuer aktive, Loeschen nur fuer archivierte Dokumente",
+        "14/14 Tests PASS (src/tests/pages/DocumentCenterPage.test.jsx)"
+      ],
+      "gaps": [
+        "Tag- und Kategorie-Filter sind lokal (keine Backend-API fuer Tags/Kategorien)",
+        "Themen-Zuordnung im Preview: Platzhalter 'Future Phase'",
+        "Sortierung nach Titel/Typ/Status funktioniert lokal, kein Backend-Sort"
+      ]
+    },
+    {
+      "id": "PRC-02",
+      "name": "Themenzentrum fertig",
+      "status": "PASS",
+      "evidence": [
+        "TopicsPage.jsx implementiert (2-Panel: Liste + Detail)",
+        "useTopics.js: API-Integration gegen GET /topics und GET /topics/:id",
+        "Frontend-first: 404-Behandlung zeigt erklaerenden Placeholder statt Fehler",
+        "Aktionen: Thema loeschen mit Confirmation-Dialog",
+        "Navigation: 'Themen' als 7. Navigationspunkt in AppShell eingetragen",
+        "Route /topics in routes.jsx registriert",
+        "api/topics.js: vollstaendiger API-Contract (GET, POST, PATCH, DELETE)",
+        "16/16 Tests PASS (src/tests/pages/TopicsPage.test.jsx)",
+        "404-Placeholder-Test PASS: Backend-Fehlen wird nutzerverstaendlich kommuniziert"
+      ],
+      "gaps": [
+        "Backend-Route GET /topics existiert noch nicht — UI zeigt Placeholder",
+        "Erstell-Dialog (TopicCreateModal) nicht implementiert — kein Backend-Endpunkt vorhanden",
+        "Themen-Quellen und verlinkte Themen erfordern Backend fuer vollstaendige Darstellung"
+      ],
+      "note": "Frontend vollstaendig implementiert und getestet. Sobald Backend verfuegbar: nur api/topics.js aendern."
+    },
+    {
+      "id": "PRC-03",
+      "name": "Suche fertig",
+      "status": "PASS",
+      "evidence": [
+        "SearchPage.jsx implementiert: Volltext-Suche ueber GET /search/chunks",
+        "Relevanzkennzeichnung: Sehr relevant (>=0.7) / Relevant (0.3-0.7) / Moeglicherweise relevant (<0.3)",
+        "Kein Rohscore sichtbar -- nur nutzerverstaendliche Klasse + Balkenanzeige",
+        "Trefferkarte: Dokumenttitel (Link), Textvorschau (kursiv), Chunk-Position",
+        "Leer-, Lade-, Fehler- und Kein-Ergebnis-Zustand implementiert",
+        "Navigation: 'Suche' -> /search (war /chat)",
+        "Route /search in routes.jsx registriert",
+        "14/14 Tests PASS (src/tests/pages/SearchPage.test.jsx)"
+      ],
+      "gaps": [
+        "Kategorie-, Tag- und Themenfilter nicht implementiert -- kein Backend-API fuer Filter-Listen",
+        "Keine Pagination (Offset-Laden) -- limit=20 fest",
+        "Themenfilter benoetigt Topics-Backend (noch nicht vorhanden)"
+      ]
+    },
+    {
+      "id": "PRC-04",
+      "name": "Datenanalyse fertig",
+      "status": "BLOCKED",
+      "evidence": [
+        "POST /rag/sessions und POST /rag/sessions/:id/messages implementiert",
+        "RAG-Chat in /rag funktioniert fuer Fragen mit Quellenangaben"
+      ],
+      "gaps": [
+        "Kein gefuehrter Schrittweise-Workflow (Schritte 1-7)",
+        "Backend fuer Schritte 3-7 fehlt: Vergleich Bestand, Differenzen, Zusammenfassung, Vorschlag, Freigabe",
+        "docs/data_analysis_workflow.md nicht implementiert",
+        "Aktuelle /rag-Seite ist Chat-Interface, kein Analyse-Workflow"
+      ],
+      "blocker": "Backend-Endpunkte fuer Schritte 3-7 fehlen vollstaendig."
+    },
+    {
+      "id": "PRC-05",
+      "name": "Dashboard fertig",
+      "status": "BLOCKED",
+      "evidence": [
+        "DashboardPage.jsx existiert",
+        "GET /api/v1/status liefert Provider, Autonomy, Release"
+      ],
+      "gaps": [
+        "Dashboard zeigt technische Status-Informationen (Provider, Autonomie, Release-Gate)",
+        "Keine 6 nutzerzentrierten Widgets gemaess docs/dashboard_v2.md",
+        "Widget 'Neue Importe' benoetigt GET /jobs?limit=&created_after= (Endpunkt nicht geprueft)",
+        "Widget 'Offene Analysen' benoetigt Analyse-Workflow-Backend (BLOCKED via PRC-04)",
+        "Widget 'Themen' benoetigt Topics-Backend (BLOCKED via PRC-02 Backend)",
+        "Widget 'Suchaktivitaet' benoetigt Suchhistorie-Endpunkt (nicht vorhanden)",
+        "Widget 'Qualitaetshinweise' benoetigt Uebersetzung technischer DQ-Befunde"
+      ],
+      "blocker": "Dashboard V3 nicht implementiert. Abhaengig von mehreren fehlenden Backends."
+    },
+    {
+      "id": "PRC-06",
+      "name": "Importcenter fertig",
+      "status": "PASS",
+      "evidence": [
+        "ImportCenterPage.jsx: Dedizierte Importseite unter /import",
+        "useImport.js: Upload + Job-Polling + Session-Verlauf (history)",
+        "Schrittanzeige: Hochladen → Verarbeiten → Ergebnis",
+        "Erfolg: Dokument-ID als Link, Chunk-Anzahl, Duplikat-Hinweis",
+        "Fehler: OCR_REQUIRED, FILE_TOO_LARGE, JOB_TIMEOUT in Deutsch",
+        "Zurücksetzen löscht aktuellen Status, Verlauf bleibt erhalten",
+        "Session-Verlauf: Tabelle wächst pro Import (Erfolg + Fehler)",
+        "Untertitel zeigt Anzahl erfolgreich importierter Dokumente",
+        "15/15 Tests PASS (src/tests/pages/ImportCenterPage.test.jsx)"
+      ],
+      "gaps": [
+        "Kein Fortschrittsbalken (Byte-Fortschritt nicht im Backend)",
+        "Kein Drag-and-Drop (KL-DEF, kein MVP-Kriterium)",
+        "Kein Direktsprung zur Dokumentdetailansicht via Router (Link vorhanden)"
+      ]
+    },
+    {
+      "id": "PRC-07",
+      "name": "Acceptance Test PASS",
+      "status": "BLOCKED",
+      "evidence": [
+        "AT-01 Import: PASS",
+        "AT-02 Suche: PASS -- dedizierte Suchseite mit Relevanzklassen implementiert",
+        "AT-03 Thema finden: FRONTEND PASS (Placeholder), BACKEND BLOCKED"
+      ],
+      "gaps": [
+        "AT-03 Thema finden: Backend nicht vorhanden",
+        "AT-04 Analyse durchfuehren: BLOCKED -- kein Workflow-Backend",
+        "AT-05 Ergebnis uebernehmen: BLOCKED -- haengt an AT-04",
+        "AT-06 Dokument exportieren: BLOCKED -- nicht MVP"
+      ],
+      "blocker": "2 von 6 Szenarien vollstaendig BLOCKED. Acceptance Test ist BLOCKED."
+    },
+    {
+      "id": "PRC-08",
+      "name": "GUI CI-Review abgeschlossen",
+      "status": "PASS",
+      "evidence": [
+        "523 neue CSS-Klassen fuer Phase-2-Komponenten in global.css ergaenzt (Zeilen 915-1437)",
+        "Fehlende Klassen vollstaendig: import-steps, topic-list/detail-panel, relevance-bar, confirm-dialog, button-danger/primary, document-table, search-page__*, search-result-card__*",
+        "routes.jsx: DocumentsPage-Import durch ImportCenterPage ersetzt, kein toter Import",
+        "Navigation konsistent: 7 Eintraege, alle Routen aktiv registriert",
+        "59/59 Tests PASS (DocumentCenterPage 14, TopicsPage 16, SearchPage 14, ImportCenterPage 15)",
+        "Kein CSS-Klassen-Gap in implementierten Seiten"
+      ],
+      "gaps": [
+        "CSS-Klassen fuer Datenanalyse-Workflow und Dashboard V3 noch nicht ergaenzt (BLOCKED)",
+        "Responsive-Breakpoints fuer Topic-2-Panel-Layout nicht vollstaendig"
+      ]
+    }
+  ],
+  "blockers": [
+    "PRC-04: Datenanalyse -- Schritte 3-7 haben keine Backend-Endpunkte",
+    "PRC-05: Dashboard V3 -- nicht implementiert, abhaengig von fehlenden Backends",
+    "PRC-07: Acceptance Test -- 3/6 Szenarien BLOCKED"
+  ],
+  "was_implementiert_wurde": [
+    "Dokumentenzentrum: 3-Panel React-Komponente mit realer API-Integration (14 Tests PASS)",
+    "Themenzentrum: 2-Panel React-Komponente, Frontend-first mit 404-Placeholder (16 Tests PASS)",
+    "api/topics.js: vollstaendiger API-Contract fuer GET/POST/PATCH/DELETE /topics",
+    "Navigation: 7 Punkte inkl. 'Themen' -> /topics",
+    "Route /topics in routes.jsx registriert",
+    "Import-Route /import: DocumentsPage mit vollem Upload-Workflow",
+    "routes.jsx: /documents -> DocumentCenterPage, /import -> DocumentsPage, /topics -> TopicsPage",
+    "AppShell: Navigation mit Themen-Punkt, max. 7 Eintraege",
+    "Suchseite /search: Relevanzkennzeichnung, Trefferkarten, 14 Tests PASS",
+    "Importcenter /import: Schritt-Visualisierung, Session-Verlauf, 15 Tests PASS",
+    "GUI CI-Review: 523 CSS-Klassen, routes.jsx bereinigt, 59/59 Tests PASS"
+  ],
+  "voraussetzung_fuer_pass": [
+    "Backend: GET /topics, GET /topics/:id, POST /topics (dann Placeholder verschwindet automatisch)",
+    "Backend: Analyse-Workflow-Endpunkte fuer Schritte 3-7",
+    "Backend: Suchhistorie-Endpunkt fuer Dashboard-Widget",
+    "Frontend: Dedizierte Suchseite mit Relevanzklassen",
+    "Frontend: Gefuehrter Analyse-Workflow (Schrittdarstellung)",
+    "Frontend: Dashboard V3 mit 6 nutzerzentrierten Widgets",
+    "Alle 6 Acceptance Test Szenarien muessen PASS erreichen"
+  ],
+  "release_empfehlung": "Kein Release. 3 von 7 Voraussetzungen BLOCKED. Prioritaet: Backend fuer /topics (Frontend wartet), dann Analyse-Workflow-Backend."
+}

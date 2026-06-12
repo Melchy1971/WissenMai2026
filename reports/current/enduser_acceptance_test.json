@@ -1,0 +1,141 @@
+{
+  "generated_at": "2026-06-12T00:00:00+00:00",
+  "engine": "enduser_acceptance_test_v1",
+  "method": "static_code_analysis_and_api_inventory",
+  "note": "Szenarien gegen tatsaechlich implementierte Endpunkte geprueft. Nicht implementierte Backends werden als BLOCKED markiert — kein Mock-Test.",
+
+  "overall_status": "BLOCKED",
+  "pass_count": 2,
+  "blocked_count": 4,
+  "total_scenarios": 6,
+
+  "scenarios": [
+    {
+      "id": "AT-01",
+      "name": "Dokument importieren",
+      "description": "Nutzer importiert eine Datei (TXT, MD, DOCX, PDF mit Text). Erwartet: Fortschrittsanzeige, Status-Update, Dokument erscheint in Liste.",
+      "status": "PASS",
+      "clicks": 3,
+      "flow": [
+        "Navigation: Dokumente → Import (via /import)",
+        "Datei auswaehlen (file input)",
+        "Upload-Button klicken",
+        "Job-Polling: 250ms Interval, max 120 Versuche",
+        "Ergebnis: Erfolgsmeldung + Dokument in Liste"
+      ],
+      "implemented_api": [
+        "POST /documents/import → 202 + job_id",
+        "GET /jobs/:id → polling bis completed/failed"
+      ],
+      "gaps": [
+        "OCR-Workflow nicht unterstuetzt (KL-DEF-001) — sichtbar als Fehler 'OCR_REQUIRED'",
+        "Kein gepflegter Importverlauf mit History-Ansicht"
+      ],
+      "verstaendlichkeit": "gut — Fehlermeldungen sind in Deutsch uebersetzt",
+      "sackgassen": "PDF ohne extrahierbaren Text: Fehlermeldung korrekt, kein Handlungslink"
+    },
+    {
+      "id": "AT-02",
+      "name": "Dokument suchen",
+      "description": "Nutzer sucht nach einem Begriff. Erwartet: Trefferliste mit Vorschau, Relevanzklasse, Quelle.",
+      "status": "PASS",
+      "clicks": 2,
+      "flow": [
+        "Navigation: Dokumente → Filterfeld 'Titel suchen'",
+        "Begriff eingeben → lokale Filterung sofort",
+        "Oder: Suche (/chat) → Chunk-Suche via GET /search/chunks"
+      ],
+      "implemented_api": [
+        "GET /search/chunks?q=&limit=&offset= → Treffer mit rank, text_preview, source_anchor"
+      ],
+      "gaps": [
+        "Keine dedizierte Suchseite mit Relevanzklassen (hoch/mittel/niedrig) — nur Rohscore sichtbar in /chat",
+        "Kein Tag-Filter, kein Themenfilter in Suche",
+        "docs/search_experience.md nicht implementiert"
+      ],
+      "verstaendlichkeit": "mittel — Chunk-Suche in /chat zeigt technische Scores",
+      "sackgassen": "Suche ohne Treffer: Leerzustand vorhanden, kein Vorschlag"
+    },
+    {
+      "id": "AT-03",
+      "name": "Thema finden",
+      "description": "Nutzer navigiert zu einem Thema und sieht KI-Zusammenfassung, Quelldokumente, Tags.",
+      "status": "BLOCKED",
+      "clicks": null,
+      "flow": [],
+      "implemented_api": [],
+      "gaps": [
+        "Backend-Route GET /topics existiert nicht",
+        "Themen-UI nicht implementiert",
+        "docs/topic_center.md definiert Zielbild — nicht umgesetzt",
+        "masterplan.md markiert Themen als 'Future Phase'"
+      ],
+      "blocker": "Kein Backend, kein Frontend. Nicht testbar."
+    },
+    {
+      "id": "AT-04",
+      "name": "Analyse durchfuehren",
+      "description": "Nutzer startet Analyse-Workflow: Import → KI-Analyse → Vergleich Bestand → Zusammenfassung → Vorschlag → Freigabe → Uebernahme.",
+      "status": "BLOCKED",
+      "clicks": null,
+      "flow": [],
+      "implemented_api": [
+        "POST /documents/import (Schritt 1 implementiert)",
+        "POST /rag/sessions + POST /rag/sessions/:id/messages (Fragen stellen implementiert)"
+      ],
+      "gaps": [
+        "Schritte 3-7 (Vergleich, Differenzen, Zusammenfassung, Vorschlag, Freigabe) haben keine Backend-Endpunkte",
+        "Kein gefuehrter Schrittweise-Workflow im Frontend",
+        "docs/data_analysis_workflow.md definiert Zielbild — nicht umgesetzt",
+        "Aktuelle /rag-Seite kombiniert Import und Chat ohne Workflow-Logik"
+      ],
+      "blocker": "Backend-Endpunkte fuer Schritte 3-7 fehlen. Workflow nicht implementierbar."
+    },
+    {
+      "id": "AT-05",
+      "name": "Ergebnis uebernehmen",
+      "description": "Nutzer gibt Analyse-Ergebnis frei und Dokument wird in den aktiven Wissensbestand uebernommen.",
+      "status": "BLOCKED",
+      "clicks": null,
+      "flow": [],
+      "implemented_api": [],
+      "gaps": [
+        "Freigabe-Aktion (Workflow-Schritt 6) hat keinen Backend-Endpunkt",
+        "Abhaengig von AT-04 — ebenfalls BLOCKED"
+      ],
+      "blocker": "Haengt an fehlendem Analyse-Workflow-Backend."
+    },
+    {
+      "id": "AT-06",
+      "name": "Dokument exportieren",
+      "description": "Nutzer exportiert ein Dokument oder eine Zusammenfassung.",
+      "status": "BLOCKED",
+      "clicks": null,
+      "flow": [],
+      "implemented_api": [],
+      "gaps": [
+        "Kein Export-Endpunkt im Backend",
+        "docs/mvp_scope_final.md: 'Export Dokumentinhalt' explizit als Nicht-MVP markiert (Datenschutz — kein Rohinhalt-Export)",
+        "Themen-Export ebenfalls nicht implementiert (kein Themen-Backend)"
+      ],
+      "blocker": "Nicht MVP per Scope-Entscheidung. Kein Backend vorhanden."
+    }
+  ],
+
+  "summary": {
+    "implementiert_und_testbar": ["AT-01: Import", "AT-02: Suche (eingeschraenkt)"],
+    "blocked_wegen_fehlendem_backend": ["AT-03: Themen", "AT-04: Analyse-Workflow", "AT-05: Freigabe", "AT-06: Export"],
+    "klickanzahl_durchschnitt_pass_szenarien": 2.5,
+    "kritische_sackgassen": [
+      "PDF-Import ohne OCR: Fehler erklaert, kein naechster Schritt fuer Nutzer",
+      "Suche ohne Themenfilter: Nutzer kann nicht nach Wissensbereich einschraenken"
+    ],
+    "voraussetzung_fuer_full_pass": [
+      "Backend: GET/POST /topics, Thema-Details, Quellen-Zuordnung",
+      "Backend: Analyse-Workflow-Endpunkte (Schritte 3-7)",
+      "Frontend: Themenzentrum (/topics)",
+      "Frontend: Gefuehrter Analyse-Workflow mit Schrittdarstellung",
+      "Frontend: Dedizierte Suchseite mit Relevanzklassen"
+    ]
+  }
+}
