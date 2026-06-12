@@ -3,7 +3,7 @@
   "report_name": "m5a_lifecycle_integrity_gate",
   "gate": "m5a_lifecycle_integrity_gate",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-01T12:01:58.267848+00:00",
+  "timestamp": "2026-06-11T07:35:21.560517+00:00",
   "environment": "local",
   "report_type": "gate",
   "status": "PASS",

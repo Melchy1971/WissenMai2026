@@ -17,6 +17,7 @@ from app.api.v1.governance import router as governance_router
 from app.api.v1.agents_gui import router as agents_gui_router
 from app.api.v1.collaboration_gui import router as collaboration_router
 from app.api.v1.rag_gui import router as rag_gui_router
+from app.api.v1.drift import router as drift_router
 
 router = APIRouter()
 
@@ -44,5 +45,8 @@ router.include_router(governance_router)
 router.include_router(agents_gui_router)
 router.include_router(collaboration_router)
 router.include_router(rag_gui_router)
+
+# Drift Detection — read-only
+router.include_router(drift_router)
 
 api_router = router

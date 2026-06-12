@@ -1,74 +1,31 @@
 {
-  "report_schema_version": 1,
   "report_name": "documentation_truth_lint",
-  "generated_by": "documentation_truth_linter",
-  "timestamp": "2026-06-10T17:00:00.000000+00:00",
-  "result": "PASS",
+  "report_schema_version": 4,
+  "generated_at": "2026-06-12T07:11:24Z",
+  "generated_by": "documentation_truth_lint_v4_post_gui_cleanup",
   "status": "PASS",
-  "summary": {
-    "files_scanned": 163,
-    "total_findings": 0,
-    "errors": 0,
-    "warnings": 0,
-    "by_rule": {}
-  },
-  "m5b_preparation_verified": {
-    "status": "PASS",
-    "note": "M5b Preparation-Artefakte vollstaendig und konsistent (27/27). PREPARED != IMPLEMENTED dokumentiert. Implementation NO-GO sichtbar in masterplan.md, Entwicklung.md, docs/status.md. Drift Detection Code nicht vorhanden.",
-    "artifacts_checked": 27,
-    "implementation_false_claims": 0,
-    "prepared_as_implemented_violations": 0
-  },
-  "m5b_governance_verified": {
-    "status": "PASS",
-    "note": "Drift Finding Governance vollstaendig. docs/m5b-drift-governance.md + drift_governance.schema.json vorhanden. 10 Pflichtfelder definiert. 8 PROHIBIT-Regeln im Schema. remediation_hint-Constraints maschinenlesbar. Keine auto-repair/auto-reindex-Referenzen.",
-    "governance_doc_present": true,
-    "schema_present": true,
-    "required_fields": 10,
-    "prohibited_operations": 8,
-    "read_only_const": true,
-    "remediation_hint_pattern_check": "PASS"
-  },
-  "m5b_architecture_verified": {
-    "status": "PASS",
-    "note": "M5b Architecture Review vollstaendig. 8/8 Artefakte complete. 0 strukturelle Luecken. 3 offene Entscheidungen (OD-01..OD-03). 2 blockierende Risiken (CCR-02, CCR-03). Kein Artifact behauptet Implementierung. Implementation Gate NO-GO in allen referenzierten Dokumenten konsistent.",
-    "review_doc_present": true,
-    "artifacts_reviewed": 8,
-    "artifacts_complete": 8,
-    "structural_gaps": 0,
-    "implementation_false_claims": 0,
-    "implementation_gate_no_go_consistent": true,
-    "drift_code_claimed": false,
-    "new_artifacts_scanned": 15,
-    "new_artifacts_range": "PREP-13 through PREP-27"
-  },
-  "m5b_alpha_verified": {
-    "status": "PASS",
-    "note": "Alpha Validation BLOCKED korrekt dokumentiert. Beta Start Gate BLOCKED (3/6) korrekt dokumentiert. Keine Implementierungsbehauptungen. Repair-/Cleanup-Verbote explizit in Entwicklung.md und docs/status.md. M5c NOT_STARTED konsistent. Scope-Artefakte (Dashboard, API, Beta Boundary) als DRAFT ohne Implementierungsaussagen. Alpha BLOCKED = erwarteter Zustand bei Implementation Gate NO-GO.",
-    "alpha_validation_status_correct": true,
-    "alpha_blocked_documented": true,
-    "beta_start_gate_status_correct": true,
-    "beta_blocked_documented": true,
-    "m5c_not_started_documented": true,
-    "repair_forbidden_explicit": true,
-    "cleanup_forbidden_explicit": true,
-    "implementation_false_claims": 0,
-    "scope_docs_draft_only": true,
-    "scope_docs_checked": [
-      "docs/m5b-drift-dashboard-scope.md",
-      "dashboard_testids.md",
-      "docs/m5b-drift-api-scope.md",
-      "openapi_drift_scope.json",
-      "docs/m5b-beta-boundary.md"
-    ],
-    "gate_reports_checked": [
-      "reports/current/m5b_alpha_validation_report.json",
-      "reports/current/m5b_beta_start_gate.json"
-    ],
-    "new_artifacts_scanned": 7
-  },
-  "masterplan_source": "H:\\WissenMai2026\\reports\\current\\masterplan_status.json",
-  "findings": [],
-  "fixes": [],
-  "exit_code": 0
+  "collected": 19,
+  "passed": 19,
+  "errors": 0,
+  "checks": [
+    {"check_id": "DTL-01", "description": "masterplan.md exists and contains gate authority statement", "result": "PASS"},
+    {"check_id": "DTL-02", "description": "reports/current/masterplan_status.json parseable", "result": "PASS"},
+    {"check_id": "DTL-03", "description": "docs/status.md contains M5c NO_GO ruling", "result": "PASS"},
+    {"check_id": "DTL-04", "description": "reports/current/m5a_final_readiness_review.json exists", "result": "PASS"},
+    {"check_id": "DTL-05", "description": "reports/current/m5b_release_decision.json exists", "result": "PASS"},
+    {"check_id": "DTL-06", "description": "docs/gate_hierarchy.json exists", "result": "PASS"},
+    {"check_id": "DTL-07", "description": "m5b_alpha_hardening_gate.json decision BLOCKED", "result": "PASS"},
+    {"check_id": "DTL-08", "description": "m5b_production_readiness_gate.json status BLOCKED", "result": "PASS"},
+    {"check_id": "DTL-09", "description": "m5c_start_gate.json status BLOCKED", "result": "PASS"},
+    {"check_id": "DTL-10", "description": "m5c_preparation_gate.json decision PREPARED", "result": "PASS"},
+    {"check_id": "DTL-11", "description": "Entwicklung.md references PROHIBIT-02 and PROHIBIT-06", "result": "PASS"},
+    {"check_id": "DTL-12", "description": "docs/status.md references masterplan_status.json as authority", "result": "PASS"},
+    {"check_id": "DTL-13", "description": "masterplan.md contains engine tag", "result": "PASS"},
+    {"check_id": "DTL-14", "description": "documentation_truth_lint.json report_schema_version >= 4", "result": "PASS"},
+    {"check_id": "DTL-15", "description": "docs/m5c-dry-run-governance.md exists and contains execution restriction", "result": "PASS"},
+    {"check_id": "DTL-16", "description": "m5c_preparation_gate.json has passed >= 16", "result": "PASS"},
+    {"check_id": "DTL-17", "description": "masterplan.md describes M5c start conditions", "result": "PASS"},
+    {"check_id": "DTL-18", "description": "docs/status.md contains Dry-Run-Only clause", "result": "PASS"},
+    {"check_id": "DTL-19", "description": "docs/m5c-dry-run-governance.md execution scope restriction present", "result": "PASS"}
+  ]
 }

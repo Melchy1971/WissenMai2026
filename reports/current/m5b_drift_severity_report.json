@@ -1,0 +1,55 @@
+{
+  "report_type": "m5b_drift_severity_report",
+  "report_schema_version": 1,
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-11T00:00:00+00:00",
+  "generated_at": "2026-06-11",
+  "status": "PASS",
+  "test_file": "backend/tests/test_m5b_drift_severity_truth.py",
+  "tests_total": 17,
+  "tests_passed": 17,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "errors": 0,
+  "summary": "17/17 tests passed. All detector severity mappings verified. CRITICAL (deleted+searchable) correctly identified. WARNING does not block run completion. FindingDTO validates finding_type and severity at construction.",
+  "severity_mappings_verified": {
+    "DOCUMENT_DRIFT": {
+      "missing_version": "error",
+      "all_findings": "valid DRIFT_FINDING_TYPES"
+    },
+    "METADATA_DRIFT": {
+      "blank_title": "error",
+      "missing_category": "warning",
+      "complete_metadata": "no findings"
+    },
+    "LIFECYCLE_DRIFT": {
+      "active_not_findable": "error",
+      "archived_searchable": "error",
+      "deleted_searchable": "critical",
+      "clean": "no findings"
+    }
+  },
+  "checks_verified": [
+    "DOCUMENT_DRIFT: all findings have valid severity",
+    "DOCUMENT_DRIFT: missing version \u2192 error",
+    "DOCUMENT_DRIFT: clean doc \u2192 no findings",
+    "METADATA_DRIFT: all findings have valid severity",
+    "METADATA_DRIFT: blank title \u2192 error",
+    "METADATA_DRIFT: missing category \u2192 warning",
+    "METADATA_DRIFT: complete metadata \u2192 no findings",
+    "LIFECYCLE_DRIFT: all findings have valid severity",
+    "LIFECYCLE_DRIFT: active+chunked, no searchable chunk \u2192 error",
+    "LIFECYCLE_DRIFT: archived+searchable chunk \u2192 error",
+    "LIFECYCLE_DRIFT: deleted+searchable chunk \u2192 critical",
+    "LIFECYCLE_DRIFT: clean active \u2192 no findings",
+    "CRITICAL finding identifiable by severity field",
+    "WARNING-only run: status=completed",
+    "No-findings run: status=completed, total_findings=0",
+    "FindingDTO rejects invalid severity",
+    "FindingDTO rejects invalid finding_type"
+  ],
+  "constraints": {
+    "repair_actions": "NO_GO",
+    "cleanup_actions": "NO_GO"
+  }
+}

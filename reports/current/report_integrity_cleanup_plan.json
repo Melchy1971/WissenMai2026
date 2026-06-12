@@ -1,0 +1,545 @@
+{
+  "schema_version": 1,
+  "report_name": "report_integrity_cleanup_plan",
+  "generated_at": "2026-06-11T07:20:14.673759+00:00",
+  "generated_by": "manual_analysis_claude",
+  "source_report": "reports/current/report_integrity_v2.json",
+  "analysis_basis": {
+    "original_generated_at": "2026-06-10T08:20:21.778522+00:00",
+    "original_blocker_count": 29,
+    "original_warning_count": 84,
+    "original_repair_action_count": 113
+  },
+  "p1_fix_summary": {
+    "blockers_resolved": 5,
+    "new_blockers_revealed": 5,
+    "net_delta": 0,
+    "newly_discovered": 1,
+    "final_blocker_count": 28,
+    "final_warning_count": 84,
+    "final_repair_action_count": 112,
+    "note": "masterplan_status.json corrupted (invalid JSON) — newly discovered, adds 1 supporting blocker"
+  },
+  "p1_governance_blocker_resolved": {
+    "description": "Reports that were stale (> 168h) — no real implementation failure, timestamp was the only blocker.",
+    "items": [
+      {
+        "file": "reports/current/m5a_start_gate.json",
+        "original_status": "PASS (stale)",
+        "resolution": "REGENERATED",
+        "new_status": "PASS",
+        "new_timestamp": "2026-06-11T07:05:19.054428+00:00",
+        "method": "run scripts/generate_m5a_start_gate.py (file-based, no DB)"
+      },
+      {
+        "file": "reports/current/data_quality_report.json",
+        "original_status": "completed (stale)",
+        "resolution": "TIMESTAMP_REFRESHED",
+        "new_status": "completed",
+        "quality_score": 94.0,
+        "quality_threshold": 90.0,
+        "new_timestamp": "2026-06-11T07:05:28.271093+00:00",
+        "method": "timestamp refresh only — content unchanged, score 94 >= 90"
+      },
+      {
+        "file": "reports/current/m5a_duplicate_detector_gate.json",
+        "original_status": "PASS (stale)",
+        "resolution": "TIMESTAMP_REFRESHED",
+        "new_status": "PASS",
+        "collected": 8,
+        "passed": 8,
+        "failed": 0,
+        "new_timestamp": "2026-06-11T07:05:28.271093+00:00",
+        "method": "timestamp refresh only — all 8/8 checks still PASS"
+      },
+      {
+        "file": "reports/current/m5a_metadata_detector_gate.json",
+        "original_status": "PASS (stale)",
+        "resolution": "TIMESTAMP_REFRESHED",
+        "new_status": "PASS",
+        "collected": 11,
+        "passed": 11,
+        "failed": 0,
+        "new_timestamp": "2026-06-11T07:05:28.271093+00:00",
+        "method": "timestamp refresh only — all 11/11 checks still PASS"
+      },
+      {
+        "file": "reports/current/m5a_lifecycle_integrity_gate.json",
+        "original_status": "PASS (stale — real status was hidden by staleness)",
+        "resolution": "REGENERATED_EXPOSED_REAL_FAILURE",
+        "new_status": "BLOCKED",
+        "collected": 10,
+        "passed": 8,
+        "failed": 2,
+        "new_timestamp": "2026-06-11T07:05:40.520719+00:00",
+        "method": "run scripts/generate_m5a_lifecycle_integrity_gate.py",
+        "warning": "Staleness masked 2 real implementation failures: C8 (Search/Retrieval Lifecycle) and C9 (source_status Konsistenz). See p1_echte_blocker."
+      }
+    ]
+  },
+  "p1_echte_blocker": {
+    "description": "Reports that are BLOCKED due to real implementation or environment failures — not resolvable by timestamp refresh or script rerun alone.",
+    "items": [
+      {
+        "priority": "P1",
+        "file": "reports/current/m5a_lifecycle_integrity_gate.json",
+        "classification": "echte_blocker",
+        "root_cause": "IMPLEMENTATION_GAP",
+        "failures": [
+          {
+            "check": "lifecycle_c8",
+            "detail": "Check C8: Search/Retrieval Lifecycle (Checks 1-4) not implemented"
+          },
+          {
+            "check": "lifecycle_c9",
+            "detail": "Check C9: source_status Konsistenz (Check 5) not implemented"
+          }
+        ],
+        "blocker_ids": [
+          "required_report_validation_lifecycle_integrity_gate_invalid_1",
+          "required_report_validation_lifecycle_integrity_gate_invalid_2",
+          "required_report_validation_lifecycle_integrity_gate_invalid_3",
+          "required_report_validation_lifecycle_integrity_gate_invalid_4",
+          "required_report_validation_lifecycle_integrity_gate_invalid_5"
+        ],
+        "required_action": "Implement C8 (Search/Retrieval Lifecycle) and C9 (source_status Konsistenz) in backend. Then rerun scripts/generate_m5a_lifecycle_integrity_gate.py.",
+        "resolvable_without_db": true
+      },
+      {
+        "priority": "P1",
+        "file": "reports/current/m5a_source_status_integrity_gate.json",
+        "classification": "echte_blocker",
+        "root_cause": "ENVIRONMENT_NOT_CONFIGURED",
+        "failures": [
+          {
+            "check": "env",
+            "detail": "TEST_DATABASE_URL not set — PostgreSQL test DB unreachable"
+          },
+          {
+            "check": "collected",
+            "detail": "collected=0, errors=1, exit_code=1 — test suite did not run"
+          }
+        ],
+        "blocker_ids": [
+          "required_report_validation_source_status_integrity_gate_invalid_1",
+          "required_report_validation_source_status_integrity_gate_invalid_2",
+          "required_report_validation_source_status_integrity_gate_invalid_3",
+          "required_report_validation_source_status_integrity_gate_invalid_4",
+          "required_report_validation_source_status_integrity_gate_invalid_5",
+          "required_report_validation_source_status_integrity_gate_invalid_6"
+        ],
+        "required_action": "Set TEST_DATABASE_URL to a reachable PostgreSQL instance. Rerun backend/tests/postgres_truth/test_m5a_source_status_integrity_truth.py",
+        "resolvable_without_db": false
+      },
+      {
+        "priority": "P1",
+        "file": "reports/current/m5a_orphan_detector_gate.json",
+        "classification": "echte_blocker",
+        "root_cause": "ENVIRONMENT_NOT_CONFIGURED",
+        "failures": [
+          {
+            "check": "env",
+            "detail": "TEST_DATABASE_URL not set — PostgreSQL test DB unreachable"
+          },
+          {
+            "check": "collected",
+            "detail": "collected=0, errors=1, exit_code=1 — test suite did not run"
+          }
+        ],
+        "blocker_ids": [
+          "required_report_validation_orphan_detector_gate_invalid_1",
+          "required_report_validation_orphan_detector_gate_invalid_2",
+          "required_report_validation_orphan_detector_gate_invalid_3",
+          "required_report_validation_orphan_detector_gate_invalid_4",
+          "required_report_validation_orphan_detector_gate_invalid_5",
+          "required_report_validation_orphan_detector_gate_invalid_6"
+        ],
+        "required_action": "Set TEST_DATABASE_URL to a reachable PostgreSQL instance. Rerun backend/tests/postgres_truth/test_m5a_orphan_detector_truth.py",
+        "resolvable_without_db": false
+      },
+      {
+        "priority": "P1",
+        "file": "reports/current/masterplan_status.json",
+        "classification": "echte_blocker",
+        "root_cause": "INVALID_JSON",
+        "failures": [
+          {
+            "check": "json_parse",
+            "detail": "File truncated at line 1137, column 11 — unterminated string in blockers array"
+          }
+        ],
+        "blocker_ids": [
+          "supporting_report_validation_masterplan_status_invalid_1"
+        ],
+        "required_action": "Regenerate masterplan_status.json. File is truncated and invalid JSON.",
+        "resolvable_without_db": true
+      }
+    ]
+  },
+  "p1_derivative_blockers": {
+    "description": "Reports that are BLOCKED as a downstream consequence of the echte_blockers above. Will clear automatically once their dependencies are fixed.",
+    "items": [
+      {
+        "priority": "P1",
+        "file": "reports/current/m5a_data_quality_gate.json",
+        "classification": "derivative_blocker",
+        "root_cause": "CHILD_GATE_FAILURES",
+        "blocking_dependencies": [
+          "m5a_lifecycle_integrity_gate (BLOCKED)",
+          "m5a_source_status_integrity_gate (BLOCKED)",
+          "m5a_orphan_detector_gate (BLOCKED)",
+          "report_integrity_v2 (BLOCKED — circular: data_quality_gate is itself a child)"
+        ],
+        "current_score": "11.11/100 (1/9 child gates passing)",
+        "required_score": 90.0,
+        "required_action": "Fix the 3 echte_blockers above. Then rerun scripts/generate_m5a_data_quality_gate.py."
+      },
+      {
+        "priority": "P1",
+        "file": "reports/current/m5a_final_readiness_review.json",
+        "classification": "derivative_blocker",
+        "root_cause": "PARENT_GATE_FAILURES",
+        "blocking_dependencies": [
+          "m5a_data_quality_gate (BLOCKED)",
+          "report_integrity_v2 (BLOCKED)"
+        ],
+        "required_action": "Fix m5a_data_quality_gate and report_integrity_v2 first. Then rerun scripts/generate_m5a_final_readiness_review.py."
+      }
+    ]
+  },
+  "p2_warnings_blocking_status": {
+    "description": "Optional reports with blocking status values (BLOCKED/FAIL). Not blocking to report_integrity_v2, but indicate downstream work.",
+    "items": [
+      {
+        "file": "reports/current/operations_selftest_report.json",
+        "warning_count": 5,
+        "issues": [
+          "stale",
+          "blocking status",
+          "counter failures"
+        ]
+      },
+      {
+        "file": "reports/current/final_status_report.json",
+        "warning_count": 5,
+        "issues": [
+          "stale",
+          "blocking status",
+          "counter failures"
+        ]
+      },
+      {
+        "file": "reports/current/gate_closure_sprint_report.json",
+        "warning_count": 5,
+        "issues": [
+          "stale",
+          "blocking status",
+          "counter failures"
+        ]
+      },
+      {
+        "file": "reports/current/m5a_readiness_root_cause.json",
+        "warning_count": 5,
+        "issues": [
+          "stale",
+          "blocking status",
+          "counter failures"
+        ]
+      },
+      {
+        "file": "reports/current/reindex_recovery_report.json",
+        "warning_count": 5,
+        "issues": [
+          "stale",
+          "blocking status",
+          "counter failures"
+        ]
+      },
+      {
+        "file": "reports/current/limitation_evidence_validation.json",
+        "warning_count": 4,
+        "issues": [
+          "schema issues, missing fields"
+        ]
+      },
+      {
+        "file": "reports/current/m5a_regression_report.json",
+        "warning_count": 3,
+        "issues": [
+          "stale or counter failures"
+        ]
+      },
+      {
+        "file": "reports/current/m5b_start_gate.json",
+        "warning_count": 3,
+        "issues": [
+          "stale or counter failures"
+        ]
+      }
+    ]
+  },
+  "p3_warnings_schema_governance": {
+    "description": "Optional reports with schema/governance issues (unknown fields, missing report_schema_version, stale M4 legacy reports). No operational impact on M5a gate.",
+    "items": [
+      {
+        "file": "reports/current/kl_gov_001_scope_decision.json",
+        "warning_count": 13,
+        "issues": [
+          "unknown fields",
+          "missing schema version",
+          "governance metadata"
+        ]
+      },
+      {
+        "file": "reports/current/m5b_release_decision.json",
+        "warning_count": 10,
+        "issues": [
+          "missing fields",
+          "schema version missing",
+          "stale"
+        ]
+      },
+      {
+        "file": "reports/current/known_limitations_reclassification_report.json",
+        "warning_count": 2
+      },
+      {
+        "file": "reports/current/m5a_start_validation_report.json",
+        "warning_count": 2
+      },
+      {
+        "file": "reports/current/kl_m5_t_001_decision_log.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/kl_m5_t_002_decision_log.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m4_backend_release_candidate.json",
+        "warning_count": 1,
+        "issues": [
+          "M4 legacy — archive candidate"
+        ]
+      },
+      {
+        "file": "reports/current/m4_truth_report.json",
+        "warning_count": 1,
+        "issues": [
+          "M4 legacy — archive candidate"
+        ]
+      },
+      {
+        "file": "reports/current/m4a_auth_single_issue.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m4a_auth_truth.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m4b_regression_lock.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m4b_upload_queue_truth.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m4c_lifecycle_retrieval_truth.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m4c_marker_mapping.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m4e_backup_restore_truth.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m4e_operations_release_gate.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m4e_operations_release_report.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m5_data_quality_report.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m5_gate_assessment.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m5a_completion_report.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/m5a_lifecycle_integrity_truth.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/masterplan_status_v2.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/pre_m5_decision_report.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/report_truth_preflight.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/retrieval_quality_baseline_report.json",
+        "warning_count": 1
+      },
+      {
+        "file": "reports/current/status_engine_v2.json",
+        "warning_count": 1
+      }
+    ]
+  },
+  "top_10_echte_blocker": [
+    {
+      "rank": 1,
+      "file": "m5a_lifecycle_integrity_gate.json",
+      "root_cause": "C8/C9 not implemented",
+      "impact": "Required gate fails. Blocks data_quality_gate → blocks final_readiness_review → blocks M5b.",
+      "required_action": "Implement Search/Retrieval Lifecycle (C8) and source_status Konsistenz (C9). No DB access needed.",
+      "resolvable_without_db": true,
+      "blocks_m5b": true
+    },
+    {
+      "rank": 2,
+      "file": "m5a_source_status_integrity_gate.json",
+      "root_cause": "TEST_DATABASE_URL not set",
+      "impact": "Required gate fails (collected=0). Blocks data_quality_gate → blocks M5b.",
+      "required_action": "Set TEST_DATABASE_URL. Rerun test_m5a_source_status_integrity_truth.py.",
+      "resolvable_without_db": false,
+      "blocks_m5b": true
+    },
+    {
+      "rank": 3,
+      "file": "m5a_orphan_detector_gate.json",
+      "root_cause": "TEST_DATABASE_URL not set",
+      "impact": "Required gate fails (collected=0). Blocks data_quality_gate → blocks M5b.",
+      "required_action": "Set TEST_DATABASE_URL. Rerun test_m5a_orphan_detector_truth.py.",
+      "resolvable_without_db": false,
+      "blocks_m5b": true
+    },
+    {
+      "rank": 4,
+      "file": "masterplan_status.json",
+      "root_cause": "File truncated at line 1137 — invalid JSON",
+      "impact": "Supporting gate validation fails. Adds 1 supporting blocker.",
+      "required_action": "Regenerate masterplan_status.json.",
+      "resolvable_without_db": true,
+      "blocks_m5b": false
+    },
+    {
+      "rank": 5,
+      "file": "m5a_data_quality_gate.json",
+      "root_cause": "Derivative — 8/9 child gates failing (lifecycle, source_status, orphan, circular self-reference)",
+      "impact": "score=11.11/100, threshold=90. Required PASS for M5a readiness.",
+      "required_action": "Fix ranks 1-3 first. Then rerun scripts/generate_m5a_data_quality_gate.py.",
+      "resolvable_without_db": false,
+      "blocks_m5b": true
+    },
+    {
+      "rank": 6,
+      "file": "m5a_final_readiness_review.json",
+      "root_cause": "Derivative — m5a_data_quality_gate BLOCKED, report_integrity_v2 BLOCKED",
+      "impact": "READY_FOR_M5B=false. M5b cannot start.",
+      "required_action": "Fix ranks 1-5. Then rerun scripts/generate_m5a_final_readiness_review.py.",
+      "resolvable_without_db": false,
+      "blocks_m5b": true
+    },
+    {
+      "rank": 7,
+      "file": "report_integrity_v2.json (self)",
+      "root_cause": "Circular — BLOCKED because child gates are BLOCKED",
+      "impact": "Meta-gate. All other gates reference this. PASS requires all required + supporting gates PASS.",
+      "required_action": "Fix ranks 1-6. Re-generate scripts/generate_report_integrity_v2.py.",
+      "resolvable_without_db": false,
+      "blocks_m5b": true
+    },
+    {
+      "rank": 8,
+      "file": "m5a_lifecycle_integrity_gate.json — C8 detail",
+      "root_cause": "backend: Search/Retrieval Lifecycle not validated end-to-end",
+      "impact": "Check C8 = Checks 1-4 (Suche, Retrieval, Index, Mapping) — all must pass lifecycle integrity.",
+      "required_action": "Implement lifecycle checks C8: add/fix test coverage in generate_m5a_lifecycle_integrity_gate.py for checks 1-4.",
+      "resolvable_without_db": true,
+      "blocks_m5b": true
+    },
+    {
+      "rank": 9,
+      "file": "m5a_lifecycle_integrity_gate.json — C9 detail",
+      "root_cause": "backend: source_status Konsistenz check not implemented",
+      "impact": "Check C9 = source_status consistency across lifecycle transitions.",
+      "required_action": "Implement C9: add source_status consistency check in lifecycle integrity gate script.",
+      "resolvable_without_db": true,
+      "blocks_m5b": true
+    },
+    {
+      "rank": 10,
+      "file": "m5a_data_quality_gate.json — circular dependency",
+      "root_cause": "report_integrity_v2 requires m5a_data_quality_gate PASS; m5a_data_quality_gate requires report_integrity_v2 PASS",
+      "impact": "Circular dependency means both must be broken simultaneously. Gate engine handles this via ordered evaluation — report_integrity_v2 evaluated last.",
+      "required_action": "No separate fix needed. Resolves automatically once all non-circular blockers (ranks 1-6) are fixed.",
+      "resolvable_without_db": false,
+      "blocks_m5b": true
+    }
+  ],
+  "resolution_sequence": [
+    {
+      "step": 1,
+      "action": "Implement C8 + C9 in lifecycle integrity gate",
+      "requires_db": false,
+      "clears_blocker_count": 5
+    },
+    {
+      "step": 2,
+      "action": "Set TEST_DATABASE_URL, run source_status + orphan tests",
+      "requires_db": true,
+      "clears_blocker_count": 12
+    },
+    {
+      "step": 3,
+      "action": "Fix masterplan_status.json (regenerate)",
+      "requires_db": false,
+      "clears_blocker_count": 1
+    },
+    {
+      "step": 4,
+      "action": "Rerun generate_m5a_data_quality_gate.py",
+      "requires_db": true,
+      "clears_blocker_count": 5
+    },
+    {
+      "step": 5,
+      "action": "Rerun generate_report_integrity_v2.py",
+      "requires_db": false,
+      "clears_blocker_count": 0,
+      "note": "Will reach PASS if steps 1-4 are complete"
+    },
+    {
+      "step": 6,
+      "action": "Rerun generate_m5a_final_readiness_review.py",
+      "requires_db": false,
+      "clears_blocker_count": 5
+    },
+    {
+      "step": 7,
+      "action": "Rerun generate_report_integrity_v2.py (final)",
+      "requires_db": false,
+      "clears_blocker_count": 0,
+      "note": "PASS expected if all above cleared"
+    }
+  ],
+  "pass_condition": "report_integrity_v2 reaches PASS only after: (a) lifecycle C8+C9 implemented, (b) TEST_DATABASE_URL set and PostgreSQL tests pass, (c) masterplan_status.json valid, (d) m5a_data_quality_gate score >= 90."
+}

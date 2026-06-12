@@ -1,0 +1,66 @@
+{
+  "report_schema_version": 1,
+  "report_name": "cleanup_summary_example",
+  "generated_by": "cleanup_dry_run_engine_v1",
+  "timestamp": "2026-06-12T10:00:00+00:00",
+  "cleanup_run_id": "00000000-0000-0000-0000-000000000001",
+  "workspace_id": "00000000-0000-0000-0000-000000000002",
+  "candidate_count": 3,
+  "dry_run": true,
+  "risk_summary": {
+    "total": 3,
+    "by_class": {
+      "LOW": 1,
+      "MEDIUM": 1,
+      "HIGH": 0,
+      "VERY_HIGH": 1,
+      "CRITICAL": 0
+    },
+    "by_type": {
+      "ORPHAN_CHUNK": 2,
+      "DUPLICATE_DOCUMENT": 1
+    },
+    "max_risk_score": 72,
+    "avg_risk_score": 42.3
+  },
+  "candidates": [
+    {
+      "id": "aaaa0001-0000-0000-0000-000000000001",
+      "candidate_type": "ORPHAN_CHUNK",
+      "entity_type": "chunk",
+      "entity_id": "bbbb0001-0000-0000-0000-000000000001",
+      "risk_score": 15,
+      "severity": "LOW",
+      "reason": "Chunk without parent document",
+      "remediation_hint": "Safe to remove",
+      "evidence": null
+    },
+    {
+      "id": "aaaa0002-0000-0000-0000-000000000001",
+      "candidate_type": "DUPLICATE_DOCUMENT",
+      "entity_type": "document",
+      "entity_id": "bbbb0002-0000-0000-0000-000000000001",
+      "risk_score": 38,
+      "severity": "MEDIUM",
+      "reason": "content_hash matches document bbbb0003",
+      "remediation_hint": "Review before merge",
+      "evidence": {
+        "duplicate_of": "bbbb0003-0000-0000-0000-000000000001",
+        "similarity": 1.0
+      }
+    },
+    {
+      "id": "aaaa0003-0000-0000-0000-000000000001",
+      "candidate_type": "ORPHAN_CHUNK",
+      "entity_type": "chunk",
+      "entity_id": "bbbb0004-0000-0000-0000-000000000001",
+      "risk_score": 72,
+      "severity": "HIGH",
+      "reason": "Chunk in active retrieval index, parent deleted",
+      "remediation_hint": "Senior review required",
+      "evidence": {
+        "last_query_count_30d": 145
+      }
+    }
+  ]
+}

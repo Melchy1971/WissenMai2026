@@ -1,0 +1,75 @@
+{
+  "report_id": "cleanup_governance_boundary",
+  "generated_at": "2026-06-12T06:03:44.050231+00:00",
+  "status": "DRAFT",
+  "governance_doc": "docs/m5c-cleanup-governance.md",
+  "ratification_status": "PENDING",
+  "po_sign_off": false,
+  "po_sign_off_required_before": "M5c implementation start",
+  "permanent_prohibitions": {
+    "PROHIBIT-02": {
+      "name": "Keine Repair-Aktionen",
+      "scope": "M5b permanent",
+      "examples": [
+        "auto-repair drift findings",
+        "write to documents table from drift detectors",
+        "PUT/PATCH on /api/drift/* endpoints",
+        "repair buttons in DriftDashboard",
+        "lifecycle_status changes by drift jobs"
+      ],
+      "overridable": false
+    },
+    "PROHIBIT-06": {
+      "name": "Keine Cleanup-Aktionen",
+      "scope": "M5b permanent",
+      "examples": [
+        "delete stale documents",
+        "auto-reindex after drift detection",
+        "derive cleanup workflows from drift findings",
+        "cleanup buttons in DriftDashboard",
+        "batch-delete ARCHIVED documents"
+      ],
+      "overridable": false
+    }
+  },
+  "m5b_allowed_operations": [
+    "SELECT on documents (read-only)",
+    "INSERT into drift_findings",
+    "INSERT/UPDATE drift_runs",
+    "GET /api/drift/status",
+    "GET /api/drift/findings",
+    "GET /api/drift/summary",
+    "emit observability metrics (no PII)",
+    "render read-only DriftDashboard"
+  ],
+  "interface_rule": "M5c consumes drift_findings from DB. No direct code dependency M5b \u2192 M5c. M5b code must not import or call M5c modules.",
+  "m5c_release_conditions": [
+    {
+      "id": "RC-01",
+      "description": "M5c Start Gate = PASS",
+      "current_status": "BLOCKED"
+    },
+    {
+      "id": "RC-02",
+      "description": "M5b Production Readiness Gate = PASS",
+      "current_status": "BLOCKED"
+    },
+    {
+      "id": "RC-03",
+      "description": "M5b Beta Validation Gate = PASS",
+      "current_status": "BLOCKED"
+    },
+    {
+      "id": "RC-04",
+      "description": "M5b Alpha Hardening Gate = PASS",
+      "current_status": "BLOCKED"
+    },
+    {
+      "id": "RC-05",
+      "description": "Governance doc ratified (PO sign-off)",
+      "current_status": "DRAFT"
+    }
+  ],
+  "m5c_go_decision": "NO_GO",
+  "m5c_go_decision_reason": "All 5 release conditions unmet. Cascade root: Alpha Hardening Gate BLOCKED."
+}

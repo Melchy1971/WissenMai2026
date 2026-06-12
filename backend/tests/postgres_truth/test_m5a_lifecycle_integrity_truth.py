@@ -298,3 +298,194 @@ def test_no_document_mutation(
         {"w": wid},
     ).fetchall()
     assert set(before) == set(after)
+
+
+# ---------------------------------------------------------------------------
+# C8: archived document must not appear in Search or Retrieval
+# ---------------------------------------------------------------------------
+
+
+def test_c8_archived_document_not_in_search_via_non_active_chunks(
+    truth_session: Session, truth_seed: dict[str, str]
+) -> None:
+    """C8 / Check 1: _detect_non_active_searchable_chunks detects archived doc in search."""
+    wid = truth_seed["workspace_id"]
+    uid = truth_seed["user_id"]
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="archived", archived_at=_now())
+    vid = _version(truth_session, did)
+    _chunk(truth_session, did, vid, searchable=True)
+    truth_session.commit()
+
+    findings = LifecycleIntegrityDetector(truth_session, wid).detect()
+    search_findings = [
+        f for f in findings
+        if f["document_id"] == did
+        and f["finding_type"] == "INVALID_LIFECYCLE"
+        and "search" in f["title"].lower()
+    ]
+    assert search_findings, (
+        f"Expected search-violation finding for archived document {did}, got: {findings}"
+    )
+    assert all(f["severity"] == "error" for f in search_findings)
+    assert all(f["remediation"] == "Lifecycle korrigieren" for f in search_findings)
+
+
+def test_c8_archived_document_in_retrieval_detected(
+    truth_session: Session, truth_seed: dict[str, str]
+) -> None:
+    """C8 / Check 2: archived document with citation source_status != 'archived' appears in retrieval."""
+    wid = truth_seed["workspace_id"]
+    uid = truth_seed["user_id"]
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="archived", archived_at=_now())
+    vid = _version(truth_session, did)
+    chunk_id = _chunk(truth_session, did, vid, searchable=False)
+    # Citation still carries source_status="active" — archived doc appears in retrieval surface
+    _citation(truth_session, wid, uid, did, chunk_id, source_status="active")
+    truth_session.commit()
+
+    findings = LifecycleIntegrityDetector(truth_session, wid).detect()
+    assert any(
+        f["document_id"] == did
+        and f["finding_type"] == "INVALID_LIFECYCLE"
+        and "archived" in f["description"].lower()
+        for f in findings
+    ), f"Expected retrieval-violation finding for archived document {did}, got: {findings}"
+
+
+def test_c8_clean_archived_document_no_violation(
+    truth_session: Session, truth_seed: dict[str, str]
+) -> None:
+    """C8: archived document with no searchable chunks and correct source_status → no C8 violation."""
+    wid = truth_seed["workspace_id"]
+    uid = truth_seed["user_id"]
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="archived", archived_at=_now())
+    vid = _version(truth_session, did)
+    chunk_id = _chunk(truth_session, did, vid, searchable=False)
+    # Citation carries correct source_status="archived"
+    _citation(truth_session, wid, uid, did, chunk_id, source_status="archived")
+    truth_session.commit()
+
+    findings = LifecycleIntegrityDetector(truth_session, wid).detect()
+    c8_violations = [
+        f for f in findings
+        if f["document_id"] == did
+        and f["finding_type"] == "INVALID_LIFECYCLE"
+        and ("search" in f["title"].lower() or "retrieval" in f["title"].lower())
+    ]
+    assert not c8_violations, (
+        f"Expected no C8 violations for clean archived document {did}, got: {c8_violations}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# C9: deleted document must not appear in Search or Retrieval
+# ---------------------------------------------------------------------------
+
+
+def test_c9_deleted_document_not_in_search_via_non_active_chunks(
+    truth_session: Session, truth_seed: dict[str, str]
+) -> None:
+    """C9 / Check 3: _detect_non_active_searchable_chunks detects deleted doc in search."""
+    wid = truth_seed["workspace_id"]
+    uid = truth_seed["user_id"]
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="deleted", deleted_at=_now())
+    vid = _version(truth_session, did)
+    _chunk(truth_session, did, vid, searchable=True)
+    truth_session.commit()
+
+    findings = LifecycleIntegrityDetector(truth_session, wid).detect()
+    search_findings = [
+        f for f in findings
+        if f["document_id"] == did
+        and f["finding_type"] == "INVALID_LIFECYCLE"
+        and "search" in f["title"].lower()
+    ]
+    assert search_findings, (
+        f"Expected search-violation finding for deleted document {did}, got: {findings}"
+    )
+    assert all(f["severity"] == "error" for f in search_findings)
+    assert all(f["remediation"] == "Lifecycle korrigieren" for f in search_findings)
+
+
+def test_c9_deleted_document_in_retrieval_detected(
+    truth_session: Session, truth_seed: dict[str, str]
+) -> None:
+    """C9 / Check 4: deleted document with citation source_status != 'deleted' appears in retrieval."""
+    wid = truth_seed["workspace_id"]
+    uid = truth_seed["user_id"]
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="deleted", deleted_at=_now())
+    vid = _version(truth_session, did)
+    chunk_id = _chunk(truth_session, did, vid, searchable=False)
+    # Citation still carries source_status="active" — deleted doc appears in retrieval surface
+    _citation(truth_session, wid, uid, did, chunk_id, source_status="active")
+    truth_session.commit()
+
+    findings = LifecycleIntegrityDetector(truth_session, wid).detect()
+    assert any(
+        f["document_id"] == did
+        and f["finding_type"] == "INVALID_LIFECYCLE"
+        and "deleted" in f["description"].lower()
+        for f in findings
+    ), f"Expected retrieval-violation finding for deleted document {did}, got: {findings}"
+
+
+def test_c9_source_status_drift_detected(
+    truth_session: Session, truth_seed: dict[str, str]
+) -> None:
+    """C9 / Check 5: _detect_source_status_drift detects citation source_status divergence."""
+    wid = truth_seed["workspace_id"]
+    uid = truth_seed["user_id"]
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="deleted", deleted_at=_now())
+    vid = _version(truth_session, did)
+    chunk_id = _chunk(truth_session, did, vid, searchable=False)
+    # source_status != lifecycle_status — drift violation
+    _citation(truth_session, wid, uid, did, chunk_id, source_status="archived")
+    truth_session.commit()
+
+    findings = LifecycleIntegrityDetector(truth_session, wid).detect()
+    drift_findings = [
+        f for f in findings
+        if f["document_id"] == did
+        and f["finding_type"] == "INVALID_LIFECYCLE"
+        and "source status mismatch" in f["title"].lower()
+    ]
+    assert drift_findings, (
+        f"Expected source_status drift finding for document {did}, got: {findings}"
+    )
+
+
+def test_c9_no_mutation_on_deleted_document(
+    truth_session: Session, truth_seed: dict[str, str]
+) -> None:
+    """C9: detector must not mutate any data when checking deleted documents."""
+    wid = truth_seed["workspace_id"]
+    uid = truth_seed["user_id"]
+    did = _doc(truth_session, wid, owner_user_id=uid, lifecycle_status="deleted", deleted_at=_now())
+    vid = _version(truth_session, did)
+    chunk_id = _chunk(truth_session, did, vid, searchable=True)
+    _citation(truth_session, wid, uid, did, chunk_id, source_status="active")
+    truth_session.commit()
+
+    before_docs = truth_session.execute(
+        text("SELECT id, lifecycle_status, deleted_at FROM documents WHERE workspace_id=:w"),
+        {"w": wid},
+    ).fetchall()
+    before_chunks = truth_session.execute(
+        text("SELECT id, is_searchable FROM document_chunks WHERE document_id=:d"),
+        {"d": did},
+    ).fetchall()
+
+    LifecycleIntegrityDetector(truth_session, wid).detect()
+    truth_session.commit()
+
+    after_docs = truth_session.execute(
+        text("SELECT id, lifecycle_status, deleted_at FROM documents WHERE workspace_id=:w"),
+        {"w": wid},
+    ).fetchall()
+    after_chunks = truth_session.execute(
+        text("SELECT id, is_searchable FROM document_chunks WHERE document_id=:d"),
+        {"d": did},
+    ).fetchall()
+
+    assert set(before_docs) == set(after_docs), "Documents were mutated"
+    assert set(before_chunks) == set(after_chunks), "Chunks were mutated"

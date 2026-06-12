@@ -1,0 +1,77 @@
+{
+  "report_name": "gui_truth_report",
+  "report_schema_version": 1,
+  "generated_by": "gui_truth_test_v1",
+  "timestamp": "2026-06-12T07:06:44Z",
+  "status": "PASS",
+  "collected": 12,
+  "passed": 12,
+  "errors": 0,
+  "legacy_routes": 0,
+  "debug_routes": 0,
+  "test_routes": 0,
+  "unknown_routes": 0,
+  "checks": [
+    {
+      "check_id": "GT-01",
+      "label": "Nav-Items: nur MASTERPLAN_APPROVED",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-02",
+      "label": "Routes: keine Legacy-Routen",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-03",
+      "label": "Pages: nicht-freigegebene Files gelöscht",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-04",
+      "label": "Components: nicht-freigegebene Files gelöscht",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-05",
+      "label": "Keine Debug-Seiten erreichbar",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-06",
+      "label": "Keine Test-Seiten erreichbar",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-07",
+      "label": "Keine Cleanup-Seiten erreichbar",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-08",
+      "label": "Keine verbotenen Nav-Labels",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-09",
+      "label": "DriftDashboard nicht vorhanden (M5b BLOCKED)",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-10",
+      "label": "Dashboard: keine Gate/Approval/Audit-Widgets",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-11",
+      "label": "Settings: nur freigegebene Sektionen",
+      "status": "PASS"
+    },
+    {
+      "check_id": "GT-12",
+      "label": "Alle freigegebenen Routen vorhanden",
+      "status": "PASS"
+    }
+  ],
+  "failed_checks": []
+}

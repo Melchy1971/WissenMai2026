@@ -1,0 +1,94 @@
+{
+  "report_id": "m5b_beta_validation_report",
+  "generated_at": "2026-06-12T05:59:48.533007+00:00",
+  "status": "BLOCKED",
+  "decision": "BLOCKED",
+  "checks_total": 7,
+  "checks_passed": 6,
+  "checks_failed": 1,
+  "checks": [
+    {
+      "check_id": "BV-01",
+      "name": "Drift API Tests PASS",
+      "passed": true,
+      "actual": "status=PASS tests_failed=0",
+      "expected": "status=PASS, tests_failed=0",
+      "note": ""
+    },
+    {
+      "check_id": "BV-02",
+      "name": "Drift CLI Regression Tests PASS",
+      "passed": true,
+      "actual": "status=PASS tests_failed=0",
+      "expected": "status=PASS, tests_failed=0",
+      "note": ""
+    },
+    {
+      "check_id": "BV-03",
+      "name": "API Contract Registry: mind. 5 Contracts",
+      "passed": true,
+      "actual": "5 contracts",
+      "expected": "\u22655 contracts",
+      "note": ""
+    },
+    {
+      "check_id": "BV-04",
+      "name": "Frontend Truth Tests PASS (incl. PROHIBIT-02/06)",
+      "passed": true,
+      "actual": "status=PASS no_repair=True no_cleanup=True",
+      "expected": "status=PASS, no_repair=True, no_cleanup=True",
+      "note": ""
+    },
+    {
+      "check_id": "BV-05",
+      "name": "Performance Baseline: keine HIGH-Risiken",
+      "passed": true,
+      "actual": "0 HIGH risks, 1 total",
+      "expected": "0 HIGH risks",
+      "note": ""
+    },
+    {
+      "check_id": "BV-06",
+      "name": "Observability Implementation PASS",
+      "passed": true,
+      "actual": "status=PASS tests_failed=0",
+      "expected": "status=PASS, tests_failed=0",
+      "note": ""
+    },
+    {
+      "check_id": "BV-07",
+      "name": "Alpha Hardening Gate PASS (Voraussetzung f\u00fcr Beta)",
+      "passed": false,
+      "actual": "decision=BLOCKED blockers=2",
+      "expected": "decision=PASS",
+      "note": "CASCADING BLOCK: Alpha Hardening BLOCKED \u2192 Beta BLOCKED. Blocker: ['AHG-BLOCKER-01', 'AHG-BLOCKER-02']"
+    }
+  ],
+  "blocking_check_ids": [
+    "BV-07"
+  ],
+  "blocker_detail": [
+    {
+      "id": "BV-07",
+      "name": "Alpha Hardening Gate PASS (Voraussetzung f\u00fcr Beta)",
+      "actual": "decision=BLOCKED blockers=2",
+      "expected": "decision=PASS",
+      "note": "CASCADING BLOCK: Alpha Hardening BLOCKED \u2192 Beta BLOCKED. Blocker: ['AHG-BLOCKER-01', 'AHG-BLOCKER-02']"
+    }
+  ],
+  "input_reports": {
+    "m5b_drift_api_report": "PASS",
+    "drift_cli_regression_report": "PASS",
+    "drift_api_contract_registry": "5 contracts",
+    "drift_dashboard_truth_report": "PASS",
+    "drift_performance_baseline": "PASS",
+    "drift_observability_report": "PASS",
+    "m5b_alpha_hardening_gate": "BLOCKED"
+  },
+  "cascade_note": "Beta Gate BLOCKED wegen Alpha Hardening Gate BLOCKED (AHG-BLOCKER-01, AHG-BLOCKER-02). Alle Beta-spezifischen Checks PASS.",
+  "constraints": {
+    "repair_actions": "PROHIBITED",
+    "cleanup_actions": "PROHIBITED",
+    "auto_reindex_actions": "PROHIBITED"
+  }
+}

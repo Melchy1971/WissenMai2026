@@ -1,0 +1,96 @@
+{
+  "report_id": "drift_performance_baseline",
+  "generated_at": "2026-06-12T05:56:55.641781+00:00",
+  "status": "PASS",
+  "methodology": {
+    "environment": "SQLite in-memory (benchmark isolation)",
+    "detectors": [
+      "DocumentDriftDetector",
+      "MetadataDriftDetector",
+      "LifecycleDriftDetector"
+    ],
+    "db_queries_per_run": 3,
+    "data_profile": {
+      "import_error_rate": "3% (1/33 docs)",
+      "missing_title_rate": "8.3% (1/12 docs)",
+      "archived_rate": "5% (1/20 docs)"
+    },
+    "index": "workspace_id (single-column)",
+    "measurement": "tracemalloc peak + perf_counter",
+    "warmup": "1 SELECT before each measured run"
+  },
+  "baselines": [
+    {
+      "n_docs": 100,
+      "elapsed_ms": 0.25,
+      "memory_peak_kb": 31.0,
+      "total_findings": 13,
+      "drift_rate": 0.13,
+      "db_queries": 3,
+      "docs_scanned": 100
+    },
+    {
+      "n_docs": 1000,
+      "elapsed_ms": 1.91,
+      "memory_peak_kb": 277.0,
+      "total_findings": 115,
+      "drift_rate": 0.115,
+      "db_queries": 3,
+      "docs_scanned": 1000
+    },
+    {
+      "n_docs": 5000,
+      "elapsed_ms": 13.34,
+      "memory_peak_kb": 1372.4,
+      "total_findings": 569,
+      "drift_rate": 0.1138,
+      "db_queries": 3,
+      "docs_scanned": 5000
+    },
+    {
+      "n_docs": 10000,
+      "elapsed_ms": 18.07,
+      "memory_peak_kb": 2743.2,
+      "total_findings": 1138,
+      "drift_rate": 0.1138,
+      "db_queries": 3,
+      "docs_scanned": 10000
+    }
+  ],
+  "scaling": {
+    "factor_100_to_10k": 72.3,
+    "classification": "sub-linear",
+    "note": "72x for 100x data = sub-linear; fetchall() memory dominates at high n"
+  },
+  "index_usage": {
+    "workspace_id_index": "USED by all 3 detector queries (WHERE workspace_id = ?)",
+    "full_table_scan_risk": "LOW \u2014 workspace_id index eliminates cross-workspace rows before column checks",
+    "note": "Composite index (workspace_id, import_status) would reduce DocumentDrift scan cost at 10k+"
+  },
+  "performance_risks": [
+    {
+      "n_docs": "all",
+      "severity": "LOW",
+      "detail": "Alle Metriken innerhalb der Schwellwerte"
+    }
+  ],
+  "thresholds": {
+    "elapsed_ms_sla": 5000,
+    "elapsed_ms_warn": 2000,
+    "memory_peak_kb_critical": 102400,
+    "memory_peak_kb_warn": 51200,
+    "scale_factor_limit": 200,
+    "scale_factor_warn": 150
+  },
+  "recommendations": [
+    "Bei >10k Docs: streaming Cursor statt fetchall() f\u00fcr Speicherreduktion",
+    "Composite Index (workspace_id, import_status) f\u00fcr DocumentDriftDetector-Query erw\u00e4gen",
+    "Pagination bei Findings-R\u00fcckgabe ab 1k Findings empfohlen",
+    "Constraints PROHIBIT-02/06: Benchmark best\u00e4tigt keine Mutation \u2014 rein read-only"
+  ],
+  "constraints": {
+    "repair_actions": "PROHIBITED",
+    "cleanup_actions": "PROHIBITED",
+    "auto_reindex_actions": "PROHIBITED"
+  }
+}

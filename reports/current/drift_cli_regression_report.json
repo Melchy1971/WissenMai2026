@@ -1,0 +1,48 @@
+{
+  "report_id": "drift_cli_regression_report",
+  "generated_at": "2026-06-11T16:41:37.609539Z",
+  "task": "Task 29 -- Drift CLI Regression Tests",
+  "status": "PASS",
+  "tests_passed": 22,
+  "tests_failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "test_suites": {
+    "TestMissingDatabaseUrl": {
+      "tests": 3,
+      "passed": 3
+    },
+    "TestInvalidWorkspace": {
+      "tests": 3,
+      "passed": 3
+    },
+    "TestValidWorkspace": {
+      "tests": 5,
+      "passed": 5
+    },
+    "TestExitCodes": {
+      "tests": 3,
+      "passed": 3
+    },
+    "TestNoMutation": {
+      "tests": 3,
+      "passed": 3
+    },
+    "TestFailReportValidity": {
+      "tests": 5,
+      "passed": 5
+    }
+  },
+  "constraints_verified": {
+    "no_repair_actions": true,
+    "no_cleanup_actions": true,
+    "no_auto_reindex": true,
+    "fail_report_always_valid_json": true,
+    "exit_codes_correct": true,
+    "no_data_mutation": true
+  },
+  "artifacts": {
+    "cli": "scripts/run_drift_detection.py",
+    "tests": "backend/tests/test_m5b_drift_cli_regression.py"
+  }
+}

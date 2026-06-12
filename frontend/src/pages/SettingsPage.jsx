@@ -44,18 +44,6 @@ export function SettingsPage() {
       if (!clamp(data.min_score, 0.0, 1.0)) errs['rag.min_score'] = '0.0–1.0';
       if (!clamp(data.max_chunks, 1, 20)) errs['rag.max_chunks'] = '1–20';
     }
-    if (section === 'agents') {
-      if (!clamp(data.max_steps, 1, 100)) errs['agents.max_steps'] = '1–100';
-      if (!clamp(data.max_tool_calls, 0, 50)) errs['agents.max_tool_calls'] = '0–50';
-      if (!clamp(data.max_runtime_seconds, 1, 3600)) errs['agents.max_runtime_seconds'] = '1–3600 s';
-    }
-    if (section === 'collaboration') {
-      if (!clamp(data.max_agents, 1, 10)) errs['collaboration.max_agents'] = '1–10';
-      if (!clamp(data.revision_cycles, 0, 10)) errs['collaboration.revision_cycles'] = '0–10';
-    }
-    if (section === 'governance') {
-      if (!clamp(data.approval_expiry_minutes, 1, 1440)) errs['governance.approval_expiry_minutes'] = '1–1440 min';
-    }
     return errs;
   }
 
@@ -110,8 +98,8 @@ export function SettingsPage() {
     <div className="page" data-testid="settings-page">
       <h1 className="page__title">Einstellungen</h1>
 
-      {/* Provider */}
-      <SettingsSection title="Provider" isDirty={dirty.provider} isSaving={saving.provider}
+      {/* KI Provider */}
+      <SettingsSection title="KI Provider" isDirty={dirty.provider} isSaving={saving.provider}
         onSave={() => save('provider')} saveError={errors['provider._save']} requiresRestart={false}>
         <div className="settings-grid">
           {field('provider', 'model', 'text')}
@@ -119,7 +107,6 @@ export function SettingsPage() {
           {field('provider', 'timeout_seconds', 'number', { min: 1, max: 300 })}
           {field('provider', 'max_retries', 'number', { min: 0, max: 5 })}
         </div>
-        {/* API-Key: Secret – nie im Klartext anzeigen */}
         <div className="settings-field">
           <label className="settings-field__label">api_key</label>
           <SecretInput
@@ -135,31 +122,8 @@ export function SettingsPage() {
         </div>
       </SettingsSection>
 
-      {/* Voice */}
-      <SettingsSection title="Voice" isDirty={dirty.voice} isSaving={saving.voice}
-        onSave={() => save('voice')} saveError={errors['voice._save']} requiresRestart={false}>
-        {toggle('voice', 'enabled', 'Voice aktiviert')}
-        {field('voice', 'provider', 'text')}
-        {field('voice', 'language', 'text')}
-      </SettingsSection>
-
-      {/* Security */}
-      <SettingsSection title="Security" isDirty={dirty.security} isSaving={saving.security}
-        onSave={() => save('security')} saveError={errors['security._save']} requiresRestart={true}>
-        {toggle('security', 'require_approval_for_high', 'Approval für HIGH-Aktionen')}
-        {toggle('security', 'block_critical_by_default', 'CRITICAL-Aktionen blockieren')}
-        {toggle('security', 'audit_all_actions', 'Alle Aktionen auditieren')}
-      </SettingsSection>
-
-      {/* Governance */}
-      <SettingsSection title="Governance" isDirty={dirty.governance} isSaving={saving.governance}
-        onSave={() => save('governance')} saveError={errors['governance._save']} requiresRestart={false}>
-        {field('governance', 'approval_expiry_minutes', 'number', { min: 1, max: 1440 })}
-        {toggle('governance', 'require_two_approvers', 'Zwei Genehmiger erforderlich')}
-      </SettingsSection>
-
-      {/* RAG */}
-      <SettingsSection title="RAG" isDirty={dirty.rag} isSaving={saving.rag}
+      {/* Import / Sucheinstellungen */}
+      <SettingsSection title="Import / Sucheinstellungen" isDirty={dirty.rag} isSaving={saving.rag}
         onSave={() => save('rag')} saveError={errors['rag._save']} requiresRestart={false}>
         {field('rag', 'chunk_size', 'number', { min: 100, max: 2000 })}
         {field('rag', 'chunk_overlap', 'number', { min: 0 })}
@@ -167,31 +131,8 @@ export function SettingsPage() {
         {field('rag', 'max_chunks', 'number', { min: 1, max: 20 })}
       </SettingsSection>
 
-      {/* Memory */}
-      <SettingsSection title="Memory" isDirty={dirty.memory} isSaving={saving.memory}
-        onSave={() => save('memory')} saveError={errors['memory._save']} requiresRestart={false}>
-        {field('memory', 'max_entries', 'number')}
-        {field('memory', 'decay_rate', 'number', { min: 0, max: 1, step: 0.01 })}
-        {toggle('memory', 'auto_review', 'Automatische Review-Queue')}
-      </SettingsSection>
-
-      {/* Agents */}
-      <SettingsSection title="Agents" isDirty={dirty.agents} isSaving={saving.agents}
-        onSave={() => save('agents')} saveError={errors['agents._save']} requiresRestart={false}>
-        {field('agents', 'max_steps', 'number', { min: 1, max: 100 })}
-        {field('agents', 'max_tool_calls', 'number', { min: 0, max: 50 })}
-        {field('agents', 'max_runtime_seconds', 'number', { min: 1, max: 3600 })}
-      </SettingsSection>
-
-      {/* Collaboration */}
-      <SettingsSection title="Collaboration" isDirty={dirty.collaboration} isSaving={saving.collaboration}
-        onSave={() => save('collaboration')} saveError={errors['collaboration._save']} requiresRestart={false}>
-        {field('collaboration', 'max_agents', 'number', { min: 1, max: 10 })}
-        {field('collaboration', 'revision_cycles', 'number', { min: 0, max: 10 })}
-      </SettingsSection>
-
-      {/* UI */}
-      <SettingsSection title="UI" isDirty={dirty.ui} isSaving={saving.ui}
+      {/* Benutzerprofil / Darstellung */}
+      <SettingsSection title="Benutzerprofil / Darstellung" isDirty={dirty.ui} isSaving={saving.ui}
         onSave={() => save('ui')} saveError={errors['ui._save']} requiresRestart={false}>
         {toggle('ui', 'dark_mode', 'Dark Mode')}
         {toggle('ui', 'compact_view', 'Kompaktansicht')}

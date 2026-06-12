@@ -1,0 +1,95 @@
+{
+  "report_id": "drift_observability_report",
+  "generated_at": "2026-06-12T05:58:53.031834+00:00",
+  "status": "PASS",
+  "implementation_file": "backend/app/observability/drift_metrics.py",
+  "test_file": "backend/tests/test_m5b_drift_observability.py",
+  "tests_total": 21,
+  "tests_passed": 21,
+  "tests_failed": 0,
+  "metrics_implemented": [
+    {
+      "name": "drift_run_started",
+      "type": "counter",
+      "when": "Beginn jedes Drift Runs",
+      "log_level": "info"
+    },
+    {
+      "name": "drift_run_completed",
+      "type": "counter",
+      "when": "Erfolgreicher Abschluss eines Drift Runs",
+      "log_level": "info"
+    },
+    {
+      "name": "drift_run_failed",
+      "type": "counter",
+      "when": "Fehlerhafter Abschluss eines Drift Runs",
+      "log_level": "warning"
+    },
+    {
+      "name": "findings_count",
+      "type": "gauge",
+      "when": "Im completed-Event: Anzahl aller Findings",
+      "log_level": "info"
+    },
+    {
+      "name": "critical_findings_count",
+      "type": "gauge",
+      "when": "Im completed-Event: Anzahl Critical-Severity-Findings",
+      "log_level": "info"
+    },
+    {
+      "name": "drift_run_duration_ms",
+      "type": "histogram",
+      "when": "Im completed-Event: Laufzeit in Millisekunden",
+      "log_level": "info"
+    }
+  ],
+  "log_fields": {
+    "always_present": [
+      "correlation_id",
+      "workspace_id",
+      "drift_run_id",
+      "event",
+      "status"
+    ],
+    "completed_only": [
+      "duration_ms",
+      "findings_count",
+      "critical_findings_count"
+    ],
+    "failed_only": [
+      "error_code",
+      "duration_ms"
+    ]
+  },
+  "privacy_constraints": {
+    "no_document_content": "VERIFIED \u2014 _safe_payload allowlist schlie\u00dft content/chunk_text/text aus",
+    "no_credentials": "VERIFIED \u2014 token/password/api_key/secret nicht in safe_fields",
+    "safe_fields_allowlist": [
+      "correlation_id",
+      "workspace_id",
+      "drift_run_id",
+      "status",
+      "duration_ms",
+      "findings_count",
+      "critical_findings_count",
+      "error_code",
+      "detector_names"
+    ]
+  },
+  "context_manager": {
+    "name": "drift_run_span",
+    "auto_emits": [
+      "drift_run_started on enter",
+      "drift_run_failed on unhandled exception"
+    ],
+    "caller_responsibility": "record_drift_run_completed mit findings_count + critical_findings_count"
+  },
+  "registry": "app.observability.logging.MetricsRegistry \u2014 thread-safe in-process counter",
+  "constraints": {
+    "repair_actions": "PROHIBITED",
+    "cleanup_actions": "PROHIBITED",
+    "auto_reindex_actions": "PROHIBITED"
+  }
+}

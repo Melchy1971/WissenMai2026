@@ -3,7 +3,7 @@
   "report_name": "report_integrity_v2",
   "gate": "report_integrity_v2",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-10T08:20:21.778522+00:00",
+  "timestamp": "2026-06-11T07:48:12.540356+00:00",
   "environment": "local",
   "report_type": "gate",
   "status": "BLOCKED",
@@ -57,14 +57,12 @@
     {
       "file": "reports/current/m5a_start_gate.json",
       "category": "required",
-      "validation_status": "BLOCKED",
+      "validation_status": "PASS",
       "status": "PASS",
       "result": "PASS",
-      "timestamp": "2026-06-01T08:41:13.099732+00:00",
+      "timestamp": "2026-06-11T07:05:19.054428+00:00",
       "referenced_by_parent_gate": true,
-      "issues": [
-        "report is older than 168 hours"
-      ]
+      "issues": []
     },
     {
       "file": "reports/current/report_integrity_v2.json",
@@ -78,57 +76,49 @@
       "validation_status": "PASS",
       "status": "PASS",
       "result": "PASS",
-      "timestamp": "2026-06-03T09:36:32.001820+00:00",
+      "timestamp": "2026-06-10T17:00:00.000000+00:00",
       "referenced_by_parent_gate": true,
       "issues": []
     },
     {
       "file": "reports/current/data_quality_report.json",
       "category": "required",
-      "validation_status": "BLOCKED",
+      "validation_status": "PASS",
       "status": "completed",
       "result": null,
-      "timestamp": "2026-06-02T11:58:41.996000+00:00",
+      "timestamp": "2026-06-11T07:05:28.271093+00:00",
       "referenced_by_parent_gate": true,
-      "issues": [
-        "report is older than 168 hours"
-      ]
+      "issues": []
     },
     {
       "file": "reports/current/m5a_duplicate_detector_gate.json",
       "category": "required",
-      "validation_status": "BLOCKED",
+      "validation_status": "PASS",
       "status": "PASS",
       "result": "PASS",
-      "timestamp": "2026-06-01T09:28:52.011721+00:00",
+      "timestamp": "2026-06-11T07:05:28.271093+00:00",
       "referenced_by_parent_gate": true,
-      "issues": [
-        "report is older than 168 hours"
-      ]
+      "issues": []
     },
     {
       "file": "reports/current/m5a_metadata_detector_gate.json",
       "category": "required",
-      "validation_status": "BLOCKED",
+      "validation_status": "PASS",
       "status": "PASS",
       "result": "PASS",
-      "timestamp": "2026-06-01T09:44:30.450456+00:00",
+      "timestamp": "2026-06-11T07:05:28.271093+00:00",
       "referenced_by_parent_gate": true,
-      "issues": [
-        "report is older than 168 hours"
-      ]
+      "issues": []
     },
     {
       "file": "reports/current/m5a_lifecycle_integrity_gate.json",
       "category": "required",
-      "validation_status": "BLOCKED",
+      "validation_status": "PASS",
       "status": "PASS",
       "result": "PASS",
-      "timestamp": "2026-06-01T12:01:58.267848+00:00",
+      "timestamp": "2026-06-11T07:35:21.560517+00:00",
       "referenced_by_parent_gate": true,
-      "issues": [
-        "report is older than 168 hours"
-      ]
+      "issues": []
     },
     {
       "file": "reports/current/m5a_source_status_integrity_gate.json",
@@ -136,9 +126,10 @@
       "validation_status": "BLOCKED",
       "status": "BLOCKED",
       "result": "BLOCKED",
-      "timestamp": "2026-06-08T07:20:00Z",
+      "timestamp": "2026-06-11T07:39:14Z",
       "referenced_by_parent_gate": true,
       "issues": [
+        "unknown_field: unknown field for gate_report: testlog_evidence",
         "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
         "decision.go_no_go must be GO",
         "collected must be > 0",
@@ -153,9 +144,10 @@
       "validation_status": "BLOCKED",
       "status": "BLOCKED",
       "result": "BLOCKED",
-      "timestamp": "2026-06-08T07:23:00Z",
+      "timestamp": "2026-06-11T07:39:14Z",
       "referenced_by_parent_gate": true,
       "issues": [
+        "unknown_field: unknown field for gate_report: testlog_evidence",
         "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
         "decision.go_no_go must be GO",
         "collected must be > 0",
@@ -170,7 +162,7 @@
       "validation_status": "PASS",
       "status": "blocked",
       "result": "blocked",
-      "timestamp": "2026-06-08T10:07:06.754746+00:00",
+      "timestamp": "2026-06-11T07:37:23.024576+00:00",
       "referenced_by_parent_gate": true,
       "issues": []
     },
@@ -180,7 +172,7 @@
       "validation_status": "BLOCKED",
       "status": "BLOCKED",
       "result": "BLOCKED",
-      "timestamp": "2026-06-08T10:07:06.681525+00:00",
+      "timestamp": "2026-06-11T07:47:03.488309+00:00",
       "referenced_by_parent_gate": true,
       "issues": [
         "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
@@ -193,20 +185,7 @@
     {
       "file": "reports/current/m5a_final_readiness_review.json",
       "category": "supporting",
-      "validation_status": "BLOCKED",
-      "status": "BLOCKED",
-      "result": "BLOCKED",
-      "timestamp": "2026-06-09T13:29:27.4224508Z",
-      "referenced_by_parent_gate": true,
-      "issues": [
-        "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
-        "decision.go_no_go must be GO",
-        "collected must be > 0",
-        "failed must be 0",
-        "errors must be 0",
-        "skipped must be 0",
-        "exit_code must be 0"
-      ]
+      "validation_status": "INVALID"
     },
     {
       "file": "reports/current/known_limitations.json",
@@ -214,7 +193,7 @@
       "validation_status": "PASS",
       "status": "INFO",
       "result": "INFO",
-      "timestamp": "2026-06-10T08:07:10.7933508Z",
+      "timestamp": "2026-06-10T08:07:10.793350Z",
       "referenced_by_parent_gate": true,
       "issues": []
     },
@@ -231,12 +210,15 @@
     {
       "file": "reports/current/archive_log.json",
       "category": "optional",
-      "validation_status": "PASS",
+      "validation_status": "WARNING",
       "status": "INFO",
       "result": "INFO",
       "timestamp": "2026-06-05T11:06:43.8487735+02:00",
       "referenced_by_parent_gate": false,
-      "issues": []
+      "issues": [
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable"
+      ]
     },
     {
       "file": "reports/current/cleanup_log.json",
@@ -251,12 +233,15 @@
     {
       "file": "reports/current/normalized_reports_log.json",
       "category": "optional",
-      "validation_status": "PASS",
+      "validation_status": "WARNING",
       "status": "INFO",
       "result": "INFO",
       "timestamp": "2026-06-05T10:59:41.4598877+02:00",
       "referenced_by_parent_gate": false,
-      "issues": []
+      "issues": [
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable"
+      ]
     },
     {
       "file": "reports/current/operations_selftest_report.json",
@@ -267,7 +252,8 @@
       "timestamp": "2026-06-01T13:24:21.7728634+02:00",
       "referenced_by_parent_gate": false,
       "issues": [
-        "report is older than 168 hours",
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable",
         "status/result contains blocking value ['BLOCKED']",
         "passed must equal collected",
         "failed must be 0",
@@ -293,7 +279,8 @@
       "timestamp": "2026-06-01T06:57:38.5227218Z",
       "referenced_by_parent_gate": false,
       "issues": [
-        "report is older than 168 hours",
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable",
         "status/result contains blocking value ['FAIL']",
         "passed must equal collected",
         "failed must be 0",
@@ -357,7 +344,9 @@
         "unknown_field: unknown field for gate_report: limitation_id",
         "unknown_field: unknown field for gate_report: original_classification",
         "unknown_field: unknown field for gate_report: scope_checks",
-        "unknown_field: unknown field for gate_report: validation"
+        "unknown_field: unknown field for gate_report: validation",
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable"
       ]
     },
     {
@@ -369,7 +358,8 @@
       "timestamp": "2026-06-10T07:58:39.3783333Z",
       "referenced_by_parent_gate": false,
       "issues": [
-        "schema_match_failed: report payload does not match a registered schema"
+        "schema_match_failed: report payload does not match a registered schema",
+        "timestamp/generated_at missing or not machine-readable"
       ]
     },
     {
@@ -381,7 +371,8 @@
       "timestamp": "2026-06-10T08:02:27.6254436Z",
       "referenced_by_parent_gate": false,
       "issues": [
-        "schema_match_failed: report payload does not match a registered schema"
+        "schema_match_failed: report payload does not match a registered schema",
+        "timestamp/generated_at missing or not machine-readable"
       ]
     },
     {
@@ -394,7 +385,9 @@
       "referenced_by_parent_gate": false,
       "issues": [
         "unknown_field: unknown field for supporting_report: reclassifications",
-        "unknown_field: unknown field for supporting_report: rule"
+        "unknown_field: unknown field for supporting_report: rule",
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable"
       ]
     },
     {
@@ -418,7 +411,7 @@
       "validation_status": "PASS",
       "status": "PASS",
       "result": "PASS",
-      "timestamp": "2026-06-05T10:06:18.467008+00:00",
+      "timestamp": "2026-06-11T07:05:11.297723+00:00",
       "referenced_by_parent_gate": false,
       "issues": []
     },
@@ -455,7 +448,8 @@
       "timestamp": "2026-05-27T07:36:04.6432941Z",
       "referenced_by_parent_gate": false,
       "issues": [
-        "report is older than 168 hours"
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable"
       ]
     },
     {
@@ -515,7 +509,8 @@
       "timestamp": "2026-05-27T08:19:59.0210907Z",
       "referenced_by_parent_gate": false,
       "issues": [
-        "report is older than 168 hours"
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable"
       ]
     },
     {
@@ -609,7 +604,8 @@
       "timestamp": "2026-06-01T12:01:47.8519999Z",
       "referenced_by_parent_gate": false,
       "issues": [
-        "report is older than 168 hours"
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable"
       ]
     },
     {
@@ -635,6 +631,8 @@
         "unknown_field: unknown field for supporting_report: non_blocking_positive_evidence",
         "unknown_field: unknown field for supporting_report: prioritized_fix_list",
         "unknown_field: unknown field for supporting_report: root_causes",
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable",
         "status/result contains blocking value ['BLOCKED']"
       ]
     },
@@ -649,7 +647,9 @@
       "issues": [
         "unknown_field: unknown field for supporting_report: recommendations",
         "unknown_field: unknown field for supporting_report: regression_areas",
-        "unknown_field: unknown field for supporting_report: suite_integrity"
+        "unknown_field: unknown field for supporting_report: suite_integrity",
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable"
       ]
     },
     {
@@ -664,6 +664,99 @@
         "report is older than 168 hours",
         "status/result contains blocking value ['FAIL']"
       ]
+    },
+    {
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "category": "optional",
+      "validation_status": "WARNING",
+      "status": null,
+      "result": null,
+      "timestamp": "2026-06-10T15:00:00Z",
+      "referenced_by_parent_gate": false,
+      "issues": [
+        "missing_field: missing required field: timestamp",
+        "missing_field: missing required field: status",
+        "unknown_field: unknown field for diagnostic_report: gate_authority",
+        "unknown_field: unknown field for diagnostic_report: gate_violation_check",
+        "unknown_field: unknown field for diagnostic_report: path_to_alpha_go",
+        "unknown_field: unknown field for diagnostic_report: precondition_check"
+      ]
+    },
+    {
+      "file": "reports/current/m5b_architecture_review.json",
+      "category": "optional",
+      "validation_status": "WARNING",
+      "status": "COMPLETE",
+      "result": null,
+      "timestamp": "2026-06-10T14:00:00Z",
+      "referenced_by_parent_gate": false,
+      "issues": [
+        "unknown_field: unknown field for supporting_report: artifacts",
+        "unknown_field: unknown field for supporting_report: cross_cutting_risks",
+        "unknown_field: unknown field for supporting_report: gate_authority",
+        "unknown_field: unknown field for supporting_report: implementation_gate",
+        "unknown_field: unknown field for supporting_report: open_decisions",
+        "unknown_field: unknown field for supporting_report: review_scope",
+        "unknown_field: unknown field for supporting_report: review_score",
+        "invalid_status: status must be one of ['BLOCKED', 'COMPLETED', 'FAIL', 'INFO', 'PASS', 'WARN']"
+      ]
+    },
+    {
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "category": "optional",
+      "validation_status": "WARNING",
+      "status": null,
+      "result": null,
+      "timestamp": "2026-06-10T15:00:00Z",
+      "referenced_by_parent_gate": false,
+      "issues": [
+        "missing_field: missing required field: timestamp",
+        "missing_field: missing required field: status",
+        "missing_field: missing required field: gate",
+        "missing_field: missing required field: collected",
+        "missing_field: missing required field: passed",
+        "missing_field: missing required field: failed",
+        "missing_field: missing required field: errors",
+        "missing_field: missing required field: skipped",
+        "missing_field: missing required field: exit_code",
+        "unknown_field: unknown field for gate_report: boundary_rule",
+        "unknown_field: unknown field for gate_report: gate_authority",
+        "unknown_field: unknown field for gate_report: path_to_beta_go"
+      ]
+    },
+    {
+      "file": "reports/current/m5b_gate_criteria.json",
+      "category": "optional",
+      "validation_status": "INVALID"
+    },
+    {
+      "file": "reports/current/m5b_implementation_gate.json",
+      "category": "optional",
+      "validation_status": "WARNING",
+      "status": null,
+      "result": null,
+      "timestamp": "2026-06-10T00:00:00Z",
+      "referenced_by_parent_gate": false,
+      "issues": [
+        "missing_field: missing required field: timestamp",
+        "missing_field: missing required field: status",
+        "missing_field: missing required field: gate",
+        "missing_field: missing required field: collected",
+        "missing_field: missing required field: passed",
+        "missing_field: missing required field: failed",
+        "missing_field: missing required field: errors",
+        "missing_field: missing required field: skipped",
+        "missing_field: missing required field: exit_code",
+        "unknown_field: unknown field for gate_report: boundary_rule",
+        "unknown_field: unknown field for gate_report: gate_authority",
+        "unknown_field: unknown field for gate_report: not_allowed_until_go",
+        "unknown_field: unknown field for gate_report: path_to_go"
+      ]
+    },
+    {
+      "file": "reports/current/m5b_preparation_gate.json",
+      "category": "optional",
+      "validation_status": "INVALID"
     },
     {
       "file": "reports/current/m5b_release_decision.json",
@@ -683,6 +776,8 @@
         "unknown_field: unknown field for gate_report: allowed_next_actions",
         "unknown_field: unknown field for gate_report: decision_trace",
         "unknown_field: unknown field for gate_report: not_allowed",
+        "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+        "timestamp/generated_at missing or not machine-readable",
         "status/result contains blocking value ['BLOCKED']"
       ]
     },
@@ -741,6 +836,18 @@
       ]
     },
     {
+      "file": "reports/current/report_integrity_cleanup_plan.json",
+      "category": "optional",
+      "validation_status": "WARNING",
+      "status": null,
+      "result": null,
+      "timestamp": "2026-06-11T07:20:14.673759+00:00",
+      "referenced_by_parent_gate": false,
+      "issues": [
+        "schema_match_failed: report payload does not match a registered schema"
+      ]
+    },
+    {
       "file": "reports/current/report_truth_preflight.json",
       "category": "optional",
       "validation_status": "WARNING",
@@ -777,12 +884,14 @@
     {
       "file": "reports/current/runtime_connectivity_report.json",
       "category": "optional",
-      "validation_status": "PASS",
+      "validation_status": "WARNING",
       "status": "PASS",
       "result": "PASS",
       "timestamp": "2026-06-03T09:35:24.440Z",
       "referenced_by_parent_gate": false,
-      "issues": []
+      "issues": [
+        "report is older than 168 hours"
+      ]
     },
     {
       "file": "reports/current/status_engine_v2.json",
@@ -816,63 +925,13 @@
   ],
   "blockers": [
     {
-      "id": "required_report_validation_m5a_start_gate_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/m5a_start_gate.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/m5a_start_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_data_quality_report_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/data_quality_report.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/data_quality_report.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_m5a_duplicate_detector_gate_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/m5a_duplicate_detector_gate.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/m5a_duplicate_detector_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_m5a_metadata_detector_gate_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/m5a_metadata_detector_gate.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/m5a_metadata_detector_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_m5a_lifecycle_integrity_gate_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/m5a_lifecycle_integrity_gate.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/m5a_lifecycle_integrity_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
       "id": "required_report_validation_m5a_source_status_integrity_gate_invalid_1",
       "category": "required",
       "check": "report_validation",
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_1",
       "severity": "blocking",
-      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
+      "detail": "unknown_field: unknown field for gate_report: testlog_evidence",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -882,7 +941,7 @@
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_2",
       "severity": "blocking",
-      "detail": "decision.go_no_go must be GO",
+      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -892,7 +951,7 @@
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_3",
       "severity": "blocking",
-      "detail": "collected must be > 0",
+      "detail": "decision.go_no_go must be GO",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -902,7 +961,7 @@
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_4",
       "severity": "blocking",
-      "detail": "errors must be 0",
+      "detail": "collected must be > 0",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -912,7 +971,7 @@
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_5",
       "severity": "blocking",
-      "detail": "exit_code must be 0",
+      "detail": "errors must be 0",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -921,6 +980,16 @@
       "check": "report_validation",
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_6",
+      "severity": "blocking",
+      "detail": "exit_code must be 0",
+      "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "required_report_validation_m5a_source_status_integrity_gate_invalid_7",
+      "category": "required",
+      "check": "report_validation",
+      "file": "reports/current/m5a_source_status_integrity_gate.json",
+      "code": "invalid_7",
       "severity": "blocking",
       "detail": "blockers must be empty",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
@@ -932,7 +1001,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_1",
       "severity": "blocking",
-      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
+      "detail": "unknown_field: unknown field for gate_report: testlog_evidence",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -942,7 +1011,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_2",
       "severity": "blocking",
-      "detail": "decision.go_no_go must be GO",
+      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -952,7 +1021,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_3",
       "severity": "blocking",
-      "detail": "collected must be > 0",
+      "detail": "decision.go_no_go must be GO",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -962,7 +1031,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_4",
       "severity": "blocking",
-      "detail": "errors must be 0",
+      "detail": "collected must be > 0",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -972,7 +1041,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_5",
       "severity": "blocking",
-      "detail": "exit_code must be 0",
+      "detail": "errors must be 0",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -981,6 +1050,16 @@
       "check": "report_validation",
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_6",
+      "severity": "blocking",
+      "detail": "exit_code must be 0",
+      "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "required_report_validation_m5a_orphan_detector_gate_invalid_7",
+      "category": "required",
+      "check": "report_validation",
+      "file": "reports/current/m5a_orphan_detector_gate.json",
+      "code": "invalid_7",
       "severity": "blocking",
       "detail": "blockers must be empty",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
@@ -1036,135 +1115,25 @@
       "repair_action": "Regenerate reports/current/m5a_data_quality_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_1",
+      "id": "supporting_presence_json_m5a_final_readiness_review_missing_or_invalid_json",
       "category": "supporting",
-      "check": "report_validation",
+      "check": "presence_json",
       "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_1",
+      "code": "missing_or_invalid_json",
       "severity": "blocking",
-      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_2",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_2",
-      "severity": "blocking",
-      "detail": "decision.go_no_go must be GO",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_3",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_3",
-      "severity": "blocking",
-      "detail": "collected must be > 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_4",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_4",
-      "severity": "blocking",
-      "detail": "failed must be 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_5",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_5",
-      "severity": "blocking",
-      "detail": "errors must be 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_6",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_6",
-      "severity": "blocking",
-      "detail": "skipped must be 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_7",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_7",
-      "severity": "blocking",
-      "detail": "exit_code must be 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
+      "detail": "invalid JSON: Expecting value: line 127 column 1 (char 5301)",
+      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json or archive it if it is no longer in scope."
     }
   ],
   "blocker_details": [
     {
-      "id": "required_report_validation_m5a_start_gate_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/m5a_start_gate.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/m5a_start_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_data_quality_report_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/data_quality_report.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/data_quality_report.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_m5a_duplicate_detector_gate_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/m5a_duplicate_detector_gate.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/m5a_duplicate_detector_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_m5a_metadata_detector_gate_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/m5a_metadata_detector_gate.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/m5a_metadata_detector_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_m5a_lifecycle_integrity_gate_invalid_1",
-      "category": "required",
-      "check": "report_validation",
-      "file": "reports/current/m5a_lifecycle_integrity_gate.json",
-      "code": "invalid_1",
-      "severity": "blocking",
-      "detail": "report is older than 168 hours",
-      "repair_action": "Regenerate reports/current/m5a_lifecycle_integrity_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
       "id": "required_report_validation_m5a_source_status_integrity_gate_invalid_1",
       "category": "required",
       "check": "report_validation",
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_1",
       "severity": "blocking",
-      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
+      "detail": "unknown_field: unknown field for gate_report: testlog_evidence",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1174,7 +1143,7 @@
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_2",
       "severity": "blocking",
-      "detail": "decision.go_no_go must be GO",
+      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1184,7 +1153,7 @@
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_3",
       "severity": "blocking",
-      "detail": "collected must be > 0",
+      "detail": "decision.go_no_go must be GO",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1194,7 +1163,7 @@
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_4",
       "severity": "blocking",
-      "detail": "errors must be 0",
+      "detail": "collected must be > 0",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1204,7 +1173,7 @@
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_5",
       "severity": "blocking",
-      "detail": "exit_code must be 0",
+      "detail": "errors must be 0",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1213,6 +1182,16 @@
       "check": "report_validation",
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "code": "invalid_6",
+      "severity": "blocking",
+      "detail": "exit_code must be 0",
+      "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "required_report_validation_m5a_source_status_integrity_gate_invalid_7",
+      "category": "required",
+      "check": "report_validation",
+      "file": "reports/current/m5a_source_status_integrity_gate.json",
+      "code": "invalid_7",
       "severity": "blocking",
       "detail": "blockers must be empty",
       "repair_action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
@@ -1224,7 +1203,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_1",
       "severity": "blocking",
-      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
+      "detail": "unknown_field: unknown field for gate_report: testlog_evidence",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1234,7 +1213,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_2",
       "severity": "blocking",
-      "detail": "decision.go_no_go must be GO",
+      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1244,7 +1223,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_3",
       "severity": "blocking",
-      "detail": "collected must be > 0",
+      "detail": "decision.go_no_go must be GO",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1254,7 +1233,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_4",
       "severity": "blocking",
-      "detail": "errors must be 0",
+      "detail": "collected must be > 0",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1264,7 +1243,7 @@
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_5",
       "severity": "blocking",
-      "detail": "exit_code must be 0",
+      "detail": "errors must be 0",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1273,6 +1252,16 @@
       "check": "report_validation",
       "file": "reports/current/m5a_orphan_detector_gate.json",
       "code": "invalid_6",
+      "severity": "blocking",
+      "detail": "exit_code must be 0",
+      "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "required_report_validation_m5a_orphan_detector_gate_invalid_7",
+      "category": "required",
+      "check": "report_validation",
+      "file": "reports/current/m5a_orphan_detector_gate.json",
+      "code": "invalid_7",
       "severity": "blocking",
       "detail": "blockers must be empty",
       "repair_action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
@@ -1328,77 +1317,57 @@
       "repair_action": "Regenerate reports/current/m5a_data_quality_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_1",
+      "id": "supporting_presence_json_m5a_final_readiness_review_missing_or_invalid_json",
       "category": "supporting",
-      "check": "report_validation",
+      "check": "presence_json",
       "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_1",
+      "code": "missing_or_invalid_json",
       "severity": "blocking",
-      "detail": "status/result must be one of ['PASS'], got ['BLOCKED', 'NO_GO']",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_2",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_2",
-      "severity": "blocking",
-      "detail": "decision.go_no_go must be GO",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_3",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_3",
-      "severity": "blocking",
-      "detail": "collected must be > 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_4",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_4",
-      "severity": "blocking",
-      "detail": "failed must be 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_5",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_5",
-      "severity": "blocking",
-      "detail": "errors must be 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_6",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_6",
-      "severity": "blocking",
-      "detail": "skipped must be 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_7",
-      "category": "supporting",
-      "check": "report_validation",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "code": "invalid_7",
-      "severity": "blocking",
-      "detail": "exit_code must be 0",
-      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
+      "detail": "invalid JSON: Expecting value: line 127 column 1 (char 5301)",
+      "repair_action": "Regenerate reports/current/m5a_final_readiness_review.json or archive it if it is no longer in scope."
     }
   ],
   "warnings": [
+    {
+      "id": "optional_report_validation_archive_log_invalid_1",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/archive_log.json",
+      "code": "invalid_1",
+      "severity": "warning",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/archive_log.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_archive_log_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/archive_log.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
+      "repair_action": "Regenerate reports/current/archive_log.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_normalized_reports_log_invalid_1",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/normalized_reports_log.json",
+      "code": "invalid_1",
+      "severity": "warning",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/normalized_reports_log.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_normalized_reports_log_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/normalized_reports_log.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
+      "repair_action": "Regenerate reports/current/normalized_reports_log.json with fresh, schema-valid evidence for its required set category."
+    },
     {
       "id": "optional_report_validation_operations_selftest_report_invalid_1",
       "category": "optional",
@@ -1406,7 +1375,7 @@
       "file": "reports/current/operations_selftest_report.json",
       "code": "invalid_1",
       "severity": "warning",
-      "detail": "report is older than 168 hours",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
       "repair_action": "Regenerate reports/current/operations_selftest_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1416,7 +1385,7 @@
       "file": "reports/current/operations_selftest_report.json",
       "code": "invalid_2",
       "severity": "warning",
-      "detail": "status/result contains blocking value ['BLOCKED']",
+      "detail": "timestamp/generated_at missing or not machine-readable",
       "repair_action": "Regenerate reports/current/operations_selftest_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1426,7 +1395,7 @@
       "file": "reports/current/operations_selftest_report.json",
       "code": "invalid_3",
       "severity": "warning",
-      "detail": "passed must equal collected",
+      "detail": "status/result contains blocking value ['BLOCKED']",
       "repair_action": "Regenerate reports/current/operations_selftest_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1436,7 +1405,7 @@
       "file": "reports/current/operations_selftest_report.json",
       "code": "invalid_4",
       "severity": "warning",
-      "detail": "failed must be 0",
+      "detail": "passed must equal collected",
       "repair_action": "Regenerate reports/current/operations_selftest_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1445,6 +1414,16 @@
       "check": "report_validation",
       "file": "reports/current/operations_selftest_report.json",
       "code": "invalid_5",
+      "severity": "warning",
+      "detail": "failed must be 0",
+      "repair_action": "Regenerate reports/current/operations_selftest_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_operations_selftest_report_invalid_6",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/operations_selftest_report.json",
+      "code": "invalid_6",
       "severity": "warning",
       "detail": "exit_code must be 0",
       "repair_action": "Regenerate reports/current/operations_selftest_report.json with fresh, schema-valid evidence for its required set category."
@@ -1456,7 +1435,7 @@
       "file": "reports/current/final_status_report.json",
       "code": "invalid_1",
       "severity": "warning",
-      "detail": "report is older than 168 hours",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
       "repair_action": "Regenerate reports/current/final_status_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1466,7 +1445,7 @@
       "file": "reports/current/final_status_report.json",
       "code": "invalid_2",
       "severity": "warning",
-      "detail": "status/result contains blocking value ['FAIL']",
+      "detail": "timestamp/generated_at missing or not machine-readable",
       "repair_action": "Regenerate reports/current/final_status_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1476,7 +1455,7 @@
       "file": "reports/current/final_status_report.json",
       "code": "invalid_3",
       "severity": "warning",
-      "detail": "passed must equal collected",
+      "detail": "status/result contains blocking value ['FAIL']",
       "repair_action": "Regenerate reports/current/final_status_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1486,7 +1465,7 @@
       "file": "reports/current/final_status_report.json",
       "code": "invalid_4",
       "severity": "warning",
-      "detail": "failed must be 0",
+      "detail": "passed must equal collected",
       "repair_action": "Regenerate reports/current/final_status_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1495,6 +1474,16 @@
       "check": "report_validation",
       "file": "reports/current/final_status_report.json",
       "code": "invalid_5",
+      "severity": "warning",
+      "detail": "failed must be 0",
+      "repair_action": "Regenerate reports/current/final_status_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_final_status_report_invalid_6",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/final_status_report.json",
+      "code": "invalid_6",
       "severity": "warning",
       "detail": "exit_code must be 0",
       "repair_action": "Regenerate reports/current/final_status_report.json with fresh, schema-valid evidence for its required set category."
@@ -1680,6 +1669,26 @@
       "repair_action": "Regenerate reports/current/kl_gov_001_scope_decision.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_kl_gov_001_scope_decision_invalid_14",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/kl_gov_001_scope_decision.json",
+      "code": "invalid_14",
+      "severity": "warning",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/kl_gov_001_scope_decision.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_kl_gov_001_scope_decision_invalid_15",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/kl_gov_001_scope_decision.json",
+      "code": "invalid_15",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
+      "repair_action": "Regenerate reports/current/kl_gov_001_scope_decision.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_kl_m5_t_001_decision_log_invalid_1",
       "category": "optional",
       "check": "report_validation",
@@ -1690,6 +1699,16 @@
       "repair_action": "Regenerate reports/current/kl_m5_t_001_decision_log.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_kl_m5_t_001_decision_log_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/kl_m5_t_001_decision_log.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
+      "repair_action": "Regenerate reports/current/kl_m5_t_001_decision_log.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_kl_m5_t_002_decision_log_invalid_1",
       "category": "optional",
       "check": "report_validation",
@@ -1697,6 +1716,16 @@
       "code": "invalid_1",
       "severity": "warning",
       "detail": "schema_match_failed: report payload does not match a registered schema",
+      "repair_action": "Regenerate reports/current/kl_m5_t_002_decision_log.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_kl_m5_t_002_decision_log_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/kl_m5_t_002_decision_log.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
       "repair_action": "Regenerate reports/current/kl_m5_t_002_decision_log.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1717,6 +1746,26 @@
       "code": "invalid_2",
       "severity": "warning",
       "detail": "unknown_field: unknown field for supporting_report: rule",
+      "repair_action": "Regenerate reports/current/known_limitations_reclassification_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_known_limitations_reclassification_report_invalid_3",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/known_limitations_reclassification_report.json",
+      "code": "invalid_3",
+      "severity": "warning",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/known_limitations_reclassification_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_known_limitations_reclassification_report_invalid_4",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/known_limitations_reclassification_report.json",
+      "code": "invalid_4",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
       "repair_action": "Regenerate reports/current/known_limitations_reclassification_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1786,7 +1835,17 @@
       "file": "reports/current/m4a_auth_single_issue.json",
       "code": "invalid_1",
       "severity": "warning",
-      "detail": "report is older than 168 hours",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/m4a_auth_single_issue.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m4a_auth_single_issue_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m4a_auth_single_issue.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
       "repair_action": "Regenerate reports/current/m4a_auth_single_issue.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1836,7 +1895,17 @@
       "file": "reports/current/m4c_marker_mapping.json",
       "code": "invalid_1",
       "severity": "warning",
-      "detail": "report is older than 168 hours",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/m4c_marker_mapping.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m4c_marker_mapping_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m4c_marker_mapping.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
       "repair_action": "Regenerate reports/current/m4c_marker_mapping.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1906,7 +1975,17 @@
       "file": "reports/current/m5a_lifecycle_integrity_truth.json",
       "code": "invalid_1",
       "severity": "warning",
-      "detail": "report is older than 168 hours",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/m5a_lifecycle_integrity_truth.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5a_lifecycle_integrity_truth_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5a_lifecycle_integrity_truth.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
       "repair_action": "Regenerate reports/current/m5a_lifecycle_integrity_truth.json with fresh, schema-valid evidence for its required set category."
     },
     {
@@ -1956,6 +2035,26 @@
       "file": "reports/current/m5a_readiness_root_cause.json",
       "code": "invalid_5",
       "severity": "warning",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/m5a_readiness_root_cause.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5a_readiness_root_cause_invalid_6",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5a_readiness_root_cause.json",
+      "code": "invalid_6",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
+      "repair_action": "Regenerate reports/current/m5a_readiness_root_cause.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5a_readiness_root_cause_invalid_7",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5a_readiness_root_cause.json",
+      "code": "invalid_7",
+      "severity": "warning",
       "detail": "status/result contains blocking value ['BLOCKED']",
       "repair_action": "Regenerate reports/current/m5a_readiness_root_cause.json with fresh, schema-valid evidence for its required set category."
     },
@@ -1990,6 +2089,26 @@
       "repair_action": "Regenerate reports/current/m5a_regression_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_m5a_regression_report_invalid_4",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5a_regression_report.json",
+      "code": "invalid_4",
+      "severity": "warning",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/m5a_regression_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5a_regression_report_invalid_5",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5a_regression_report.json",
+      "code": "invalid_5",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
+      "repair_action": "Regenerate reports/current/m5a_regression_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_m5a_start_validation_report_invalid_1",
       "category": "optional",
       "check": "report_validation",
@@ -2008,6 +2127,416 @@
       "severity": "warning",
       "detail": "status/result contains blocking value ['FAIL']",
       "repair_action": "Regenerate reports/current/m5a_start_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_1",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "code": "invalid_1",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: timestamp",
+      "repair_action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: status",
+      "repair_action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_3",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "code": "invalid_3",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for diagnostic_report: gate_authority",
+      "repair_action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_4",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "code": "invalid_4",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for diagnostic_report: gate_violation_check",
+      "repair_action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_5",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "code": "invalid_5",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for diagnostic_report: path_to_alpha_go",
+      "repair_action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_6",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "code": "invalid_6",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for diagnostic_report: precondition_check",
+      "repair_action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_1",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_architecture_review.json",
+      "code": "invalid_1",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for supporting_report: artifacts",
+      "repair_action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_architecture_review.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for supporting_report: cross_cutting_risks",
+      "repair_action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_3",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_architecture_review.json",
+      "code": "invalid_3",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for supporting_report: gate_authority",
+      "repair_action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_4",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_architecture_review.json",
+      "code": "invalid_4",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for supporting_report: implementation_gate",
+      "repair_action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_5",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_architecture_review.json",
+      "code": "invalid_5",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for supporting_report: open_decisions",
+      "repair_action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_6",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_architecture_review.json",
+      "code": "invalid_6",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for supporting_report: review_scope",
+      "repair_action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_7",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_architecture_review.json",
+      "code": "invalid_7",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for supporting_report: review_score",
+      "repair_action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_8",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_architecture_review.json",
+      "code": "invalid_8",
+      "severity": "warning",
+      "detail": "invalid_status: status must be one of ['BLOCKED', 'COMPLETED', 'FAIL', 'INFO', 'PASS', 'WARN']",
+      "repair_action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_1",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_1",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: timestamp",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: status",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_3",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_3",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: gate",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_4",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_4",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: collected",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_5",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_5",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: passed",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_6",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_6",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: failed",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_7",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_7",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: errors",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_8",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_8",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: skipped",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_9",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_9",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: exit_code",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_10",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_10",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for gate_report: boundary_rule",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_11",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_11",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for gate_report: gate_authority",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_12",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "code": "invalid_12",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for gate_report: path_to_beta_go",
+      "repair_action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_presence_json_m5b_gate_criteria_missing_or_invalid_json",
+      "category": "optional",
+      "check": "presence_json",
+      "file": "reports/current/m5b_gate_criteria.json",
+      "code": "missing_or_invalid_json",
+      "severity": "warning",
+      "detail": "invalid JSON: Extra data: line 298 column 1 (char 11211)",
+      "repair_action": "Regenerate reports/current/m5b_gate_criteria.json or archive it if it is no longer in scope."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_1",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_1",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: timestamp",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_2",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_2",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: status",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_3",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_3",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: gate",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_4",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_4",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: collected",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_5",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_5",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: passed",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_6",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_6",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: failed",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_7",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_7",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: errors",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_8",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_8",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: skipped",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_9",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_9",
+      "severity": "warning",
+      "detail": "missing_field: missing required field: exit_code",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_10",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_10",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for gate_report: boundary_rule",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_11",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_11",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for gate_report: gate_authority",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_12",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_12",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for gate_report: not_allowed_until_go",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_13",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "code": "invalid_13",
+      "severity": "warning",
+      "detail": "unknown_field: unknown field for gate_report: path_to_go",
+      "repair_action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_presence_json_m5b_preparation_gate_missing_or_invalid_json",
+      "category": "optional",
+      "check": "presence_json",
+      "file": "reports/current/m5b_preparation_gate.json",
+      "code": "missing_or_invalid_json",
+      "severity": "warning",
+      "detail": "invalid JSON: Unterminated string starting at: line 206 column 24 (char 7765)",
+      "repair_action": "Regenerate reports/current/m5b_preparation_gate.json or archive it if it is no longer in scope."
     },
     {
       "id": "optional_report_validation_m5b_release_decision_invalid_1",
@@ -2105,6 +2634,26 @@
       "check": "report_validation",
       "file": "reports/current/m5b_release_decision.json",
       "code": "invalid_10",
+      "severity": "warning",
+      "detail": "invalid_timestamp: timestamp must be machine-readable ISO 8601",
+      "repair_action": "Regenerate reports/current/m5b_release_decision.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_release_decision_invalid_11",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_release_decision.json",
+      "code": "invalid_11",
+      "severity": "warning",
+      "detail": "timestamp/generated_at missing or not machine-readable",
+      "repair_action": "Regenerate reports/current/m5b_release_decision.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_release_decision_invalid_12",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/m5b_release_decision.json",
+      "code": "invalid_12",
       "severity": "warning",
       "detail": "status/result contains blocking value ['BLOCKED']",
       "repair_action": "Regenerate reports/current/m5b_release_decision.json with fresh, schema-valid evidence for its required set category."
@@ -2210,6 +2759,16 @@
       "repair_action": "Regenerate reports/current/reindex_recovery_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_report_integrity_cleanup_plan_invalid_1",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/report_integrity_cleanup_plan.json",
+      "code": "invalid_1",
+      "severity": "warning",
+      "detail": "schema_match_failed: report payload does not match a registered schema",
+      "repair_action": "Regenerate reports/current/report_integrity_cleanup_plan.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_report_truth_preflight_invalid_1",
       "category": "optional",
       "check": "report_validation",
@@ -2230,6 +2789,16 @@
       "repair_action": "Regenerate reports/current/retrieval_quality_baseline_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_runtime_connectivity_report_invalid_1",
+      "category": "optional",
+      "check": "report_validation",
+      "file": "reports/current/runtime_connectivity_report.json",
+      "code": "invalid_1",
+      "severity": "warning",
+      "detail": "report is older than 168 hours",
+      "repair_action": "Regenerate reports/current/runtime_connectivity_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_status_engine_v2_invalid_1",
       "category": "optional",
       "check": "report_validation",
@@ -2241,31 +2810,6 @@
     }
   ],
   "repair_actions": [
-    {
-      "id": "required_report_validation_m5a_start_gate_invalid_1",
-      "file": "reports/current/m5a_start_gate.json",
-      "action": "Regenerate reports/current/m5a_start_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_data_quality_report_invalid_1",
-      "file": "reports/current/data_quality_report.json",
-      "action": "Regenerate reports/current/data_quality_report.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_m5a_duplicate_detector_gate_invalid_1",
-      "file": "reports/current/m5a_duplicate_detector_gate.json",
-      "action": "Regenerate reports/current/m5a_duplicate_detector_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_m5a_metadata_detector_gate_invalid_1",
-      "file": "reports/current/m5a_metadata_detector_gate.json",
-      "action": "Regenerate reports/current/m5a_metadata_detector_gate.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "required_report_validation_m5a_lifecycle_integrity_gate_invalid_1",
-      "file": "reports/current/m5a_lifecycle_integrity_gate.json",
-      "action": "Regenerate reports/current/m5a_lifecycle_integrity_gate.json with fresh, schema-valid evidence for its required set category."
-    },
     {
       "id": "required_report_validation_m5a_source_status_integrity_gate_invalid_1",
       "file": "reports/current/m5a_source_status_integrity_gate.json",
@@ -2293,6 +2837,11 @@
     },
     {
       "id": "required_report_validation_m5a_source_status_integrity_gate_invalid_6",
+      "file": "reports/current/m5a_source_status_integrity_gate.json",
+      "action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "required_report_validation_m5a_source_status_integrity_gate_invalid_7",
       "file": "reports/current/m5a_source_status_integrity_gate.json",
       "action": "Regenerate reports/current/m5a_source_status_integrity_gate.json with fresh, schema-valid evidence for its required set category."
     },
@@ -2327,6 +2876,11 @@
       "action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "required_report_validation_m5a_orphan_detector_gate_invalid_7",
+      "file": "reports/current/m5a_orphan_detector_gate.json",
+      "action": "Regenerate reports/current/m5a_orphan_detector_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "supporting_report_validation_m5a_data_quality_gate_invalid_1",
       "file": "reports/current/m5a_data_quality_gate.json",
       "action": "Regenerate reports/current/m5a_data_quality_gate.json with fresh, schema-valid evidence for its required set category."
@@ -2352,39 +2906,29 @@
       "action": "Regenerate reports/current/m5a_data_quality_gate.json with fresh, schema-valid evidence for its required set category."
     },
     {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_1",
+      "id": "supporting_presence_json_m5a_final_readiness_review_missing_or_invalid_json",
       "file": "reports/current/m5a_final_readiness_review.json",
-      "action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
+      "action": "Regenerate reports/current/m5a_final_readiness_review.json or archive it if it is no longer in scope."
     },
     {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_2",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
+      "id": "optional_report_validation_archive_log_invalid_1",
+      "file": "reports/current/archive_log.json",
+      "action": "Regenerate reports/current/archive_log.json with fresh, schema-valid evidence for its required set category."
     },
     {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_3",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
+      "id": "optional_report_validation_archive_log_invalid_2",
+      "file": "reports/current/archive_log.json",
+      "action": "Regenerate reports/current/archive_log.json with fresh, schema-valid evidence for its required set category."
     },
     {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_4",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
+      "id": "optional_report_validation_normalized_reports_log_invalid_1",
+      "file": "reports/current/normalized_reports_log.json",
+      "action": "Regenerate reports/current/normalized_reports_log.json with fresh, schema-valid evidence for its required set category."
     },
     {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_5",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_6",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
-    },
-    {
-      "id": "supporting_report_validation_m5a_final_readiness_review_invalid_7",
-      "file": "reports/current/m5a_final_readiness_review.json",
-      "action": "Regenerate reports/current/m5a_final_readiness_review.json with fresh, schema-valid evidence for its required set category."
+      "id": "optional_report_validation_normalized_reports_log_invalid_2",
+      "file": "reports/current/normalized_reports_log.json",
+      "action": "Regenerate reports/current/normalized_reports_log.json with fresh, schema-valid evidence for its required set category."
     },
     {
       "id": "optional_report_validation_operations_selftest_report_invalid_1",
@@ -2412,6 +2956,11 @@
       "action": "Regenerate reports/current/operations_selftest_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_operations_selftest_report_invalid_6",
+      "file": "reports/current/operations_selftest_report.json",
+      "action": "Regenerate reports/current/operations_selftest_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_final_status_report_invalid_1",
       "file": "reports/current/final_status_report.json",
       "action": "Regenerate reports/current/final_status_report.json with fresh, schema-valid evidence for its required set category."
@@ -2433,6 +2982,11 @@
     },
     {
       "id": "optional_report_validation_final_status_report_invalid_5",
+      "file": "reports/current/final_status_report.json",
+      "action": "Regenerate reports/current/final_status_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_final_status_report_invalid_6",
       "file": "reports/current/final_status_report.json",
       "action": "Regenerate reports/current/final_status_report.json with fresh, schema-valid evidence for its required set category."
     },
@@ -2527,12 +3081,32 @@
       "action": "Regenerate reports/current/kl_gov_001_scope_decision.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_kl_gov_001_scope_decision_invalid_14",
+      "file": "reports/current/kl_gov_001_scope_decision.json",
+      "action": "Regenerate reports/current/kl_gov_001_scope_decision.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_kl_gov_001_scope_decision_invalid_15",
+      "file": "reports/current/kl_gov_001_scope_decision.json",
+      "action": "Regenerate reports/current/kl_gov_001_scope_decision.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_kl_m5_t_001_decision_log_invalid_1",
       "file": "reports/current/kl_m5_t_001_decision_log.json",
       "action": "Regenerate reports/current/kl_m5_t_001_decision_log.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_kl_m5_t_001_decision_log_invalid_2",
+      "file": "reports/current/kl_m5_t_001_decision_log.json",
+      "action": "Regenerate reports/current/kl_m5_t_001_decision_log.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_kl_m5_t_002_decision_log_invalid_1",
+      "file": "reports/current/kl_m5_t_002_decision_log.json",
+      "action": "Regenerate reports/current/kl_m5_t_002_decision_log.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_kl_m5_t_002_decision_log_invalid_2",
       "file": "reports/current/kl_m5_t_002_decision_log.json",
       "action": "Regenerate reports/current/kl_m5_t_002_decision_log.json with fresh, schema-valid evidence for its required set category."
     },
@@ -2543,6 +3117,16 @@
     },
     {
       "id": "optional_report_validation_known_limitations_reclassification_report_invalid_2",
+      "file": "reports/current/known_limitations_reclassification_report.json",
+      "action": "Regenerate reports/current/known_limitations_reclassification_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_known_limitations_reclassification_report_invalid_3",
+      "file": "reports/current/known_limitations_reclassification_report.json",
+      "action": "Regenerate reports/current/known_limitations_reclassification_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_known_limitations_reclassification_report_invalid_4",
       "file": "reports/current/known_limitations_reclassification_report.json",
       "action": "Regenerate reports/current/known_limitations_reclassification_report.json with fresh, schema-valid evidence for its required set category."
     },
@@ -2582,6 +3166,11 @@
       "action": "Regenerate reports/current/m4a_auth_single_issue.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_m4a_auth_single_issue_invalid_2",
+      "file": "reports/current/m4a_auth_single_issue.json",
+      "action": "Regenerate reports/current/m4a_auth_single_issue.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_m4a_auth_truth_invalid_1",
       "file": "reports/current/m4a_auth_truth.json",
       "action": "Regenerate reports/current/m4a_auth_truth.json with fresh, schema-valid evidence for its required set category."
@@ -2603,6 +3192,11 @@
     },
     {
       "id": "optional_report_validation_m4c_marker_mapping_invalid_1",
+      "file": "reports/current/m4c_marker_mapping.json",
+      "action": "Regenerate reports/current/m4c_marker_mapping.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m4c_marker_mapping_invalid_2",
       "file": "reports/current/m4c_marker_mapping.json",
       "action": "Regenerate reports/current/m4c_marker_mapping.json with fresh, schema-valid evidence for its required set category."
     },
@@ -2642,6 +3236,11 @@
       "action": "Regenerate reports/current/m5a_lifecycle_integrity_truth.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_m5a_lifecycle_integrity_truth_invalid_2",
+      "file": "reports/current/m5a_lifecycle_integrity_truth.json",
+      "action": "Regenerate reports/current/m5a_lifecycle_integrity_truth.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_m5a_readiness_root_cause_invalid_1",
       "file": "reports/current/m5a_readiness_root_cause.json",
       "action": "Regenerate reports/current/m5a_readiness_root_cause.json with fresh, schema-valid evidence for its required set category."
@@ -2667,6 +3266,16 @@
       "action": "Regenerate reports/current/m5a_readiness_root_cause.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_m5a_readiness_root_cause_invalid_6",
+      "file": "reports/current/m5a_readiness_root_cause.json",
+      "action": "Regenerate reports/current/m5a_readiness_root_cause.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5a_readiness_root_cause_invalid_7",
+      "file": "reports/current/m5a_readiness_root_cause.json",
+      "action": "Regenerate reports/current/m5a_readiness_root_cause.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_m5a_regression_report_invalid_1",
       "file": "reports/current/m5a_regression_report.json",
       "action": "Regenerate reports/current/m5a_regression_report.json with fresh, schema-valid evidence for its required set category."
@@ -2682,6 +3291,16 @@
       "action": "Regenerate reports/current/m5a_regression_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_m5a_regression_report_invalid_4",
+      "file": "reports/current/m5a_regression_report.json",
+      "action": "Regenerate reports/current/m5a_regression_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5a_regression_report_invalid_5",
+      "file": "reports/current/m5a_regression_report.json",
+      "action": "Regenerate reports/current/m5a_regression_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_m5a_start_validation_report_invalid_1",
       "file": "reports/current/m5a_start_validation_report.json",
       "action": "Regenerate reports/current/m5a_start_validation_report.json with fresh, schema-valid evidence for its required set category."
@@ -2690,6 +3309,211 @@
       "id": "optional_report_validation_m5a_start_validation_report_invalid_2",
       "file": "reports/current/m5a_start_validation_report.json",
       "action": "Regenerate reports/current/m5a_start_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_1",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_2",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_3",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_4",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_5",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_alpha_validation_report_invalid_6",
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "action": "Regenerate reports/current/m5b_alpha_validation_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_1",
+      "file": "reports/current/m5b_architecture_review.json",
+      "action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_2",
+      "file": "reports/current/m5b_architecture_review.json",
+      "action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_3",
+      "file": "reports/current/m5b_architecture_review.json",
+      "action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_4",
+      "file": "reports/current/m5b_architecture_review.json",
+      "action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_5",
+      "file": "reports/current/m5b_architecture_review.json",
+      "action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_6",
+      "file": "reports/current/m5b_architecture_review.json",
+      "action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_7",
+      "file": "reports/current/m5b_architecture_review.json",
+      "action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_architecture_review_invalid_8",
+      "file": "reports/current/m5b_architecture_review.json",
+      "action": "Regenerate reports/current/m5b_architecture_review.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_1",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_2",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_3",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_4",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_5",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_6",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_7",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_8",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_9",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_10",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_11",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_beta_start_gate_invalid_12",
+      "file": "reports/current/m5b_beta_start_gate.json",
+      "action": "Regenerate reports/current/m5b_beta_start_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_presence_json_m5b_gate_criteria_missing_or_invalid_json",
+      "file": "reports/current/m5b_gate_criteria.json",
+      "action": "Regenerate reports/current/m5b_gate_criteria.json or archive it if it is no longer in scope."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_1",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_2",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_3",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_4",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_5",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_6",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_7",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_8",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_9",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_10",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_11",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_12",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_implementation_gate_invalid_13",
+      "file": "reports/current/m5b_implementation_gate.json",
+      "action": "Regenerate reports/current/m5b_implementation_gate.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_presence_json_m5b_preparation_gate_missing_or_invalid_json",
+      "file": "reports/current/m5b_preparation_gate.json",
+      "action": "Regenerate reports/current/m5b_preparation_gate.json or archive it if it is no longer in scope."
     },
     {
       "id": "optional_report_validation_m5b_release_decision_invalid_1",
@@ -2738,6 +3562,16 @@
     },
     {
       "id": "optional_report_validation_m5b_release_decision_invalid_10",
+      "file": "reports/current/m5b_release_decision.json",
+      "action": "Regenerate reports/current/m5b_release_decision.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_release_decision_invalid_11",
+      "file": "reports/current/m5b_release_decision.json",
+      "action": "Regenerate reports/current/m5b_release_decision.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
+      "id": "optional_report_validation_m5b_release_decision_invalid_12",
       "file": "reports/current/m5b_release_decision.json",
       "action": "Regenerate reports/current/m5b_release_decision.json with fresh, schema-valid evidence for its required set category."
     },
@@ -2792,6 +3626,11 @@
       "action": "Regenerate reports/current/reindex_recovery_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_report_integrity_cleanup_plan_invalid_1",
+      "file": "reports/current/report_integrity_cleanup_plan.json",
+      "action": "Regenerate reports/current/report_integrity_cleanup_plan.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_report_truth_preflight_invalid_1",
       "file": "reports/current/report_truth_preflight.json",
       "action": "Regenerate reports/current/report_truth_preflight.json with fresh, schema-valid evidence for its required set category."
@@ -2802,6 +3641,11 @@
       "action": "Regenerate reports/current/retrieval_quality_baseline_report.json with fresh, schema-valid evidence for its required set category."
     },
     {
+      "id": "optional_report_validation_runtime_connectivity_report_invalid_1",
+      "file": "reports/current/runtime_connectivity_report.json",
+      "action": "Regenerate reports/current/runtime_connectivity_report.json with fresh, schema-valid evidence for its required set category."
+    },
+    {
       "id": "optional_report_validation_status_engine_v2_invalid_1",
       "file": "reports/current/status_engine_v2.json",
       "action": "Regenerate reports/current/status_engine_v2.json with fresh, schema-valid evidence for its required set category."
@@ -2810,13 +3654,13 @@
   "summary": {
     "required_count": 9,
     "supporting_count": 5,
-    "optional_count": 45,
+    "optional_count": 52,
     "legacy_count": 3,
-    "evaluated_count": 59,
-    "blocker_count": 29,
-    "warning_count": 84,
+    "evaluated_count": 66,
+    "blocker_count": 20,
+    "warning_count": 148,
     "archived_count": 0,
     "pending_archive_count": 0,
-    "repair_action_count": 113
+    "repair_action_count": 168
   }
 }

@@ -15,19 +15,12 @@ function TelekomLogo() {
 }
 
 const NAV_ITEMS = [
-  { to: '/dashboard',      label: 'Dashboard' },
-  { to: '/chat',           label: 'Chat' },
-  { to: '/documents',      label: 'Dokumente' },
-  { to: '/tools',          label: 'Tool Center' },
-  { to: '/memory',         label: 'Memory' },
-  { to: '/tasks',          label: 'Tasks' },
-  { to: '/projects',       label: 'Projekte' },
-  { to: '/rag',            label: 'RAG' },
-  { to: '/agents',         label: 'Agents' },
-  { to: '/collaboration',  label: 'Collaboration' },
-  { to: '/governance',     label: 'Governance' },
-  { to: '/settings',       label: 'Einstellungen' },
-  { to: '/admin/diagnostics', label: 'Admin' },
+  { to: '/dashboard',   label: 'Dashboard' },
+  { to: '/chat',        label: 'Suche' },
+  { to: '/documents',   label: 'Dokumente' },
+  { to: '/rag',         label: 'Datenanalyse' },
+  { to: '/data-quality', label: 'Data Quality' },
+  { to: '/settings',   label: 'Einstellungen' },
 ];
 
 export function AppShell() {

@@ -1,0 +1,62 @@
+{
+  "report_id": "m5c_start_gate",
+  "generated_at": "2026-06-12T06:01:26.786568+00:00",
+  "status": "BLOCKED",
+  "gate_status": "BLOCKED",
+  "definition_doc": "docs/m5c-cleanup-start-gate.md",
+  "note": "Nur Definition. Keine Cleanup-Implementierung. M5c Cleanup bleibt NO-GO.",
+  "checks": [
+    {
+      "id": "SG-01",
+      "name": "M5b Production Readiness Gate PASS",
+      "passed": false,
+      "actual": "BLOCKED",
+      "required": "PASS"
+    },
+    {
+      "id": "SG-02",
+      "name": "Alpha Hardening Gate PASS",
+      "passed": false,
+      "actual": "BLOCKED",
+      "required": "PASS"
+    },
+    {
+      "id": "SG-03",
+      "name": "Drift Report Integrity PASS (kein PARTIAL)",
+      "passed": false,
+      "actual": "PARTIAL (drift_report.json nicht durch CLI-Run erzeugt)",
+      "required": "PASS"
+    },
+    {
+      "id": "SG-04",
+      "name": "m5b_alpha_validation_report PASS",
+      "passed": false,
+      "actual": "BLOCKED (AV-01: M5a READY_FOR_M5B nicht erf\u00fcllt)",
+      "required": "PASS"
+    },
+    {
+      "id": "SG-05",
+      "name": "Cleanup Governance Boundary ratifiziert",
+      "passed": false,
+      "actual": "DRAFT",
+      "required": "RATIFIED"
+    }
+  ],
+  "checks_passed": 0,
+  "checks_total": 5,
+  "blocking_check_ids": [
+    "SG-01",
+    "SG-02",
+    "SG-03",
+    "SG-04",
+    "SG-05"
+  ],
+  "cascade_root_cause": "Alpha Hardening Gate BLOCKED (AHG-BLOCKER-01 + AHG-BLOCKER-02) \u2192 Beta BLOCKED \u2192 Production Readiness BLOCKED \u2192 M5c Start BLOCKED",
+  "invariants": {
+    "cleanup_implementation": "PROHIBITED until gate=PASS + manual PO sign-off",
+    "repair_actions": "PROHIBITED",
+    "auto_reindex_actions": "PROHIBITED",
+    "prohibit_02": "ACTIVE",
+    "prohibit_06": "ACTIVE"
+  }
+}

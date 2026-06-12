@@ -1,0 +1,93 @@
+{
+  "generated_at": "2026-06-12T00:00:00+00:00",
+  "engine": "gui_release_candidate_v1_product_review",
+  "overall_status": "BLOCKED",
+  "pass_count": 4,
+  "fail_count": 5,
+  "total_checks": 9,
+
+  "checks": [
+    {
+      "id": "GRC-01",
+      "name": "navigation_simplicity",
+      "description": "Navigation hat maximal 7 Punkte, keine technischen Labels",
+      "status": "FAIL",
+      "finding": "Aktuelle Navigation: 6 Punkte, aber Label 'Suche' führt zu /chat (RAG-Interface). Import ist unter 'Datenanalyse' versteckt. Vereinfachung gemäß docs/navigation_simplification.md nicht implementiert.",
+      "reference": "docs/navigation_simplification.md"
+    },
+    {
+      "id": "GRC-02",
+      "name": "no_technical_menus",
+      "description": "Keine technischen Menüpunkte sichtbar (Gates, Reports, Diagnostics)",
+      "status": "PASS",
+      "finding": "Entfernte Routen (8) sind nicht in Navigation: /tools, /memory, /tasks, /projects, /agents, /collaboration, /governance, /admin/diagnostics. Nachweis: gui_truth_report.json PASS 12/12.",
+      "reference": "reports/current/gui_truth_report.json"
+    },
+    {
+      "id": "GRC-03",
+      "name": "no_debug_visible",
+      "description": "Kein Debug-Inhalt für Endanwender sichtbar",
+      "status": "PASS",
+      "finding": "Admin-Diagnostics (/admin/diagnostics) aus Navigation entfernt. Dashboard-Widgets ohne Debug-Widgets. Gate-Karten entfernt.",
+      "reference": "reports/current/gui_truth_report.json"
+    },
+    {
+      "id": "GRC-04",
+      "name": "no_test_pages",
+      "description": "Keine Testseiten sichtbar",
+      "status": "PASS",
+      "finding": "Keine Testseiten in aktiver Navigation identifiziert.",
+      "reference": "docs/final_navigation.md"
+    },
+    {
+      "id": "GRC-05",
+      "name": "no_gate_pages",
+      "description": "Keine Gate-Seiten sichtbar",
+      "status": "PASS",
+      "finding": "DriftDashboard nicht aktiv (M5b BLOCKED). Keine Gate-Status-Seiten in Navigation.",
+      "reference": "docs/final_gui_scope.md"
+    },
+    {
+      "id": "GRC-06",
+      "name": "document_center_available",
+      "description": "Dokumentenzentrum vorhanden (Liste, Filter, Tags, Aktionen)",
+      "status": "FAIL",
+      "finding": "docs/document_center.md definiert das Zielbild. Aktuelle Implementierung (/documents) hat keine Filterleiste, keine Schnellvorschau, keine Archivieren/Löschen-Aktionen. Konzept nicht implementiert.",
+      "reference": "docs/document_center.md"
+    },
+    {
+      "id": "GRC-07",
+      "name": "topic_center_available",
+      "description": "Themenzentrum vorhanden",
+      "status": "FAIL",
+      "finding": "docs/topic_center.md definiert das Zielbild. Route /topics existiert nicht. Themen sind 'Future Phase' laut docs/final_gui_scope.md. Nicht implementiert.",
+      "reference": "docs/topic_center.md"
+    },
+    {
+      "id": "GRC-08",
+      "name": "search_complete",
+      "description": "Suche vollständig (Treffer, Quellen, Relevanz, Tags, Themen)",
+      "status": "FAIL",
+      "finding": "docs/search_experience.md definiert das Zielbild. Aktuelle Suche ist in /documents integriert oder als RAG-Chat (/chat). Dedizierte Suchseite mit Relevanzklassen, Tag-Filter und Themenfilter nicht implementiert.",
+      "reference": "docs/search_experience.md"
+    },
+    {
+      "id": "GRC-09",
+      "name": "data_analysis_complete",
+      "description": "Datenanalyse vollständig (7-Schritte-Workflow)",
+      "status": "FAIL",
+      "finding": "docs/data_analysis_workflow.md definiert Ziel-Workflow. Aktuelle /rag Seite kombiniert Import und Chat ohne geführten Workflow. Schritte 3–6 (Vergleich, Zusammenfassung, Vorschlag, Freigabe) sind nicht implementiert.",
+      "reference": "docs/data_analysis_workflow.md"
+    }
+  ],
+
+  "blockers": [
+    "GRC-01: Navigation nicht vereinfacht — Import nicht als eigener Punkt, Suche falsch benannt",
+    "GRC-06: Dokumentenzentrum nicht implementiert (nur Basisliste vorhanden)",
+    "GRC-07: Themenzentrum nicht implementiert (Future Phase)",
+    "GRC-08: Dedizierte Suche nicht implementiert",
+    "GRC-09: Geführter Analyse-Workflow nicht implementiert"
+  ],
+
+  "recommendation": "5 von 9 Checks FAIL. Aktuelle GUI entspricht nicht dem produktseitigen MVP-Zielbild. Voraussetzung für PASS: Implementierung gemäß docs/navigation_simplification.md, docs/document_center.md, docs/search_experience.md, docs/data_analysis_workflow.md. Themen (GRC-07) können als MVP-Plus behandelt werden — Entscheidung laut docs/mvp_scope_final.md offen."
+}

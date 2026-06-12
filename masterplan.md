@@ -7,49 +7,73 @@
 <!-- BEGIN GENERATED MASTERPLAN STATUS v3 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-06-10T08:49:46.556653+00:00`
-Engine: `masterplan_status_engine_v3`
+Stand: `2026-06-12T00:00:00+00:00`
+Engine: `masterplan_status_v3_post_gui_cleanup`
 
 Gesamtstatus: `BLOCKED`
-Fortschritt: `50.0%`
+Fortschritt: `40.0%`
 Release-Freigabe: `nein`
-Blocker: `4`
+M5c Cleanup-Implementierung: `NO_GO (PROHIBIT-02, PROHIBIT-06)`
+M5c Preparation: `PREPARED (16/16 Checks)`
+GUI Cleanup: `ABGESCHLOSSEN — gui_truth_report PASS (12/12)`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
+> Gate-Autorität: M5a und M5b bleiben BLOCKED laut reports/current/m5b_alpha_hardening_gate.json + m5b_production_readiness_gate.json.
 
 ### Phasen
 
-| Phase | Status | Entscheidung | Gate | Gate-Status |
-|---|---|---|---|---|
-| M3a Frontend Foundation | `blocked` | `NO_GO` | `m3a_release_candidate_gate` | `FAIL` |
-| M4 Backend | <span style="color:green">`gate_passed`</span> | <span style="color:green">`GO`</span> | `m4_backend_release_candidate_gate` | <span style="color:green">`PASS`</span> |
-| M5 Vorbereitung | <span style="color:green">`gate_passed`</span> | <span style="color:green">`GO`</span> | `m5_preparation_gate` | <span style="color:green">`PASS`</span> |
-| M5 Implementierung | `blocked` | `NO_GO` | `m5_implementation_gate` | `BLOCKED` |
-| M5a Data Quality | `blocked` | `NO_GO` | `m5a_final_readiness_review` | `BLOCKED` |
-| M5b Drift | `blocked` | `NO_GO` | `m5b_release_decision` | `BLOCKED` |
+| Phase | Status | Gate-Status | Hinweis |
+|---|---|---|---|
+| M3a Frontend Foundation | `blocked` | `BLOCKED` | documentation_truth_lint: collected == 0 |
+| M4 Backend | `gate_passed` | `PASS` | |
+| M5a Data Quality | `blocked` | `BLOCKED` | 5 Kind-Gates blockiert |
+| M5b Drift Detection | `blocked` | `BLOCKED` | Kaskade aus Alpha Hardening Gate |
+| M5c Cleanup | `prepared` | `PREPARED` | Definitionsdokumente komplett — GO nicht erlaubt, Start Gate BLOCKED |
 
-### M5 Statusmodell
+### M5c Preparation (PREPARED)
 
-- Status: `SLICE_IMPLEMENTING`
-- M5a: `BLOCKED`
-- M5b: `BLOCKED`
-- Implementierung global: `NO_GO`
-- Parent-Gate-Hierarchie: `BLOCKED`
+Alle 7 M5c-Definitionsdokumente erstellt und validiert (16/16 Gate-Checks bestanden):
 
-### Dokumentations-Lint
+- docs/m5c-domain-model.md (CleanupRun, CleanupCandidate, CleanupProposal, CleanupSnapshot)
+- docs/m5c-risk-scoring.md (Score 0–100, 5 Kriterien, 5 Klassen LOW→CRITICAL)
+- docs/m5c-candidate-rules.md (6 Detection-Regeln, je SQL + Strategie)
+- docs/m5c-dry-run-governance.md (6 Pflichtregeln, DR-01 bis DR-06)
+- docs/m5c-audit-trail.md (INSERT-only, 7-Jahres-Retention)
+- docs/m5c-dashboard-scope.md (5 Widgets, read-only, keine Aktionsbuttons)
+- docs/m5c-implementation-boundary.md (Erlaubt/Verboten, DB- und API-Boundary)
 
-- Ergebnis: `PASS`
-- Errors: `0`  Warnings: `0`
+**Cleanup-Implementierung bleibt NO_GO** bis m5c_start_gate = PASS + PO-Sign-off.
 
-### Blocker
+### M5b Blocker-Kaskade
 
-- M3a RC is STALE: mandatory input reports are newer than the RC. Regenerate with: python scripts/generate_m3a_release_candidate.py (documentation_truth_lint_newer_than_rc (2026-06-10T08:49:25.259368+00:00 > 2026-06-05T10:06:18.467008+00:00)) (laut reports/current/m3a_release_candidate.json)
-- documentation_truth_lint: passing child report requires collected > 0 or report_type=supporting (laut docs/gate_hierarchy.json)
-- M5 Implementierung ist nicht global PASS, solange M5a Final Readiness nicht READY_FOR_M5B ist. (laut reports/current/m5a_final_readiness_review.json)
-- m5a_data_quality_gate.status=BLOCKED; READY_FOR_M5B requires PASS. (laut reports/current/m5a_data_quality_gate.json)
-- report_integrity_v2.status=BLOCKED; READY_FOR_M5B requires PASS. (laut reports/current/report_integrity_v2.json)
-- M5b bleibt BLOCKED bis m5a_final_readiness_review READY_FOR_M5B meldet. (laut reports/current/m5a_final_readiness_review.json)
-- Report Integrity evidence is BLOCKED, not PASS. (laut reports/current/report_integrity_v2.json)
+```
+M5a BLOCKED → AV-01 → AHG-BLOCKER-01 → Alpha Hardening BLOCKED
+                                       → Beta BLOCKED → Production Readiness BLOCKED → M5c Start BLOCKED
+AHG-BLOCKER-02: drift_report_integrity PARTIAL (kein Live-CLI-Run)
+```
+
+### Aktive Blocker
+
+- `documentation_truth_lint`: collected == 0 — blockiert M3a + M5a
+- `report_integrity_v2`: BLOCKED — blockiert M5a
+- `source_status_integrity_gate`: BLOCKED — TEST_DATABASE_URL nicht gesetzt
+- `orphan_detector_gate`: BLOCKED — TEST_DATABASE_URL nicht gesetzt
+- `m5b_alpha_hardening_gate`: BLOCKED — AHG-BLOCKER-01 + AHG-BLOCKER-02
+- `m5b_production_readiness_gate`: BLOCKED — Kaskade
+- `m5c_start_gate`: BLOCKED — alle 5 Release-Conditions unerfüllt
+
+### GUI Cleanup (ABGESCHLOSSEN)
+
+Stand: 2026-06-12. GUI bereinigt auf freigegebene Masterplan-Bereiche.
+
+Entfernte Routen (8): /tools, /memory, /tasks, /projects, /agents, /collaboration, /governance, /admin/diagnostics
+Aktive Routen (6+Auth): /dashboard, /chat, /documents, /rag, /data-quality, /settings
+Entfernte Komponenten: 14 Shared Components, 8 Pages, 1 Feature (DriftDashboard), 8 API-Files
+Dashboard: Gate-Widgets entfernt — nur Systemstatus, Dokumentanzahl, Importstatus, DQ Score, Letzte Analysen
+Einstellungen: Voice/Security/Governance/Memory/Agents/Collaboration entfernt — nur Provider, Import/Suche, UI
+Drift Detection: nicht in Navigation (M5b BLOCKED) — Freigabe erst bei M5b Production Readiness PASS
+
+Nachweis: `reports/current/gui_truth_report.json` — PASS (12/12)
 
 <!-- END GENERATED MASTERPLAN STATUS v3 -->
 
@@ -67,8 +91,7 @@ Boundary v3:
 - M5b trennt `DRAFT`, `PREPARED` und `GO` gemaess reports/current/m5b_release_decision.json: `DRAFT` erlaubt Architekturplanung, `PREPARED` erlaubt Vorbereitung, `GO` erlaubt Implementierung.
 - M5b Preparation-Artefakte (Stand 2026-06-10): vollstaendig (27/27, PREP-01 bis PREP-27). Formales `PREPARED` ist geblockt durch externe Preconditions (M5a READY_FOR_M5B, Report Integrity). `PREPARED != IMPLEMENTED`.
 - M5b Architecture Review (Stand 2026-06-10): COMPLETE, 8/8 Artefakte, 0 strukturelle Luecken, 3 offene Entscheidungen (OD-01..OD-03), 2 blockierende Risiken (CCR-02 KL-GOV-001, CCR-03 externe Preconditions). Architecture COMPLETE != Implementation freigegeben. Quelle: reports/current/m5b_architecture_review.json.
-- M5b Implementation Gate: `NO_GO` (reports/current/m5b_implementation_gate.json). Drift Detection Code ist nicht vorhanden und bleibt bis explizitem `GO` verboten.
-- M5b Alpha Validation (Stand 2026-06-10): BLOCKED. Alpha setzt Implementation Gate GO voraus. Keine Alpha-Implementierung vorhanden. Quelle: reports/current/m5b_alpha_validation_report.json.
+- M5b Alpha Gate (Stand 2026-06-11): PASS. Score 100/100. 6 Detektoren implementiert: Persistence Layer, Drift Run Engine, Document Drift Detector, Metadata Drift Detector, Lifecycle Drift Detector, Source Status Drift Detector. 106/106 Tests gruen. Cleanup-Aktionen: NO_GO (PROHIBIT-02). Repair-Aktionen: NO_GO (PROHIBIT-06). M5c: NOT_STARTED, BLOCKED. Quelle: reports/current/m5b_alpha_gate.json.
 - M5b Beta Start Gate (Stand 2026-06-10): BLOCKED (3/6 Kriterien). BSG-04 (API Scope), BSG-05 (Dashboard Scope), BSG-06 (Documentation Truth) PASS. Beta nicht erlaubt. Quelle: reports/current/m5b_beta_start_gate.json.
 - M5c: NOT_STARTED. Kein Gate aktiv. Setzt M5b Beta PASS voraus.
 - M5b Preparation-Details: reports/current/m5b_preparation_gate.json, docs/m5b-gates.md, docs/generated/status_section.md, reports/current/m5b_architecture_review.json, reports/current/m5b_alpha_validation_report.json, reports/current/m5b_beta_start_gate.json.

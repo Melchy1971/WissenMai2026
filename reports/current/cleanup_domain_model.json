@@ -1,0 +1,149 @@
+{
+  "report_id": "cleanup_domain_model",
+  "generated_at": "2026-06-12T06:32:51.269734+00:00",
+  "status": "DEFINITION",
+  "implementation_status": "NO_GO",
+  "doc": "docs/m5c-domain-model.md",
+  "note": "Read-only Definition. Keine Implementierung. M5c bleibt NO_GO bis Start Gate = PASS + PO-Sign-off.",
+  "entities": {
+    "CleanupSnapshot": {
+      "purpose": "Punkt-in-Zeit-Abbild des Workspace-Zustands f\u00fcr einen CleanupRun",
+      "source": "drift_findings (M5b) \u2014 nie direkt aus documents",
+      "fields": [
+        "id",
+        "workspace_id",
+        "created_at",
+        "source_drift_run_id",
+        "document_count",
+        "findings_count",
+        "snapshot_data"
+      ],
+      "constraints": [
+        "INSERT-only nach Erstellung",
+        "source_drift_run_id \u2192 abgeschlossener Drift Run"
+      ]
+    },
+    "CleanupRun": {
+      "purpose": "Ausf\u00fchrungseinheit einer Cleanup-Analyse",
+      "fields": [
+        "id",
+        "workspace_id",
+        "status",
+        "created_at",
+        "started_at",
+        "completed_at",
+        "triggered_by",
+        "snapshot_id",
+        "candidates_found",
+        "proposals_generated",
+        "error_message"
+      ],
+      "status_enum": [
+        "PENDING",
+        "RUNNING",
+        "COMPLETED",
+        "FAILED"
+      ],
+      "triggered_by_enum": [
+        "SYSTEM",
+        "USER"
+      ],
+      "constraints": [
+        "Keine Schreiboperationen auf documents",
+        "FAILED \u2192 neuer Run erforderlich"
+      ]
+    },
+    "CleanupCandidate": {
+      "purpose": "Einzelner Befund \u2014 Entit\u00e4t die f\u00fcr Cleanup in Frage kommt",
+      "fields": [
+        "id",
+        "workspace_id",
+        "cleanup_run_id",
+        "candidate_type",
+        "severity",
+        "entity_type",
+        "entity_id",
+        "reason",
+        "risk_score",
+        "remediation_hint",
+        "detected_at",
+        "evidence"
+      ],
+      "candidate_type_enum": [
+        "DUPLICATE_DOCUMENT",
+        "DUPLICATE_VERSION",
+        "ORPHAN_CHUNK",
+        "ORPHAN_VERSION",
+        "ORPHAN_CITATION",
+        "UNUSED_METADATA"
+      ],
+      "severity_enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "constraints": [
+        "risk_score 0\u2013100",
+        "INSERT-only",
+        "remediation_hint ist informativ, kein Auto-Trigger"
+      ]
+    },
+    "CleanupProposal": {
+      "purpose": "Formaler Vorschlag zur Behandlung eines Kandidaten \u2014 wartet auf menschliche Entscheidung",
+      "fields": [
+        "id",
+        "cleanup_run_id",
+        "candidate_id",
+        "proposed_action",
+        "status",
+        "created_at",
+        "reviewed_at",
+        "reviewed_by",
+        "execution_result",
+        "rejection_reason"
+      ],
+      "proposed_action_enum": [
+        "DELETE",
+        "MERGE",
+        "ARCHIVE",
+        "FLAG"
+      ],
+      "status_enum": [
+        "PENDING",
+        "APPROVED",
+        "REJECTED",
+        "EXECUTED"
+      ],
+      "status_transitions": {
+        "PENDING": [
+          "APPROVED",
+          "REJECTED"
+        ],
+        "APPROVED": [
+          "EXECUTED"
+        ],
+        "REJECTED": [],
+        "EXECUTED": []
+      },
+      "constraints": [
+        "EXECUTED nur nach APPROVED",
+        "Keine Auto-Execution ohne menschliche Genehmigung",
+        "REJECTED ist final"
+      ]
+    }
+  },
+  "relationships": {
+    "CleanupRun_to_CleanupSnapshot": "1:0..1",
+    "CleanupRun_to_CleanupCandidate": "1:0..N",
+    "CleanupRun_to_CleanupProposal": "1:0..N",
+    "CleanupCandidate_to_CleanupProposal": "1:0..1"
+  },
+  "invariants": {
+    "no_writes_to_documents": true,
+    "no_auto_execute": true,
+    "candidates_insert_only": true,
+    "prohibit_02": "ACTIVE",
+    "prohibit_06": "ACTIVE"
+  }
+}

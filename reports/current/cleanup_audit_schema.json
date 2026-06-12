@@ -1,0 +1,103 @@
+{
+  "report_id": "cleanup_audit_schema",
+  "generated_at": "2026-06-12T06:37:15.871187+00:00",
+  "status": "DEFINITION",
+  "doc": "docs/m5c-audit-trail.md",
+  "table_name": "cleanup_audit",
+  "schema_version": 1,
+  "fields": [
+    {
+      "name": "id",
+      "type": "UUID",
+      "nullable": false,
+      "description": "PK, systemgeneriert"
+    },
+    {
+      "name": "run_id",
+      "type": "UUID",
+      "nullable": false,
+      "description": "FK \u2192 CleanupRun.id"
+    },
+    {
+      "name": "user",
+      "type": "varchar(255)",
+      "nullable": false,
+      "description": "Ausl\u00f6ser"
+    },
+    {
+      "name": "workspace",
+      "type": "UUID",
+      "nullable": false,
+      "description": "Workspace-ID"
+    },
+    {
+      "name": "candidate_count",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "risk_score_avg",
+      "type": "numeric(5,2)",
+      "nullable": false
+    },
+    {
+      "name": "risk_score_max",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "critical_count",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "created_at",
+      "type": "timestamptz",
+      "nullable": false,
+      "default": "NOW()",
+      "immutable": true
+    },
+    {
+      "name": "run_status",
+      "type": "varchar(20)",
+      "nullable": false,
+      "enum": [
+        "COMPLETED",
+        "FAILED"
+      ]
+    },
+    {
+      "name": "proposals_generated",
+      "type": "integer",
+      "nullable": false
+    },
+    {
+      "name": "dry_run",
+      "type": "boolean",
+      "nullable": false,
+      "const": true
+    },
+    {
+      "name": "schema_version",
+      "type": "integer",
+      "nullable": false,
+      "current": 1
+    }
+  ],
+  "immutability_rules": [
+    "INSERT-only, no UPDATE or DELETE",
+    "created_at set by DB DEFAULT NOW()",
+    "No soft-delete column",
+    "Minimum retention: 7 years"
+  ],
+  "trigger_events": [
+    "CleanupRun COMPLETED",
+    "CleanupRun FAILED",
+    "CleanupProposal APPROVED",
+    "CleanupProposal REJECTED"
+  ],
+  "invariants": {
+    "prohibit_02": "ACTIVE",
+    "prohibit_06": "ACTIVE"
+  }
+}

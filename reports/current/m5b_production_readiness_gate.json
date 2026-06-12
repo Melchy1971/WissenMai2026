@@ -1,0 +1,94 @@
+{
+  "report_id": "m5b_production_readiness_gate",
+  "generated_at": "2026-06-12T06:00:41.098338+00:00",
+  "status": "BLOCKED",
+  "decision": "BLOCKED",
+  "checks_total": 7,
+  "checks_passed": 6,
+  "checks_failed": 1,
+  "checks": [
+    {
+      "check_id": "PRG-01",
+      "name": "Beta Validation Gate PASS",
+      "passed": false,
+      "actual": "decision=BLOCKED",
+      "expected": "decision=PASS",
+      "note": "CASCADING BLOCK: Beta BLOCKED wegen Alpha Hardening AHG-BLOCKER-01/02"
+    },
+    {
+      "check_id": "PRG-02",
+      "name": "Drift API Tests PASS",
+      "passed": true,
+      "actual": "status=PASS, failed=0",
+      "expected": "status=PASS, tests_failed=0",
+      "note": ""
+    },
+    {
+      "check_id": "PRG-03",
+      "name": "Drift CLI Regression Tests PASS",
+      "passed": true,
+      "actual": "status=PASS, failed=0",
+      "expected": "status=PASS, tests_failed=0",
+      "note": ""
+    },
+    {
+      "check_id": "PRG-04",
+      "name": "Dashboard: PROHIBIT-02 + PROHIBIT-06 verifiziert",
+      "passed": true,
+      "actual": "status=PASS, no_repair=True, no_cleanup=True",
+      "expected": "PASS, no_repair=True, no_cleanup=True",
+      "note": ""
+    },
+    {
+      "check_id": "PRG-05",
+      "name": "Performance Baseline: keine HIGH-Risiken",
+      "passed": true,
+      "actual": "0 HIGH risks",
+      "expected": "0 HIGH risks",
+      "note": ""
+    },
+    {
+      "check_id": "PRG-06",
+      "name": "Observability: Metriken + PII-Schutz PASS",
+      "passed": true,
+      "actual": "status=PASS, failed=0",
+      "expected": "status=PASS, tests_failed=0",
+      "note": ""
+    },
+    {
+      "check_id": "PRG-07",
+      "name": "Read-Only Constraint: keine POST/PUT/PATCH/DELETE, keine Repair/Cleanup-Actions",
+      "passed": true,
+      "actual": "no_post=True, no_put=True, no_patch=True, no_delete=True, no_repair=True, no_cleanup=True",
+      "expected": "alle=True",
+      "note": ""
+    }
+  ],
+  "blocking_check_ids": [
+    "PRG-01"
+  ],
+  "blocker_detail": [
+    {
+      "id": "PRG-01",
+      "name": "Beta Validation Gate PASS",
+      "actual": "decision=BLOCKED",
+      "expected": "decision=PASS",
+      "note": "CASCADING BLOCK: Beta BLOCKED wegen Alpha Hardening AHG-BLOCKER-01/02"
+    }
+  ],
+  "input_reports": {
+    "m5b_beta_validation_report": "BLOCKED",
+    "m5b_drift_api_report": "PASS",
+    "drift_cli_regression_report": "PASS",
+    "drift_dashboard_truth_report": "PASS",
+    "drift_performance_baseline": "PASS",
+    "drift_observability_report": "PASS",
+    "m5b_alpha_hardening_gate": "BLOCKED"
+  },
+  "cascade_note": "Production Readiness BLOCKED wegen Beta Validation BLOCKED (PRG-01 Kaskade). Ursache: Alpha Hardening Gate BLOCKED (AHG-BLOCKER-01 + AHG-BLOCKER-02). Alle 6 Beta-spezifischen Checks PASS.",
+  "constraints": {
+    "repair_actions": "PROHIBITED",
+    "cleanup_actions": "PROHIBITED",
+    "auto_reindex_actions": "PROHIBITED"
+  }
+}

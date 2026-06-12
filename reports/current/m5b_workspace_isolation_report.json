@@ -1,0 +1,30 @@
+{
+  "report_type": "m5b_workspace_isolation_report",
+  "report_schema_version": 1,
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-11T00:00:00+00:00",
+  "generated_at": "2026-06-11",
+  "status": "PASS",
+  "test_file": "backend/tests/test_m5b_workspace_isolation_truth.py",
+  "tests_total": 9,
+  "tests_passed": 9,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "errors": 0,
+  "summary": "9/9 tests passed. Workspace A drift run sees only WS-A findings; WS-B sees only WS-B findings. No cross-workspace leakage in findings, run records, or snapshots. Empty workspace produces zero findings.",
+  "checks_verified": [
+    "WS-A run: all finding workspace_id == WS-A",
+    "WS-A run: no WS-B entity_id referenced",
+    "WS-B run: all finding workspace_id == WS-B",
+    "WS-B run: no WS-A entity_id referenced",
+    "DriftRun.workspace_id correct",
+    "DriftFinding.workspace_id matches run workspace",
+    "DriftSnapshot.workspace_id matches run",
+    "Parallel runs: no cross-contamination",
+    "Empty workspace: zero findings"
+  ],
+  "constraints": {
+    "repair_actions": "NO_GO",
+    "cleanup_actions": "NO_GO"
+  }
+}

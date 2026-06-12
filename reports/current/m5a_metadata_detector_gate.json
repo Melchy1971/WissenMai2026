@@ -3,7 +3,7 @@
   "report_name": "m5a_metadata_detector_gate",
   "gate": "m5a_metadata_detector_gate",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-01T09:44:30.450456+00:00",
+  "timestamp": "2026-06-11T07:05:28.271093+00:00",
   "environment": "local_sqlite",
   "status": "PASS",
   "result": "PASS",

@@ -3,7 +3,7 @@
   "report_name": "m5a_duplicate_detector_gate",
   "gate": "m5a_duplicate_detector_gate",
   "generated_by": "gate_validator",
-  "timestamp": "2026-06-01T09:28:52.011721+00:00",
+  "timestamp": "2026-06-11T07:05:28.271093+00:00",
   "environment": "local_sqlite",
   "status": "PASS",
   "result": "PASS",
@@ -22,7 +22,7 @@
   "criteria": [
     {
       "id": "c1",
-      "label": "Migration korrekt in Kette (20260601_0018 → 20260508_0014)",
+      "label": "Migration korrekt in Kette (20260601_0018 \u2192 20260508_0014)",
       "passed": true
     },
     {
@@ -32,7 +32,7 @@
     },
     {
       "id": "c3",
-      "label": "Runner läuft (completed, findings >= 2)",
+      "label": "Runner l\u00e4uft (completed, findings >= 2)",
       "passed": true,
       "status": "completed",
       "total_findings": 2,
@@ -43,7 +43,7 @@
       "label": "Duplicate Detector erzeugt Findings (nur aktive Dokumente)",
       "passed": true,
       "findings_count": 2,
-      "caveat": "Getestet ohne UniqueConstraint(workspace_id,content_hash) — Constraint vs Detector-Scope ist offener Design-Punkt"
+      "caveat": "Getestet ohne UniqueConstraint(workspace_id,content_hash) \u2014 Constraint vs Detector-Scope ist offener Design-Punkt"
     },
     {
       "id": "c5",
@@ -57,7 +57,7 @@
     },
     {
       "id": "c7",
-      "label": "Workspace Isolation geprüft",
+      "label": "Workspace Isolation gepr\u00fcft",
       "passed": true,
       "wid_b_findings": 0,
       "all_findings_correct_workspace": true

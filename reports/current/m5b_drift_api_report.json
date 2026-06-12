@@ -1,0 +1,58 @@
+{
+  "report_id": "m5b_drift_api_report",
+  "generated_at": "2026-06-11T12:22:02.255122Z",
+  "task": "Task 23 \u2014 Read-Only Drift API",
+  "status": "PASS",
+  "tests_passed": 21,
+  "tests_failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "test_suites": {
+    "TestListRuns": {
+      "tests": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "TestGetRun": {
+      "tests": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    "TestListFindings": {
+      "tests": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    "TestDriftSummary": {
+      "tests": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    "TestReadOnly": {
+      "tests": 4,
+      "passed": 4,
+      "failed": 0
+    }
+  },
+  "constraints_verified": {
+    "no_post_endpoints": true,
+    "no_put_endpoints": true,
+    "no_patch_endpoints": true,
+    "no_delete_endpoints": true,
+    "no_repair_actions": true,
+    "no_cleanup_actions": true,
+    "no_reindex_actions": true,
+    "auth_required": true,
+    "workspace_scoped": true,
+    "pagination_supported": true,
+    "severity_filter": true,
+    "finding_type_filter": true
+  },
+  "artifacts": {
+    "router": "backend/app/api/v1/drift.py",
+    "schemas": "backend/app/schemas/drift.py",
+    "router_registration": "backend/app/api/v1/router.py",
+    "tests": "backend/tests/test_m5b_drift_api.py"
+  },
+  "invariant": "Drift Detection darf nur erkennen, nie korrigieren \u2014 ENFORCED"
+}

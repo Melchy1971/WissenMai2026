@@ -1,12 +1,10 @@
 # M5b Drift Architecture
 
-Stand: 2026-06-08
+Stand: 2026-06-11
 
-Status: `DRAFT` (Planungsartefakt; keine `PREPARED`-Freigabe, kein `GO`, keine Implementierung, siehe `reports/current/m5b_release_decision.json`).
+Status: `ALPHA_IMPLEMENTED` (Alpha Gate PASS 2026-06-11; 6 Detektoren implementiert; 106/106 Tests gruen; Quelle: `reports/current/m5b_alpha_gate.json`). Start-Gate und Implementation-Gate bleiben BLOCKED durch externe Preconditions (M5a READY_FOR_M5B, Report Integrity). Cleanup: NO_GO (PROHIBIT-02). Repair: NO_GO (PROHIBIT-06). M5c: NOT_STARTED.
 
-Scope: architecture phase only. No implementation, no migration, no API endpoint, no repair action.
-
-This draft is planning-only. It does not authorize detector implementation, schema changes, background jobs, API routes, dashboard work, reindexing, cleanup, repair, or any mutating operation. While `reports/current/m5a_final_readiness_review.json` is not `READY_FOR_M5B`, every M5b planning artifact remains `DRAFT`.
+Scope: read-only drift detection. No repair, no reindex, no cleanup, no citation mutation, no mutating operation.
 
 ## Gate Status Model
 
@@ -472,12 +470,24 @@ Required report summary:
 
 ## Non-Scope
 
-- No detector implementation in this phase.
-- No database migration in this phase.
-- No API endpoint in this phase.
-- No dashboard implementation in this phase.
 - No automatic repair.
 - No automatic reindex.
 - No citation mutation.
 - No metadata enrichment.
 - No cross-workspace aggregation.
+- No database migration beyond what Alpha Gate components introduced.
+- No API endpoint (not yet implemented).
+- No dashboard (not yet implemented).
+
+## Implementation Status (Alpha Gate)
+
+6 Detektoren implementiert (Alpha Gate PASS 2026-06-11):
+
+| Komponente | Datei | Tests |
+|---|---|---|
+| Persistence Layer | `backend/app/models/drift.py` | 20 |
+| Drift Run Engine | `backend/app/services/drift_run_engine.py` | 21 |
+| Document Drift Detector | `backend/app/services/drift/document_drift_detector.py` | 20 |
+| Metadata Drift Detector | `backend/app/services/drift/metadata_drift_detector.py` | 18 |
+| Lifecycle Drift Detector | `backend/app/services/drift/lifecycle_drift_detector.py` | 16 |
+| Source Status Drift Detector | `backend/app/services/source_status_integrity_detector.py` | 11 |

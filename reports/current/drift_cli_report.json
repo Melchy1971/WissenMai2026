@@ -1,0 +1,16 @@
+{
+  "report_id": "drift_cli_report",
+  "generated_at": "2026-06-11T16:41:37.609558Z",
+  "status": "PASS",
+  "cli_version": "1.0.0",
+  "regression_tests_passed": 22,
+  "regression_tests_failed": 0,
+  "constraints": {
+    "repair_actions": "PROHIBITED",
+    "cleanup_actions": "PROHIBITED",
+    "auto_reindex_actions": "PROHIBITED"
+  },
+  "artifacts": {
+    "script": "scripts/run_drift_detection.py"
+  }
+}

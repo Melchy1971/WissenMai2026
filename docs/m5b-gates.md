@@ -180,6 +180,36 @@ KL-GOV-001 (`Mutierende Admin-Aktionen ohne Runbook und Gate-Freigabe gesperrt`)
 
 ---
 
+## M5b Alpha Gate
+
+**ID:** `m5b_alpha_gate`
+**Ziel:** Nachweis, dass alle Pflicht-Komponenten der M5b Drift Detection implementiert und getestet sind.
+**Aktueller Status: PASS** (2026-06-11)
+**Score:** 100/100 (Schwelle: 90)
+
+### Ergebnis
+
+| Komponente | ID | Datei | Tests | Status |
+|---|---|---|---|---|
+| Persistence Layer | M5B-PERSIST | `backend/app/models/drift.py` | 20/20 | PASS |
+| Drift Run Engine | M5B-ENGINE | `backend/app/services/drift_run_engine.py` | 21/21 | PASS |
+| Document Drift Detector | M5B-DOC | `backend/app/services/drift/document_drift_detector.py` | 20/20 | PASS |
+| Metadata Drift Detector | M5B-META | `backend/app/services/drift/metadata_drift_detector.py` | 18/18 | PASS |
+| Lifecycle Drift Detector | M5B-LIFECYCLE | `backend/app/services/drift/lifecycle_drift_detector.py` | 16/16 | PASS |
+| Source Status Drift Detector | M5B-SOURCE | `backend/app/services/source_status_integrity_detector.py` | 11/11 | PASS |
+
+Gesamt: 106/106 Tests gruen. Score-Formel: (6/6) × 100 = 100.
+
+### Constraints (unveraendert)
+
+- Cleanup-Aktionen: NO_GO (PROHIBIT-02)
+- Repair-Aktionen: NO_GO (PROHIBIT-06)
+- M5c: NOT_STARTED, BLOCKED bis M5b Beta PASS
+
+Quelle: `reports/current/m5b_alpha_gate.json`
+
+---
+
 ## Pfad zu PREPARED
 
 1. M5a alle Slice-Gates auf PASS
@@ -191,10 +221,10 @@ KL-GOV-001 (`Mutierende Admin-Aktionen ohne Runbook und Gate-Freigabe gesperrt`)
 ## Pfad zu GO
 
 1. Start-Gate PASS/GO
-2. KL-M5-T-001 schließen
-3. KL-M5-T-002 schließen
+2. KL-M5-T-001 schliessen
+3. KL-M5-T-002 schliessen
 4. `docs/m5b-test-strategy.md` erstellen
-5. KL-GOV-001 für read-only Drift Checks explizit abgrenzen
+5. KL-GOV-001 fuer read-only Drift Checks explizit abgrenzen
 6. `reports/current/m5b_implementation_gate.json` generieren → PASS / GO
 
 ---
@@ -205,9 +235,10 @@ KL-GOV-001 (`Mutierende Admin-Aktionen ohne Runbook und Gate-Freigabe gesperrt`)
 |------|-----------------|-----------|----------|--------|
 | Start-Gate | 6 | 2 | 4 | BLOCKED |
 | Implementation-Gate | 4 | 0 | 4 | BLOCKED |
+| Alpha Gate | 6 | 6 | 0 | PASS |
 
-Aktueller M5b-Status: `DRAFT`.
-Nächster Meilenstein: M5a `READY_FOR_M5B` + Report Integrity `PASS` → Start-Gate `PASS`.
+M5b Alpha Gate: PASS (2026-06-11). Start-Gate und Implementation-Gate bleiben BLOCKED durch externe Preconditions (M5a READY_FOR_M5B, Report Integrity).
+Naechster Meilenstein: M5a `READY_FOR_M5B` + Report Integrity `PASS` → Start-Gate `PASS`.
 
 ---
 

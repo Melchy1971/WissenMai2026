@@ -26,7 +26,15 @@ M5b Drift Architecture darf als Planung `DRAFT` sein, siehe `docs/m5b-drift-arch
 
 `reports/current/m5b_release_decision.json` trennt die Stufen: `DRAFT` erlaubt Architekturplanung, `PREPARED` erlaubt Vorbereitung ohne Implementierung, und nur `GO` erlaubt M5b Implementierung. Solange M5a nicht ueber `reports/current/m5a_final_readiness_review.json` bereit ist, bleibt M5b blockiert.
 
-Stand 2026-06-10: M5b Preparation-Artefakte vollstaendig (27/27, PREP-01 bis PREP-27). Architecture Review COMPLETE (8/8, 0 Luecken). Formales `PREPARED` BLOCKED (M5a READY_FOR_M5B fehlt, Report Integrity BLOCKED). Implementation Gate NO-GO. Drift Detection Code nicht vorhanden. Alpha Validation BLOCKED (keine Implementierung; erwartet). Beta Start Gate BLOCKED (3/6; BSG-04/05/06 PASS). M5c NOT_STARTED. Repair-Aktionen und Cleanup-Aktionen sind dauerhaft verboten (PROHIBIT-02, PROHIBIT-06). Quelle: `reports/current/m5b_preparation_gate.json`, `reports/current/m5b_architecture_review.json`, `reports/current/m5b_alpha_validation_report.json`, `reports/current/m5b_beta_start_gate.json`.
+Stand 2026-06-12: M5b-Implementierung vollstaendig (Drift Detection, CLI, Dashboard, API, Observability, Performance Baseline). M5b-Gates BLOCKED durch Kaskade: Alpha Hardening Gate BLOCKED (AHG-BLOCKER-01: M5a nicht READY_FOR_M5B; AHG-BLOCKER-02: drift_report_integrity PARTIAL) → Beta BLOCKED → Production Readiness BLOCKED. M5c Preparation PREPARED (16/16 Checks, `reports/current/m5c_preparation_gate.json`). M5c GO nicht erlaubt: `reports/current/m5c_start_gate.json` BLOCKED. Cleanup-Implementierung und Repair-Aktionen dauerhaft verboten (PROHIBIT-02, PROHIBIT-06). Quelle: `reports/current/m5b_alpha_hardening_gate.json`, `reports/current/m5b_production_readiness_gate.json`, `reports/current/m5c_preparation_gate.json`, `reports/current/m5c_start_gate.json`.
+
+## M5c Regel
+
+M5c Cleanup darf erst implementiert werden wenn: (1) `reports/current/m5c_start_gate.json` = PASS, (2) PO-Sign-off auf `reports/current/cleanup_governance_boundary.json`. Beides ist aktuell nicht erfuellt. Status: NO_GO.
+
+M5c Preparation = PREPARED bedeutet ausschliesslich: Definitionsdokumente sind komplett und valide. Es bedeutet nicht: GO, nicht: Implementierung erlaubt, nicht: Cleanup freigegeben.
+
+Dry-Run-Only: Jeder M5c-Run ist ein Dry Run. Keine automatische Ausfuehrung ohne explizites PO-Approval je Proposal (No-Auto-Execute, PROHIBIT-08).
 
 ## Globale Aussagen
 

@@ -1,0 +1,112 @@
+{
+  "report_id": "drift_dashboard_truth_report",
+  "generated_at": "2026-06-11T16:49:33.323854+00:00",
+  "status": "PASS",
+  "component": "DriftDashboard",
+  "component_path": "frontend/src/features/drift/DriftDashboard.jsx",
+  "test_file": "frontend/src/tests/features/DriftDashboard.test.jsx",
+  "test_runner": "vitest@4.1.5",
+  "test_environment": "jsdom",
+  "tests_total": 23,
+  "tests_passed": 23,
+  "tests_failed": 0,
+  "test_suites": [
+    {
+      "name": "DriftDashboard - Sichtbarkeit",
+      "truth_test": 1,
+      "tests": 1,
+      "passed": 1
+    },
+    {
+      "name": "DriftDashboard - Letzter Drift Run",
+      "truth_test": 2,
+      "tests": 3,
+      "passed": 3
+    },
+    {
+      "name": "DriftDashboard - Severity Breakdown",
+      "truth_test": 3,
+      "tests": 2,
+      "passed": 2
+    },
+    {
+      "name": "DriftDashboard - Type Breakdown",
+      "truth_test": 4,
+      "tests": 2,
+      "passed": 2
+    },
+    {
+      "name": "DriftDashboard - Findings Tabelle",
+      "truth_test": 5,
+      "tests": 3,
+      "passed": 3
+    },
+    {
+      "name": "DriftDashboard - Filter Severity",
+      "truth_test": 6,
+      "tests": 2,
+      "passed": 2
+    },
+    {
+      "name": "DriftDashboard - Filter Type",
+      "truth_test": 7,
+      "tests": 2,
+      "passed": 2
+    },
+    {
+      "name": "DriftDashboard - Keine Repair Buttons (PROHIBIT-02)",
+      "truth_test": 8,
+      "tests": 2,
+      "passed": 2
+    },
+    {
+      "name": "DriftDashboard - Keine Cleanup Buttons (PROHIBIT-06)",
+      "truth_test": 9,
+      "tests": 2,
+      "passed": 2
+    },
+    {
+      "name": "DriftDashboard - API Fehler Anzeige",
+      "truth_test": 10,
+      "tests": 4,
+      "passed": 4
+    }
+  ],
+  "constraints_verified": {
+    "no_repair_buttons": true,
+    "no_cleanup_buttons": true,
+    "no_repair_testid": true,
+    "no_cleanup_testid": true,
+    "read_only": true,
+    "prohibit_02": "VERIFIED",
+    "prohibit_06": "VERIFIED"
+  },
+  "data_testids_verified": [
+    "drift-dashboard",
+    "drift-last-run-widget",
+    "drift-last-run-id",
+    "drift-last-run-status",
+    "drift-last-run-completed-at",
+    "drift-no-run-message",
+    "drift-severity-breakdown-widget",
+    "drift-severity-critical",
+    "drift-severity-error",
+    "drift-severity-warning",
+    "drift-severity-info",
+    "drift-type-breakdown-widget",
+    "drift-type-DOCUMENT_DRIFT",
+    "drift-type-METADATA_DRIFT",
+    "drift-type-LIFECYCLE_DRIFT",
+    "drift-type-SOURCE_STATUS_DRIFT",
+    "drift-findings-table",
+    "drift-finding-row",
+    "drift-finding-type",
+    "drift-finding-severity",
+    "drift-finding-entity",
+    "drift-filter-bar",
+    "drift-filter-severity",
+    "drift-filter-type",
+    "drift-api-error",
+    "drift-no-findings-message"
+  ]
+}

@@ -1,0 +1,318 @@
+{
+  "registry_id": "drift_api_contract_registry",
+  "version": "1.0.0",
+  "generated_at": "2026-06-11T16:42:07.933228Z",
+  "api_prefix": "/api/v1/drift",
+  "invariants": {
+    "auth_required": true,
+    "workspace_scoped": true,
+    "read_only": true,
+    "no_post_put_patch_delete": true,
+    "no_repair_actions": true,
+    "no_cleanup_actions": true,
+    "no_reindex_actions": true
+  },
+  "contracts": {
+    "DriftRunListResponse": {
+      "endpoint": "GET /api/v1/drift/runs",
+      "http_method": "GET",
+      "query_params": {
+        "limit": {
+          "type": "integer",
+          "required": false,
+          "default": 20,
+          "min": 1,
+          "max": 100
+        },
+        "offset": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "min": 0
+        },
+        "status": {
+          "type": "string",
+          "required": false,
+          "enum": [
+            "pending",
+            "running",
+            "completed",
+            "failed",
+            "completed_with_errors"
+          ],
+          "description": "Filter by run status"
+        }
+      },
+      "response_schema": {
+        "required_fields": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "optional_fields": [],
+        "items_schema": {
+          "required_fields": [
+            "run_id",
+            "workspace_id",
+            "status",
+            "started_at",
+            "created_at"
+          ],
+          "optional_fields": [
+            "triggered_by",
+            "detector_names",
+            "completed_at",
+            "total_findings",
+            "error_message"
+          ]
+        }
+      },
+      "error_codes": {
+        "401": "Missing or invalid auth token",
+        "403": "Insufficient permissions",
+        "422": "Invalid query parameter (e.g. limit out of range)",
+        "500": "Internal server error"
+      },
+      "pagination": {
+        "type": "offset",
+        "default_limit": 20,
+        "max_limit": 100
+      },
+      "forbidden_response_fields": [
+        "document_content",
+        "credentials",
+        "repair_action",
+        "cleanup_action"
+      ]
+    },
+    "DriftRunDetailResponse": {
+      "endpoint": "GET /api/v1/drift/runs/{run_id}",
+      "http_method": "GET",
+      "path_params": {
+        "run_id": {
+          "type": "string",
+          "required": true,
+          "description": "UUID of the drift run"
+        }
+      },
+      "response_schema": {
+        "required_fields": [
+          "run_id",
+          "workspace_id",
+          "status",
+          "started_at",
+          "created_at",
+          "findings_by_type",
+          "findings_by_severity"
+        ],
+        "optional_fields": [
+          "triggered_by",
+          "detector_names",
+          "completed_at",
+          "total_findings",
+          "error_message"
+        ],
+        "findings_by_type_keys": [
+          "DOCUMENT_DRIFT",
+          "METADATA_DRIFT",
+          "LIFECYCLE_DRIFT",
+          "SOURCE_STATUS_DRIFT"
+        ],
+        "findings_by_severity_keys": [
+          "info",
+          "warning",
+          "error",
+          "critical"
+        ]
+      },
+      "error_codes": {
+        "401": "Missing or invalid auth token",
+        "403": "Insufficient permissions (cross-workspace access)",
+        "404": "Run not found or belongs to different workspace",
+        "500": "Internal server error"
+      },
+      "pagination": null,
+      "forbidden_response_fields": [
+        "document_content",
+        "credentials",
+        "repair_action",
+        "cleanup_action"
+      ]
+    },
+    "DriftFindingListResponse": {
+      "endpoint": "GET /api/v1/drift/findings",
+      "http_method": "GET",
+      "query_params": {
+        "limit": {
+          "type": "integer",
+          "required": false,
+          "default": 50,
+          "min": 1,
+          "max": 200
+        },
+        "offset": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "min": 0
+        },
+        "run_id": {
+          "type": "string",
+          "required": false,
+          "description": "Filter by run UUID"
+        },
+        "severity": {
+          "type": "string",
+          "required": false,
+          "enum": [
+            "info",
+            "warning",
+            "error",
+            "critical"
+          ],
+          "error_on_invalid": true,
+          "error_code": 422
+        },
+        "finding_type": {
+          "type": "string",
+          "required": false,
+          "enum": [
+            "DOCUMENT_DRIFT",
+            "METADATA_DRIFT",
+            "LIFECYCLE_DRIFT",
+            "SOURCE_STATUS_DRIFT"
+          ],
+          "error_on_invalid": true,
+          "error_code": 422
+        }
+      },
+      "response_schema": {
+        "required_fields": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "optional_fields": [],
+        "items_schema": {
+          "required_fields": [
+            "finding_id",
+            "run_id",
+            "workspace_id",
+            "finding_type",
+            "severity",
+            "created_at"
+          ],
+          "optional_fields": [
+            "entity_type",
+            "entity_id",
+            "detail"
+          ]
+        }
+      },
+      "error_codes": {
+        "401": "Missing or invalid auth token",
+        "403": "Insufficient permissions",
+        "422": "Invalid severity or finding_type value",
+        "500": "Internal server error"
+      },
+      "pagination": {
+        "type": "offset",
+        "default_limit": 50,
+        "max_limit": 200
+      },
+      "forbidden_response_fields": [
+        "document_content",
+        "credentials",
+        "repair_action",
+        "cleanup_action"
+      ]
+    },
+    "DriftSummaryResponse": {
+      "endpoint": "GET /api/v1/drift/summary",
+      "http_method": "GET",
+      "query_params": {},
+      "response_schema": {
+        "required_fields": [
+          "workspace_id",
+          "total_runs",
+          "total_findings",
+          "findings_by_type",
+          "findings_by_severity",
+          "critical_count",
+          "error_count"
+        ],
+        "optional_fields": [
+          "latest_run_id",
+          "latest_run_status",
+          "latest_run_completed_at"
+        ],
+        "null_when_no_runs": [
+          "latest_run_id",
+          "latest_run_status",
+          "latest_run_completed_at"
+        ]
+      },
+      "error_codes": {
+        "401": "Missing or invalid auth token",
+        "403": "Insufficient permissions",
+        "500": "Internal server error"
+      },
+      "pagination": null,
+      "forbidden_response_fields": [
+        "document_content",
+        "credentials",
+        "repair_action",
+        "cleanup_action"
+      ]
+    },
+    "DriftErrorResponse": {
+      "description": "Standard error envelope returned on 4xx/5xx",
+      "response_schema": {
+        "required_fields": [
+          "detail"
+        ],
+        "optional_fields": [
+          "error_code",
+          "message"
+        ]
+      },
+      "error_codes": {
+        "400": "Bad request",
+        "401": "Unauthorized -- missing or invalid Bearer token",
+        "403": "Forbidden -- valid token, insufficient workspace permissions",
+        "404": "Resource not found or workspace mismatch",
+        "405": "Method not allowed -- POST/PUT/PATCH/DELETE blocked",
+        "422": "Unprocessable entity -- invalid query parameter value",
+        "500": "Internal server error"
+      },
+      "notes": [
+        "405 returned when path exists but method is not GET",
+        "404 returned when path pattern does not exist at all",
+        "No repair/cleanup/reindex information ever in error payload"
+      ]
+    }
+  },
+  "enum_registry": {
+    "severity": [
+      "info",
+      "warning",
+      "error",
+      "critical"
+    ],
+    "finding_type": [
+      "DOCUMENT_DRIFT",
+      "METADATA_DRIFT",
+      "LIFECYCLE_DRIFT",
+      "SOURCE_STATUS_DRIFT"
+    ],
+    "run_status": [
+      "pending",
+      "running",
+      "completed",
+      "failed",
+      "completed_with_errors"
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "report_type": "m5b_no_mutation_truth_report",
+  "report_schema_version": 1,
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-11T00:00:00+00:00",
+  "generated_at": "2026-06-11",
+  "status": "PASS",
+  "test_file": "backend/tests/test_m5b_no_mutation_truth.py",
+  "tests_total": 11,
+  "tests_passed": 11,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "errors": 0,
+  "summary": "11/11 tests passed. Drift run does not mutate documents, document_versions, document_chunks, chat_citations, lifecycle_status, or source_status. Only drift_runs/drift_findings/drift_snapshots tables grow.",
+  "checks_verified": [
+    "documents count unchanged before/after run",
+    "document_versions count unchanged",
+    "chunks count unchanged",
+    "citations count unchanged",
+    "lifecycle_status unchanged on all documents",
+    "is_searchable flag unchanged on chunks",
+    "only drift_runs/findings/snapshots mutated",
+    "two consecutive runs: non-drift tables stay constant"
+  ],
+  "constraints": {
+    "repair_actions": "NO_GO",
+    "cleanup_actions": "NO_GO"
+  }
+}

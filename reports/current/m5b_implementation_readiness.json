@@ -1,0 +1,192 @@
+{
+  "report_schema_version": 1,
+  "report_name": "m5b_implementation_readiness",
+  "gate": "m5b_implementation_readiness",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-11T09:00:00.000000+00:00",
+  "environment": "local",
+  "report_type": "gate",
+  "status": "BLOCKED",
+  "result": "BLOCKED",
+  "collected": 9,
+  "passed": 6,
+  "failed": 3,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "inputs": {
+    "m5a_final_readiness_review": "reports/current/m5a_final_readiness_review.json",
+    "m5b_release_decision": "reports/current/m5b_release_decision.json",
+    "report_integrity_v2": "reports/current/report_integrity_v2.json",
+    "documentation_truth_lint": "reports/current/documentation_truth_lint.json",
+    "known_limitations": "reports/current/known_limitations.json",
+    "m5b_preparation_gate": "reports/current/m5b_preparation_gate.json"
+  },
+  "criteria": [
+    {
+      "id": "architecture_complete",
+      "label": "M5b Architektur vollstaendig",
+      "mandatory": true,
+      "passed": false,
+      "status": "BLOCKED",
+      "evidence": "m5b_architecture_review.json: 8/8 DRAFT artifacts complete. 3 open decisions unresolved (OD-01 search index strategy, OD-02 snapshot retention policy, OD-03 feature flag storage). 2 blocking risks: CCR-02 (KL-GOV-001 not scoped, severity=high), CCR-03 (external preconditions unmet, severity=high). All ODs marked must_resolve_before=Implementation Gate GO.",
+      "blocking_reason": "OD-01/02/03 must resolve before Implementation Gate GO. CCR-02 and CCR-03 are hard blockers (blocker=true).",
+      "open_decisions": ["OD-01", "OD-02", "OD-03"],
+      "blocking_risks": ["CCR-02", "CCR-03"]
+    },
+    {
+      "id": "drift_types_defined",
+      "label": "Drift Typen definiert",
+      "mandatory": true,
+      "passed": false,
+      "status": "PARTIAL",
+      "evidence": "drift_schema.json defines 5 types: DOCUMENT_DRIFT, METADATA_DRIFT, LIFECYCLE_DRIFT, SOURCE_STATUS_DRIFT, RETRIEVAL_DRIFT. CCR-01 (m5b_architecture_review.json) notes authoritative schemas/drift_types.schema.json has 7 types. Alignment pending.",
+      "blocking_reason": "CCR-01: drift_schema.json is not aligned with the authoritative drift_types.schema.json (5 vs 7 types). Alignment must be confirmed before implementation.",
+      "defined_count": 5,
+      "authoritative_count": 7,
+      "defined_types": [
+        "DOCUMENT_DRIFT",
+        "METADATA_DRIFT",
+        "LIFECYCLE_DRIFT",
+        "SOURCE_STATUS_DRIFT",
+        "RETRIEVAL_DRIFT"
+      ]
+    },
+    {
+      "id": "drift_schema_defined",
+      "label": "Drift Schema definiert",
+      "mandatory": true,
+      "passed": true,
+      "status": "PASS",
+      "evidence": "drift_schema.json present. JSON Schema format. Defines finding_type enum, severity levels, required fields.",
+      "source": "H:\\WissenMai2026\\drift_schema.json"
+    },
+    {
+      "id": "governance_defined",
+      "label": "Governance definiert",
+      "mandatory": true,
+      "passed": true,
+      "status": "PASS_DRAFT",
+      "evidence": "drift_governance.schema.json present (JSON Schema). docs/m5b-drift-governance.md present. Status: DRAFT.",
+      "sources": [
+        "H:\\WissenMai2026\\drift_governance.schema.json",
+        "H:\\WissenMai2026\\docs\\m5b-drift-governance.md"
+      ]
+    },
+    {
+      "id": "severity_model_defined",
+      "label": "Severity Modell definiert",
+      "mandatory": true,
+      "passed": true,
+      "status": "PASS_DRAFT",
+      "evidence": "drift_severity_matrix.json present (status=DRAFT). 4 severity levels: info, warning, error, critical. docs/m5b-drift-severity.md present.",
+      "sources": [
+        "H:\\WissenMai2026\\drift_severity_matrix.json",
+        "H:\\WissenMai2026\\docs\\m5b-drift-severity.md"
+      ],
+      "severity_levels": ["info", "warning", "error", "critical"],
+      "note": "DRAFT status accepted for readiness assessment. Must be APPROVED before Implementation Gate GO."
+    },
+    {
+      "id": "entity_mapping_defined",
+      "label": "Entity Mapping definiert",
+      "mandatory": true,
+      "passed": true,
+      "status": "PASS_DRAFT",
+      "evidence": "drift_entity_mapping.json present (status=DRAFT). docs/m5b-entity-mapping.md present.",
+      "sources": [
+        "H:\\WissenMai2026\\drift_entity_mapping.json",
+        "H:\\WissenMai2026\\docs\\m5b-entity-mapping.md"
+      ]
+    },
+    {
+      "id": "test_strategy_defined",
+      "label": "Teststrategie definiert",
+      "mandatory": true,
+      "passed": true,
+      "status": "PASS_DRAFT",
+      "evidence": "drift_test_dataset_plan.json present (status=DRAFT). docs/m5b-test-strategy.md present.",
+      "sources": [
+        "H:\\WissenMai2026\\drift_test_dataset_plan.json",
+        "H:\\WissenMai2026\\docs\\m5b-test-strategy.md"
+      ]
+    },
+    {
+      "id": "rollback_defined",
+      "label": "Rollback definiert",
+      "mandatory": true,
+      "passed": true,
+      "status": "PASS",
+      "evidence": "docs/m5b-rollback.md present.",
+      "source": "H:\\WissenMai2026\\docs\\m5b-rollback.md"
+    },
+    {
+      "id": "critical_m5b_impl_limitations_clear",
+      "label": "Kritische M5B_IMPL Limitations vorhanden",
+      "mandatory": true,
+      "passed": true,
+      "status": "CLEAR",
+      "evidence": "known_limitations.json: 0 open limitations with target_phase=M5B and severity=critical and blocks_gate=true. CCR-02 (KL-GOV-001) is tracked in m5b_architecture_review.json as a blocking risk, not as a known_limitation with blocks_gate=true.",
+      "open_critical_m5b_impl": 0,
+      "source": "reports/current/known_limitations.json"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "CCR-03_m5a_preconditions_unmet",
+      "severity": "blocking",
+      "criterion": "architecture_complete",
+      "detail": "CCR-03: M5a external preconditions not met. m5a_final_readiness_review status=BLOCKED. Root cause: TEST_DATABASE_URL not set in sandbox. source_status_integrity_gate and orphan_detector_gate cannot execute. Last known results (2026-06-08): 3/3 and 5/5 passed.",
+      "source": "reports/current/m5b_architecture_review.json"
+    },
+    {
+      "id": "CCR-02_KL-GOV-001_not_scoped",
+      "severity": "blocking",
+      "criterion": "architecture_complete",
+      "detail": "CCR-02: Known limitation KL-GOV-001 (governance enforcement scope) not yet scoped. Severity=high. blocker=true in m5b_architecture_review.json.",
+      "source": "reports/current/m5b_architecture_review.json"
+    },
+    {
+      "id": "OD-01_OD-02_OD-03_unresolved",
+      "severity": "blocking",
+      "criterion": "architecture_complete",
+      "detail": "3 open decisions (OD-01: search index strategy, OD-02: snapshot retention policy, OD-03: feature flag storage) are marked must_resolve_before=Implementation Gate GO.",
+      "source": "reports/current/m5b_architecture_review.json"
+    },
+    {
+      "id": "CCR-01_drift_type_count_mismatch",
+      "severity": "blocking",
+      "criterion": "drift_types_defined",
+      "detail": "CCR-01: drift_schema.json has 5 drift types. Authoritative schemas/drift_types.schema.json has 7. Alignment must be verified before implementation.",
+      "source": "H:\\WissenMai2026\\drift_schema.json"
+    }
+  ],
+  "decision": {
+    "readiness": "BLOCKED",
+    "ready_for_implementation": false,
+    "go_no_go": "NO_GO",
+    "manual_override_allowed": false,
+    "rule": "READY requires all 9 criteria PASS or PASS_DRAFT. PARTIAL counts as FAIL for mandatory criteria."
+  },
+  "path_to_ready": {
+    "remaining_blockers": 4,
+    "actions": [
+      {
+        "blocker": "CCR-03",
+        "action": "Set TEST_DATABASE_URL. Re-run postgres_truth tests. Regenerate m5a gates. Expected: M5a -> READY_FOR_M5B."
+      },
+      {
+        "blocker": "CCR-02",
+        "action": "Scope KL-GOV-001 in known_limitations.json. Document resolution in m5b_architecture_review.json."
+      },
+      {
+        "blocker": "OD-01/02/03",
+        "action": "Resolve open decisions in m5b_architecture_review.json. Update decision_status to RESOLVED for each."
+      },
+      {
+        "blocker": "CCR-01",
+        "action": "Compare drift_schema.json finding_type enum with schemas/drift_types.schema.json. Add missing 2 types or document intentional exclusion."
+      }
+    ]
+  }
+}

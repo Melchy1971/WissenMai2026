@@ -3,8 +3,8 @@
   "report_name": "m5a_orphan_detector_gate",
   "gate": "m5a_orphan_detector_gate",
   "generated_by": "gate_validator",
-  "generated_at": "2026-06-08T07:23:00Z",
-  "timestamp": "2026-06-08T07:23:00Z",
+  "generated_at": "2026-06-11T07:39:14Z",
+  "timestamp": "2026-06-11T07:39:14Z",
   "environment": "local",
   "report_type": "gate",
   "status": "BLOCKED",
@@ -28,7 +28,8 @@
     "postgres_truth_tests_exist": true,
     "postgres_truth_test_path": "backend/tests/postgres_truth/test_m5a_orphan_detector_truth.py",
     "executable": false,
-    "failure_reason": "postgres_truth preflight failed: TEST_DATABASE_URL is not set. Configure a reachable PostgreSQL test database; skips are not allowed for postgres_truth."
+    "failure_reason": "postgres_truth preflight failed: TEST_DATABASE_URL is not set. Configure a reachable PostgreSQL test database; skips are not allowed for postgres_truth.",
+    "re_evaluated_at": "2026-06-11T07:39:14Z"
   },
   "blockers": [
     {
@@ -37,5 +38,16 @@
       "reason": "Orphan Detector PostgreSQL truth tests are present but not executable in the current environment because TEST_DATABASE_URL is not set.",
       "required_action": "Set TEST_DATABASE_URL to a reachable PostgreSQL test database and rerun backend/tests/postgres_truth/test_m5a_orphan_detector_truth.py."
     }
-  ]
+  ],
+  "testlog_evidence": {
+    "testlog_path": "reports/current/m5a_orphan_detector_testlog.txt",
+    "last_successful_run": "2026-06-08",
+    "result_from_testlog": "5 passed in 55.04s",
+    "collected": 5,
+    "passed": 5,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "note": "TEST_DATABASE_URL was set during last run. Not available in current sandbox. Re-run required to generate PASS gate."
+  }
 }

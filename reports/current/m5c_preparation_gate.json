@@ -1,0 +1,125 @@
+{
+  "report_id": "m5c_preparation_gate",
+  "generated_at": "2026-06-12T06:38:54.434634+00:00",
+  "decision": "PREPARED",
+  "note": "PREPARED = Alle M5c-Definitionsdokumente vorhanden und valide. GO nicht erlaubt: M5c Start Gate BLOCKED (Kaskade: M5b Production Readiness BLOCKED). Cleanup/Repair: NO_GO (PROHIBIT-02, PROHIBIT-06).",
+  "checks_passed": 16,
+  "checks_total": 16,
+  "checks": [
+    {
+      "id": "PG-01",
+      "name": "Domain Model doc",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-01b",
+      "name": "Domain Model JSON",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-02",
+      "name": "Risk Scoring doc",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-02b",
+      "name": "Risk Scoring JSON",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-03",
+      "name": "Candidate Rules doc",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-03b",
+      "name": "Candidate Rules JSON",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-04",
+      "name": "Dry Run Governance doc",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-04b",
+      "name": "Dry Run Governance JSON",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-05",
+      "name": "Report Schema",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-05b",
+      "name": "Beispielreport",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-06",
+      "name": "Audit Trail doc",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-06b",
+      "name": "Audit Trail JSON",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-07",
+      "name": "Dashboard Scope doc",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-08",
+      "name": "Implementation Boundary doc",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-08b",
+      "name": "Implementation Boundary JSON",
+      "result": "PASS",
+      "detail": "OK"
+    },
+    {
+      "id": "PG-09",
+      "name": "Governance Boundary",
+      "result": "PASS",
+      "detail": "OK"
+    }
+  ],
+  "blocking_checks": [],
+  "preparation_artifacts": [
+    "docs/m5c-domain-model.md",
+    "docs/m5c-risk-scoring.md",
+    "docs/m5c-candidate-rules.md",
+    "docs/m5c-dry-run-governance.md",
+    "docs/m5c-audit-trail.md",
+    "docs/m5c-dashboard-scope.md",
+    "docs/m5c-implementation-boundary.md",
+    "schemas/cleanup_report.schema.json"
+  ],
+  "go_decision": "NOT_ALLOWED",
+  "go_blocked_by": "m5c_start_gate=BLOCKED (cascade: M5b Production Readiness BLOCKED)",
+  "invariants": {
+    "cleanup_actions": "NO_GO",
+    "repair_actions": "NO_GO",
+    "prohibit_02": "ACTIVE",
+    "prohibit_06": "ACTIVE"
+  }
+}

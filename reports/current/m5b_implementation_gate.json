@@ -1,155 +1,83 @@
 {
   "report_schema_version": 1,
   "report_name": "m5b_implementation_gate",
-  "report_type": "gate_evaluation",
-  "generated_at": "2026-06-10T00:00:00Z",
-  "generated_by": "manual",
+  "gate": "m5b_implementation_gate",
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-11T09:01:00.000000+00:00",
   "environment": "local",
-  "gate_authority": "reports/current/m5b_gate_criteria.json",
-
-  "decision": {
-    "status": "NO_GO",
-    "implementation_allowed": false,
-    "prepared_allowed": false,
-    "reason": "Explizites NO-GO. 4 von 4 Kriterien nicht erfuellt. Start-Gate ist BLOCKED; M5a nicht READY_FOR_M5B; 2 kritische Limitations offen (KL-M5-T-001, KL-M5-T-002); KL-GOV-001 nicht abgegrenzt."
+  "report_type": "gate",
+  "status": "NO_GO",
+  "result": "NO_GO",
+  "collected": 4,
+  "passed": 2,
+  "failed": 2,
+  "errors": 0,
+  "skipped": 0,
+  "exit_code": 1,
+  "prerequisite": {
+    "m5b_implementation_readiness": "BLOCKED",
+    "prerequisite_met": false,
+    "note": "Gate evaluation proceeds as requested. m5b_implementation_readiness=BLOCKED automatically produces NO_GO."
   },
-
-  "boundary_rule": "Auch wenn M5b Preparation PREPARED waere: M5b Implementation bleibt NO-GO bis dieses Gate explizit PASS ist. PREPARED != IMPLEMENTED.",
-
   "criteria": [
     {
-      "id": "IG-01",
-      "label": "Start-Gate GO",
-      "required": true,
+      "id": "report_integrity_v2_pass",
+      "label": "Report Integrity v2 PASS",
+      "mandatory": true,
       "passed": false,
-      "source": "reports/current/m5b_start_gate.json",
-      "observed": {
-        "status": "DRAFT",
-        "go_no_go": "NO_GO",
-        "m5b_implementation_allowed": false,
-        "note": "Start-Gate ist BLOCKED wegen SG-01 (M5a) und SG-02 (Report Integrity)"
-      },
-      "pass_condition": "m5b_start_gate.decision.go_no_go = GO und m5b_start_gate.status = PASS",
-      "blocker_if_failed": true
+      "status": "BLOCKED",
+      "evidence": "report_integrity_v2.json: BLOCKED, 20 blockers. source_status_integrity_gate and orphan_detector_gate blocked by TEST_DATABASE_URL.",
+      "source": "reports/current/report_integrity_v2.json"
     },
     {
-      "id": "IG-02",
-      "label": "Keine kritischen M5B_IMPL Limitations",
-      "required": true,
-      "passed": false,
-      "source": "reports/current/known_limitations.json",
-      "observed": {
-        "open_high_m5b_impl_limitations": [
-          {
-            "id": "KL-M5-T-001",
-            "title": "M5 Entropy-/Drift-Truth-Failures blockieren Slice-Start",
-            "severity": "high",
-            "status": "open",
-            "category": "spaetere M5b Implementierung"
-          },
-          {
-            "id": "KL-M5-T-002",
-            "title": "Drei Pflicht-Artefakte pro M5-Slice fehlen vor Slice-Start",
-            "severity": "high",
-            "status": "open",
-            "category": "spaetere M5b Implementierung"
-          }
-        ],
-        "count": 2
-      },
-      "pass_condition": "Keine open high-severity Limitation mit category 'spaetere M5b Implementierung'",
-      "blocker_if_failed": true
-    },
-    {
-      "id": "IG-03",
-      "label": "Teststrategie vorhanden",
-      "required": true,
+      "id": "documentation_truth_lint_pass",
+      "label": "Documentation Truth Lint PASS",
+      "mandatory": true,
       "passed": true,
-      "source": "docs/m5b-test-strategy.md",
-      "source_secondary": "test_matrix_m5b.json",
-      "observed": {
-        "file_exists": true,
-        "test_matrix_exists": true,
-        "drift_types_covered": 7,
-        "gate_relevant_test_suites": 4,
-        "repair_actions_in_tests": false
-      },
-      "pass_condition": "docs/m5b-test-strategy.md vorhanden mit Testplaenen fuer alle 7 Drift-Typen",
-      "blocker_if_failed": true,
-      "note": "Einzig bestandenes Kriterium. Teststrategie komplett."
+      "status": "PASS",
+      "evidence": "documentation_truth_lint.json: PASS, exit_code=0, 163 files scanned, 0 findings.",
+      "source": "reports/current/documentation_truth_lint.json"
     },
     {
-      "id": "IG-04",
-      "label": "Keine offenen Governance-Blocker fuer Drift Checks",
-      "required": true,
+      "id": "m5a_pass",
+      "label": "M5a PASS (READY_FOR_M5B)",
+      "mandatory": true,
       "passed": false,
-      "source": "reports/current/known_limitations.json",
-      "observed": {
-        "governance_blockers": [
-          {
-            "id": "KL-GOV-001",
-            "title": "Mutierende Admin-Aktionen ohne Runbook und Gate-Freigabe gesperrt",
-            "severity": "high",
-            "status": "deferred",
-            "category": "Governance/Operations allgemein",
-            "read_only_drift_checks_explicitly_excluded": false
-          }
-        ],
-        "count": 1,
-        "note": "KL-GOV-001 ist high/deferred. Read-only Drift Checks sind von der Limitation sachlich nicht betroffen, aber die Nicht-Anwendbarkeit ist nicht explizit dokumentiert. Muss vor GO formell abgegrenzt werden."
-      },
-      "pass_condition": "KL-GOV-001 geschlossen oder explizit als nicht-anwendbar fuer read-only Drift Checks deklariert",
-      "blocker_if_failed": true
+      "status": "BLOCKED",
+      "evidence": "m5a_final_readiness_review.json: BLOCKED, 2/4 criteria passing. ready_for_m5b=false. Blockers: source_status + orphan TEST_DATABASE_URL.",
+      "source": "reports/current/m5a_final_readiness_review.json"
+    },
+    {
+      "id": "no_critical_m5b_impl_blockers",
+      "label": "Keine kritischen M5B_IMPL Blocker",
+      "mandatory": true,
+      "passed": true,
+      "status": "CLEAR",
+      "evidence": "known_limitations.json: 0 open limitations with target_phase=M5B and severity=critical and blocks_gate=true.",
+      "source": "reports/current/known_limitations.json"
     }
   ],
-
-  "summary": {
-    "criteria_total": 4,
-    "criteria_passed": 1,
-    "criteria_failed": 3,
-    "implementation_allowed": false,
-    "blockers_count": 3
-  },
-
   "blockers": [
     {
-      "id": "IG-BLOCKER-01",
-      "criterion": "IG-01",
+      "id": "report_integrity_blocked",
       "severity": "blocking",
-      "source": "reports/current/m5b_start_gate.json",
-      "detail": "Start-Gate ist DRAFT/NO_GO. M5a nicht READY_FOR_M5B. Report Integrity BLOCKED."
+      "criterion": "report_integrity_v2_pass",
+      "detail": "report_integrity_v2 BLOCKED (20 blockers). Root cause: TEST_DATABASE_URL not set in sandbox.",
+      "source": "reports/current/report_integrity_v2.json"
     },
     {
-      "id": "IG-BLOCKER-02",
-      "criterion": "IG-02",
+      "id": "m5a_not_ready_for_m5b",
       "severity": "blocking",
-      "source": "reports/current/known_limitations.json",
-      "detail": "KL-M5-T-001 (high/open): M5 Entropy-/Drift-Truth-Failures blockieren Slice-Start. KL-M5-T-002 (high/open): Pflicht-Artefakte pro M5-Slice fehlen."
-    },
-    {
-      "id": "IG-BLOCKER-03",
-      "criterion": "IG-04",
-      "severity": "blocking",
-      "source": "reports/current/known_limitations.json",
-      "detail": "KL-GOV-001 (high/deferred): Keine explizite Abgrenzung fuer read-only Drift Checks. Governance-Abgrenzung muss dokumentiert werden."
+      "criterion": "m5a_pass",
+      "detail": "M5a final readiness review BLOCKED. ready_for_m5b=false. Same root cause: TEST_DATABASE_URL.",
+      "source": "reports/current/m5a_final_readiness_review.json"
     }
   ],
-
-  "path_to_go": [
-    "1. M5a alle Slice-Gates PASS → m5a_final_readiness_review.json READY_FOR_M5B",
-    "2. report_integrity_v2.json → PASS",
-    "3. m5b_start_gate.json → PASS/GO",
-    "4. KL-M5-T-001 schliessen",
-    "5. KL-M5-T-002 schliessen",
-    "6. KL-GOV-001 fuer read-only Drift Checks explizit als nicht-anwendbar deklarieren",
-    "7. Implementation Gate neu evaluieren → PASS/GO"
-  ],
-
-  "not_allowed_until_go": [
-    "Drift Detection Code implementieren",
-    "Repair Code implementieren",
-    "Cleanup Code implementieren",
-    "neue Admin-Aktionen fuer Drift",
-    "automatische Korrekturen"
-  ]
+  "decision": {
+    "go_no_go": "NO_GO",
+    "implementation_allowed": false,
+    "manual_override_allowed": false,
+    "rule": "GO requires all 4 mandatory criteria PASS and m5b_implementation_readiness=READY. 2 of 4 criteria failed.",
+    "go_condition": "Set TEST_DATABASE_URL -> re-run postgres_truth tests -> regenerate m5a gates -> regenerate report_integrity_v2 -> all criteria expected to pass."
+  }
 }

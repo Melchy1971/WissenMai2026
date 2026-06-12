@@ -1,0 +1,30 @@
+{
+  "report_type": "m5b_idempotency_report",
+  "report_schema_version": 1,
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-11T00:00:00+00:00",
+  "generated_at": "2026-06-11",
+  "status": "PASS",
+  "test_file": "backend/tests/test_m5b_drift_runner_idempotency.py",
+  "tests_total": 9,
+  "tests_passed": 9,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "errors": 0,
+  "summary": "9/9 tests passed. Two consecutive runs on same workspace/data produce logically identical findings (type counts, severity distribution, entity_ids). No duplicate findings within a single run. Snapshots reproducible. Same run_id raises RuntimeError.",
+  "checks_verified": [
+    "finding_type distribution identical across two runs",
+    "total_findings count identical across two runs",
+    "severity distribution identical across two runs",
+    "entity_ids referenced are identical across two runs",
+    "no duplicate (finding_type, severity, entity_id) within single run",
+    "no cross-type duplicates with multiple drift scenarios",
+    "snapshot entity_count stable across runs",
+    "snapshot type is post_run",
+    "same run_id raises RuntimeError (idempotency guard)"
+  ],
+  "constraints": {
+    "repair_actions": "NO_GO",
+    "cleanup_actions": "NO_GO"
+  }
+}

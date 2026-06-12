@@ -1,0 +1,138 @@
+{
+  "report_type": "m5b_alpha_hardening_gate",
+  "report_schema_version": 1,
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-11T00:00:00+00:00",
+  "generated_at": "2026-06-11",
+  "decision": "BLOCKED",
+  "score": 5,
+  "score_max": 7,
+  "threshold": 7,
+  "summary": "5/7 input reports PASS. AHG-01 (m5b_alpha_validation_report PASS) BLOCKED: decision=BLOCKED, AV-01 FAIL (Implementation Gate NO_GO due to external preconditions). AHG-02 (drift_report_integrity PASS) BLOCKED: status=PARTIAL, invalid_reports present. Remaining 5 criteria PASS.",
+  "criteria": [
+    {
+      "id": "AHG-01",
+      "description": "m5b_alpha_validation_report.json decision = PASS",
+      "result": "FAIL",
+      "blocker": true,
+      "source": "reports/current/m5b_alpha_validation_report.json",
+      "evidence": "decision=BLOCKED, score=7/8. AV-01 (Implementation Gate GO) FAIL: m5b_implementation_gate.json NO_GO. External preconditions: M5a not READY_FOR_M5B, report_integrity_v2 BLOCKED.",
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "id": "AHG-02",
+      "description": "drift_report_integrity.json status = PASS",
+      "result": "FAIL",
+      "blocker": true,
+      "source": "reports/current/drift_report_integrity.json",
+      "evidence": "status=PARTIAL. invalid_reports: [drift_report.json (FILE NOT FOUND), drift_summary.json (FILE NOT FOUND)]. Reports absent because no CLI run has been executed yet.",
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "id": "AHG-03",
+      "description": "m5b_no_mutation_truth_report.json status = PASS, failed=errors=skipped=0",
+      "result": "PASS",
+      "blocker": true,
+      "source": "reports/current/m5b_no_mutation_truth_report.json",
+      "evidence": "status=PASS, tests_passed=11, tests_failed=0, errors=0, skipped=0.",
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "id": "AHG-04",
+      "description": "m5b_workspace_isolation_report.json status = PASS, failed=errors=skipped=0",
+      "result": "PASS",
+      "blocker": true,
+      "source": "reports/current/m5b_workspace_isolation_report.json",
+      "evidence": "status=PASS, tests_passed=9, tests_failed=0, errors=0, skipped=0.",
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "id": "AHG-05",
+      "description": "m5b_drift_severity_report.json status = PASS, failed=errors=skipped=0",
+      "result": "PASS",
+      "blocker": true,
+      "source": "reports/current/m5b_drift_severity_report.json",
+      "evidence": "status=PASS, tests_passed=17, tests_failed=0, errors=0, skipped=0.",
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "id": "AHG-06",
+      "description": "m5b_idempotency_report.json status = PASS, failed=errors=skipped=0",
+      "result": "PASS",
+      "blocker": true,
+      "source": "reports/current/m5b_idempotency_report.json",
+      "evidence": "status=PASS, tests_passed=9, tests_failed=0, errors=0, skipped=0.",
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "id": "AHG-07",
+      "description": "documentation_truth_lint.json status = PASS, errors=0, keine Repair/Cleanup/Reindex",
+      "result": "PASS",
+      "blocker": true,
+      "source": "reports/current/documentation_truth_lint.json",
+      "evidence": "status=PASS, errors=0. constraints: cleanup_actions=NO_GO, repair_actions=NO_GO, m5c_start=BLOCKED_UNTIL_M5B_BETA_PASS.",
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "blocker_summary": [
+    {
+      "id": "AHG-BLOCKER-01",
+      "criterion": "AHG-01",
+      "reason": "m5b_alpha_validation_report BLOCKED: AV-01 Implementation Gate NO_GO. Requires M5a READY_FOR_M5B + report_integrity_v2 PASS."
+    },
+    {
+      "id": "AHG-BLOCKER-02",
+      "criterion": "AHG-02",
+      "reason": "drift_report_integrity PARTIAL: drift_report.json and drift_summary.json absent. Requires at least one CLI drift run to generate runtime reports."
+    }
+  ],
+  "truth_tests_summary": {
+    "no_mutation": {
+      "status": "PASS",
+      "passed": 11,
+      "failed": 0
+    },
+    "workspace_isolation": {
+      "status": "PASS",
+      "passed": 9,
+      "failed": 0
+    },
+    "drift_severity": {
+      "status": "PASS",
+      "passed": 17,
+      "failed": 0
+    },
+    "idempotency": {
+      "status": "PASS",
+      "passed": 9,
+      "failed": 0
+    },
+    "total_truth_tests": 46,
+    "total_passed": 46,
+    "total_failed": 0
+  },
+  "constraints": {
+    "repair_actions": "NO_GO",
+    "cleanup_actions": "NO_GO",
+    "auto_reindex_actions": "NO_GO",
+    "m5c_start": "BLOCKED_UNTIL_M5B_BETA_PASS"
+  },
+  "path_to_pass": [
+    "Close AHG-BLOCKER-01: M5a READY_FOR_M5B + report_integrity_v2 PASS \u2192 m5b_alpha_validation_report decision=PASS",
+    "Close AHG-BLOCKER-02: Execute at least one CLI drift run (scripts/run_drift_detection.py) \u2192 drift_report.json + drift_summary.json generated \u2192 drift_report_integrity status=PASS"
+  ]
+}

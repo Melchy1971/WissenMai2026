@@ -1,0 +1,84 @@
+{
+  "report_id": "cleanup_risk_scoring",
+  "generated_at": "2026-06-12T06:35:46.317284+00:00",
+  "status": "DEFINITION",
+  "doc": "docs/m5c-risk-scoring.md",
+  "score_range": {
+    "min": 0,
+    "max": 100
+  },
+  "classes": [
+    {
+      "name": "LOW",
+      "min": 0,
+      "max": 20,
+      "auto_proposal": true,
+      "review": "optional"
+    },
+    {
+      "name": "MEDIUM",
+      "min": 21,
+      "max": 40,
+      "auto_proposal": true,
+      "review": "recommended"
+    },
+    {
+      "name": "HIGH",
+      "min": 41,
+      "max": 60,
+      "auto_proposal": true,
+      "review": "mandatory"
+    },
+    {
+      "name": "VERY_HIGH",
+      "min": 61,
+      "max": 80,
+      "auto_proposal": true,
+      "review": "senior_plus_po"
+    },
+    {
+      "name": "CRITICAL",
+      "min": 81,
+      "max": 100,
+      "auto_proposal": false,
+      "review": "manual_only"
+    }
+  ],
+  "criteria": [
+    {
+      "id": "datenverlust",
+      "name": "Datenverlust-Risiko",
+      "weight": 20,
+      "description": "Irreversibler Datenverlust durch Cleanup-Aktion"
+    },
+    {
+      "id": "referenz",
+      "name": "Referenz-Risiko",
+      "weight": 20,
+      "description": "Anzahl eingehender Referenzen auf die Entit\u00e4t"
+    },
+    {
+      "id": "retrieval",
+      "name": "Retrieval-Risiko",
+      "weight": 20,
+      "description": "Auswirkung auf laufende Retrieval-Ergebnisse"
+    },
+    {
+      "id": "lifecycle",
+      "name": "Lifecycle-Risiko",
+      "weight": 20,
+      "description": "Kritikalit\u00e4t des aktuellen Lifecycle-Status"
+    },
+    {
+      "id": "governance",
+      "name": "Governance-Risiko",
+      "weight": 20,
+      "description": "Regulatorische und Compliance-Anforderungen"
+    }
+  ],
+  "formula": "risk_score = sum(criteria_scores), each criterion 0-20",
+  "invariants": {
+    "prohibit_02": "ACTIVE",
+    "prohibit_06": "ACTIVE"
+  }
+}

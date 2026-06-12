@@ -48,12 +48,12 @@ class LifecycleIntegrityDetector:
 
     def detect(self) -> list[dict[str, Any]]:
         findings: list[dict[str, Any]] = []
-        findings.extend(self._detect_active_documents_not_findable())
-        findings.extend(self._detect_archived_documents_in_search())
+        findings.extend(self._detect_active_not_retrievable_documents())
+        findings.extend(self._detect_non_active_searchable_chunks())
         findings.extend(self._detect_archived_documents_in_retrieval())
-        findings.extend(self._detect_deleted_documents_in_search())
         findings.extend(self._detect_deleted_documents_in_retrieval())
         findings.extend(self._detect_inconsistent_lifecycle_status())
+        findings.extend(self._detect_source_status_drift())
         findings.extend(self._detect_version_lifecycle_violations())
         return findings
 
@@ -172,31 +172,6 @@ class LifecycleIntegrityDetector:
                 )
             )
 
-        source_status_rows = self._session.execute(
-            select(ChatCitation.id, ChatCitation.document_id, ChatCitation.source_status, Document.lifecycle_status)
-            .join(ChatMessage, ChatMessage.id == ChatCitation.message_id)
-            .join(ChatSession, ChatSession.id == ChatMessage.session_id)
-            .join(Document, Document.id == ChatCitation.document_id)
-            .where(
-                ChatSession.workspace_id == self._workspace_id,
-                Document.workspace_id == self._workspace_id,
-                ChatCitation.source_status != Document.lifecycle_status,
-            )
-            .limit(self._config.max_rows_per_rule)
-        ).all()
-        for row in source_status_rows:
-            findings.append(
-                self._finding(
-                    rule_id="LI-6",
-                    title="Citation source status mismatch",
-                    description=(
-                        f"Citation {row.id} stores source_status='{row.source_status}' "
-                        f"but document {row.document_id} has lifecycle_status='{row.lifecycle_status}'."
-                    ),
-                    document_id=row.document_id,
-                )
-            )
-
         return findings
 
     def _detect_version_lifecycle_violations(self) -> list[dict[str, Any]]:
@@ -258,6 +233,95 @@ class LifecycleIntegrityDetector:
         )
 
         return findings
+
+    def _detect_active_not_retrievable_documents(self) -> list[dict[str, Any]]:
+        """LI-1: Active documents with no searchable chunks (not findable/retrievable).
+
+        Read-only. No data mutation. No auto-repair.
+        """
+        return self._detect_active_documents_not_findable()
+
+    def _detect_non_active_searchable_chunks(self) -> list[dict[str, Any]]:
+        """C8 / C9: archived and deleted documents must not appear in search.
+
+        Consolidated check using lifecycle_status.in_(("archived", "deleted")).
+        Covers Check 1 (C8-Search) and Check 3 (C9-Search).
+        Read-only. No data mutation. No auto-repair.
+        """
+        rows = self._session.execute(
+            select(
+                Document.id.label("document_id"),
+                Document.lifecycle_status.label("lifecycle_status"),
+                Document.current_version_id.label("version_id"),
+                Chunk.id.label("chunk_id"),
+            )
+            .join(Chunk, Chunk.document_id == Document.id)
+            .where(
+                Document.workspace_id == self._workspace_id,
+                Document.lifecycle_status.in_(("archived", "deleted")),
+                or_(Chunk.is_searchable.is_(True), Chunk.search_vector.isnot(None)),
+            )
+            .limit(self._config.max_rows_per_rule)
+        ).all()
+
+        return [
+            self._finding(
+                rule_id="LI-2" if row.lifecycle_status == _ARCHIVED else "LI-4",
+                title=(
+                    "Archived document appears in search"
+                    if row.lifecycle_status == _ARCHIVED
+                    else "Deleted document appears in search"
+                ),
+                description=(
+                    f"Document {row.document_id} has lifecycle_status='{row.lifecycle_status}' "
+                    f"but chunk {row.chunk_id} is still present in the search surface."
+                ),
+                document_id=row.document_id,
+                version_id=row.version_id,
+                chunk_id=row.chunk_id,
+            )
+            for row in rows
+        ]
+
+    def _detect_source_status_drift(self) -> list[dict[str, Any]]:
+        """C9 / Check 5: Citation source_status must match document lifecycle_status.
+
+        Detects drift between a citation's recorded source_status and the referenced
+        document's current lifecycle_status.
+        Read-only. No data mutation. No auto-repair.
+        """
+        rows = self._session.execute(
+            select(
+                ChatCitation.id,
+                ChatCitation.document_id,
+                ChatCitation.chunk_id,
+                ChatCitation.source_status,
+                Document.lifecycle_status,
+            )
+            .join(ChatMessage, ChatMessage.id == ChatCitation.message_id)
+            .join(ChatSession, ChatSession.id == ChatMessage.session_id)
+            .join(Document, Document.id == ChatCitation.document_id)
+            .where(
+                ChatSession.workspace_id == self._workspace_id,
+                Document.workspace_id == self._workspace_id,
+                ChatCitation.source_status != Document.lifecycle_status,
+            )
+            .limit(self._config.max_rows_per_rule)
+        ).all()
+
+        return [
+            self._finding(
+                rule_id="LI-6",
+                title="Citation source status mismatch",
+                description=(
+                    f"Citation {row.id} stores source_status='{row.source_status}' "
+                    f"but document {row.document_id} has lifecycle_status='{row.lifecycle_status}'."
+                ),
+                document_id=row.document_id,
+                chunk_id=row.chunk_id,
+            )
+            for row in rows
+        ]
 
     def _detect_non_active_documents_in_search(
         self,

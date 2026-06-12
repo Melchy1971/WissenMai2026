@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cleanup_report.schema.json",
+  "title": "CleanupReport",
+  "description": "Schema f\u00fcr M5c Cleanup Run Reports (Dry Run only)",
+  "type": "object",
+  "required": [
+    "report_schema_version",
+    "report_name",
+    "generated_by",
+    "timestamp",
+    "cleanup_run_id",
+    "candidate_count",
+    "risk_summary",
+    "candidates"
+  ],
+  "properties": {
+    "report_schema_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema-Version"
+    },
+    "report_name": {
+      "type": "string",
+      "description": "Eindeutiger Report-Name"
+    },
+    "generated_by": {
+      "type": "string",
+      "description": "Generator-Bezeichner"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 Erzeugungszeitpunkt"
+    },
+    "cleanup_run_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "FK \u2192 CleanupRun.id"
+    },
+    "workspace_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Workspace-Scope"
+    },
+    "candidate_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "dry_run": {
+      "type": "boolean",
+      "const": true,
+      "description": "Immer true \u2014 kein echtes Execute"
+    },
+    "risk_summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "by_class",
+        "by_type",
+        "max_risk_score",
+        "avg_risk_score"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "by_class": {
+          "type": "object",
+          "properties": {
+            "LOW": {
+              "type": "integer"
+            },
+            "MEDIUM": {
+              "type": "integer"
+            },
+            "HIGH": {
+              "type": "integer"
+            },
+            "VERY_HIGH": {
+              "type": "integer"
+            },
+            "CRITICAL": {
+              "type": "integer"
+            }
+          }
+        },
+        "by_type": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "max_risk_score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "avg_risk_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "candidate_type",
+          "entity_type",
+          "entity_id",
+          "risk_score",
+          "severity",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "candidate_type": {
+            "type": "string",
+            "enum": [
+              "DUPLICATE_DOCUMENT",
+              "DUPLICATE_VERSION",
+              "ORPHAN_CHUNK",
+              "ORPHAN_VERSION",
+              "ORPHAN_CITATION",
+              "UNUSED_METADATA"
+            ]
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "entity_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "risk_score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "CRITICAL"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "remediation_hint": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "evidence": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

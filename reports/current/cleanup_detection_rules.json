@@ -1,0 +1,66 @@
+{
+  "report_id": "cleanup_detection_rules",
+  "generated_at": "2026-06-12T06:35:46.317284+00:00",
+  "status": "DEFINITION",
+  "doc": "docs/m5c-candidate-rules.md",
+  "rules": [
+    {
+      "id": "R1",
+      "candidate_type": "DUPLICATE_DOCUMENT",
+      "entity_type": "document",
+      "detection": "content_hash equality or similarity>=0.95",
+      "sql_table": "documents",
+      "read_only": true
+    },
+    {
+      "id": "R2",
+      "candidate_type": "DUPLICATE_VERSION",
+      "entity_type": "document_version",
+      "detection": "intra-document content_hash equality",
+      "sql_table": "document_versions",
+      "read_only": true
+    },
+    {
+      "id": "R3",
+      "candidate_type": "ORPHAN_CHUNK",
+      "entity_type": "chunk",
+      "detection": "LEFT JOIN documents ON chunk.document_id, NULL or DELETED",
+      "sql_table": "chunks",
+      "read_only": true
+    },
+    {
+      "id": "R4",
+      "candidate_type": "ORPHAN_VERSION",
+      "entity_type": "document_version",
+      "detection": "LEFT JOIN documents ON version.document_id, NULL",
+      "sql_table": "document_versions",
+      "read_only": true
+    },
+    {
+      "id": "R5",
+      "candidate_type": "ORPHAN_CITATION",
+      "entity_type": "citation",
+      "detection": "LEFT JOIN documents ON citation.source_document_id, NULL or DELETED",
+      "sql_table": "citations",
+      "read_only": true
+    },
+    {
+      "id": "R6",
+      "candidate_type": "UNUSED_METADATA",
+      "entity_type": "metadata_entry",
+      "detection": "LEFT JOIN documents ON metadata.document_id, NULL",
+      "sql_table": "document_metadata",
+      "read_only": true
+    }
+  ],
+  "common_constraints": [
+    "All queries are SELECT-only",
+    "workspace_id filter mandatory",
+    "Results written to cleanup_candidates, not documents",
+    "CRITICAL candidates: no auto-proposal"
+  ],
+  "invariants": {
+    "prohibit_02": "ACTIVE",
+    "prohibit_06": "ACTIVE"
+  }
+}

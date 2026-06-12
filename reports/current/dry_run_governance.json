@@ -1,0 +1,62 @@
+{
+  "report_id": "dry_run_governance",
+  "generated_at": "2026-06-12T06:35:46.317284+00:00",
+  "status": "DEFINITION",
+  "doc": "docs/m5c-dry-run-governance.md",
+  "mandatory_rules": [
+    {
+      "id": "DR-01",
+      "rule": "Dry Run erzeugt nur Proposals (status=PENDING)",
+      "hard_stop": false
+    },
+    {
+      "id": "DR-02",
+      "rule": "Keine Daten\u00e4nderung in documents, chunks, citations, document_metadata",
+      "hard_stop": true
+    },
+    {
+      "id": "DR-03",
+      "rule": "Keine Lifecycle-\u00c4nderung",
+      "hard_stop": false
+    },
+    {
+      "id": "DR-04",
+      "rule": "Kein L\u00f6schen von Entit\u00e4ten",
+      "hard_stop": true
+    },
+    {
+      "id": "DR-05",
+      "rule": "Kein Merge von Dokumenten oder Versionen",
+      "hard_stop": false
+    },
+    {
+      "id": "DR-06",
+      "rule": "Kein Reindex-Trigger",
+      "hard_stop": false
+    }
+  ],
+  "required_report_fields": [
+    "run_id",
+    "timestamp",
+    "workspace_id",
+    "candidates",
+    "risk_summary"
+  ],
+  "risk_summary_required_keys": [
+    "total",
+    "by_class",
+    "by_type",
+    "max_risk_score",
+    "avg_risk_score"
+  ],
+  "safety_checks": [
+    "pre_check_no_open_proposals",
+    "db_advisory_lock",
+    "post_check_row_count"
+  ],
+  "execution_scope": "NOT_IN_SCOPE",
+  "invariants": {
+    "prohibit_02": "ACTIVE",
+    "prohibit_06": "ACTIVE"
+  }
+}

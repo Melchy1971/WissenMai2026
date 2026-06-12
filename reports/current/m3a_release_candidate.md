@@ -1,6 +1,6 @@
 # M3a Release Candidate
 
-Status: `PASS` | Entscheidung: `GO` | Zeitpunkt: `2026-06-05T10:06:18.467008+00:00`
+Status: `PASS` | Entscheidung: `GO` | Zeitpunkt: `2026-06-11T07:05:11.297723+00:00`
 
 ## Kriterien
 
@@ -13,14 +13,14 @@ Status: `PASS` | Entscheidung: `GO` | Zeitpunkt: `2026-06-05T10:06:18.467008+00:
 
 ## Stale Guard
 
-RC Timestamp: `2026-06-05T10:06:18.467008+00:00`
+RC Timestamp: `2026-06-11T07:05:11.297723+00:00`
 
 | Input | Timestamp |
 |---|---|
 | `runtime_connectivity_gate` | `2026-06-05T10:04:42.576444+00:00` |
 | `frontend_full_suite_staged_report` | `2026-05-28T10:28:30.000000+00:00` |
 | `report_truth_preflight` | `2026-05-29T06:38:24.591859+00:00` |
-| `documentation_truth_lint` | `2026-06-03T09:36:32.001820+00:00` |
+| `documentation_truth_lint` | `2026-06-10T17:00:00.000000+00:00` |
 
 ## Blocker
 

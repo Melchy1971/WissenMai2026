@@ -6,24 +6,13 @@ import { AppShell } from './AppShell.jsx';
 import { ErrorState } from '../components/status/ErrorState.jsx';
 import { LoadingState } from '../components/status/LoadingState.jsx';
 
-// Existing pages
-import { AdminDiagnosticsPage } from '../pages/AdminDiagnosticsPage.jsx';
-import { DataQualityPage } from '../pages/DataQualityPage.jsx';
 import { ChatPage } from '../pages/ChatPage.jsx';
+import { DashboardPage } from '../pages/DashboardPage.jsx';
+import { DataQualityPage } from '../pages/DataQualityPage.jsx';
 import { DocumentDetailPage } from '../pages/DocumentDetailPage.jsx';
 import { DocumentsPage } from '../pages/DocumentsPage.jsx';
 import { LoginPage } from '../pages/LoginPage.jsx';
-
-// New pages
-import { DashboardPage } from '../pages/DashboardPage.jsx';
-import { ToolCenterPage } from '../pages/ToolCenterPage.jsx';
-import { MemoryCenterPage } from '../pages/MemoryCenterPage.jsx';
-import { TaskCenterPage } from '../pages/TaskCenterPage.jsx';
-import { ProjectCenterPage } from '../pages/ProjectCenterPage.jsx';
 import { RAGCenterPage } from '../pages/RAGCenterPage.jsx';
-import { AgentCenterPage } from '../pages/AgentCenterPage.jsx';
-import { CollaborationCenterPage } from '../pages/CollaborationCenterPage.jsx';
-import { GovernanceCenterPage } from '../pages/GovernanceCenterPage.jsx';
 import { SettingsPage } from '../pages/SettingsPage.jsx';
 
 import { mapError } from '../view-models/mappers.js';
@@ -79,27 +68,14 @@ export function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
-        {/* Redirect root → dashboard */}
         <Route path="/" element={<Navigate replace to="/dashboard" />} />
-
-        {/* Existing routes */}
-        <Route path="/documents" element={<DocumentsPage />} />
-        <Route path="/documents/:id" element={<DocumentDetailPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/chat/:id" element={<ChatPage />} />
-        <Route path="/admin/diagnostics" element={<AdminDiagnosticsPage />} />
-        <Route path="/data-quality" element={<DataQualityPage />} />
-
-        {/* New routes */}
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/tools" element={<ToolCenterPage />} />
-        <Route path="/memory" element={<MemoryCenterPage />} />
-        <Route path="/tasks" element={<TaskCenterPage />} />
-        <Route path="/projects" element={<ProjectCenterPage />} />
+        <Route path="/documents" element={<DocumentsPage />} />
+        <Route path="/documents/:id" element={<DocumentDetailPage />} />
         <Route path="/rag" element={<RAGCenterPage />} />
-        <Route path="/agents" element={<AgentCenterPage />} />
-        <Route path="/collaboration" element={<CollaborationCenterPage />} />
-        <Route path="/governance" element={<GovernanceCenterPage />} />
+        <Route path="/data-quality" element={<DataQualityPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>

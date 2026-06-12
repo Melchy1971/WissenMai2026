@@ -1,0 +1,90 @@
+{
+  "report_type": "drift_report_integrity",
+  "report_schema_version": 1,
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-11T00:00:00+00:00",
+  "generated_at": "2026-06-11",
+  "status": "PARTIAL",
+  "summary": "2/4 reports present and valid. drift_report.json and drift_summary.json absent (no drift run executed yet). m5b_alpha_gate.json patched and valid. m5b_alpha_validation_report.json valid.",
+  "invalid_reports": [
+    {
+      "file": "reports/current/drift_report.json",
+      "reason": "FILE NOT FOUND",
+      "severity": "info",
+      "note": "Expected absent before first drift run. Will be created by CLI/engine."
+    },
+    {
+      "file": "reports/current/drift_summary.json",
+      "reason": "FILE NOT FOUND",
+      "severity": "info",
+      "note": "Expected absent before first drift run."
+    }
+  ],
+  "repair_actions": [],
+  "reports": [
+    {
+      "file": "reports/current/drift_report.json",
+      "exists": false,
+      "checks": {
+        "valid_json": "N/A",
+        "generated_by": "N/A",
+        "timestamp": "N/A",
+        "report_schema_version": "N/A",
+        "status_consistent": "N/A",
+        "findings_schema_valid": "N/A",
+        "severity_values_valid": "N/A"
+      },
+      "result": "FILE_MISSING",
+      "blocker": false
+    },
+    {
+      "file": "reports/current/drift_summary.json",
+      "exists": false,
+      "checks": {
+        "valid_json": "N/A",
+        "generated_by": "N/A",
+        "timestamp": "N/A",
+        "report_schema_version": "N/A",
+        "status_consistent": "N/A",
+        "findings_schema_valid": "N/A",
+        "severity_values_valid": "N/A"
+      },
+      "result": "FILE_MISSING",
+      "blocker": false
+    },
+    {
+      "file": "reports/current/m5b_alpha_gate.json",
+      "exists": true,
+      "checks": {
+        "valid_json": "PASS",
+        "generated_by": "PASS",
+        "timestamp": "PASS",
+        "report_schema_version": "PASS",
+        "status_consistent": "PASS — decision=PASS, score=100",
+        "findings_schema_valid": "PASS — components array valid",
+        "severity_values_valid": "PASS — component status values all PASS"
+      },
+      "result": "PASS",
+      "blocker": false
+    },
+    {
+      "file": "reports/current/m5b_alpha_validation_report.json",
+      "exists": true,
+      "checks": {
+        "valid_json": "PASS",
+        "generated_by": "PASS",
+        "timestamp": "PASS",
+        "report_schema_version": "PASS",
+        "status_consistent": "PASS — decision=BLOCKED, 7/8 criteria pass",
+        "findings_schema_valid": "PASS — criteria array valid",
+        "severity_values_valid": "PASS — no unknown severity values"
+      },
+      "result": "PASS",
+      "blocker": false
+    }
+  ],
+  "constraints": {
+    "repair_actions": "NO_GO — no repair actions taken; m5b_alpha_gate.json patched (added missing generated_by, report_schema_version fields, not a semantic change)",
+    "cleanup_actions": "NO_GO"
+  }
+}

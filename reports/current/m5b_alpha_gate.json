@@ -1,0 +1,90 @@
+{
+  "gate": "m5b_alpha_gate",
+  "evaluated_at": "2026-06-11",
+  "decision": "PASS",
+  "score": 100,
+  "threshold": 90,
+  "summary": "All 6 mandatory M5b components implemented. 106/106 tests pass.",
+  "components": [
+    {
+      "id": "M5B-PERSIST",
+      "name": "Persistence Layer",
+      "description": "SQLAlchemy models drift_runs / drift_findings / drift_snapshots, Alembic migration 20260611_0020",
+      "file": "backend/app/models/drift.py",
+      "test_file": "backend/tests/test_drift_persistence.py",
+      "tests_total": 20,
+      "tests_passed": 20,
+      "status": "PASS"
+    },
+    {
+      "id": "M5B-ENGINE",
+      "name": "Drift Run Engine",
+      "description": "6-step pipeline: start -> register -> detect -> save findings -> snapshot -> report. Idempotent, read-only.",
+      "file": "backend/app/services/drift_run_engine.py",
+      "test_file": "backend/tests/test_drift_run_engine.py",
+      "tests_total": 21,
+      "tests_passed": 21,
+      "status": "PASS"
+    },
+    {
+      "id": "M5B-DOC",
+      "name": "Document Drift Detector",
+      "description": "4 checks: document_present, version_present, chunk_structure, status_consistent. Finding: DOCUMENT_DRIFT.",
+      "file": "backend/app/services/drift/document_drift_detector.py",
+      "test_file": "backend/tests/test_document_drift_detector.py",
+      "tests_total": 20,
+      "tests_passed": 20,
+      "status": "PASS"
+    },
+    {
+      "id": "M5B-META",
+      "name": "Metadata Drift Detector",
+      "description": "4 checks: title, required keys (category/summary), key consistency across versions. Finding: METADATA_DRIFT.",
+      "file": "backend/app/services/drift/metadata_drift_detector.py",
+      "test_file": "backend/tests/test_metadata_drift_detector.py",
+      "tests_total": 18,
+      "tests_passed": 18,
+      "status": "PASS"
+    },
+    {
+      "id": "M5B-LIFECYCLE",
+      "name": "Lifecycle Drift Detector",
+      "description": "3 checks: active_findable (error), archived_not_findable (error), deleted_not_findable (critical). Finding: LIFECYCLE_DRIFT.",
+      "file": "backend/app/services/drift/lifecycle_drift_detector.py",
+      "test_file": "backend/tests/test_lifecycle_drift_detector.py",
+      "tests_total": 16,
+      "tests_passed": 16,
+      "status": "PASS"
+    },
+    {
+      "id": "M5B-SOURCE",
+      "name": "Source Status Drift Detector",
+      "description": "Checks import_status consistency against document state. Finding: SOURCE_STATUS_DRIFT.",
+      "file": "backend/app/services/source_status_integrity_detector.py",
+      "test_file": "backend/tests/test_source_status_integrity_detector.py",
+      "tests_total": 11,
+      "tests_passed": 11,
+      "status": "PASS"
+    }
+  ],
+  "test_totals": {
+    "total": 106,
+    "passed": 106,
+    "failed": 0,
+    "skipped": 0
+  },
+  "score_breakdown": {
+    "components_complete": "6/6",
+    "tests_green": "106/106",
+    "score_formula": "(6/6) * 100 = 100"
+  },
+  "constraints": {
+    "cleanup_actions": "NO_GO",
+    "repair_actions": "NO_GO",
+    "m5c_start": "BLOCKED_UNTIL_M5B_SIGNED_OFF"
+  },
+  "blockers": [],
+  "report_schema_version": 1,
+  "generated_by": "gate_validator",
+  "timestamp": "2026-06-11T00:00:00+00:00"
+}

@@ -1,0 +1,69 @@
+{
+  "report_id": "m5c_boundary",
+  "generated_at": "2026-06-12T06:37:15.871187+00:00",
+  "status": "DEFINITION",
+  "doc": "docs/m5c-implementation-boundary.md",
+  "allowed": [
+    "Candidate Detection (read-only SQL)",
+    "Dry Run Reports",
+    "Risk Scoring",
+    "Dashboard (read-only)",
+    "Audit Trail (INSERT-only)"
+  ],
+  "forbidden": [
+    {
+      "action": "DELETE",
+      "prohibit": "PROHIBIT-04"
+    },
+    {
+      "action": "MERGE",
+      "prohibit": "PROHIBIT-05"
+    },
+    {
+      "action": "REPAIR",
+      "prohibit": "PROHIBIT-02"
+    },
+    {
+      "action": "REINDEX",
+      "prohibit": "PROHIBIT-07"
+    },
+    {
+      "action": "LIFECYCLE_CHANGE",
+      "prohibit": "PROHIBIT-03"
+    },
+    {
+      "action": "AUTO_EXECUTE",
+      "prohibit": "PROHIBIT-08"
+    },
+    {
+      "action": "BULK_ACTIONS",
+      "prohibit": "PROHIBIT-09"
+    }
+  ],
+  "db_write_allowed_tables": [
+    "cleanup_runs",
+    "cleanup_candidates",
+    "cleanup_proposals",
+    "cleanup_audit"
+  ],
+  "db_write_forbidden_tables": [
+    "documents",
+    "chunks",
+    "citations",
+    "document_metadata",
+    "document_versions"
+  ],
+  "api_allowed": [
+    "GET /api/cleanup/*",
+    "POST /api/cleanup/runs"
+  ],
+  "api_forbidden": [
+    "POST /api/cleanup/execute",
+    "DELETE /api/cleanup/*",
+    "PUT /api/cleanup/documents/*"
+  ],
+  "invariants": {
+    "prohibit_02": "ACTIVE",
+    "prohibit_06": "ACTIVE"
+  }
+}
