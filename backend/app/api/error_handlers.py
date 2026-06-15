@@ -12,6 +12,7 @@ from app.core.errors import (
     RequestValidationApiError,
     WorkspaceRequiredApiError,
 )
+from app.core.redaction import redact_for_ui
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -60,4 +61,4 @@ def map_validation_error(exc: RequestValidationError) -> ApiError:
 
 
 def error_content(code: str, message: str, details: dict[str, Any]) -> dict[str, Any]:
-    return {"error": {"code": code, "message": message, "details": details}}
+    return {"error": {"code": code, "message": message, "details": redact_for_ui(details)}}

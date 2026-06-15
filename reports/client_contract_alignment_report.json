@@ -1,0 +1,119 @@
+{
+  "report": "client_contract_alignment_report",
+  "generated_at": "2026-06-12T00:00:00Z",
+  "scope": "Frontend API client alignment for Analysis and Dashboard backend contracts",
+  "status": "implemented",
+  "checked": {
+    "analysisApi_methods": {
+      "status": "aligned",
+      "methods": [
+        "listJobs",
+        "createJob",
+        "getJob",
+        "compareJob",
+        "summarizeJob",
+        "approveJob",
+        "getResult"
+      ],
+      "base_path": "/api/v1/analysis"
+    },
+    "dashboardApi_methods": {
+      "status": "aligned",
+      "methods": [
+        "getSummary",
+        "getActivity",
+        "getImports",
+        "getAnalysis",
+        "getQuality",
+        "getTopics"
+      ],
+      "base_path": "/api/v1/dashboard"
+    },
+    "request_payloads": {
+      "status": "aligned",
+      "analysis_create_job": ["source_document_ids", "analysis_type", "prompt"],
+      "analysis_compare_job": ["compared_document_ids", "max_differences"],
+      "analysis_summarize_job": ["prompt", "max_suggestions"],
+      "analysis_approve_job": ["decision"]
+    },
+    "response_fields": {
+      "status": "aligned",
+      "analysis": [
+        "id",
+        "workspace_id",
+        "source_document_ids",
+        "status",
+        "analysis_type",
+        "prompt",
+        "created_by",
+        "created_at",
+        "started_at",
+        "finished_at",
+        "error_code",
+        "error_message",
+        "result",
+        "comparison",
+        "suggestions"
+      ],
+      "dashboard_summary": [
+        "document_count",
+        "active_document_count",
+        "archived_document_count",
+        "new_imports_count",
+        "open_analysis_count",
+        "topic_count",
+        "quality_score",
+        "drift_status"
+      ],
+      "dashboard_activity_item_type": "item_type"
+    },
+    "error_handling": {
+      "status": "aligned",
+      "mechanism": "All methods call requestJson and throw ApiClientError on backend/network failures."
+    },
+    "auth_header": {
+      "status": "aligned",
+      "mechanism": "Authorization is injected centrally by requestJson from API request context."
+    },
+    "workspace_header": {
+      "status": "aligned",
+      "mechanism": "X-Workspace-Id is injected centrally by requestJson from API request context."
+    }
+  },
+  "frontend_adjustments": [
+    {
+      "file": "frontend/src/api/analysis.js",
+      "change": "Added analysisApi methods matching /api/v1/analysis backend routes and snake_case payloads."
+    },
+    {
+      "file": "frontend/src/api/dashboard.js",
+      "change": "Added dashboardApi methods for all /api/v1/dashboard endpoints."
+    },
+    {
+      "file": "frontend/src/pages/DashboardPage.jsx",
+      "change": "Switched to dashboardApi, added active/archived document counts, and aligned activity rendering to item_type."
+    },
+    {
+      "file": "frontend/src/tests/api/AnalysisDashboardContracts.test.js",
+      "change": "Added contract tests for paths, payloads, response fields, error handling, Authorization, and X-Workspace-Id."
+    }
+  ],
+  "remaining_notes": [
+    "The central requestJson client remains the single source for auth/workspace headers and error classification.",
+    "No caller-provided Authorization or X-Workspace-Id headers are trusted."
+  ],
+  "verification": [
+    {
+      "command": "npm test -- --run src/tests/api/AnalysisDashboardContracts.test.js --reporter=dot",
+      "result": "1 passed, 7 tests passed"
+    },
+    {
+      "command": "npm test -- --run src/tests/api/ClientErrors.test.js src/tests/pages/DashboardPage.test.jsx --reporter=dot",
+      "result": "1 passed, 34 tests passed"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed"
+    }
+  ]
+}

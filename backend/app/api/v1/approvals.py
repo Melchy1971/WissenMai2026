@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.api.dependencies.auth import require_workspace_member, require_workspace_admin, AuthContext
+from app.core.redaction import redact_for_log, redact_for_ui
 
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 
@@ -25,7 +26,7 @@ def _log_audit(action: str, actor: str, resource_id: str, details: dict | None =
         "actor": actor,
         "resource_id": resource_id,
         "classification": "INTERNAL",
-        "details": details or {},
+        "details": redact_for_log(details or {}),
     })
 
 
@@ -50,7 +51,7 @@ def list_approvals(
     status: str | None = None,
     category: str | None = None,
     limit: int = 50,
-    ctx: AuthContext = Depends(require_workspace_member),
+    ctx: AuthContext = Depends(require_workspace_admin),
 ) -> dict:
     items = list(_approvals)
     if status:
@@ -64,7 +65,7 @@ def list_approvals(
 def approve(
     approval_id: str,
     body: ApproveRequest,
-    ctx: AuthContext = Depends(require_workspace_member),
+    ctx: AuthContext = Depends(require_workspace_admin),
 ) -> dict:
     approval = next((a for a in _approvals if a["id"] == approval_id), None)
     if not approval:
@@ -77,14 +78,14 @@ def approve(
     approval["comment"] = body.comment
     # Approval-Entscheidungen auditieren
     _log_audit("APPROVAL_APPROVED", ctx.login, approval_id, {"comment": body.comment})
-    return {"ok": True, "approval": approval}
+    return {"ok": True, "approval": redact_for_ui(approval)}
 
 
 @router.post("/{approval_id}/reject")
 def reject(
     approval_id: str,
     body: RejectRequest,
-    ctx: AuthContext = Depends(require_workspace_member),
+    ctx: AuthContext = Depends(require_workspace_admin),
 ) -> dict:
     approval = next((a for a in _approvals if a["id"] == approval_id), None)
     if not approval:
@@ -97,7 +98,7 @@ def reject(
     approval["reason"] = body.reason
     # Approval-Entscheidungen auditieren
     _log_audit("APPROVAL_REJECTED", ctx.login, approval_id, {"reason": body.reason})
-    return {"ok": True, "approval": approval}
+    return {"ok": True, "approval": redact_for_ui(approval)}
 
 
 def create_approval(action: str, risk: str, category: str, context: dict) -> dict:
@@ -107,11 +108,12 @@ def create_approval(action: str, risk: str, category: str, context: dict) -> dic
         "action": action,
         "risk": risk,
         "category": category,
-        "context": context,
+        "context": redact_for_log(context),
         "status": "pending",
         "created_at": datetime.now(UTC).isoformat(),
         "decided_by": None,
         "decided_at": None,
     }
     _approvals.append(entry)
+    _log_audit("APPROVAL_CREATED", "system", entry["id"], {"action": action, "risk": risk, "context": context})
     return entry

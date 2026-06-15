@@ -4,7 +4,6 @@ import { getDocuments, archiveDocument, deleteDocument } from '../../api/documen
 import { createRequestCoordinator } from '../../api/requestCoordinator.js';
 import { mapDocumentListItem, mapError } from '../../view-models/mappers.js';
 
-// Local mock for categories/tags until backend provides them
 function extractFiltersFromItems(items) {
   const cats = new Set();
   const tags = new Set();

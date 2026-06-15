@@ -1,39 +1,14 @@
-"""Agent- und Execution-Endpunkte für GUI."""
+"""Read-only agent catalog endpoints for GUI."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.api.dependencies.auth import require_workspace_member, AuthContext
+from app.api.dependencies.auth import AuthContext, require_workspace_member
+from app.api.v1.orchestrator import _executions
 
 router = APIRouter(prefix="/agents", tags=["agents"])
 
-_agents: list[dict] = [
-    {
-        "id": "ag-planner",
-        "name": "Planner",
-        "type": "planner",
-        "status": "idle",
-        "limits": {"max_steps": 50, "max_tool_calls": 20, "max_runtime_seconds": 600},
-        "execution_plan": None,
-        "validation_report": {"passed": True, "checks": []},
-    },
-    {
-        "id": "ag-researcher",
-        "name": "Researcher",
-        "type": "researcher",
-        "status": "idle",
-        "limits": {"max_steps": 30, "max_tool_calls": 10, "max_runtime_seconds": 300},
-        "execution_plan": {
-            "steps": [
-                {"order": 1, "action": "retrieve_context", "tool": "rag_search"},
-                {"order": 2, "action": "summarize", "tool": "llm_call"},
-            ]
-        },
-        "validation_report": {"passed": True, "checks": ["limits_ok", "tools_available"]},
-    },
-]
-
-_executions: list[dict] = []
+_agents: list[dict] = []
 
 
 @router.get("")
@@ -46,7 +21,8 @@ def list_executions(
     limit: int = 50,
     ctx: AuthContext = Depends(require_workspace_member),
 ) -> dict:
-    return {"items": _executions[-limit:], "total": len(_executions)}
+    items = [e for e in _executions if e["workspace_id"] == ctx.workspace_id]
+    return {"items": items[-limit:], "total": len(items)}
 
 
 @router.get("/{agent_id}")

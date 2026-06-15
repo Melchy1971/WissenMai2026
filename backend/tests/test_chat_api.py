@@ -328,6 +328,10 @@ def test_get_chat_session_detail_returns_messages_and_filtered_citations(client:
                     "source_status": "active",
                 }
             ],
+            "used_rag_context": False,
+            "sources": [],
+            "blocked_source_count": 0,
+            "status": "ok",
             "confidence": None,
         }
     ]
@@ -419,6 +423,10 @@ def test_create_chat_message_runs_rag_pipeline_and_returns_assistant_response(cl
                 "source_status": "active",
             }
         ],
+        "used_rag_context": False,
+        "sources": [],
+        "blocked_source_count": 0,
+        "status": "ok",
         "confidence": {
             "sufficient_context": True,
             "retrieval_score_max": 0.91,
@@ -475,6 +483,18 @@ def test_create_chat_message_endpoint_can_run_real_rag_service_with_fake_llm(cli
                 "source_status": "active",
             }
         ],
+        "used_rag_context": True,
+        "sources": [
+            {
+                "document_name": "Arbeitsvertrag Hybridmodell",
+                "chunk_id": "chunk-1",
+                "page": None,
+                "score": None,
+                "classification": "INTERNAL",
+            }
+        ],
+        "blocked_source_count": 0,
+        "status": "ok",
         "confidence": {
             "sufficient_context": True,
             "retrieval_score_max": 0.92,

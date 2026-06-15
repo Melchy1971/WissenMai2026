@@ -6,6 +6,11 @@ BASE = "http://localhost:8000"
 HEADERS = {"Authorization": "Bearer test-token", "X-Workspace-Id": "ws-test",
            "Content-Type": "application/json"}
 
+pytestmark = [
+    pytest.mark.external_env_only,
+    pytest.mark.legacy_live_http,
+]
+
 
 def test_get_settings():
     r = httpx.get(f"{BASE}/api/v1/settings", headers=HEADERS)

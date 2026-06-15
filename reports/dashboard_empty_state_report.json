@@ -1,0 +1,67 @@
+{
+  "report": "dashboard_empty_state_report",
+  "generated_at": "2026-06-12T00:00:00Z",
+  "scope": "GET /api/v1/dashboard/* empty-state API coverage",
+  "status": "passed",
+  "scenarios": [
+    {
+      "id": "workspace_without_documents",
+      "endpoints": ["/api/v1/dashboard/summary", "/api/v1/dashboard/activity"],
+      "expected": {
+        "document_count": 0,
+        "active_document_count": 0,
+        "archived_document_count": 0,
+        "new_imports_count": 0,
+        "open_analysis_count": 0,
+        "topic_count": 0,
+        "quality_score": null,
+        "drift_status": null,
+        "activity": {"items": [], "total": 0}
+      }
+    },
+    {
+      "id": "workspace_without_imports",
+      "endpoints": ["/api/v1/dashboard/summary", "/api/v1/dashboard/imports"],
+      "expected": {
+        "new_imports_count": 0,
+        "imports": {"items": [], "total": 0}
+      }
+    },
+    {
+      "id": "workspace_without_analysis_jobs",
+      "endpoints": ["/api/v1/dashboard/summary", "/api/v1/dashboard/analysis"],
+      "expected": {
+        "open_analysis_count": 0,
+        "analysis": {"items": [], "total": 0}
+      }
+    },
+    {
+      "id": "workspace_without_topics",
+      "endpoints": ["/api/v1/dashboard/summary", "/api/v1/dashboard/topics"],
+      "expected": {
+        "topic_count": 0,
+        "topics": {"items": [], "total": 0}
+      }
+    },
+    {
+      "id": "workspace_without_data_quality_run",
+      "endpoints": ["/api/v1/dashboard/summary", "/api/v1/dashboard/quality"],
+      "expected": {
+        "quality_score": null,
+        "quality": {"items": [], "total": 0}
+      }
+    }
+  ],
+  "assertions": [
+    "valid HTTP 200 responses for authenticated workspace requests",
+    "no 500 responses",
+    "no None/null dereference crashes",
+    "empty lists use {\"items\": [], \"total\": 0}",
+    "missing scalar values use null where defined by contract"
+  ],
+  "tests": ["backend/tests/test_dashboard_empty_states.py"],
+  "verification": {
+    "command": "pytest backend\\tests\\test_dashboard_empty_states.py backend\\tests\\test_dashboard_service.py",
+    "result": "12 passed"
+  }
+}

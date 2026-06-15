@@ -5,6 +5,11 @@ import httpx
 BASE = "http://localhost:8000"
 HEADERS = {"Authorization": "Bearer test-token", "X-Workspace-Id": "ws-test"}
 
+pytestmark = [
+    pytest.mark.external_env_only,
+    pytest.mark.legacy_live_http,
+]
+
 
 @pytest.mark.parametrize("path", [
     "/api/v1/status",

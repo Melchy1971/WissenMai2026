@@ -10,6 +10,7 @@ from app.core.errors import (
     LlmUnavailableApiError,
     RetrievalFailedApiError,
 )
+from app.core.redaction import redact_for_ui
 from app.schemas.chat import ChatCitationResponse, ChatConfidenceResponse, ChatMessageResponse
 from app.schemas.search import SearchChunkResult
 from app.observability.logging import bind_observability_context, log_event
@@ -128,6 +129,11 @@ class RagChatService:
 
         prompt = self._build_prompt(question=normalized_question, context=context)
         answer = self._generate_answer(prompt)
+        if redact_for_ui(answer) != answer:
+            raise InsufficientContextApiError(
+                message="answer blocked by validation pipeline",
+                details={"session_id": session_id, "reason": "secret_candidate_detected"},
+            )
         citations = self._map_citations(answer=answer, context=context)
         if not citations:
             raise InsufficientContextApiError(
@@ -154,6 +160,7 @@ class RagChatService:
             status="completed",
         )
 
+        citation_responses = [self._to_citation_response(citation) for citation in citations]
         return ChatMessageResponse(
             id=assistant_message.id,
             session_id=assistant_message.session_id,
@@ -161,7 +168,20 @@ class RagChatService:
             content=assistant_message.content,
             basis_type=assistant_message.basis_type,
             created_at=assistant_message.created_at,
-            citations=[self._to_citation_response(citation) for citation in citations],
+            citations=citation_responses,
+            used_rag_context=True,
+            sources=[
+                {
+                    "document_name": citation.document_title,
+                    "chunk_id": citation.chunk_id,
+                    "page": citation.source_anchor.page,
+                    "score": None,
+                    "classification": "INTERNAL",
+                }
+                for citation in citation_responses
+            ],
+            blocked_source_count=0,
+            status="ok",
             confidence=ChatConfidenceResponse(
                 sufficient_context=True,
                 retrieval_score_max=decision.retrieval_score_max,

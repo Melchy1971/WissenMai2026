@@ -23,28 +23,26 @@ export function RAGCenterPage() {
     ]);
     if (!docsRes.ok) { setError(docsRes.error); return; }
     const items = docsRes.data?.items ?? [];
-    if (!items.length) { setEmpty(); return; }
     setDocs(items);
     setPrivacyMode(statusRes.ok ? (statusRes.data?.privacy_mode ?? false) : false);
-    setSuccess();
+    if (!items.length) setEmpty(); else setSuccess();
   }
 
   async function reindex(docId) {
     const res = await callApi(`/api/v1/rag/documents/${docId}/reindex`, { method: 'POST' });
     if (!res.ok) { alert(res.error.message); return; }
-    alert('Reindex gestartet.');
+    alert('Approval fuer Reindex wurde erstellt.');
   }
 
   async function runRetrievalTest(e) {
     e.preventDefault();
     if (!testQuery.trim()) return;
-    // SECRET-Dokumente werden nicht als Prompt-Kontext verwendet
     const res = await callApi('/api/v1/rag/retrieve', {
       method: 'POST',
       body: JSON.stringify({ query: testQuery, exclude_secret: true }),
     });
     if (!res.ok) { alert(res.error.message); return; }
-    setTestResults(res.data?.results ?? []);
+    setTestResults(res.data);
   }
 
   async function importDocument() {
@@ -52,11 +50,13 @@ export function RAGCenterPage() {
       alert('Privacy Mode aktiv: Import-Persistenz ist blockiert.');
       return;
     }
-    // GUI greift nie direkt auf Dateien zu – Upload über API
-    alert('Import-Dialog: wird über API-Endpunkt /api/v1/rag/import verarbeitet.');
+    alert('Import erfolgt ueber den API-Endpunkt /api/v1/rag/import.');
   }
 
-  if (viewState.state === 'loading') return <LoadingState label="RAG-Dokumente werden geladen…" />;
+  const sources = testResults?.sources ?? [];
+  const retrievalBlocked = testResults?.status === 'blocked' || (testResults?.used_rag_context && sources.length === 0);
+
+  if (viewState.state === 'loading') return <LoadingState label="RAG-Dokumente werden geladen..." />;
   if (viewState.state === 'error') return <ErrorState error={viewState.error} onAction={load} actionLabel="Erneut laden" />;
 
   return (
@@ -69,33 +69,43 @@ export function RAGCenterPage() {
         </button>
       </div>
 
-      {privacyMode && (
+      {privacyMode ? (
         <div className="alert alert--info">Privacy Mode: Import-Persistenz deaktiviert.</div>
-      )}
+      ) : null}
 
       <section className="page__section">
         <h2>Retrieval-Test</h2>
         <form className="search-bar" onSubmit={runRetrievalTest}>
-          <input className="input" placeholder="Testanfrage eingeben…" value={testQuery}
-            onChange={e => setTestQuery(e.target.value)} data-testid="rag-test-query" />
+          <input className="input" placeholder="Testanfrage eingeben..." value={testQuery}
+            onChange={(e) => setTestQuery(e.target.value)} data-testid="rag-test-query" />
           <button type="submit" className="button-primary">Testen</button>
         </form>
-        {testResults && (
-          <ul data-testid="rag-test-results">
-            {testResults.length === 0
-              ? <li className="text-muted">Keine Treffer.</li>
-              : testResults.map((r, i) => (
-                <li key={i} className="list-item">
-                  <strong>{r.title}</strong> — Score: {r.score?.toFixed(3)}
-                  <DataClassificationBadge classification={r.classification} />
+        {testResults ? (
+          retrievalBlocked ? (
+            <div className="chat-warning" data-testid="rag-answer-blocked">
+              <strong>Antwort blockiert</strong>
+              <p>Fuer diese Anfrage sind keine sichtbaren Quellen verfuegbar.</p>
+              {(testResults.blocked_source_count ?? 0) > 0 ? (
+                <p className="state-card__meta">Gesperrte Quellen: {testResults.blocked_source_count}</p>
+              ) : null}
+            </div>
+          ) : (
+            <ul data-testid="source-list">
+              {sources.map((source, i) => (
+                <li key={`${source.chunk_id}-${i}`} className="list-item">
+                  <strong>{source.document_name}</strong> - Chunk: {source.chunk_id}
+                  {source.page != null ? ` - Seite ${source.page}` : ''}
+                  {source.score != null ? ` - Score: ${source.score.toFixed(3)}` : ''}
+                  <DataClassificationBadge classification={source.classification} />
                 </li>
               ))}
-          </ul>
-        )}
+            </ul>
+          )
+        ) : null}
       </section>
 
       {viewState.state === 'empty' && docs.length === 0
-        ? <EmptyState label="Keine RAG-Dokumente." />
+        ? <EmptyState title="Keine RAG-Dokumente" message="Es sind noch keine indexierbaren RAG-Dokumente im Workspace vorhanden." />
         : (
           <section className="page__section">
             <h2>Dokumente ({docs.length})</h2>
@@ -104,11 +114,11 @@ export function RAGCenterPage() {
                 <tr><th>Titel</th><th>Klassifikation</th><th>Chunks</th><th>Status</th><th>Aktion</th></tr>
               </thead>
               <tbody>
-                {docs.map(d => (
+                {docs.map((d) => (
                   <tr key={d.id}>
                     <td>{d.title}</td>
                     <td><DataClassificationBadge classification={d.classification} /></td>
-                    <td>{d.chunk_count ?? '—'}</td>
+                    <td>{d.chunk_count ?? '-'}</td>
                     <td>{d.index_status}</td>
                     <td>
                       {d.classification === 'SECRET'

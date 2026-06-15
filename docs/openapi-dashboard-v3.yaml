@@ -1,0 +1,331 @@
+openapi: 3.1.0
+info:
+  title: Dashboard V3 API
+  version: 1.1.0
+  description: Workspace-scoped, auth-required, read-only dashboard API without gate or debug data.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: dashboard
+paths:
+  /dashboard/summary:
+    get:
+      tags: [dashboard]
+      summary: Dashboard summary
+      operationId: getDashboardSummary
+      responses:
+        '200':
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /dashboard/activity:
+    get:
+      tags: [dashboard]
+      summary: Recent dashboard activity
+      operationId: getDashboardActivity
+      parameters:
+        - $ref: '#/components/parameters/Limit20'
+      responses:
+        '200':
+          description: Activity list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardActivityResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /dashboard/imports:
+    get:
+      tags: [dashboard]
+      summary: Recent imports
+      operationId: getDashboardImports
+      parameters:
+        - $ref: '#/components/parameters/Limit20'
+      responses:
+        '200':
+          description: Import list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardImportsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /dashboard/analysis:
+    get:
+      tags: [dashboard]
+      summary: Recent analysis jobs
+      operationId: getDashboardAnalysis
+      parameters:
+        - $ref: '#/components/parameters/Limit20'
+      responses:
+        '200':
+          description: Analysis list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardAnalysisResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /dashboard/quality:
+    get:
+      tags: [dashboard]
+      summary: Recent data quality runs
+      operationId: getDashboardQuality
+      parameters:
+        - $ref: '#/components/parameters/Limit20'
+      responses:
+        '200':
+          description: Quality list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardQualityResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /dashboard/topics:
+    get:
+      tags: [dashboard]
+      summary: Dashboard topics
+      operationId: getDashboardTopics
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Topic list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardTopicsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Limit20:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+  responses:
+    Unauthorized:
+      description: Missing or invalid authentication
+    Forbidden:
+      description: Missing workspace permission
+  schemas:
+    DashboardSummary:
+      type: object
+      required:
+        - document_count
+        - active_document_count
+        - archived_document_count
+        - new_imports_count
+        - open_analysis_count
+        - topic_count
+        - quality_score
+        - drift_status
+      properties:
+        document_count:
+          type: integer
+          default: 0
+        active_document_count:
+          type: integer
+          default: 0
+        archived_document_count:
+          type: integer
+          default: 0
+        new_imports_count:
+          type: integer
+          default: 0
+        open_analysis_count:
+          type: integer
+          default: 0
+        topic_count:
+          type: integer
+          default: 0
+        quality_score:
+          type: number
+          nullable: true
+        drift_status:
+          type: string
+          nullable: true
+    DashboardActivityItem:
+      type: object
+      required: [id, item_type, title, status, created_at]
+      properties:
+        id:
+          type: string
+        item_type:
+          type: string
+          enum: [document, import, analysis, quality, drift]
+        title:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    DashboardImportItem:
+      type: object
+      required: [id, status, filename, mime_type, created_at, started_at, finished_at]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        filename:
+          type: string
+          nullable: true
+        mime_type:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+    DashboardAnalysisItem:
+      type: object
+      required: [id, status, analysis_type, created_at, started_at, finished_at]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        analysis_type:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+    DashboardQualityItem:
+      type: object
+      required: [id, status, quality_score, total_findings, started_at, finished_at]
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        quality_score:
+          type: number
+          nullable: true
+        total_findings:
+          type: integer
+          nullable: true
+        started_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+    DashboardTopicItem:
+      type: object
+      required: [name, count, latest_job_id]
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+        latest_job_id:
+          type: string
+          nullable: true
+    DashboardActivityResponse:
+      allOf:
+        - $ref: '#/components/schemas/ListResponseBase'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/DashboardActivityItem'
+    DashboardImportsResponse:
+      allOf:
+        - $ref: '#/components/schemas/ListResponseBase'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/DashboardImportItem'
+    DashboardAnalysisResponse:
+      allOf:
+        - $ref: '#/components/schemas/ListResponseBase'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/DashboardAnalysisItem'
+    DashboardQualityResponse:
+      allOf:
+        - $ref: '#/components/schemas/ListResponseBase'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/DashboardQualityItem'
+    DashboardTopicsResponse:
+      allOf:
+        - $ref: '#/components/schemas/ListResponseBase'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/DashboardTopicItem'
+    ListResponseBase:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: {}
+          default: []
+        total:
+          type: integer
+          default: 0

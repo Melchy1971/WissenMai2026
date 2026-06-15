@@ -1,157 +1,101 @@
 import { useEffect, useState } from 'react';
 import { useViewState } from '../lib/viewState.js';
-import { callApi } from '../lib/apiClient.js';
+import { dashboardApi } from '../api/dashboard.js';
 import { LoadingState } from '../components/status/LoadingState.jsx';
 import { ErrorState } from '../components/status/ErrorState.jsx';
 
 export function DashboardPage() {
   const { viewState, setLoading, setSuccess, setError } = useViewState('idle');
-  const [status, setStatus] = useState(null);
-  const [docSummary, setDocSummary] = useState(null);
-  const [importStatus, setImportStatus] = useState(null);
-  const [dqSummary, setDqSummary] = useState(null);
-  const [recentRuns, setRecentRuns] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [activity, setActivity] = useState([]);
 
   useEffect(() => { load(); }, []);
 
   async function load() {
     setLoading();
-    const [sysRes, docRes, importRes, dqRes, runsRes] = await Promise.all([
-      callApi('/api/v1/status'),
-      callApi('/api/v1/documents?summary=true'),
-      callApi('/api/v1/jobs?type=import&limit=1'),
-      callApi('/api/v1/data-quality/summary'),
-      callApi('/api/v1/data-quality/runs?limit=5'),
-    ]);
-    if (!sysRes.ok) { setError(sysRes.error); return; }
-    setStatus(sysRes.data);
-    setDocSummary(docRes.ok ? docRes.data : null);
-    setImportStatus(importRes.ok ? (importRes.data?.items?.[0] ?? null) : null);
-    setDqSummary(dqRes.ok ? dqRes.data : null);
-    setRecentRuns(runsRes.ok ? (runsRes.data?.items ?? []) : []);
+    try {
+      const [summaryData, activityData] = await Promise.all([
+        dashboardApi.getSummary(),
+        dashboardApi.getActivity(),
+      ]);
+      setSummary(summaryData);
+      setActivity(activityData?.items ?? []);
+    } catch (error) {
+      setError(error);
+      return;
+    }
     setSuccess();
   }
 
-  if (viewState.state === 'loading') return <LoadingState label="Dashboard wird geladen…" />;
+  if (viewState.state === 'loading') return <LoadingState label="Dashboard wird geladen..." />;
   if (viewState.state === 'error') return <ErrorState error={viewState.error} onAction={load} actionLabel="Erneut laden" />;
-
-  const warnings = status?.warnings ?? [];
 
   return (
     <div className="page" data-testid="dashboard-page">
       <h1 className="page__title">Dashboard</h1>
 
-      {warnings.length > 0 && (
-        <div className="alert alert--warning" role="alert" data-testid="dashboard-warnings">
-          <strong>Warnungen:</strong>
-          <ul>
-            {warnings.map((w, i) => <li key={i}>{w.message ?? w}</li>)}
-          </ul>
-        </div>
-      )}
-
       <section className="page__section">
-        <h2>Systemstatus</h2>
-        <div className="card-grid" data-testid="system-status">
+        <h2>Uebersicht</h2>
+        <div className="card-grid" data-testid="dashboard-summary">
           <div className="stat-card">
-            <span className="stat-card__label">Provider</span>
-            <span className="stat-card__value">{status?.provider_name ?? '—'}</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-card__label">Autonomie</span>
-            <span className="stat-card__value">{status?.autonomy_level ?? '—'}</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-card__label">Release</span>
-            <span className="stat-card__value">{status?.release_status ?? '—'}</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-card__label">Privacy Mode</span>
-            <span className="stat-card__value">{status?.privacy_mode ? 'Aktiv' : 'Inaktiv'}</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="page__section">
-        <h2>Dokumente</h2>
-        <div className="card-grid" data-testid="document-summary">
-          <div className="stat-card">
-            <span className="stat-card__label">Gesamt</span>
-            <span className="stat-card__value">{docSummary?.total ?? '—'}</span>
+            <span className="stat-card__label">Dokumente</span>
+            <span className="stat-card__value">{summary?.document_count ?? 0}</span>
           </div>
           <div className="stat-card">
             <span className="stat-card__label">Aktiv</span>
-            <span className="stat-card__value">{docSummary?.active ?? '—'}</span>
+            <span className="stat-card__value">{summary?.active_document_count ?? 0}</span>
           </div>
           <div className="stat-card">
             <span className="stat-card__label">Archiviert</span>
-            <span className="stat-card__value">{docSummary?.archived ?? '—'}</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="page__section">
-        <h2>Importstatus</h2>
-        <div data-testid="import-status">
-          {importStatus ? (
-            <div className="card-grid">
-              <div className="stat-card">
-                <span className="stat-card__label">Letzter Import</span>
-                <span className="stat-card__value">{importStatus.status ?? '—'}</span>
-              </div>
-              <div className="stat-card">
-                <span className="stat-card__label">Verarbeitet</span>
-                <span className="stat-card__value">{importStatus.processed ?? '—'}</span>
-              </div>
-            </div>
-          ) : (
-            <p className="text-muted">Kein Import-Job vorhanden.</p>
-          )}
-        </div>
-      </section>
-
-      <section className="page__section">
-        <h2>Data Quality Score</h2>
-        <div className="card-grid" data-testid="data-quality-summary">
-          <div className="stat-card">
-            <span className="stat-card__label">Score</span>
-            <span className="stat-card__value">{dqSummary?.score != null ? `${dqSummary.score}%` : '—'}</span>
+            <span className="stat-card__value">{summary?.archived_document_count ?? 0}</span>
           </div>
           <div className="stat-card">
-            <span className="stat-card__label">Status</span>
-            <span className="stat-card__value">{dqSummary?.status ?? '—'}</span>
+            <span className="stat-card__label">Neue Imports</span>
+            <span className="stat-card__value">{summary?.new_imports_count ?? 0}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-card__label">Offene Analysen</span>
+            <span className="stat-card__value">{summary?.open_analysis_count ?? 0}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-card__label">Themen</span>
+            <span className="stat-card__value">{summary?.topic_count ?? 0}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-card__label">Quality Score</span>
+            <span className="stat-card__value">{summary?.quality_score ?? '-'}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-card__label">Drift</span>
+            <span className="stat-card__value">{summary?.drift_status ?? 'unknown'}</span>
           </div>
         </div>
       </section>
 
       <section className="page__section">
-        <h2>Letzte Analysen</h2>
-        <div data-testid="recent-analyses">
-          {recentRuns.length === 0 ? (
-            <p className="text-muted">Keine Analysen vorhanden.</p>
-          ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Run ID</th>
-                  <th>Status</th>
-                  <th>Score</th>
-                  <th>Zeitpunkt</th>
+        <h2>Letzte Aktivitaet</h2>
+        {activity.length === 0 ? (
+          <p className="text-muted">Keine Dashboard-Aktivitaet vorhanden.</p>
+        ) : (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Typ</th>
+                <th>Status</th>
+                <th>Zeitpunkt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activity.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.item_type ?? '-'}</td>
+                  <td>{item.status ?? '-'}</td>
+                  <td>{item.created_at ? new Date(item.created_at).toLocaleString('de-DE') : '-'}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {recentRuns.map(r => (
-                  <tr key={r.id}>
-                    <td className="mono">{r.id?.slice(0, 8) ?? '—'}</td>
-                    <td>{r.status ?? '—'}</td>
-                    <td>{r.score != null ? `${r.score}%` : '—'}</td>
-                    <td>{r.created_at ? new Date(r.created_at).toLocaleString('de-DE') : '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+              ))}
+            </tbody>
+          </table>
+        )}
       </section>
     </div>
   );

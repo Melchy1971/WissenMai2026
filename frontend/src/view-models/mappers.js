@@ -240,6 +240,16 @@ export function mapChatCitation(item) {
   };
 }
 
+export function mapChatSource(item) {
+  return {
+    documentName: item.document_name || item.document_title || 'Unbenanntes Dokument',
+    chunkId: item.chunk_id || null,
+    page: item.page ?? item.source_anchor?.page ?? null,
+    score: typeof item.score === 'number' ? item.score : null,
+    classification: item.classification || 'INTERNAL',
+  };
+}
+
 export function mapChatConfidence(item) {
   return {
     sufficientContext: item?.sufficient_context ?? true,
@@ -256,6 +266,12 @@ export function mapChatMessage(item) {
     content: role === 'assistant' ? (item.answer || item.content || '') : (item.content || ''),
     createdAtLabel: formatDate(item.created_at),
     citations: Array.isArray(item.citations) ? item.citations.map(mapChatCitation) : [],
+    usedRagContext: item.used_rag_context === true || item.basis_type === 'knowledge_base',
+    sources: Array.isArray(item.sources)
+      ? item.sources.map(mapChatSource)
+      : (Array.isArray(item.citations) ? item.citations.map(mapChatSource) : []),
+    blockedSourceCount: item.blocked_source_count ?? 0,
+    status: item.status || 'ok',
     confidence: role === 'assistant' ? mapChatConfidence(item.confidence) : null,
   };
 }

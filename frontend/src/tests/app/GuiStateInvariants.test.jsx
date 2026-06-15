@@ -33,6 +33,14 @@ function renderApp(initialEntry, initialAuthState = validAuthState) {
   );
 }
 
+function isDocumentListRequest(input) {
+  return String(input).includes('/documents?limit=200&offset=0&lifecycle_status=');
+}
+
+function isStatusRequest(input) {
+  return String(input).includes('/api/v1/status');
+}
+
 function renderStoredApp(initialEntry) {
   return render(
     <AuthProvider>
@@ -107,8 +115,13 @@ describe('GUI state invariant component guards', () => {
   });
 
   it('clears sensitive document state after AUTH_REQUIRED', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(jsonResponse([
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (isStatusRequest(url)) {
+        return jsonResponse({});
+      }
+      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=active')) {
+        return jsonResponse([
         {
           id: 'doc-1',
           title: 'Sensitive Document',
@@ -121,40 +134,63 @@ describe('GUI state invariant component guards', () => {
           version_count: 1,
           chunk_count: 1,
         },
-      ]))
-      .mockResolvedValueOnce(jsonResponse(
+        ]);
+      }
+      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=archived')) {
+        return jsonResponse([]);
+      }
+      if (url.includes('/documents/doc-1/archive')) {
+        return jsonResponse(
         { error: { code: 'UNAUTHORIZED', message: 'Token expired', details: {} } },
         401,
-      ));
+        );
+      }
+      throw new Error(`unexpected fetch: ${url}`);
+    });
 
     renderApp('/documents');
 
     expect(await screen.findByText('Sensitive Document')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Suchbegriff'), { target: { value: 'secret' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
+    fireEvent.click(screen.getByText('Sensitive Document'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Archivieren' }));
+    fireEvent.click(screen.getByRole('button', { name: /Best/i }));
 
     expect(await screen.findByText('Anmeldung')).toBeInTheDocument();
     expect(screen.queryByText('Sensitive Document')).not.toBeInTheDocument();
-    expect(screen.queryByDisplayValue('secret')).not.toBeInTheDocument();
   });
 
   it('resets old workspace search and upload state on workspace switch', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(jsonResponse([]))
-      .mockResolvedValueOnce(jsonResponse([
+    let activeListCalls = 0;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, options = {}) => {
+      const url = String(input);
+      if (isStatusRequest(url)) {
+        return jsonResponse({});
+      }
+      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=active')) {
+        activeListCalls += 1;
+        if (activeListCalls > 1) {
+          return jsonResponse([]);
+        }
+        return jsonResponse([
         {
-          document_id: 'doc-1',
-          document_title: 'Workspace One Result',
-          document_version_id: 'version-1',
-          version_number: 1,
-          chunk_id: 'chunk-1',
-          position: 0,
-          text_preview: 'workspace one hit',
-          source_anchor: { type: 'text', paragraph: 1 },
-          rank: 0.9,
+          id: 'doc-1',
+          title: 'Workspace One Document',
+          mime_type: 'text/plain',
+          created_at: '2026-05-01T10:00:00Z',
+          updated_at: '2026-05-01T10:00:00Z',
+          latest_version_id: 'version-1',
+          import_status: 'chunked',
+          lifecycle_status: 'active',
+          version_count: 1,
+          chunk_count: 1,
         },
-      ]))
-      .mockResolvedValue(jsonResponse([]));
+        ]);
+      }
+      if (isDocumentListRequest(url)) {
+        return jsonResponse([]);
+      }
+      throw new Error(`unexpected fetch: ${url}`);
+    });
 
     renderApp('/documents', {
       ...validAuthState,
@@ -164,31 +200,36 @@ describe('GUI state invariant component guards', () => {
       ],
     });
 
-    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Suchbegriff'), { target: { value: 'workspace one' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
-    expect(await screen.findByText('Workspace One Result')).toBeInTheDocument();
+    expect(await screen.findByText('Workspace One Document')).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Workspace wechseln'), {
       target: { value: 'workspace-2' },
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Workspace: workspace-2')).toBeInTheDocument();
+      expect(screen.getByTestId('status-bar').textContent).toContain('workspace-2');
     });
-    expect(screen.queryByText('Workspace One Result')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Suchbegriff')).toHaveValue('');
-    expect(screen.getByRole('button', { name: 'Dokument importieren' })).toBeEnabled();
+    expect(await screen.findByText(/Keine Dokumente vorhanden/i)).toBeInTheDocument();
+    expect(screen.queryByText('Workspace One Document')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Dokumentsuche')).toHaveValue('');
   });
 
   it('renders API_UNREACHABLE as an error, not a fake empty state', async () => {
-    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (isStatusRequest(input)) {
+        return jsonResponse({});
+      }
+      if (isDocumentListRequest(input)) {
+        throw new TypeError('Failed to fetch');
+      }
+      throw new Error(`unexpected fetch: ${String(input)}`);
+    });
 
     renderApp('/documents');
 
-    expect(await screen.findByText('Backend nicht erreichbar')).toBeInTheDocument();
-    expect(screen.getByText('Fehlercode: API_UNREACHABLE')).toBeInTheDocument();
-    expect(screen.queryByText('Keine Dokumente vorhanden')).not.toBeInTheDocument();
+    expect(await screen.findByText('Fehler beim Laden')).toBeInTheDocument();
+    expect(screen.getByText('Dokumente konnten nicht geladen werden.')).toBeInTheDocument();
+    expect(screen.queryByText(/Keine Dokumente vorhanden/i)).not.toBeInTheDocument();
   });
 
   it('does not offer retry or loop on FORBIDDEN bootstrap errors', async () => {

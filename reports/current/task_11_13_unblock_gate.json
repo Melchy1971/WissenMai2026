@@ -1,0 +1,115 @@
+{
+  "gate": "task_11_13_unblock_gate",
+  "generated_at": "2026-06-12T12:58:38.4978625+02:00",
+  "branch": "main",
+  "commit": "d0a09f2dc8",
+  "status": "UNBLOCKED",
+  "decision": {
+    "result": "PASS",
+    "rule": "UNBLOCKED only when all Analysis endpoints exist, all Dashboard endpoints exist, required tests are green, frontend API client is compatible, and Dashboard API exposes no gate/debug data.",
+    "reason": "All required endpoint, test, contract, OpenAPI, and Dashboard data-safety checks passed."
+  },
+  "inputs": {
+    "analysis_api_tests": [
+      "backend/tests/test_analysis_approval_service.py",
+      "backend/tests/test_analysis_services.py",
+      "backend/tests/test_analysis_api.py",
+      "backend/tests/test_analysis_stub_engine.py",
+      "backend/tests/test_analysis_models.py"
+    ],
+    "dashboard_api_tests": [
+      "backend/tests/test_dashboard_empty_states.py",
+      "backend/tests/test_dashboard_service.py"
+    ],
+    "frontend_client_contract_report": "reports/client_contract_alignment_report.json",
+    "dashboard_empty_state_report": "reports/dashboard_empty_state_report.json",
+    "openapi_schema": [
+      "docs/openapi-analysis.yaml",
+      "docs/openapi-dashboard-v3.yaml"
+    ]
+  },
+  "checks": [
+    {
+      "id": "analysis_endpoints_exist",
+      "status": "PASS",
+      "evidence": [
+        "GET /api/v1/analysis/jobs",
+        "POST /api/v1/analysis/jobs",
+        "GET /api/v1/analysis/jobs/{job_id}",
+        "POST /api/v1/analysis/jobs/{job_id}/compare",
+        "POST /api/v1/analysis/jobs/{job_id}/summarize",
+        "POST /api/v1/analysis/jobs/{job_id}/approve",
+        "GET /api/v1/analysis/jobs/{job_id}/result"
+      ],
+      "source": "backend/app/api/v1/analysis.py"
+    },
+    {
+      "id": "dashboard_endpoints_exist",
+      "status": "PASS",
+      "evidence": [
+        "GET /api/v1/dashboard/summary",
+        "GET /api/v1/dashboard/activity",
+        "GET /api/v1/dashboard/imports",
+        "GET /api/v1/dashboard/analysis",
+        "GET /api/v1/dashboard/quality",
+        "GET /api/v1/dashboard/topics"
+      ],
+      "source": "backend/app/api/v1/dashboard.py"
+    },
+    {
+      "id": "analysis_and_dashboard_api_tests",
+      "status": "PASS",
+      "command": "pytest backend\\tests\\test_analysis_approval_service.py backend\\tests\\test_analysis_services.py backend\\tests\\test_analysis_api.py backend\\tests\\test_analysis_stub_engine.py backend\\tests\\test_analysis_models.py backend\\tests\\test_dashboard_empty_states.py backend\\tests\\test_dashboard_service.py",
+      "result": "41 passed in 21.06s"
+    },
+    {
+      "id": "frontend_api_client_compatible",
+      "status": "PASS",
+      "report": "reports/client_contract_alignment_report.json",
+      "command": "npm test -- --run src/tests/api/AnalysisDashboardContracts.test.js --reporter=dot",
+      "result": "1 test file passed, 7 tests passed",
+      "evidence": [
+        "analysisApi exposes listJobs, createJob, getJob, compareJob, summarizeJob, approveJob, getResult",
+        "dashboardApi exposes getSummary, getActivity, getImports, getAnalysis, getQuality, getTopics",
+        "requestJson centrally injects Authorization and X-Workspace-Id"
+      ]
+    },
+    {
+      "id": "openapi_schema_aligned",
+      "status": "PASS",
+      "evidence": [
+        "docs/openapi-analysis.yaml documents source_document_ids, analysis_type, prompt, result, comparison, suggestions, and all active analysis routes",
+        "docs/openapi-dashboard-v3.yaml documents summary fields, list item schemas, and all active dashboard routes"
+      ]
+    },
+    {
+      "id": "dashboard_no_gate_debug_data",
+      "status": "PASS",
+      "command": "rg -n \"gate|debug|technical|report|temp_file_path|result_\" backend\\app\\api\\v1\\dashboard.py backend\\app\\services\\dashboard_service.py backend\\app\\schemas\\dashboard.py",
+      "result": "no matches",
+      "evidence": [
+        "Dashboard router is read-only and workspace-scoped through require_workspace_member",
+        "Dashboard schemas expose summary/list fields only",
+        "Import payload is used internally only to derive safe filename and mime_type"
+      ]
+    }
+  ],
+  "artifact_changes": [
+    {
+      "file": "docs/openapi-analysis.yaml",
+      "change": "Updated stale Analysis OpenAPI contract from base_document_id/compare_document_id to the implemented source_document_ids contract."
+    },
+    {
+      "file": "docs/openapi-dashboard-v3.yaml",
+      "change": "Expanded Dashboard OpenAPI contract from route placeholders to concrete response schemas."
+    },
+    {
+      "file": "reports/current/task_11_13_unblock_gate.json",
+      "change": "Recorded Task #11/#13 unblock gate decision."
+    }
+  ],
+  "non_blocking_notes": [
+    "git status emitted a permission warning for frontend/src/features/drift/; the Task #11/#13 gate inputs were still readable and verified."
+  ],
+  "blockers": []
+}

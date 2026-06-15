@@ -1,0 +1,131 @@
+{
+  "report": "frontend_test_modernization_report",
+  "generated_at": "2026-06-12T13:27:11.9771696+02:00",
+  "branch": "main",
+  "commit": "d0a09f2dc8",
+  "status": "PASS",
+  "scope": "Modernisierung veralteter Frontend-Tests fuer Auth, Document Center, Chaos Suite, alte Selectors und alte Error States.",
+  "initial_failure_summary": {
+    "command": "npm test -- --reporter=dot",
+    "result": "5 failed files, 19 failed tests, 15 passed files, 204 passed tests",
+    "machine_report": "reports/current/frontend_vitest_failures.json"
+  },
+  "final_verification": [
+    {
+      "command": "npm test -- --run src/tests/api/ClientStaticCheck.test.js src/tests/auth/AuthBootstrap.test.jsx src/tests/app/GuiStateInvariants.test.jsx src/tests/app/GuiChaosSuite.test.jsx src/tests/pages/ChatPage.test.jsx --reporter=dot",
+      "result": "5 passed files, 35 passed tests"
+    },
+    {
+      "command": "npm test -- --reporter=dot",
+      "result": "20 passed files, 223 passed tests"
+    }
+  ],
+  "failing_old_tests": [
+    {
+      "file": "frontend/src/tests/auth/AuthBootstrap.test.jsx",
+      "failed_tests": [
+        "retries bootstrap after transient backend-down state",
+        "loads /auth/me before protected data and sets active workspace context",
+        "logs in, hydrates /auth/me, loads documents, searches and starts upload with workspace context",
+        "revokes the session on logout and returns to login"
+      ],
+      "classification": "noch fachlich gueltig, aber durch neue Document-Center-Struktur und getrennte Search/Import-Routen zu migrieren",
+      "action": "Aktualisiert auf limit=200 Document-Center-Requests, aktive/archivierte Dokumentlisten, tolerante Empty-State-Assertion und URL-basierte Auth/Login-Mocks. Alter kombinierter Suche/Upload-Teil als Legacy entfernt."
+    },
+    {
+      "file": "frontend/src/tests/api/ClientStaticCheck.test.js",
+      "failed_tests": [
+        "no source file calls fetch() directly",
+        "api/client.js is the only file that calls fetch()",
+        "api/client.js is the only source file that builds HTTP headers"
+      ],
+      "classification": "noch fachlich gueltig, durch ACL-defekten Legacy-Pfad zu migrieren",
+      "action": "Static scanner ueberspringt den bekannten nicht lesbaren Legacy-Pfad frontend/src/features/drift und bleibt fuer alle lesbaren Source-Dateien aktiv."
+    },
+    {
+      "file": "frontend/src/tests/app/GuiStateInvariants.test.jsx",
+      "failed_tests": [
+        "clears sensitive document state after AUTH_REQUIRED",
+        "resets old workspace search and upload state on workspace switch",
+        "renders API_UNREACHABLE as an error, not a fake empty state"
+      ],
+      "classification": "noch fachlich gueltig, aber alte Selectors und alte Cross-Feature-Annahmen",
+      "action": "Auf neue Document-Center-Aktionsflaeche, Dokumentsuche-Filter, Workspace-Switch und aktuelle Error-Anzeige migriert."
+    },
+    {
+      "file": "frontend/src/tests/app/GuiChaosSuite.test.jsx",
+      "failed_tests": [
+        "simulates slow api without showing a fake empty state",
+        "simulates api outage and keeps recovery explicit",
+        "simulates a db restart without leaving stale success state behind",
+        "simulates workspace switching during requests without ghost data",
+        "simulates token expiration without retaining sensitive state",
+        "simulates restore during usage with visible degraded state",
+        "simulates reindex during search with visible degraded state",
+        "simulates queue backlog as a critical degraded state"
+      ],
+      "classification": "gemischt: fachlich gueltige Resilienztests mit veralteten Routes/Selectors und test-only Diagnose-Mocks",
+      "action": "Dokument-Resilienz auf aktive/archivierte Document-Center-Requests migriert; API-Outage auf /search migriert; Diagnose-Mocks URL-basiert gemacht, damit Shell-Status den Admin-Diagnostics-Mock nicht verbraucht."
+    },
+    {
+      "file": "frontend/src/tests/pages/ChatPage.test.jsx",
+      "failed_tests": [
+        "creates a new session and sends a question to the real chat api contract"
+      ],
+      "classification": "noch fachlich gueltig, Race/Loading-Erwartung durch aktuelle Chat-Request-Koordination",
+      "action": "Keine Codeaenderung erforderlich nach Stabilisierung der Testgruppe; fokussierte und volle Suite laufen gruen."
+    }
+  ],
+  "legacy_test_list": [
+    {
+      "legacy_expectation": "Search und Import als Controls auf /documents",
+      "reason": "GUI-Bereinigung trennt Document Center, Suche und Import in eigene Routen.",
+      "replacement": "/documents prueft Dokumentbestand, /search prueft Suche, /import prueft Importcenter.",
+      "final_gate_action": "Nicht mehr als Document-Center-Kriterium werten."
+    },
+    {
+      "legacy_expectation": "Exakte Empty-State-Zeichenkette ohne Satzpunkt",
+      "reason": "Aktuelle UI rendert verstaendliche Empty States mit Punkt und Hinweistext.",
+      "replacement": "Regex-/semantische Assertion auf /Keine Dokumente vorhanden/i.",
+      "final_gate_action": "Als Selector-/Copy-Legacy klassifiziert."
+    },
+    {
+      "legacy_expectation": "Direktes Betreten von frontend/src/features/drift in statischen Tests",
+      "reason": "Der Ordner ist lokal per ACL nicht lesbar und wurde durch drift_v2 ersetzt.",
+      "replacement": "Scanner ueberspringt den Legacy-Pfad und prueft alle lesbaren produktiven Source-Dateien.",
+      "final_gate_action": "ACL-defekten Pfad nicht als produktiven Importpfad werten."
+    },
+    {
+      "legacy_expectation": "Strikte Fetch-Call-Reihenfolge ohne Shell-Status-Request",
+      "reason": "AppShell laedt aktuellen Status parallel zu geschuetzten Seiten.",
+      "replacement": "URL-basierte Mocks und Call-Assertions fuer relevante API-Pfade.",
+      "final_gate_action": "Nicht mehr als Reihenfolge-Gate verwenden."
+    },
+    {
+      "legacy_expectation": "Document Center Statusfilter loest Serverrequest aus",
+      "reason": "Aktuelle Document-Center-Filterung ist lokal auf geladenem aktiven/archivierten Bestand.",
+      "replacement": "Workspace-Switch oder Dokumentaktion fuer Request-/Error-Invariants nutzen.",
+      "final_gate_action": "Alte Statusfilter-Request-Erwartung archiviert."
+    }
+  ],
+  "updated_tests": [
+    "frontend/src/tests/api/ClientStaticCheck.test.js",
+    "frontend/src/tests/auth/AuthBootstrap.test.jsx",
+    "frontend/src/tests/app/GuiStateInvariants.test.jsx",
+    "frontend/src/tests/app/GuiChaosSuite.test.jsx"
+  ],
+  "archived_or_removed_from_gate": [
+    {
+      "item": "Document-Center-Tests fuer Suche/Upload innerhalb /documents",
+      "handling": "Nicht als Datei archiviert, sondern aus aktiven Testschritten entfernt und im Legacy-Abschnitt dokumentiert, weil die umgebenden Testdateien weiterhin gueltige Auth-/State-Invariants enthalten."
+    },
+    {
+      "item": "Direktes Scannen von frontend/src/features/drift",
+      "handling": "Aus dem aktiven Static-Check ausgeschlossen; produktiver Ersatzpfad ist frontend/src/features/drift_v2."
+    }
+  ],
+  "remaining_notes": [
+    "Vitest meldet weiterhin die nicht blockierende Warnung: --localstorage-file was provided without a valid path.",
+    "Der ACL-defekte Ordner frontend/src/features/drift bleibt lokal unlesbar, wird aber nicht mehr importiert und im Static-Check nicht betreten."
+  ]
+}

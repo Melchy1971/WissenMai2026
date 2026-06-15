@@ -124,6 +124,8 @@ def _classify_truth_gate(item: pytest.Item, marker_names: set[str]) -> str | Non
 
     if "test_frontend_backend_contracts.py" in nodeid:
         return "frontend_truth"
+    if nodeid.startswith("tests/api/") or nodeid.startswith("tests/ui/") or nodeid.startswith("tests/unit/"):
+        return "unit_fast"
 
     if "postgres_truth/" in nodeid:
         return _classify_postgres_truth_gate(nodeid, marker_names)

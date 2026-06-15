@@ -1,0 +1,183 @@
+{
+  "report": "permission_blocker_report",
+  "generated_at": "2026-06-12T13:12:49.6469456+02:00",
+  "branch": "main",
+  "commit": "d0a09f2dc8",
+  "target": "frontend/src/features/drift",
+  "status": "BLOCKED_BY_FILESYSTEM_ACL",
+  "summary": "The drift feature directory exists in the parent listing but cannot be read, stat'ed, ACL-inspected, or scanned by Git/Vite from the current non-elevated workspace context. DriftDashboard.jsx is therefore not resolvable and the focused DriftDashboard test suite fails before collecting tests.",
+  "rules_applied": {
+    "escalation": "No rights escalation was requested or forced.",
+    "unsafe_actions": "No ownership, ACL, rename, delete, or archive operation was attempted on the blocked directory."
+  },
+  "checks": [
+    {
+      "id": "filesystem_item",
+      "status": "FAIL",
+      "command": "Get-Item -Force frontend\\src\\features\\drift",
+      "evidence": [
+        "Get-Item: Zugriff verweigert",
+        "PowerShell subsequently reports path not found because the item cannot be opened."
+      ],
+      "conclusion": "The directory entry exists but the current process cannot open it."
+    },
+    {
+      "id": "owner_and_acl",
+      "status": "FAIL",
+      "command": "Get-Acl frontend\\src\\features\\drift; icacls frontend\\src\\features\\drift",
+      "evidence": [
+        "Get-Acl: Zugriff verweigert",
+        "icacls: 0 files successfully processed, 1 processing error: Zugriff verweigert"
+      ],
+      "conclusion": "Owner and detailed Windows ACL cannot be inspected without permissions."
+    },
+    {
+      "id": "parent_acl",
+      "status": "PASS",
+      "command": "Get-Acl frontend\\src\\features",
+      "evidence": [
+        "Parent directory is readable.",
+        "Owner: Jeder",
+        "AccessToString: Jeder Allow -1",
+        "drift-v2 does not currently exist."
+      ],
+      "conclusion": "A sibling replacement path under frontend/src/features is the safest writable target."
+    },
+    {
+      "id": "readonly_attributes",
+      "status": "INCONCLUSIVE",
+      "command": "attrib frontend\\src\\features\\drift",
+      "evidence": [
+        "attrib prints only the path and no R/H/S/A flags."
+      ],
+      "conclusion": "Readonly does not appear to be the direct cause, but ACL prevents deeper inspection."
+    },
+    {
+      "id": "directory_listing",
+      "status": "PASS",
+      "command": "Get-ChildItem -Force frontend\\src\\features; cmd.exe /c dir /a /q frontend\\src\\features",
+      "evidence": [
+        "Parent listing shows drift as a directory dated 2026-06-11 18:43:56.",
+        "cmd dir /q shows owner as '...' for drift while sibling owners resolve normally."
+      ],
+      "conclusion": "The entry is present but has abnormal owner/ACL visibility."
+    },
+    {
+      "id": "git_index",
+      "status": "PASS",
+      "command": "git ls-files --stage frontend/src/features/drift; git status --short frontend/src/features/drift",
+      "evidence": [
+        "git ls-files returns no tracked entries.",
+        "git status warns: could not open directory 'frontend/src/features/drift/': Permission denied"
+      ],
+      "conclusion": "The blocked drift directory is not represented by tracked files in the Git index."
+    },
+    {
+      "id": "reparse_point",
+      "status": "INCONCLUSIVE",
+      "command": "cmd.exe /c fsutil reparsepoint query frontend\\src\\features\\drift",
+      "evidence": [
+        "Fehler 5: Zugriff verweigert"
+      ],
+      "conclusion": "Reparse point or junction status cannot be verified non-elevated."
+    },
+    {
+      "id": "antivirus_or_locking",
+      "status": "INCONCLUSIVE",
+      "commands": [
+        "openfiles /query /fo csv /v",
+        "Get-CimInstance Win32_Process | Where-Object { CommandLine references frontend/WissenMai2026/drift }"
+      ],
+      "evidence": [
+        "openfiles requires the global maintain objects list flag and returns Zugriff verweigert.",
+        "Get-CimInstance Win32_Process returns Zugriff verweigert."
+      ],
+      "conclusion": "No process lock or antivirus lock can be proven from the current permission level. The observed behavior is still consistent with ACL/owner denial."
+    },
+    {
+      "id": "test_reproduction",
+      "status": "FAIL",
+      "command": "npm test -- --run src/tests/features/DriftDashboard.test.jsx --reporter=dot",
+      "evidence": [
+        "1 test file failed, no tests collected.",
+        "Vite failed to resolve import '../../features/drift/DriftDashboard.jsx'."
+      ],
+      "conclusion": "Drift tests fail before execution because the component cannot be resolved."
+    }
+  ],
+  "affected_files": [
+    {
+      "path": "frontend/src/features/drift",
+      "state": "present in parent listing but inaccessible"
+    },
+    {
+      "path": "frontend/src/tests/features/DriftDashboard.test.jsx",
+      "state": "imports ../../features/drift/DriftDashboard.jsx"
+    }
+  ],
+  "chosen_safe_fix": {
+    "strategy": "Create a new sibling feature path and route imports to it.",
+    "path": "frontend/src/features/drift-v2",
+    "rationale": [
+      "The blocked folder cannot be read, edited, renamed, archived, or ACL-inspected safely without escalation.",
+      "The parent feature directory is readable and existing sibling feature folders are accessible.",
+      "The blocked drift folder has no tracked Git entries, so replacing the import target with a tracked drift-v2 implementation avoids relying on corrupted local filesystem state.",
+      "Leaving the blocked directory untouched avoids data loss and avoids fighting the ACL issue."
+    ],
+    "not_chosen": [
+      {
+        "option": "Archive frontend/src/features/drift",
+        "reason": "Unsafe because the directory cannot be read or renamed from the current account."
+      },
+      {
+        "option": "Repair ACL or take ownership",
+        "reason": "Requires escalation and was explicitly ruled out."
+      },
+      {
+        "option": "Keep importing frontend/src/features/drift",
+        "reason": "Vite and Git cannot reliably resolve or scan that path."
+      }
+    ]
+  },
+  "fix_plan": [
+    {
+      "step": 1,
+      "action": "Create frontend/src/features/drift-v2/DriftDashboard.jsx with the same public export: named export DriftDashboard.",
+      "acceptance": "Component renders data-testid values expected by frontend/src/tests/features/DriftDashboard.test.jsx."
+    },
+    {
+      "step": 2,
+      "action": "Implement or colocate useDriftData in drift-v2 if production wiring needs a default hook; keep mock data only in tests.",
+      "acceptance": "Production component uses API-backed data or empty/error/loading states, not hard-coded sample values."
+    },
+    {
+      "step": 3,
+      "action": "Update imports from ../../features/drift/DriftDashboard.jsx to ../../features/drift-v2/DriftDashboard.jsx.",
+      "acceptance": "No production or test import resolves through the blocked drift folder."
+    },
+    {
+      "step": 4,
+      "action": "If a production route/page is added for DriftDashboard, import from drift-v2 and wire it through a readable page module.",
+      "acceptance": "App routes do not reference frontend/src/features/drift."
+    },
+    {
+      "step": 5,
+      "action": "Run npm test -- --run src/tests/features/DriftDashboard.test.jsx --reporter=dot and npm run build from frontend.",
+      "acceptance": "Focused DriftDashboard tests and frontend build pass."
+    },
+    {
+      "step": 6,
+      "action": "Leave frontend/src/features/drift untouched until a user/admin fixes or removes the ACL issue outside Codex.",
+      "acceptance": "No destructive operation is performed against the inaccessible directory."
+    }
+  ],
+  "expected_status_after_fix": "UNBLOCKED",
+  "blockers_remaining": [
+    {
+      "id": "DRIFT_ACL_001",
+      "severity": "medium",
+      "description": "The original frontend/src/features/drift directory remains inaccessible and will continue to produce Git status warnings until repaired externally.",
+      "release_impact": "Non-blocking if all imports are moved to drift-v2; blocking if tooling scans the exact inaccessible path as part of a global status/check."
+    }
+  ]
+}

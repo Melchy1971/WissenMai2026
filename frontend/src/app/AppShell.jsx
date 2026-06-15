@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { to: '/import',      label: 'Import' },
   { to: '/search',      label: 'Suche' },
   { to: '/rag',         label: 'Datenanalyse' },
+  { to: '/drift',       label: 'Drift' },
   { to: '/settings',    label: 'Einstellungen' },
 ];
 

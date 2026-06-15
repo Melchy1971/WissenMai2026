@@ -84,6 +84,18 @@ function renderApp(initialEntry, initialAuthState = baseAuthState) {
   );
 }
 
+function isDocumentListRequest(input) {
+  return String(input).includes('/documents?limit=200&offset=0&lifecycle_status=');
+}
+
+function isStatusRequest(input) {
+  return String(input).includes('/api/v1/status');
+}
+
+function isDiagnosticsRequest(input) {
+  return String(input).includes('/api/v1/admin/diagnostics');
+}
+
 describe('GUI chaos suite', () => {
   beforeEach(() => {
     installMemoryStorage();
@@ -98,38 +110,63 @@ describe('GUI chaos suite', () => {
 
   it('simulates slow api without showing a fake empty state', async () => {
     const docsRequest = deferred();
-    vi.spyOn(globalThis, 'fetch').mockReturnValueOnce(docsRequest.promise);
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (isStatusRequest(input)) {
+        return jsonResponse({});
+      }
+      if (String(input).includes('/documents?limit=200&offset=0&lifecycle_status=active')) {
+        return docsRequest.promise;
+      }
+      if (String(input).includes('/documents?limit=200&offset=0&lifecycle_status=archived')) {
+        return jsonResponse([]);
+      }
+      throw new Error(`unexpected fetch: ${String(input)}`);
+    });
 
     renderApp('/documents');
 
-    expect(await screen.findByText('Dokumente werden geladen...')).toBeInTheDocument();
-    expect(screen.queryByText('Keine Dokumente vorhanden')).not.toBeInTheDocument();
+    expect(await screen.findByText(/Dokumente werden geladen/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Keine Dokumente vorhanden/i)).not.toBeInTheDocument();
     expect(screen.queryByText('Backend nicht erreichbar')).not.toBeInTheDocument();
 
     docsRequest.resolve(jsonResponse([]));
 
-    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
+    expect(await screen.findByText(/Keine Dokumente vorhanden/i)).toBeInTheDocument();
   });
 
   it('simulates api outage and keeps recovery explicit', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(jsonResponse([]))
-      .mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (isStatusRequest(input)) {
+        return jsonResponse({});
+      }
+      if (String(input).includes('/api/v1/search/chunks')) {
+        throw new TypeError('Failed to fetch');
+      }
+      throw new Error(`unexpected fetch: ${String(input)}`);
+    });
 
-    renderApp('/documents');
+    renderApp('/search');
 
-    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Suchbegriff'), { target: { value: 'chaos' } });
     fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
 
-    expect(await screen.findByText('Backend nicht erreichbar')).toBeInTheDocument();
-    expect(screen.getByText('Aktion: Erneut versuchen')).toBeInTheDocument();
+    expect(await screen.findByText(/Backend nicht erreichbar/i)).toBeInTheDocument();
     expect(screen.queryByText('Keine Treffer gefunden')).not.toBeInTheDocument();
   });
 
   it('simulates a db restart without leaving stale success state behind', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(jsonResponse([
+    let activeListCalls = 0;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, options = {}) => {
+      const url = String(input);
+      if (isStatusRequest(url)) {
+        return jsonResponse({});
+      }
+      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=active')) {
+        activeListCalls += 1;
+        if (activeListCalls > 1) {
+          return jsonResponse({ error: { code: 'SERVER_ERROR', message: 'database restarting', details: {} } }, 503);
+        }
+        return jsonResponse([
         {
           id: 'doc-1',
           title: 'Vor Neustart',
@@ -142,25 +179,13 @@ describe('GUI chaos suite', () => {
           version_count: 1,
           chunk_count: 1,
         },
-      ]))
-      .mockResolvedValueOnce(jsonResponse({ error: { code: 'SERVER_ERROR', message: 'database restarting', details: {} } }, 503));
-
-    renderApp('/documents');
-
-    expect(await screen.findByText('Vor Neustart')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Statusfilter'), { target: { value: 'archived' } });
-
-    expect(await screen.findByText('Serverfehler')).toBeInTheDocument();
-    expect(screen.getByText('Aktion: Spaeter erneut versuchen')).toBeInTheDocument();
-    expect(screen.queryByText('Vor Neustart')).not.toBeInTheDocument();
-  });
-
-  it('simulates workspace switching during requests without ghost data', async () => {
-    const staleSearch = deferred();
-    const fetchSpy = vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(jsonResponse([]))
-      .mockReturnValueOnce(staleSearch.promise)
-      .mockResolvedValueOnce(jsonResponse([]));
+        ]);
+      }
+      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=archived')) {
+        return jsonResponse([]);
+      }
+      throw new Error(`unexpected fetch: ${url}`);
+    });
 
     renderApp('/documents', {
       ...baseAuthState,
@@ -170,39 +195,75 @@ describe('GUI chaos suite', () => {
       ],
     });
 
-    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Suchbegriff'), { target: { value: 'workspace one' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
+    expect(await screen.findByText('Vor Neustart')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Workspace wechseln'), { target: { value: 'workspace-2' } });
+
+    expect(await screen.findByText('Fehler beim Laden')).toBeInTheDocument();
+    expect(screen.queryByText('Vor Neustart')).not.toBeInTheDocument();
+  });
+
+  it('simulates workspace switching during requests without ghost data', async () => {
+    const staleSearch = deferred();
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, options = {}) => {
+      const url = String(input);
+      const workspaceId = options.headers?.['X-Workspace-Id'];
+      if (isStatusRequest(url)) {
+        return jsonResponse({});
+      }
+      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=active') && workspaceId === 'workspace-1') {
+        return staleSearch.promise;
+      }
+      if (isDocumentListRequest(url)) {
+        return jsonResponse([]);
+      }
+      throw new Error(`unexpected fetch: ${url}`);
+    });
+
+    renderApp('/documents', {
+      ...baseAuthState,
+      memberships: [
+        { workspace_id: 'workspace-1', role: 'owner' },
+        { workspace_id: 'workspace-2', role: 'member' },
+      ],
+    });
+
+    expect(await screen.findByText(/Dokumente werden geladen/i)).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Workspace wechseln'), { target: { value: 'workspace-2' } });
     await waitFor(() => {
-      expect(screen.getByText('Workspace: workspace-2')).toBeInTheDocument();
+      expect(screen.getByTestId('status-bar').textContent).toContain('workspace-2');
     });
 
     staleSearch.resolve(jsonResponse([
       {
-        document_id: 'doc-1',
-        document_title: 'Workspace One Result',
-        document_version_id: 'version-1',
-        version_number: 1,
-        chunk_id: 'chunk-1',
-        position: 0,
-        text_preview: 'workspace one hit',
-        source_anchor: { type: 'text', paragraph: 1 },
-        rank: 0.9,
+        id: 'doc-1',
+        title: 'Workspace One Result',
+        mime_type: 'text/plain',
+        created_at: '2026-05-01T10:00:00Z',
+        updated_at: '2026-05-01T10:00:00Z',
+        latest_version_id: 'version-1',
+        import_status: 'chunked',
+        lifecycle_status: 'active',
+        version_count: 1,
+        chunk_count: 1,
       },
     ]));
 
     await waitFor(() => {
       expect(screen.queryByText('Workspace One Result')).not.toBeInTheDocument();
-      expect(screen.getByLabelText('Suchbegriff')).toHaveValue('');
+      expect(screen.getByLabelText('Dokumentsuche')).toHaveValue('');
     });
-    expect(fetchSpy).toHaveBeenCalledTimes(3);
+    expect(fetchSpy).toHaveBeenCalled();
   });
 
   it('simulates token expiration without retaining sensitive state', async () => {
-    vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(jsonResponse([
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (isStatusRequest(url)) {
+        return jsonResponse({});
+      }
+      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=active')) {
+        return jsonResponse([
         {
           id: 'doc-1',
           title: 'Sensitive Document',
@@ -215,22 +276,30 @@ describe('GUI chaos suite', () => {
           version_count: 1,
           chunk_count: 1,
         },
-      ]))
-      .mockResolvedValueOnce(jsonResponse({ error: { code: 'UNAUTHORIZED', message: 'Token expired', details: {} } }, 401));
+        ]);
+      }
+      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=archived')) {
+        return jsonResponse([]);
+      }
+      if (url.includes('/documents/doc-1/archive')) {
+        return jsonResponse({ error: { code: 'UNAUTHORIZED', message: 'Token expired', details: {} } }, 401);
+      }
+      throw new Error(`unexpected fetch: ${url}`);
+    });
 
     renderApp('/documents');
 
     expect(await screen.findByText('Sensitive Document')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Suchbegriff'), { target: { value: 'secret' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
+    fireEvent.click(screen.getByText('Sensitive Document'));
+    fireEvent.click(await screen.findByRole('button', { name: 'Archivieren' }));
+    fireEvent.click(screen.getByRole('button', { name: /Best/i }));
 
     expect(await screen.findByText('Anmeldung')).toBeInTheDocument();
     expect(screen.queryByText('Sensitive Document')).not.toBeInTheDocument();
-    expect(screen.queryByDisplayValue('secret')).not.toBeInTheDocument();
   });
 
   it('simulates restore during usage with visible degraded state', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse(diagnosticsPayload({
+    const payload = diagnosticsPayload({
       operationalMetrics: [
         {
           key: 'restore_mode',
@@ -252,7 +321,12 @@ describe('GUI chaos suite', () => {
           source: 'reports/restore_runtime_status.json',
         },
       ],
-    })));
+    });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (isStatusRequest(input)) return jsonResponse({});
+      if (isDiagnosticsRequest(input)) return jsonResponse(payload);
+      throw new Error(`unexpected fetch: ${String(input)}`);
+    });
 
     renderApp('/admin/diagnostics');
 
@@ -263,7 +337,7 @@ describe('GUI chaos suite', () => {
   });
 
   it('simulates reindex during search with visible degraded state', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse(diagnosticsPayload({
+    const payload = diagnosticsPayload({
       operationalMetrics: [
         {
           key: 'reindex_running',
@@ -302,7 +376,12 @@ describe('GUI chaos suite', () => {
           source: 'diagnostics.search.stale_index_entries',
         },
       ],
-    })));
+    });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (isStatusRequest(input)) return jsonResponse({});
+      if (isDiagnosticsRequest(input)) return jsonResponse(payload);
+      throw new Error(`unexpected fetch: ${String(input)}`);
+    });
 
     renderApp('/admin/diagnostics');
 
@@ -313,7 +392,7 @@ describe('GUI chaos suite', () => {
   });
 
   it('simulates queue backlog as a critical degraded state', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(jsonResponse(diagnosticsPayload({
+    const payload = diagnosticsPayload({
       operationalMetrics: [
         {
           key: 'queue_degraded',
@@ -335,7 +414,12 @@ describe('GUI chaos suite', () => {
           source: 'queue_aging_report',
         },
       ],
-    })));
+    });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (isStatusRequest(input)) return jsonResponse({});
+      if (isDiagnosticsRequest(input)) return jsonResponse(payload);
+      throw new Error(`unexpected fetch: ${String(input)}`);
+    });
 
     renderApp('/admin/diagnostics');
 

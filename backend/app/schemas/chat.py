@@ -42,6 +42,14 @@ class ChatCitationResponse(StrictChatModel):
     source_status: Literal["active", "archived", "deleted", "missing"]
 
 
+class ChatSourceResponse(StrictChatModel):
+    document_name: str
+    chunk_id: str | None
+    page: int | None = None
+    score: float | None = None
+    classification: str = "INTERNAL"
+
+
 class ChatConfidenceResponse(StrictChatModel):
     sufficient_context: bool
     retrieval_score_max: float | None = None
@@ -56,6 +64,10 @@ class ChatMessageResponse(StrictChatModel):
     basis_type: ChatBasisType
     created_at: datetime
     citations: list[ChatCitationResponse] = Field(default_factory=list)
+    used_rag_context: bool = False
+    sources: list[ChatSourceResponse] = Field(default_factory=list)
+    blocked_source_count: int = 0
+    status: Literal["ok", "blocked"] = "ok"
     confidence: ChatConfidenceResponse | None = None
 
 

@@ -1,37 +1,23 @@
-"""Governance-Endpunkte: status, changesets, rollback, policy-decisions, privacy-mode."""
+"""Governance endpoints for status, changesets, rollback and protected actions."""
 from __future__ import annotations
-
-import uuid
-from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.api.dependencies.auth import (
-    require_workspace_member,
-    require_workspace_admin,
-    AuthContext,
-)
-from app.api.v1.approvals import create_approval, _log_audit
+from app.api.dependencies.auth import AuthContext, require_workspace_admin, require_workspace_member
+from app.api.v1.approvals import _log_audit, create_approval
 
 router = APIRouter(prefix="/governance", tags=["governance"])
 
-# ── In-Memory Stores ─────────────────────────────────────────────────────────
 _privacy_mode: bool = False
 _changesets: list[dict] = []
-_rollback_points: list[dict] = [
-    {
-        "id": "rp-initial",
-        "label": "Initial State",
-        "created_at": "2026-01-01T00:00:00Z",
-        "description": "Systemzustand bei Erstinstallation",
-    }
-]
+_rollback_points: list[dict] = []
 _policy_decisions: list[dict] = []
 
 
 class PrivacyModeRequest(BaseModel):
     enabled: bool
+    reason: str = ""
 
 
 class ChangesetApplyRequest(BaseModel):
@@ -40,6 +26,24 @@ class ChangesetApplyRequest(BaseModel):
 
 class RollbackRequest(BaseModel):
     reason: str
+
+
+class PolicyReloadRequest(BaseModel):
+    reason: str = ""
+
+
+class RetentionCleanupRequest(BaseModel):
+    reason: str
+    dry_run: bool = True
+
+
+def _approval_response(action: str, risk: str, category: str, context: dict, ctx: AuthContext) -> dict:
+    if risk == "CRITICAL" and ctx.role not in {"owner", "admin"}:
+        _log_audit(f"{action}_BLOCKED", ctx.login, category, {"risk": risk, "reason": "admin_required", **context})
+        raise HTTPException(status_code=403, detail="CRITICAL action requires admin and approval")
+    approval = create_approval(action=action, risk=risk, category=category, context=context)
+    _log_audit(f"{action}_APPROVAL_REQUIRED", ctx.login, approval["id"], {"risk": risk, **context})
+    return {"ok": True, "risk": risk, "approval_required": True, "approval_id": approval["id"]}
 
 
 @router.get("/status")
@@ -56,15 +60,15 @@ def get_governance_status(ctx: AuthContext = Depends(require_workspace_member)) 
 @router.patch("/privacy-mode")
 def toggle_privacy_mode(
     body: PrivacyModeRequest,
-    ctx: AuthContext = Depends(require_workspace_member),
+    ctx: AuthContext = Depends(require_workspace_admin),
 ) -> dict:
-    global _privacy_mode
-    _privacy_mode = body.enabled
-    _log_audit(
-        "PRIVACY_MODE_CHANGED", ctx.login, "system",
-        {"enabled": body.enabled},
+    return _approval_response(
+        "PRIVACY_MODE_CHANGE",
+        "HIGH",
+        "governance",
+        {"enabled": body.enabled, "reason": body.reason},
+        ctx,
     )
-    return {"ok": True, "privacy_mode": _privacy_mode}
 
 
 @router.get("/changesets")
@@ -76,21 +80,20 @@ def list_changesets(ctx: AuthContext = Depends(require_workspace_member)) -> dic
 def apply_changeset(
     changeset_id: str,
     body: ChangesetApplyRequest,
-    ctx: AuthContext = Depends(require_workspace_member),
+    ctx: AuthContext = Depends(require_workspace_admin),
 ) -> dict:
     cs = next((c for c in _changesets if c["id"] == changeset_id), None)
     if not cs:
         raise HTTPException(status_code=404, detail="Changeset not found")
     if cs["status"] != "pending":
         raise HTTPException(status_code=409, detail="Changeset already applied")
-    # Riskante Aktion → Approval erzeugen statt direkt ausführen
-    approval = create_approval(
-        action="CHANGESET_APPLY",
-        risk="HIGH",
-        category="governance",
-        context={"changeset_id": changeset_id, "comment": body.comment},
+    return _approval_response(
+        "CHANGESET_APPLY",
+        "HIGH",
+        "governance",
+        {"changeset_id": changeset_id, "comment": body.comment},
+        ctx,
     )
-    return {"ok": True, "approval_required": True, "approval_id": approval["id"]}
 
 
 @router.get("/rollback-points")
@@ -102,20 +105,49 @@ def list_rollback_points(ctx: AuthContext = Depends(require_workspace_member)) -
 def execute_rollback(
     rollback_id: str,
     body: RollbackRequest,
-    ctx: AuthContext = Depends(require_workspace_admin),  # Rollback nur mit Admin Permission
+    ctx: AuthContext = Depends(require_workspace_admin),
 ) -> dict:
     rp = next((r for r in _rollback_points if r["id"] == rollback_id), None)
     if not rp:
         raise HTTPException(status_code=404, detail="Rollback point not found")
-    # Rollback ist CRITICAL → Approval erzeugen
-    approval = create_approval(
-        action="ROLLBACK",
-        risk="CRITICAL",
-        category="governance",
-        context={"rollback_id": rollback_id, "reason": body.reason},
+    return _approval_response(
+        "ROLLBACK",
+        "CRITICAL",
+        "governance",
+        {"rollback_id": rollback_id, "reason": body.reason},
+        ctx,
     )
-    _log_audit("ROLLBACK_REQUESTED", ctx.login, rollback_id, {"reason": body.reason})
-    return {"ok": True, "approval_required": True, "approval_id": approval["id"]}
+
+
+@router.post("/rollback")
+def execute_default_rollback(
+    body: RollbackRequest,
+    ctx: AuthContext = Depends(require_workspace_admin),
+) -> dict:
+    return _approval_response(
+        "ROLLBACK",
+        "CRITICAL",
+        "governance",
+        {"rollback_id": "latest", "reason": body.reason},
+        ctx,
+    )
+
+
+@router.post("/policy/reload")
+def reload_policy(
+    body: PolicyReloadRequest,
+    ctx: AuthContext = Depends(require_workspace_admin),
+) -> dict:
+    return _approval_response("POLICY_RELOAD", "HIGH", "governance", {"reason": body.reason}, ctx)
+
+
+@router.post("/retention/cleanup")
+def retention_cleanup(
+    body: RetentionCleanupRequest,
+    ctx: AuthContext = Depends(require_workspace_admin),
+) -> dict:
+    risk = "HIGH" if body.dry_run else "CRITICAL"
+    return _approval_response("RETENTION_CLEANUP", risk, "governance", body.model_dump(), ctx)
 
 
 @router.get("/policy-decisions")

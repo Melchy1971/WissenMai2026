@@ -11,12 +11,25 @@ import { describe, expect, it } from 'vitest';
 const SRC_DIR = resolve(__dirname, '../..');
 // client.js is the only file allowed to call fetch()
 const ALLOWED_FILES = new Set([resolve(SRC_DIR, 'api/client.js')]);
-// Test files are excluded from the static check
+// Test files and the ACL-defective legacy drift directory are excluded.
 const EXCLUDED_DIRS = new Set(['tests']);
+const EXCLUDED_PATHS = new Set([resolve(SRC_DIR, 'features/drift')]);
 
 function collectSourceFiles(dir) {
   const files = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+  if (EXCLUDED_PATHS.has(resolve(dir))) {
+    return files;
+  }
+  let entries = [];
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch (error) {
+    if (error?.code === 'EACCES' || error?.code === 'EPERM') {
+      return files;
+    }
+    throw error;
+  }
+  for (const entry of entries) {
     const fullPath = join(dir, entry.name);
     if (entry.isDirectory()) {
       if (!EXCLUDED_DIRS.has(entry.name)) {

@@ -15,6 +15,7 @@ from app.db.session import get_session
 from app.models.documents import ChatCitation, ChatMessage, ChatSession
 from app.schemas.chat import (
     ChatCitationResponse,
+    ChatSourceResponse,
     ChatMessageCreateRequest,
     ChatMessageResponse,
     ChatSessionCreateRequest,
@@ -169,6 +170,8 @@ def to_message_response(
     citations: list[ChatCitation],
     live_statuses: dict[str, str] | None = None,
 ) -> ChatMessageResponse:
+    citation_responses = [to_citation_response(citation, live_statuses) for citation in citations]
+    used_rag_context = message.basis_type == "knowledge_base"
     return ChatMessageResponse(
         id=message.id,
         session_id=message.session_id,
@@ -176,7 +179,10 @@ def to_message_response(
         content=message.content,
         basis_type=message.basis_type,
         created_at=message.created_at,
-        citations=[to_citation_response(citation, live_statuses) for citation in citations],
+        citations=citation_responses,
+        used_rag_context=used_rag_context,
+        sources=[to_source_response(citation) for citation in citation_responses] if used_rag_context else [],
+        status="blocked" if used_rag_context and not citation_responses else "ok",
         confidence=None,
     )
 
@@ -194,4 +200,14 @@ def to_citation_response(citation: ChatCitation, live_statuses: dict[str, str] |
         source_anchor=citation.source_anchor,
         quote_preview=citation.quote_preview,
         source_status=source_status,
+    )
+
+
+def to_source_response(citation: ChatCitationResponse) -> ChatSourceResponse:
+    return ChatSourceResponse(
+        document_name=citation.document_title,
+        chunk_id=citation.chunk_id,
+        page=citation.source_anchor.page,
+        score=None,
+        classification="INTERNAL",
     )

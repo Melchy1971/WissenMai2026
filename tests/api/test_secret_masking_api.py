@@ -6,6 +6,11 @@ import re
 BASE = "http://localhost:8000"
 HEADERS = {"Authorization": "Bearer test-token", "X-Workspace-Id": "ws-test"}
 
+pytestmark = [
+    pytest.mark.external_env_only,
+    pytest.mark.legacy_live_http,
+]
+
 SECRET_PATTERNS = [
     re.compile(r'sk-[A-Za-z0-9]{10,}'),      # OpenAI-style keys
     re.compile(r'Bearer [A-Za-z0-9._-]{10,}'), # Auth tokens

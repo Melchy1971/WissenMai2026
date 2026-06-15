@@ -1,7 +1,7 @@
 import { cleanup, render, screen, fireEvent } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { DriftDashboard } from '../../features/drift/DriftDashboard.jsx';
+import { DriftDashboard } from '../../features/drift_v2/DriftDashboard.jsx';
 
 afterEach(cleanup);
 

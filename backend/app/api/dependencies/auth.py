@@ -22,7 +22,17 @@ class AuthContext:
 def _permissions_for_role(role: str) -> tuple[str, ...]:
     base_permissions = ("workspace:read", "document:import")
     if role in {"owner", "admin"}:
-        return (*base_permissions, "workspace:admin")
+        return (
+            *base_permissions,
+            "workspace:admin",
+            "settings:write",
+            "governance:write",
+            "approval:decide",
+            "orchestrator:run",
+            "collaboration:run",
+            "tools:write",
+            "plugins:write",
+        )
     return base_permissions
 
 
@@ -60,3 +70,7 @@ def require_workspace_admin(context: AuthContext = Depends(require_workspace_mem
     if context.role not in {"owner", "admin"}:
         raise AdminRequiredApiError()
     return context
+
+
+def has_permission(context: AuthContext, permission: str) -> bool:
+    return context.role in {"owner", "admin"} or permission in context.permissions

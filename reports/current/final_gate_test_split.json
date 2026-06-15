@@ -1,0 +1,61 @@
+{
+  "report": "final_gate_test_split",
+  "generated_at": "2026-06-12T13:32:49.6224990+02:00",
+  "status": "LOCAL_GATE_PASS_EXTERNAL_ENV_SKIPPED",
+  "policy": {
+    "local_gate_marker": "local_gate",
+    "external_gate_marker": "external_env_only",
+    "legacy_marker": "legacy_live_http",
+    "local_gate_uses_only": "pytest tests/api -m local_gate",
+    "local_gate_skips_block": true,
+    "external_env_only_skips_block_local_gate": false,
+    "legacy_live_http_is_silent_pass": false
+  },
+  "local_gate": {
+    "command": "pytest tests/api -m local_gate",
+    "status": "PASS",
+    "blocking": true,
+    "collected": 11,
+    "passed": 11,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "deselected": 72,
+    "exit_code": 0
+  },
+  "external_env_gate": {
+    "command": "pytest tests/api -m external_env_only",
+    "status": "SKIPPED_EXTERNAL_ENV_ONLY",
+    "blocking_local_gate": false,
+    "required_markers": [
+      "external_env_only",
+      "legacy_live_http"
+    ],
+    "collected": 72,
+    "passed": 0,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 72,
+    "deselected": 11,
+    "exit_code": 0
+  },
+  "legacy_live_http": {
+    "classification": [
+      "external_env_only",
+      "legacy_live_http"
+    ],
+    "reason": "These tests use httpx against localhost:8000 and do not match the local FastAPI TestClient app.",
+    "files": [
+      "tests/api/test_gui_backend_endpoints.py",
+      "tests/api/test_gui_contracts.py",
+      "tests/api/test_gui_secret_masking.py",
+      "tests/api/test_secret_masking_api.py",
+      "tests/api/test_settings_endpoints.py",
+      "tests/api/test_settings_patch.py"
+    ]
+  },
+  "validator": {
+    "script": "scripts/validate_final_gate_test_split.py",
+    "expected_behavior": "Exit 0 when local_gate has no failures, errors or skips. External legacy skips are reported but do not block local gate."
+  }
+}

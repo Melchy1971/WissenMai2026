@@ -9,6 +9,7 @@ import { LoadingState } from '../components/status/LoadingState.jsx';
 import { ChatPage } from '../pages/ChatPage.jsx';
 import { DashboardPage } from '../pages/DashboardPage.jsx';
 import { DataQualityPage } from '../pages/DataQualityPage.jsx';
+import { DriftPage } from '../pages/DriftPage.jsx';
 import { DocumentDetailPage } from '../pages/DocumentDetailPage.jsx';
 import { DocumentCenterPage } from '../pages/DocumentCenterPage.jsx';
 import { ImportCenterPage } from '../pages/ImportCenterPage.jsx';
@@ -17,6 +18,11 @@ import { SearchPage } from '../pages/SearchPage.jsx';
 import { LoginPage } from '../pages/LoginPage.jsx';
 import { RAGCenterPage } from '../pages/RAGCenterPage.jsx';
 import { SettingsPage } from '../pages/SettingsPage.jsx';
+import { AgentsPage } from '../pages/AgentsPage.jsx';
+import { CollaborationPage } from '../pages/CollaborationPage.jsx';
+import { GovernancePage } from '../pages/GovernancePage.jsx';
+import { SimpleListPage } from '../pages/SimpleListPage.jsx';
+import { AdminDiagnosticsPage } from '../pages/AdminDiagnosticsPage.jsx';
 
 import { mapError } from '../view-models/mappers.js';
 
@@ -84,7 +90,16 @@ export function AppRoutes() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/rag" element={<RAGCenterPage />} />
         <Route path="/data-quality" element={<DataQualityPage />} />
+        <Route path="/drift" element={<DriftPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/tools" element={<SimpleListPage title="Tools" endpoint="/api/v1/tools" testId="tools-page" />} />
+        <Route path="/memory" element={<SimpleListPage title="Memory" endpoint="/api/v1/memory" testId="memory-page" />} />
+        <Route path="/tasks" element={<SimpleListPage title="Tasks" endpoint="/api/v1/tasks" testId="tasks-page" />} />
+        <Route path="/projects" element={<SimpleListPage title="Projects" endpoint="/api/v1/projects" testId="projects-page" />} />
+        <Route path="/agents" element={<AgentsPage />} />
+        <Route path="/collaboration" element={<CollaborationPage />} />
+        <Route path="/governance" element={<GovernancePage />} />
+        <Route path="/admin/diagnostics" element={<AdminDiagnosticsPage />} />
       </Route>
     </Routes>
   );

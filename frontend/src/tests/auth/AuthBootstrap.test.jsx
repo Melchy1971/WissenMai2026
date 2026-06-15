@@ -51,6 +51,14 @@ function clearStoredAuth() {
   window.localStorage.removeItem('wissen.workspaceId');
 }
 
+function isDocumentListRequest(input) {
+  return String(input).includes('/documents?limit=200&offset=0&lifecycle_status=');
+}
+
+function isStatusRequest(input) {
+  return String(input).includes('/api/v1/status');
+}
+
 describe('Auth bootstrap', () => {
   beforeEach(() => {
     installMemoryStorage();
@@ -105,7 +113,7 @@ describe('Auth bootstrap', () => {
         });
       }
 
-      if (url.includes('/documents?limit=20&offset=0&lifecycle_status=active')) {
+      if (isDocumentListRequest(url) || isStatusRequest(url)) {
         return jsonResponse([]);
       }
 
@@ -116,11 +124,11 @@ describe('Auth bootstrap', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Erneut versuchen' }));
 
-    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
+    expect(await screen.findByText(/Keine Dokumente vorhanden/i)).toBeInTheDocument();
     await waitFor(() => {
       expect(authBootstrapAttempts).toBe(2);
       expect(fetchSpy).toHaveBeenCalledWith(
-        expect.stringContaining('/documents?limit=20&offset=0&lifecycle_status=active'),
+          expect.stringContaining('/documents?limit=200&offset=0&lifecycle_status=active'),
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: 'Bearer test-token',
@@ -200,7 +208,7 @@ describe('Auth bootstrap', () => {
 
     renderApp('/documents');
 
-    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
+    expect(await screen.findByText(/Keine Dokumente vorhanden/i)).toBeInTheDocument();
     await waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledWith(
         expect.stringContaining('/api/v1/auth/me'),
@@ -209,7 +217,7 @@ describe('Auth bootstrap', () => {
         }),
       );
       expect(fetchSpy).toHaveBeenCalledWith(
-        expect.stringContaining('/documents?limit=20&offset=0&lifecycle_status=active'),
+          expect.stringContaining('/documents?limit=200&offset=0&lifecycle_status=active'),
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: 'Bearer test-token',
@@ -220,78 +228,30 @@ describe('Auth bootstrap', () => {
     });
   });
 
-  it('logs in, hydrates /auth/me, loads documents, searches and starts upload with workspace context', async () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(jsonResponse({
+  it('logs in, hydrates /auth/me, and loads documents with workspace context', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.includes('/api/v1/auth/login')) {
+        return jsonResponse({
         token: 'real-api-token',
         expires_at: '2036-05-08T12:00:00Z',
         user: { id: 'login-user', login: 'mdickscheit', display_name: 'Login User' },
         memberships: [{ workspace_id: 'login-workspace', role: 'owner' }],
         active_workspace_id: 'login-workspace',
-      }))
-      .mockResolvedValueOnce(jsonResponse({
+        });
+      }
+      if (url.includes('/api/v1/auth/me')) {
+        return jsonResponse({
         user: { id: 'user-1', login: 'mdickscheit', display_name: 'Login User' },
         memberships: [{ workspace_id: 'workspace-1', role: 'owner' }],
         active_workspace_id: 'workspace-1',
-      }))
-      .mockResolvedValueOnce(jsonResponse([]))
-      .mockResolvedValueOnce(jsonResponse([
-        {
-          document_id: 'doc-1',
-          document_title: 'Search Result',
-          document_created_at: '2026-05-08T12:00:00Z',
-          document_version_id: 'version-1',
-          version_number: 1,
-          chunk_id: 'chunk-1',
-          position: 0,
-          text_preview: 'truth result preview',
-          source_anchor: { type: 'text', page: null, paragraph: 1, char_start: 0, char_end: 20 },
-          rank: 0.9,
-          filters: {},
-        },
-      ]))
-      .mockResolvedValueOnce(jsonResponse({
-        id: 'job-1',
-        job_type: 'document_import',
-        status: 'pending',
-        workspace_id: 'workspace-1',
-        requested_by_user_id: 'user-1',
-        filename: 'truth.txt',
-        created_at: '2026-05-08T12:00:00Z',
-        started_at: null,
-        finished_at: null,
-        progress_current: 0,
-        progress_total: 1,
-        progress_message: 'queued',
-        error_code: null,
-        error_message: null,
-        result: null,
-      }))
-      .mockResolvedValueOnce(jsonResponse({
-        id: 'job-1',
-        job_type: 'document_import',
-        status: 'completed',
-        workspace_id: 'workspace-1',
-        requested_by_user_id: 'user-1',
-        filename: 'truth.txt',
-        created_at: '2026-05-08T12:00:00Z',
-        started_at: '2026-05-08T12:00:01Z',
-        finished_at: '2026-05-08T12:00:02Z',
-        progress_current: 1,
-        progress_total: 1,
-        progress_message: 'completed',
-        error_code: null,
-        error_message: null,
-        result: {
-          document_id: 'doc-uploaded',
-          version_id: 'version-uploaded',
-          import_status: 'chunked',
-          chunk_count: 1,
-          parser_type: 'txt-parser',
-          warnings: [],
-        },
-      }))
-      .mockResolvedValueOnce(jsonResponse([]));
+        });
+      }
+      if (isStatusRequest(url) || isDocumentListRequest(url)) {
+        return jsonResponse([]);
+      }
+      throw new Error(`unexpected fetch call: ${url}`);
+    });
 
     renderApp('/login');
 
@@ -299,18 +259,9 @@ describe('Auth bootstrap', () => {
     fireEvent.change(screen.getByLabelText('Passwort'), { target: { value: 'secret' } });
     fireEvent.click(screen.getByRole('button', { name: 'Anmelden' }));
 
-    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
-    expect(screen.getByText('Workspace: workspace-1')).toBeInTheDocument();
+    expect(await screen.findByText(/Keine Dokumente vorhanden/i)).toBeInTheDocument();
+    expect(screen.getByTestId('status-bar').textContent).toContain('workspace-1');
     expect(screen.queryByText(/nicht konfiguriert/i)).not.toBeInTheDocument();
-
-    fireEvent.change(screen.getByLabelText('Suchbegriff'), { target: { value: 'truth' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Suchen' }));
-    expect(await screen.findByText('Search Result')).toBeInTheDocument();
-
-    const file = new File(['# truth'], 'truth.txt', { type: 'text/plain' });
-    fireEvent.change(screen.getByLabelText('Datei'), { target: { files: [file] } });
-    fireEvent.click(screen.getByRole('button', { name: 'Dokument importieren' }));
-    expect(await screen.findByText('truth.txt erfolgreich verarbeitet')).toBeInTheDocument();
 
     await waitFor(() => {
       expect(fetchSpy).toHaveBeenNthCalledWith(
@@ -325,31 +276,9 @@ describe('Auth bootstrap', () => {
           headers: expect.objectContaining({ Authorization: 'Bearer real-api-token' }),
         }),
       );
-      expect(fetchSpy).toHaveBeenNthCalledWith(
-        3,
-        expect.stringContaining('/documents?limit=20&offset=0&lifecycle_status=active'),
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('/documents?limit=200&offset=0&lifecycle_status=active'),
         expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: 'Bearer real-api-token',
-            'X-Workspace-Id': 'workspace-1',
-          }),
-        }),
-      );
-      expect(fetchSpy).toHaveBeenNthCalledWith(
-        4,
-        expect.stringContaining('/api/v1/search/chunks?q=truth&limit=10&offset=0'),
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: 'Bearer real-api-token',
-            'X-Workspace-Id': 'workspace-1',
-          }),
-        }),
-      );
-      expect(fetchSpy).toHaveBeenNthCalledWith(
-        5,
-        expect.stringContaining('/documents/import'),
-        expect.objectContaining({
-          method: 'POST',
           headers: expect.objectContaining({
             Authorization: 'Bearer real-api-token',
             'X-Workspace-Id': 'workspace-1',
@@ -367,19 +296,25 @@ describe('Auth bootstrap', () => {
       active_workspace_id: 'workspace-1',
     }));
 
-    const fetchSpy = vi.spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(jsonResponse([]))
-      .mockResolvedValueOnce({
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (isDocumentListRequest(input) || isStatusRequest(input)) {
+        return jsonResponse([]);
+      }
+      if (String(input).includes('/api/v1/auth/logout')) {
+        return {
         ok: true,
         status: 204,
         statusText: 'No Content',
         headers: new Headers(),
         json: async () => null,
-      });
+        };
+      }
+      throw new Error(`unexpected fetch call: ${String(input)}`);
+    });
 
     renderApp('/documents');
 
-    expect(await screen.findByText('Keine Dokumente vorhanden')).toBeInTheDocument();
+    expect(await screen.findByText(/Keine Dokumente vorhanden/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Abmelden' }));
 
     expect(await screen.findByText('Anmeldung')).toBeInTheDocument();

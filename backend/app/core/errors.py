@@ -232,3 +232,33 @@ class ReindexConstraintViolationApiError(ApiError):
     status_code = 422
     code = "REINDEX_CONSTRAINT_VIOLATION"
     message = "Reindex governance constraint violated"
+
+
+class AnalysisJobNotFoundApiError(ApiError):
+    status_code = 404
+    code = "ANALYSIS_JOB_NOT_FOUND"
+    message = "Analysis job not found"
+
+
+class AnalysisJobInvalidStateApiError(ApiError):
+    status_code = 409
+    code = "ANALYSIS_JOB_INVALID_STATE"
+    message = "Analysis job is not in the required state"
+
+
+class AnalysisResultNotReadyApiError(ApiError):
+    status_code = 409
+    code = "ANALYSIS_RESULT_NOT_READY"
+    message = "Analysis result is not ready"
+
+
+class AnalysisCompareDocumentMissingApiError(ApiError):
+    status_code = 422
+    code = "ANALYSIS_COMPARE_DOCUMENT_MISSING"
+    message = "Analysis job has no compare document"
+
+
+class AnalysisRejectionReasonRequiredApiError(ApiError):
+    status_code = 422
+    code = "ANALYSIS_REJECTION_REASON_REQUIRED"
+    message = "Rejection reason is required"

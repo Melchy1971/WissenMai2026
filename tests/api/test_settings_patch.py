@@ -14,7 +14,11 @@ HEADERS = {
     "Content-Type": "application/json",
 }
 
-pytestmark = pytest.mark.skipif(not HAS_HTTPX, reason="httpx not installed")
+pytestmark = [
+    pytest.mark.external_env_only,
+    pytest.mark.legacy_live_http,
+    pytest.mark.skipif(not HAS_HTTPX, reason="httpx not installed"),
+]
 
 
 def test_get_settings_returns_all_sections():

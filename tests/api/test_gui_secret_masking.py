@@ -12,7 +12,11 @@ except ImportError:
 BASE = "http://localhost:8000/api/v1"
 HEADERS = {"Authorization": "Bearer test-token", "X-Workspace-Id": "ws-test"}
 
-pytestmark = pytest.mark.skipif(not HAS_HTTPX, reason="httpx not installed")
+pytestmark = [
+    pytest.mark.external_env_only,
+    pytest.mark.legacy_live_http,
+    pytest.mark.skipif(not HAS_HTTPX, reason="httpx not installed"),
+]
 
 SECRET_PATTERNS = [
     re.compile(r"sk-[A-Za-z0-9]{8,}"),

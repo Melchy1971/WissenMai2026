@@ -1,0 +1,60 @@
+{
+  "task": "minimal_backend_analysis_api",
+  "date": "2026-06-12",
+  "status": "implemented",
+  "endpoints": [
+    "GET /api/v1/analysis/jobs",
+    "POST /api/v1/analysis/jobs",
+    "GET /api/v1/analysis/jobs/{job_id}",
+    "POST /api/v1/analysis/jobs/{job_id}/compare",
+    "POST /api/v1/analysis/jobs/{job_id}/summarize",
+    "POST /api/v1/analysis/jobs/{job_id}/approve",
+    "GET /api/v1/analysis/jobs/{job_id}/result"
+  ],
+  "implemented": {
+    "analysis_job_model": true,
+    "alembic_migration": "20260612_0021_analysis_jobs.py",
+    "api_router": "backend/app/api/v1/analysis.py",
+    "service_layer": "backend/app/services/analysis/service.py",
+    "mockable_ai_analysis_stub": "backend/app/services/analysis/stubs.py",
+    "deterministic_comparison_stub": "backend/app/services/analysis/stubs.py",
+    "approve_flow": true,
+    "result_endpoint": true
+  },
+  "intentionally_deferred": [
+    "real_llm_integration",
+    "complex_semantic_analysis",
+    "auto_import_without_approval"
+  ],
+  "verification": [
+    {
+      "command": "pytest backend\\tests\\test_analysis_api.py",
+      "result": "passed",
+      "tests": 9
+    },
+    {
+      "command": "pytest backend\\tests\\integration\\test_migrations.py::test_alembic_configuration_is_loadable backend\\tests\\integration\\test_migrations.py::test_alembic_revisions_are_unique",
+      "result": "passed",
+      "tests": 2
+    },
+    {
+      "command": "python -m py_compile backend\\app\\models\\analysis.py backend\\app\\services\\analysis\\service.py backend\\app\\services\\analysis\\stubs.py backend\\app\\api\\v1\\analysis.py",
+      "result": "passed"
+    },
+    {
+      "command": "python -m ruff check backend\\app\\api\\v1\\analysis.py backend\\app\\models\\analysis.py backend\\app\\services\\analysis\\service.py backend\\app\\services\\analysis\\stubs.py backend\\tests\\test_analysis_api.py",
+      "result": "passed"
+    }
+  ],
+  "coverage_focus": [
+    "auth_required",
+    "workspace_isolation",
+    "job_lifecycle",
+    "approve_required",
+    "result_retrieval"
+  ],
+  "notes": [
+    "Compare and summarize are deterministic synchronous stubs behind 202 endpoints.",
+    "Results always carry approval_required=true and are not applied/imported automatically."
+  ]
+}

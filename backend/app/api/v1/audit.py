@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 
 from app.api.dependencies.auth import require_workspace_member, AuthContext
 from app.api.v1.approvals import get_audit_log
+from app.core.redaction import redact_for_ui
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 
@@ -17,5 +18,5 @@ def get_audit(
     """Audit-Log zurückgeben. SECRET-Einträge werden nie angezeigt."""
     all_events = get_audit_log()
     # SECRET-Klassifizierung niemals zurückgeben
-    visible = [e for e in all_events if e.get("classification") != "SECRET"]
+    visible = [redact_for_ui(e) for e in all_events if e.get("classification") != "SECRET"]
     return {"items": visible[-limit:], "total": len(visible)}
