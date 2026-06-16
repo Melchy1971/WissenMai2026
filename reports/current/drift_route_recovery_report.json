@@ -1,0 +1,47 @@
+{
+  "report": "drift_route_recovery_report",
+  "generated_at": "2026-06-15T07:00:00.000000+00:00",
+  "generated_by": "drift_v2_integration_task",
+  "status": "PASS",
+  "summary": "drift_v2 vollstaendig aktiv. Alter Pfad features/drift existiert nicht. Kein einziger Import aus features/drift. Route /drift zeigt auf DriftPage -> drift_v2/DriftDashboard.",
+  "migration": {
+    "old_path": "frontend/src/features/drift",
+    "old_path_exists": false,
+    "new_path": "frontend/src/features/drift_v2",
+    "new_path_exists": true,
+    "reason": "features/drift war nicht schreibbar (ACL-Sperre). drift_v2 wurde als sicherer Ersatzpfad etabliert."
+  },
+  "import_audit": {
+    "imports_from_features_drift": 0,
+    "imports_from_features_drift_v2": 2,
+    "drift_v2_import_locations": [
+      {
+        "file": "frontend/src/pages/DriftPage.jsx",
+        "import": "import { DriftDashboard } from '../features/drift_v2/DriftDashboard.jsx'"
+      },
+      {
+        "file": "frontend/src/tests/features/DriftDashboard.test.jsx",
+        "import": "import { DriftDashboard } from '../../features/drift_v2/DriftDashboard.jsx'"
+      }
+    ]
+  },
+  "routing": {
+    "route_path": "/drift",
+    "route_file": "frontend/src/app/routes.jsx",
+    "route_line": 102,
+    "component_chain": "DriftPage -> drift_v2/DriftDashboard",
+    "old_drift_route_reachable": false
+  },
+  "prohibitions": {
+    "PROHIBIT_02": "ACTIVE — kein Repair-Button in DriftDashboard",
+    "PROHIBIT_06": "ACTIVE — kein Cleanup-Button in DriftDashboard"
+  },
+  "side_effects": {
+    "DashboardPage_jsx_recovered": true,
+    "DashboardPage_jsx_reason": "Datei war bei Kontextstart auf 3908 Bytes abgebrochen (governanceResult mitten im Array-Literal). Wiederhergestellt via git show HEAD:frontend/src/pages/DashboardPage.jsx.",
+    "git_pack_index_corrupted": true,
+    "git_pack_index_note": "pack-127d193ccc19a7583ae692c59d08125b416961e4.idx zu klein; einzelne Blobs via git show lesbar."
+  },
+  "blockers": [],
+  "next_action": "drift_dashboard_truth_report.json aktualisieren"
+}

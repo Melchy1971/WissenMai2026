@@ -1,0 +1,71 @@
+{
+  "schema_version": "1",
+  "report_id": "drift_v2_permission_guard_report",
+  "generated": "2026-06-15T09:30:00Z",
+  "status": "PASS",
+  "rule_reference": "Regel 6 Local Final Gate — permission_denied + active_safe_replacement_path = NON_BLOCKING",
+  "active_drift_path": "frontend/src/features/drift_v2",
+  "blocked_drift_path": "frontend/src/features/drift",
+  "block_reason": "ACL permission-blocked; superseded by drift_v2",
+  "conditions": [
+    {
+      "id": "C1",
+      "description": "Kein Quellcode importiert aus features/drift (alt)",
+      "scope": "src/** excluding tests/",
+      "files_scanned": "all .js/.jsx/.ts/.tsx in src/ (excl. tests/)",
+      "violations": 0,
+      "result": "PASS"
+    },
+    {
+      "id": "C2",
+      "description": "Route /drift verweist auf DriftPage -> drift_v2/DriftDashboard",
+      "scope": "src/app/routes.jsx",
+      "violations": 0,
+      "result": "PASS"
+    },
+    {
+      "id": "C3",
+      "description": "DriftPage importiert ausschliesslich aus drift_v2",
+      "scope": "src/pages/DriftPage.jsx",
+      "violations": 0,
+      "result": "PASS"
+    },
+    {
+      "id": "C4",
+      "description": "Test-Importe fuer Drift zeigen auf drift_v2 (SELF_EXCLUDE aktiv)",
+      "scope": "src/tests/** excl. DriftV2RegressionGuard.test.js + ClientStaticCheck.test.js",
+      "self_exclude_reason": "Guard-Test und ClientStaticCheck enthalten features/drift als Erkennungsmuster, nicht als aktiven Import",
+      "violations": 0,
+      "result": "PASS"
+    },
+    {
+      "id": "C5",
+      "description": "driftApi enthaelt keine mutierenden HTTP-Methoden (PROHIBIT-02/06)",
+      "scope": "src/features/drift_v2/driftApi.js",
+      "checked_methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "mutating_lines_found": 0,
+      "result": "PASS"
+    },
+    {
+      "id": "C5b",
+      "description": "driftApi exportiert nur read-only Funktionen",
+      "scope": "src/features/drift_v2/driftApi.js",
+      "checked_export_verbs": ["create", "update", "delete", "patch", "repair", "cleanup", "restore", "reindex"],
+      "mutating_exports_found": false,
+      "result": "PASS"
+    }
+  ],
+  "test_file": "frontend/src/tests/features/DriftV2RegressionGuard.test.js",
+  "test_run": {
+    "runner": "vitest",
+    "command": "npx vitest run src/tests/features/DriftV2RegressionGuard.test.js",
+    "tests_passed": 6,
+    "tests_failed": 0,
+    "result": "PASS"
+  },
+  "prohibit_compliance": {
+    "PROHIBIT-02": "COMPLIANT — Drift Detection read-only, keine Repair-Funktion",
+    "PROHIBIT-06": "COMPLIANT — kein POST/PUT/PATCH/DELETE in driftApi.js"
+  },
+  "summary": "Der alte Drift-Pfad features/drift ist vollstaendig inaktiv. Alle 6 Bedingungen PASS. drift_v2 ist der einzige aktive Drift-Pfad. PROHIBIT-02 und PROHIBIT-06 eingehalten."
+}

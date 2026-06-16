@@ -244,7 +244,7 @@ export function DocumentsPage() {
           <p className="panel__eyebrow">Dokumentuebersicht</p>
           <h2>Dokumente</h2>
         </div>
-        <p className="page-header__meta">Workspace: {workspaceId || 'nicht konfiguriert'}</p>
+        <p className="page-header__meta">Workspace: {workspaceId ? 'aktiv' : 'nicht konfiguriert'}</p>
       </div>
       {canUseDocumentControls ? (
       <section className="panel" data-testid="lifecycle-panel">
@@ -295,10 +295,6 @@ export function DocumentsPage() {
 
         {uploadState.status === 'polling' ? (
           <div className="meta-grid" data-testid="upload-job-status">
-            <div>
-              <dt>Job-ID</dt>
-              <dd>{uploadState.job?.id}</dd>
-            </div>
             <div>
               <dt>Datei</dt>
               <dd>{uploadState.fileName}</dd>

@@ -1,0 +1,346 @@
+{
+  "report_schema_version": 1,
+  "report_name": "backend_coverage_audit",
+  "report_type": "api_coverage_audit",
+  "generated_at": "2026-06-15T21:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "sources_read": [
+    "frontend/src/api/*.js",
+    "frontend/src/features/*/useTopics.js",
+    "frontend/src/features/*/useDataQuality.js",
+    "frontend/src/features/*/useSearch.js",
+    "frontend/src/features/*/useImport.js",
+    "frontend/src/features/drift_v2/driftApi.js",
+    "frontend/src/pages/AdminDiagnosticsPage.jsx",
+    "frontend/src/pages/AgentsPage.jsx",
+    "frontend/src/pages/CollaborationPage.jsx",
+    "frontend/src/pages/GovernancePage.jsx",
+    "frontend/src/pages/RAGCenterPage.jsx",
+    "frontend/src/pages/SettingsPage.jsx",
+    "frontend/src/lib/apiClient.js",
+    "backend/app/api/v1/router.py",
+    "backend/app/api/v1/*.py",
+    "backend/app/api/documents.py",
+    "backend/app/main.py",
+    "backend/app/schemas/analysis.py",
+    "backend/app/schemas/data_quality.py",
+    "backend/app/schemas/search.py"
+  ],
+  "mount_topology": {
+    "note": "Two distinct mount points in backend/app/main.py",
+    "root_mount": "documents_router → /documents/* (no /api/v1 prefix)",
+    "v1_mount": "api_router → /api/v1/* (all v1 routers)",
+    "health_mount": "health_router → /health, /health/db, /health/preflight",
+    "client_note": "requestJson() and callApi() both prepend VITE_API_BASE_URL (default http://127.0.0.1:8000)"
+  },
+  "statistics": {
+    "total_frontend_call_sites": 57,
+    "matched": 40,
+    "frontend_missing_backend": 5,
+    "backend_unused_by_frontend": 32,
+    "contract_mismatches": 5
+  },
+
+  "category_1_matched": {
+    "description": "Frontend calls endpoint AND backend implements it",
+    "entries": [
+      { "method": "POST", "path": "/api/v1/auth/login", "source": "auth.js:login()" },
+      { "method": "POST", "path": "/api/v1/auth/logout", "source": "auth.js:logout()" },
+      { "method": "GET",  "path": "/api/v1/auth/me",    "source": "auth.js:getAuthSession()" },
+      { "method": "GET",  "path": "/documents",          "source": "documents.js:getDocuments()" },
+      { "method": "GET",  "path": "/documents/:id",      "source": "documents.js:getDocumentDetail()" },
+      { "method": "GET",  "path": "/documents/:id/versions", "source": "documents.js:getDocumentVersions()" },
+      { "method": "GET",  "path": "/documents/:id/chunks",   "source": "documents.js:getDocumentChunks()" },
+      { "method": "POST", "path": "/documents/import",   "source": "documents.js:importDocument()" },
+      { "method": "PATCH","path": "/documents/:id/archive", "source": "documents.js:archiveDocument()" },
+      { "method": "PATCH","path": "/documents/:id/restore", "source": "documents.js:restoreDocument()" },
+      { "method": "DELETE","path": "/documents/:id",     "source": "documents.js:deleteDocument()" },
+      { "method": "GET",  "path": "/api/v1/analysis/jobs", "source": "analysis.js:listAnalysisJobs()" },
+      { "method": "POST", "path": "/api/v1/analysis/jobs", "source": "analysis.js:createAnalysisJob()" },
+      { "method": "GET",  "path": "/api/v1/analysis/jobs/:id", "source": "analysis.js:getAnalysisJob()" },
+      { "method": "POST", "path": "/api/v1/analysis/jobs/:id/compare",   "source": "analysis.js:compareAnalysisJob()" },
+      { "method": "POST", "path": "/api/v1/analysis/jobs/:id/summarize", "source": "analysis.js:summarizeAnalysisJob()" },
+      { "method": "POST", "path": "/api/v1/analysis/jobs/:id/approve",   "source": "analysis.js:approveAnalysisJob()" },
+      { "method": "GET",  "path": "/api/v1/analysis/jobs/:id/result",    "source": "analysis.js:getAnalysisResult()" },
+      { "method": "GET",  "path": "/api/v1/dashboard/summary",  "source": "dashboard.js:getDashboardSummary()" },
+      { "method": "GET",  "path": "/api/v1/dashboard/activity", "source": "dashboard.js:getDashboardActivity()" },
+      { "method": "GET",  "path": "/api/v1/dashboard/imports",  "source": "dashboard.js:getDashboardImports()" },
+      { "method": "GET",  "path": "/api/v1/dashboard/analysis", "source": "dashboard.js:getDashboardAnalysis()" },
+      { "method": "GET",  "path": "/api/v1/dashboard/quality",  "source": "dashboard.js:getDashboardQuality()" },
+      { "method": "GET",  "path": "/api/v1/dashboard/topics",   "source": "dashboard.js:getDashboardTopics()" },
+      { "method": "GET",  "path": "/api/v1/data-quality/summary",    "source": "dataQuality.js:getDataQualitySummary()" },
+      { "method": "GET",  "path": "/api/v1/data-quality/runs",       "source": "dataQuality.js:listDataQualityRuns()" },
+      { "method": "GET",  "path": "/api/v1/data-quality/runs/:id",   "source": "dataQuality.js:getDataQualityRun()" },
+      { "method": "GET",  "path": "/api/v1/data-quality/findings",   "source": "dataQuality.js:listDataQualityFindings()" },
+      { "method": "GET",  "path": "/api/v1/search/chunks",           "source": "search.js:searchChunks() — q= param matches backend ✓" },
+      { "method": "GET",  "path": "/api/v1/chat/sessions",           "source": "chat.js:getChatSessions()" },
+      { "method": "POST", "path": "/api/v1/chat/sessions",           "source": "chat.js:createChatSession()" },
+      { "method": "GET",  "path": "/api/v1/chat/sessions/:id",       "source": "chat.js:getChatSession()" },
+      { "method": "POST", "path": "/api/v1/chat/sessions/:id/messages", "source": "chat.js:postChatMessage()" },
+      { "method": "GET",  "path": "/api/v1/jobs/:id",                "source": "jobs.js:getJob()" },
+      { "method": "GET",  "path": "/api/v1/drift/summary",           "source": "drift_v2/driftApi.js:getDriftSummary()" },
+      { "method": "GET",  "path": "/api/v1/drift/findings",          "source": "drift_v2/driftApi.js:listDriftFindings()" },
+      { "method": "GET",  "path": "/api/v1/admin/diagnostics",       "source": "AdminDiagnosticsPage.jsx" },
+      { "method": "GET",  "path": "/api/v1/governance/status",       "source": "GovernancePage.jsx" },
+      { "method": "PATCH","path": "/api/v1/governance/privacy-mode", "source": "GovernancePage.jsx" },
+      { "method": "GET",  "path": "/api/v1/rag/documents",           "source": "rag.js:getDocuments() + RAGCenterPage.jsx" },
+      { "method": "POST", "path": "/api/v1/rag/retrieve",            "source": "RAGCenterPage.jsx" },
+      { "method": "POST", "path": "/api/v1/rag/test-retrieval",      "source": "rag.js:testRetrieval()" },
+      { "method": "POST", "path": "/api/v1/rag/documents/:id/reindex","source": "rag.js:reindexDocument() + RAGCenterPage.jsx" },
+      { "method": "GET",  "path": "/api/v1/settings",                "source": "settings.js + SettingsPage.jsx" },
+      { "method": "PATCH","path": "/api/v1/settings",                "source": "settings.js + SettingsPage.jsx" },
+      { "method": "PATCH","path": "/api/v1/settings/secrets",        "source": "SettingsPage.jsx" },
+      { "method": "GET",  "path": "/api/v1/status",                  "source": "status.js + RAGCenterPage.jsx" },
+      { "method": "GET",  "path": "/api/v1/security/status",         "source": "security.js:getSecurityStatus()" },
+      { "method": "GET",  "path": "/api/v1/agents/executions",       "source": "AgentsPage.jsx" },
+      { "method": "POST", "path": "/api/v1/orchestrator/goals",      "source": "AgentsPage.jsx" },
+      { "method": "GET",  "path": "/api/v1/collaboration/runs",      "source": "CollaborationPage.jsx" },
+      { "method": "POST", "path": "/api/v1/collaboration/runs",      "source": "CollaborationPage.jsx" }
+    ]
+  },
+
+  "category_2_frontend_missing_backend": {
+    "description": "Frontend calls endpoint — backend does NOT implement it",
+    "entries": [
+      {
+        "audit_id": "FMB-01",
+        "priority": "CRITICAL",
+        "method": "GET",
+        "path_called": "/topics",
+        "source": "topics.js:getTopics() → useTopics.js",
+        "expected_path": "/api/v1/topics",
+        "finding": "Backend has no /topics endpoint at any prefix. Path is also wrong: frontend uses /topics (root), not /api/v1/topics. All 5 topics.js functions map to non-existent endpoints.",
+        "impact": "TopicsPage renders with 'Backend noch nicht verfügbar' error on every load. Topics list always empty.",
+        "related_gap": "P1-GAP-01, P1-GAP-02"
+      },
+      {
+        "audit_id": "FMB-02",
+        "priority": "CRITICAL",
+        "method": "GET",
+        "path_called": "/topics/:id",
+        "source": "topics.js:getTopicDetail()",
+        "finding": "Same as FMB-01. No /topics/:id endpoint.",
+        "related_gap": "P1-GAP-02"
+      },
+      {
+        "audit_id": "FMB-03",
+        "priority": "CRITICAL",
+        "method": "POST",
+        "path_called": "/topics",
+        "source": "topics.js:createTopic()",
+        "finding": "No backend endpoint.",
+        "related_gap": "P1-GAP-02"
+      },
+      {
+        "audit_id": "FMB-04",
+        "priority": "CRITICAL",
+        "method": "PATCH",
+        "path_called": "/topics/:id",
+        "source": "topics.js:updateTopic()",
+        "finding": "No backend endpoint. Note: updateTopic() is defined but not called in useTopics.js — latent gap.",
+        "related_gap": "P1-GAP-02"
+      },
+      {
+        "audit_id": "FMB-05",
+        "priority": "CRITICAL",
+        "method": "DELETE",
+        "path_called": "/topics/:id",
+        "source": "topics.js:deleteTopic() → useTopics.js:handleDelete()",
+        "finding": "No backend endpoint. handleDelete() is wired in UI — will always 404.",
+        "related_gap": "P1-GAP-02"
+      }
+    ]
+  },
+
+  "category_3_backend_unused": {
+    "description": "Backend endpoint exists — no frontend consumer identified",
+    "entries": [
+      {
+        "audit_id": "BUF-01",
+        "priority": "HIGH",
+        "method": "GET",
+        "path": "/api/v1/drift/runs",
+        "finding": "driftApi.js only calls /drift/summary and /drift/findings. Run history not displayed in DriftDashboard.jsx."
+      },
+      {
+        "audit_id": "BUF-02",
+        "priority": "HIGH",
+        "method": "GET",
+        "path": "/api/v1/drift/runs/:id",
+        "finding": "No frontend call site. DriftDashboard shows total_runs from summary but no drill-down into individual runs."
+      },
+      {
+        "audit_id": "BUF-03",
+        "priority": "HIGH",
+        "method": "POST",
+        "path": "/documents/:id/retry-import",
+        "finding": "No frontend call site. Failed imports cannot be retried from the UI."
+      },
+      {
+        "audit_id": "BUF-04",
+        "priority": "HIGH",
+        "method": "GET",
+        "path": "/documents/import-jobs/:id",
+        "finding": "Duplicate of /api/v1/jobs/:id for import context. useImport.js uses /api/v1/jobs/:id (jobs.js). This endpoint is unreachable from frontend."
+      },
+      {
+        "audit_id": "BUF-05",
+        "priority": "MEDIUM",
+        "method": "GET",
+        "path": "/api/v1/approvals",
+        "finding": "No frontend page for approval workflow. Approvals cannot be reviewed or actioned from UI."
+      },
+      {
+        "audit_id": "BUF-06",
+        "priority": "MEDIUM",
+        "method": "POST",
+        "path": "/api/v1/approvals/:id/approve",
+        "finding": "No frontend consumer. Approvals bypass this endpoint — analysis approve goes directly to /analysis/jobs/:id/approve."
+      },
+      {
+        "audit_id": "BUF-07",
+        "priority": "MEDIUM",
+        "method": "POST",
+        "path": "/api/v1/approvals/:id/reject",
+        "finding": "No frontend consumer. No rejection flow available in UI."
+      },
+      {
+        "audit_id": "BUF-08",
+        "priority": "MEDIUM",
+        "method": "GET",
+        "path": "/api/v1/audit",
+        "finding": "No frontend page for audit log. Audit trail not accessible to users."
+      },
+      {
+        "audit_id": "BUF-09",
+        "priority": "MEDIUM",
+        "method": "GET/POST",
+        "path": "/api/v1/governance/changesets, /rollback-points, /rollback, /policy/reload, /retention/cleanup, /policy-decisions",
+        "finding": "GovernancePage.jsx only calls /governance/status and PATCH /governance/privacy-mode. 7 governance endpoints unused."
+      },
+      {
+        "audit_id": "BUF-10",
+        "priority": "MEDIUM",
+        "method": "GET",
+        "path": "/api/v1/agents, /api/v1/agents/:id",
+        "finding": "AgentsPage.jsx calls /agents/executions and POST /orchestrator/goals. Agent list/detail not consumed."
+      },
+      {
+        "audit_id": "BUF-11",
+        "priority": "MEDIUM",
+        "method": "GET",
+        "path": "/api/v1/collaboration/teams, /api/v1/collaboration/conflicts",
+        "finding": "CollaborationPage.jsx only calls GET/POST /collaboration/runs. Teams and conflicts not displayed."
+      },
+      {
+        "audit_id": "BUF-12",
+        "priority": "LOW",
+        "method": "GET",
+        "path": "/api/v1/memory/*, /api/v1/tasks/*, /api/v1/projects/*, /api/v1/tools/*",
+        "finding": "No frontend pages consume these endpoints. 14 endpoints unreachable from UI."
+      },
+      {
+        "audit_id": "BUF-13",
+        "priority": "LOW",
+        "method": "multiple",
+        "path": "/api/v1/admin/* (except /diagnostics)",
+        "finding": "8 admin endpoints unreachable from frontend. AdminDiagnosticsPage only calls /admin/diagnostics."
+      },
+      {
+        "audit_id": "BUF-14",
+        "priority": "LOW",
+        "method": "DELETE",
+        "path": "/api/v1/data-quality/findings/:id",
+        "finding": "Returns HTTP 405 Method Not Allowed by design. Dead endpoint."
+      },
+      {
+        "audit_id": "BUF-15",
+        "priority": "LOW",
+        "method": "GET",
+        "path": "/health, /health/db, /health/preflight",
+        "finding": "Infrastructure health checks — not expected to be called from frontend application code."
+      }
+    ]
+  },
+
+  "category_4_contract_mismatches": {
+    "description": "Both sides exist but response shape or request format does not match",
+    "entries": [
+      {
+        "audit_id": "CM-01",
+        "priority": "CRITICAL",
+        "path": "/api/v1/rag/documents + /api/v1/rag/import + /api/v1/rag/retrieve",
+        "source": "rag_gui.py",
+        "finding": "RAG GUI endpoints use `_documents: list[dict] = []` — a module-level in-memory list, not the PostgreSQL DB. GET /rag/documents always returns empty after backend restart. POST /rag/import persists only in RAM. POST /rag/retrieve searches this fake list, not the real search index. Frontend RAGCenterPage.jsx operates on a completely separate data store from DocumentsPage/ImportCenterPage.",
+        "impact": "Documents imported via /documents/import are invisible to /rag/documents and vice versa. Any retrieval test is meaningless.",
+        "action_required": "rag_gui.py must be refactored to use real DB session and SearchService. Or RAGCenterPage must be clearly marked as a debug/prototype tool."
+      },
+      {
+        "audit_id": "CM-02",
+        "priority": "HIGH",
+        "path": "POST /api/v1/rag/import",
+        "source": "rag.js:importDocument(formData) vs rag_gui.py:ImportRequest",
+        "finding": "rag.js sends FormData (multipart). Backend ImportRequest is a Pydantic BaseModel expecting JSON body (title, content, classification, source_url). Type mismatch: FormData vs application/json.",
+        "impact": "Latent bug — RAGCenterPage.jsx currently only shows an alert() instead of calling rag.js importDocument. If the real call is ever wired up, it will return 422 Unprocessable Entity.",
+        "action_required": "Either change rag.js to send JSON, or change backend to accept file upload. Align with the real /documents/import approach."
+      },
+      {
+        "audit_id": "CM-03",
+        "priority": "HIGH",
+        "path": "GET /api/v1/analysis/jobs",
+        "source": "analysis.js:listAnalysisJobs() — no .items unwrap in consumer",
+        "finding": "Backend returns AnalysisJobListResponse { items: [...], total, limit, offset }. Frontend analysis.js returns raw response. No frontend page currently calls listAnalysisJobs() and unpacks .items. If a page renders `raw` directly as an array, it will render the wrapper object instead. Risk: Medium — depends on consumer implementation.",
+        "action_required": "Any consumer of listAnalysisJobs() must unwrap .items. Document this contract explicitly."
+      },
+      {
+        "audit_id": "CM-04",
+        "priority": "HIGH",
+        "path": "POST /api/v1/chat/sessions/:id/messages",
+        "source": "chat.js:postChatMessage()",
+        "finding": "Backend chat.py uses UnconfiguredLlmProvider which throws RuntimeError('LLM provider is not configured') at runtime. The endpoint exists and accepts the request (no schema mismatch), but will always return HTTP 500 in production without LLM configuration.",
+        "impact": "ChatPage is fully broken at runtime. Not a schema mismatch but a runtime contract failure.",
+        "action_required": "P1-GAP-05: LLM provider must be configured. Or return a structured 503 error instead of 500."
+      },
+      {
+        "audit_id": "CM-05",
+        "priority": "MEDIUM",
+        "path": "GET /api/v1/search/chunks",
+        "source": "search.js:searchChunks()",
+        "finding": "Backend returns list[SearchChunkResult] — a plain array with no total_count wrapper. Frontend useSearch.js expects Array.isArray(raw) — MATCH for shape. But frontend cannot display 'X Treffer gefunden' because total is missing. Known gap SP-04 from search_quality_report.json.",
+        "action_required": "Wrap in SearchChunkListResponse { items: [...], total: int } or add X-Total-Count header."
+      }
+    ]
+  },
+
+  "prioritized_findings": [
+    {
+      "priority": "CRITICAL",
+      "audit_ids": ["FMB-01..05", "CM-01"],
+      "summary": "Topics API: 5 endpoints fehlen komplett + falscher URL-Prefix. RAG GUI: in-memory statt DB.",
+      "action": "Topics ORM + API implementieren (P1-GAP-01/02). RAG GUI auf echte DB umstellen."
+    },
+    {
+      "priority": "HIGH",
+      "audit_ids": ["CM-02", "CM-03", "CM-04", "BUF-01..04"],
+      "summary": "RAG import FormData/JSON mismatch. Analysis jobs list contract unklar. Chat LLM fehlt. Drift runs ohne Frontend.",
+      "action": "rag.js importDocument korrigieren. Analysis consumer dokumentieren. LLM konfigurieren. Drift run history Widget."
+    },
+    {
+      "priority": "MEDIUM",
+      "audit_ids": ["CM-05", "BUF-05..11"],
+      "summary": "Search ohne total_count. Approvals/Audit/Governance-Unterendpunkte ohne Frontend.",
+      "action": "Search response wrappen. Approval-Workflow-Page für P2."
+    },
+    {
+      "priority": "LOW",
+      "audit_ids": ["BUF-12..15"],
+      "summary": "Memory/Tasks/Projects/Tools ohne Frontend. Dead health endpoint.",
+      "action": "Für Post-1.0 vorgemerkt."
+    }
+  ],
+
+  "rc_blocker_relevance": {
+    "RCB-003": "AdminDiagnosticsPage.jsx ruft GET /api/v1/admin/diagnostics auf — kein Router-Guard. Jeder authentifizierte Nutzer kann diesen Endpunkt erreichen. Muss vor RC gesperrt werden (require_workspace_admin).",
+    "topics_path_bug": "frontend/src/api/topics.js nutzt /topics statt /api/v1/topics. Wenn Backend implementiert wird, muss Pfad synchron korrigiert werden."
+  }
+}

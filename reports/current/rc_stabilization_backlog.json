@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "report_id": "rc_stabilization_backlog",
+  "generated": "2026-06-15",
+  "rc_gate_status": "BLOCKED",
+  "rc_gate_conditions_met": 2,
+  "rc_gate_conditions_total": 7,
+  "input_reports": [
+    "reports/current/release_candidate_gate.json",
+    "reports/current/rc_blocker_root_cause.json",
+    "reports/current/enduser_acceptance_rc.json",
+    "reports/current/rc_security_smoke_report.json",
+    "reports/current/known_limitations.json",
+    "reports/current/post_rc_decision.json"
+  ],
+  "categories": {
+    "1_release_blocker": {
+      "label": "Release Blocker",
+      "description": "Blockieren RC Gate direkt. Muss vor RELEASE_CANDIDATE behoben sein.",
+      "count": 3
+    },
+    "2_high_priority": {
+      "label": "High Priority",
+      "description": "Blockieren nachgelagerte Gates oder erzeugen Kaskaden-Risiken. Sollten parallel zu Release Blockern behoben werden.",
+      "count": 2
+    },
+    "3_medium_priority": {
+      "label": "Medium Priority",
+      "description": "Bekannte Defekte ohne direkten RC-Block. Sollten vor erstem produktivem Betrieb behoben sein.",
+      "count": 2
+    },
+    "4_low_priority": {
+      "label": "Low Priority",
+      "description": "Technical Debt und nicht-kritische Limitations. Keine Gate-Auswirkung.",
+      "count": 3
+    },
+    "5_external_env_only": {
+      "label": "External Env Only",
+      "description": "Tests, die nur gegen laufendes Backend ausfuehrbar sind. NOT_RUN blockiert RC nicht.",
+      "count": 1
+    },
+    "6_future_phase": {
+      "label": "Future Phase",
+      "description": "Erst relevant nach RC oder in spaeteren Implementierungsphasen (M5c, M5d).",
+      "count": 4
+    }
+  },
+  "entries": [
+    {
+      "id": "RCB-001",
+      "category": "1_release_blocker",
+      "title": "TEST_DATABASE_URL fehlt: PostgreSQL-Truth-Tests nicht ausfuehrbar",
+      "ursache": "Umgebungsvariable TEST_DATABASE_URL nicht in lokalem .env gesetzt. pytest sammelt 0 Tests (collected=0, errors=1) fuer m5a_source_status_integrity und m5a_orphan_detector.",
+      "risiko": "Kaskade blockiert report_integrity_v2 (20 Blocker), m5b_alpha_hardening, m5b_production_readiness, m5c_start_gate, local_final_gate. Root Cause fuer GATE-01 und GATE-05.",
+      "betroffene_datei": ".env (fehlt), backend/tests/postgres_truth/test_m5a_source_status_integrity_truth.py, backend/tests/postgres_truth/test_m5a_orphan_detector_truth.py",
+      "fix_vorschlag": "TEST_DATABASE_URL=postgresql+psycopg://user:password@host:5432/dbname in .env setzen. Danach: pytest tests/api -m local_gate; python scripts/generate_report_integrity_v2.py; python scripts/local_final_gate_validator_v2.py",
+      "gate_auswirkung": "Loest GATE-01 (local_final_gate) und GATE-05 (report_integrity_final) sowie gesamte Blocker-Kaskade (5 Gates)",
+      "referenz": ["BLOCKER-TI-001", "BLOCKER-TI-002", "BLOCKER-RI-001", "BLOCKER-BE-001", "RC-PREREQ-01", "GATE-01", "GATE-05"],
+      "aufwand": "niedrig — Konfiguration, kein Code",
+      "prioritaet": 1
+    },
+    {
+      "id": "RCB-002",
+      "category": "1_release_blocker",
+      "title": "AppShell NAV_ITEMS divergiert vom Masterplan: 4 Abweichungen",
+      "ursache": "AppShell NAV_ITEMS nicht mit docs/final_navigation.md synchronisiert: /search statt /chat, /data-quality fehlt in NAV, /topics und /import extra (nicht im Masterplan).",
+      "risiko": "S04 (Suche) und S08 (Data Quality) in Enduser Acceptance BLOCKED. Navigation Release Check R1, R7, R8 FAIL. Blockiert GATE-02 und GATE-04.",
+      "betroffene_datei": "frontend/src/components/AppShell.jsx (NAV_ITEMS), docs/final_navigation.md",
+      "fix_vorschlag": "PO-Entscheidung erforderlich: Option A) /search durch /chat ersetzen, /data-quality hinzufuegen, /topics + /import entfernen. Option B) Masterplan um /topics und /import erweitern und /search als kanonoische Suche festlegen. NAV-FIX-01 bis NAV-FIX-03 umsetzen. Danach enduser_acceptance_rc.json und final_navigation_release_check.json neu ausfuehren.",
+      "gate_auswirkung": "Loest GATE-02 (enduser_acceptance) und GATE-04 (navigation_release_check)",
+      "referenz": ["NAV-FIX-01", "NAV-FIX-02", "NAV-FIX-03", "RC-PREREQ-02", "GATE-02", "GATE-04", "S04", "S08"],
+      "aufwand": "niedrig bis mittel — enthaelt PO-Entscheidung als Voraussetzung",
+      "prioritaet": 2
+    },
+    {
+      "id": "RCB-003",
+      "category": "1_release_blocker",
+      "title": "routes.jsx: kein Router-seitiger Admin-Guard fuer /admin/diagnostics + 7 undokumentierte Routen",
+      "ursache": "AdminDiagnosticsPage prueft isAdmin() nur auf Komponentenebene. Route erreichbar fuer alle angemeldeten User. Zusaetzlich: /tools, /memory, /tasks, /projects, /agents, /collaboration, /governance in routes.jsx erreichbar ohne Rollengate.",
+      "risiko": "Defense-in-depth verletzt. Angreifsflaeche unnoetig gross. Backend-Guards nicht ohne Live-System pruefbar. SEC-10 BLOCKED. Blockiert GATE-03.",
+      "betroffene_datei": "frontend/src/app/routes.jsx, frontend/src/pages/AdminDiagnosticsPage.jsx",
+      "fix_vorschlag": "AdminRoute-Wrapper in routes.jsx implementieren (isAdmin()-Check vor Render der Route). /admin/diagnostics in AdminRoute wickeln. Die 7 undokumentierten Routen aus routes.jsx entfernen oder ebenfalls hinter AdminRoute legen. Danach rc_security_smoke_report.json neu ausfuehren.",
+      "gate_auswirkung": "Loest GATE-03 (security_smoke) und R8 in GATE-04 (navigation_release_check)",
+      "referenz": ["SEC-10", "NAV-FIX-04", "NAV-FIX-05", "SEC-FIX-01", "SEC-FIX-02", "RC-PREREQ-03", "GATE-03"],
+      "aufwand": "niedrig — Router-Wrapper, kein Logik-Change",
+      "prioritaet": 3
+    },
+    {
+      "id": "RCH-001",
+      "category": "2_high_priority",
+      "title": "Drift CLI nie ausgefuehrt: drift_report.json und drift_summary.json fehlen",
+      "ursache": "Kein einmaliger Drift-CLI-Run erfolgt. drift_report.json und drift_summary.json existieren nicht. Unabhaengig von TEST_DATABASE_URL.",
+      "risiko": "drift_report_integrity PARTIAL. Blockiert m5b_alpha_hardening (AHG-BLOCKER-02) und m5c_start_gate (SG-03). Verlaengert Kaskade auf m5b_production_readiness.",
+      "betroffene_datei": "reports/current/drift_report.json (fehlt), reports/current/drift_summary.json (fehlt), scripts/drift_cli.py oder aequivalent",
+      "fix_vorschlag": "Drift CLI einmalig lokal ausfuehren: python -m drift.cli run (oder aequivalenten Befehl). Sicherstellen: reports/current/drift_report.json und drift_summary.json danach vorhanden. drift_report_integrity neu generieren. m5b_alpha_hardening_gate neu auswerten. Drift ist Read-Only (PROHIBIT-02/06 aktiv) -- kein Mutationsrisiko.",
+      "gate_auswirkung": "Loest AHG-BLOCKER-02 in m5b_alpha_hardening_gate und SG-03 in m5c_start_gate",
+      "referenz": ["BLOCKER-DR-001", "BLOCKER-DR-002", "AHG-BLOCKER-02", "FIX-002"],
+      "aufwand": "niedrig — einmaliger CLI-Run, kein Code",
+      "prioritaet": 4
+    },
+    {
+      "id": "RCH-002",
+      "category": "2_high_priority",
+      "title": "drift_dashboard_truth_report.json truncated (JSON_PARSE_ERROR)",
+      "ursache": "Datei endet bei char 2750 ohne schliessende Klammern. Frueher PASS (23/23). Vermutlich Schreibfehler beim letzten Test-Run.",
+      "risiko": "Optional Gate INVALID statt PASS. Erzeugt WARNING in local_final_gate. Kein direkter RC-Blocker, aber Dokumentationsluecke.",
+      "betroffene_datei": "reports/current/drift_dashboard_truth_report.json",
+      "fix_vorschlag": "Frontend-Vitest neu ausfuehren (npm run test -- --reporter=json) und drift_dashboard_truth_report.json neu schreiben. Alternativ: truncated JSON manuell reparieren (fehlende Klammern ergaenzen).",
+      "gate_auswirkung": "Optional Gate: WARNING entfaellt. Kein Einfluss auf RC Gate direkt.",
+      "referenz": ["WARN-DR-001"],
+      "aufwand": "niedrig",
+      "prioritaet": 5
+    },
+    {
+      "id": "RCM-001",
+      "category": "3_medium_priority",
+      "title": "3 testid-GAPs in DriftDashboard.jsx",
+      "ursache": "data-testid-Attribute fehlen: drift-run-summary, drift-severity-breakdown, drift-type-breakdown. Dokumentiert in drift_v2_component_contract.md.",
+      "risiko": "drift_v2_component_contract PARTIAL_FAIL (3 GAPs). Optional Gate WARNING. Erschwerter automatisierter E2E-Test der Dashboard-Anzeige.",
+      "betroffene_datei": "frontend/src/features/drift_v2/DriftDashboard.jsx",
+      "fix_vorschlag": "3 data-testid-Attribute in DriftDashboard.jsx einfuegen: data-testid='drift-run-summary', data-testid='drift-severity-breakdown', data-testid='drift-type-breakdown'. Zugehoerige Test-Assertions aktualisieren.",
+      "gate_auswirkung": "drift_v2_component_contract: PARTIAL_FAIL -> PASS. Optional Gate, kein RC-Blocker.",
+      "referenz": ["WARN-DR-002", "docs/drift_v2_component_contract.md"],
+      "aufwand": "niedrig -- 3 Attribut-Ergaenzungen",
+      "prioritaet": 6
+    },
+    {
+      "id": "RCM-002",
+      "category": "3_medium_priority",
+      "title": "/import und /topics in NAV_ITEMS ohne Masterplan-Deckung",
+      "ursache": "AppShell NAV_ITEMS enthalten /import (ImportCenterPage) und /topics (TopicsPage). Beide nicht in docs/final_navigation.md. S03 und S05 PASS_WITH_WARNING.",
+      "risiko": "Unerwartete Funktionen in Navigation ohne formale Freigabe. User kann Seiten aufrufen, die nicht im genehmigten Scope stehen. Abhaengig von RC-PREREQ-02-Entscheidung.",
+      "betroffene_datei": "frontend/src/components/AppShell.jsx (NAV_ITEMS), docs/final_navigation.md",
+      "fix_vorschlag": "Entscheidung in RC-PREREQ-02: Entweder /import und /topics aus NAV_ITEMS entfernen oder Masterplan formal erweitern. Kein separater Fix noetig wenn RC-PREREQ-02 diese Routen adressiert.",
+      "gate_auswirkung": "Teil von GATE-02 (S03/S05 WARNING) und GATE-04 (R7). Wird durch RCB-002-Fix mitgeloest.",
+      "referenz": ["S03", "S05", "NAV-FIX-03", "RCB-002"],
+      "aufwand": "abhaengig von PO-Entscheidung",
+      "prioritaet": 7
+    },
+    {
+      "id": "RCL-001",
+      "category": "4_low_priority",
+      "title": "KL-NB-001: API-Alias /api/v1/documents nicht durchgaengig verfuegbar",
+      "ursache": "Pfade nutzen teilweise /documents statt /api/v1/documents. Kein einheitlicher API-Vertrag.",
+      "risiko": "Client-Inkompatibilitaeten bei neuer Anbindung. Kein Produktionsrisiko bei bestehendem Frontend.",
+      "betroffene_datei": "backend routes, docs/api.md",
+      "fix_vorschlag": "Vor neuer Clientbindung API-Vertrag pruefen. Alias oder Routing konsolidieren.",
+      "gate_auswirkung": "Kein Gate betroffen. Reine Technical-Debt-Position.",
+      "referenz": ["KL-NB-001"],
+      "aufwand": "mittel",
+      "prioritaet": 8
+    },
+    {
+      "id": "RCL-002",
+      "category": "4_low_priority",
+      "title": "KL-DEF-001: OCR fuer gescannte PDFs nicht in V1",
+      "ursache": "Gescannte PDFs bleiben OCR_REQUIRED. Keine Textextraktion ohne Klartext-Layer.",
+      "risiko": "Funktionaler Scope-Gap fuer Nutzer mit gescannten Dokumenten. Bekannt und dokumentiert.",
+      "betroffene_datei": "backend/document_processing/",
+      "fix_vorschlag": "OCR als eigenes Feature-Paket konzipieren und priorisieren. Target: M5c+.",
+      "gate_auswirkung": "Kein Gate betroffen.",
+      "referenz": ["KL-DEF-001"],
+      "aufwand": "hoch -- eigenes Feature-Paket",
+      "prioritaet": 9
+    },
+    {
+      "id": "RCL-003",
+      "category": "4_low_priority",
+      "title": "KL-DEF-002: Embeddings und Vektorsuche optional, nicht V1-kritisch",
+      "ursache": "FTS-Baseline aktiv. Vektorsuche nicht implementiert. Optional und dokumentiert.",
+      "risiko": "Qualitaetseinschraenkung bei semantischer Suche. Kein Sicherheits- oder Stabilitaetsrisiko.",
+      "betroffene_datei": "backend/search/",
+      "fix_vorschlag": "FTS-Baseline weiterbetreiben. Vektorsuche separat konzipieren. Target: M5c+.",
+      "gate_auswirkung": "Kein Gate betroffen.",
+      "referenz": ["KL-DEF-002"],
+      "aufwand": "hoch -- eigenes Feature-Paket",
+      "prioritaet": 10
+    },
+    {
+      "id": "EXT-001",
+      "category": "5_external_env_only",
+      "title": "72 externe Tests (external_env_gate) NOT_RUN -- produktionsaehnliches Backend erforderlich",
+      "ursache": "Tests verwenden httpx gegen localhost:8000. Lokal ohne laufenden Server und TEST_DATABASE_URL nicht ausfuehrbar. NOT_RUN ist erlaubter RC-Zustand.",
+      "risiko": "Unbekannte Integrationsfehler zwischen Frontend und realem Backend bleiben bis zu externem Test-Lauf unentdeckt.",
+      "betroffene_datei": "tests/api/test_gui_backend_endpoints.py, tests/api/test_gui_contracts.py, tests/api/test_gui_secret_masking.py, tests/api/test_secret_masking_api.py, tests/api/test_settings_endpoints.py, tests/api/test_settings_patch.py",
+      "fix_vorschlag": "Backend starten, TEST_DATABASE_URL setzen, dann: pytest tests/api -m 'external_env_only or legacy_live_http'. Erst nach RC-Stabilisierung als Phase 2 (OPT-2).",
+      "gate_auswirkung": "external_env_gate: NOT_RUN -> PASS. Blockiert local_final_gate und RC Gate nicht. Separate Freigabestufe.",
+      "referenz": ["EXT-001", "OPT-2", "post_rc_decision.json"],
+      "aufwand": "mittel -- Infrastruktur-Voraussetzung",
+      "prioritaet": 11
+    },
+    {
+      "id": "FUT-001",
+      "category": "6_future_phase",
+      "title": "KL-M5-T-001: M5 Entropy-/Drift-Truth-Failures blockieren Slice-Start",
+      "ursache": "Aktueller grueener M5-Truth-Block fehlt. m4_truth_report.json schliesst M5-Governance explizit aus.",
+      "risiko": "Blocker fuer spaetere M5b-Implementierungsfreigabe oder Slice-Aktivierung. Kein aktueller Gate-Block.",
+      "betroffene_datei": "reports/current/m5_truth_report.json (muss erstellt werden)",
+      "fix_vorschlag": "Vor M5b-Slice-Aktivierung: pytest --pg tests/truth/m5/ ausfuehren, m5_truth_report.json mit status=PASS erzeugen.",
+      "gate_auswirkung": "Kein aktueller Gate-Block. Erst relevant bei M5b-Slice-Aktivierung.",
+      "referenz": ["KL-M5-T-001"],
+      "aufwand": "mittel",
+      "prioritaet": 12
+    },
+    {
+      "id": "FUT-002",
+      "category": "6_future_phase",
+      "title": "KL-M5-T-002: Drei Pflicht-Artefakte pro M5-Slice fehlen vor Slice-Start",
+      "ursache": "Retrieval-Baseline WARN/nicht release-grade. M5b Drift Architecture DRAFT. Cleanup-Dry-Run-Report fehlt.",
+      "risiko": "M5b-Implementierungsfreigabe nicht moeglich ohne diese Artefakte. Kein aktueller Gate-Block.",
+      "betroffene_datei": "reports/current/retrieval_quality_baseline_report.json, docs/m5b-drift-architecture.md, reports/current/cleanup_dry_run_report.json",
+      "fix_vorschlag": "Vor M5b-Implementierung: Retrieval-Baseline auf PASS bringen, Drift Architecture finalisieren, Cleanup-Dry-Run-Report erzeugen.",
+      "gate_auswirkung": "Kein aktueller Gate-Block. Erst relevant bei M5b-Implementierungsfreigabe.",
+      "referenz": ["KL-M5-T-002"],
+      "aufwand": "hoch",
+      "prioritaet": 13
+    },
+    {
+      "id": "FUT-003",
+      "category": "6_future_phase",
+      "title": "KL-GOV-001: Mutierende Admin-Aktionen ohne Runbook gesperrt",
+      "ursache": "Repair, Cleanup-Loeschen, forced Reindex, Restore/Backfill ohne dediziertes Runbook, Dry-Run, Audit-Regel und operational_governance_gate.",
+      "risiko": "Kein Risiko fuer aktuellen RC (alles read-only). Erst relevant wenn mutierende Aktionen freigegeben werden sollen.",
+      "betroffene_datei": "docs/m4d-admin-diagnostics.md, reports/current/operational_governance_gate.json (muss erstellt werden)",
+      "fix_vorschlag": "Vor jeder mutierenden Admin-Aktion: dediziertes Runbook erstellen, Dry-Run durchfuehren, operational_governance_gate PASS/GO erzielen.",
+      "gate_auswirkung": "Kein aktueller Gate-Block. PROHIBIT-02, PROHIBIT-06 bleiben aktiv.",
+      "referenz": ["KL-GOV-001"],
+      "aufwand": "hoch -- Governance-Prozess",
+      "prioritaet": 14
+    },
+    {
+      "id": "FUT-004",
+      "category": "6_future_phase",
+      "title": "m5c_start_gate SG-05: Cleanup Governance DRAFT statt RATIFIED",
+      "ursache": "cleanup_governance_boundary.json ist DRAFT. PO-Sign-off steht aus. SG-05 in m5c_start_gate FAIL.",
+      "risiko": "M5c Start Gate bleibt BLOCKED auch nach RC-Stabilisierung. Kein RC-Blocker, da M5c per Invariante NO_GO.",
+      "betroffene_datei": "reports/current/cleanup_governance_boundary.json",
+      "fix_vorschlag": "PO-Sign-off auf cleanup_governance_boundary.json einholen. Danach von DRAFT auf RATIFIED setzen. Erst nach RC Gate = RELEASE_CANDIDATE und externer Testentscheidung angehen.",
+      "gate_auswirkung": "Loest SG-05 in m5c_start_gate. Erst relevant wenn M5c-Start angestrebt wird.",
+      "referenz": ["OPT-4", "m5c_implementation_lock"],
+      "aufwand": "mittel -- Governance-Prozess",
+      "prioritaet": 15
+    }
+  ],
+  "summary": {
+    "total_entries": 15,
+    "by_category": {
+      "1_release_blocker": 3,
+      "2_high_priority": 2,
+      "3_medium_priority": 2,
+      "4_low_priority": 3,
+      "5_external_env_only": 1,
+      "6_future_phase": 4
+    },
+    "rc_unblocking_path": ["RCB-001", "RCB-002", "RCB-003"],
+    "rc_unblocking_path_description": "Alle drei Release Blocker beheben -> RC Gate re-run -> RELEASE_CANDIDATE (7/7)",
+    "parallel_recommended": ["RCH-001 parallel zu RCB-001 abarbeitbar (unabhaengig von TEST_DATABASE_URL)"],
+    "m5c_implementation_lock": "LOCKED",
+    "m5c_unlock_conditions": [
+      "RC Gate = RELEASE_CANDIDATE",
+      "Externe Testentscheidung dokumentiert",
+      "m5c_start_gate = PASS",
+      "PO-Sign-off auf cleanup_governance_boundary.json"
+    ]
+  }
+}

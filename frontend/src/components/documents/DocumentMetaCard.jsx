@@ -14,13 +14,13 @@ export function DocumentMetaCard({ document }) {
         </div>
       </div>
       <dl className="meta-grid">
-        <div><dt>ID</dt><dd>{document.id}</dd></div>
-        <div><dt>Workspace</dt><dd>{document.workspaceId}</dd></div>
-        <div><dt>Owner</dt><dd>{document.ownerUserId || 'Unbekannt'}</dd></div>
-        <div><dt>Lifecycle</dt><dd>{document.lifecycleStatus.label}</dd></div>
-        <div><dt>Quelle</dt><dd>{document.sourceType}</dd></div>
-        <div><dt>MIME</dt><dd>{document.mimeType}</dd></div>
-        <div><dt>Parser</dt><dd>{document.parserVersion}</dd></div>
+        <div><dt>Status</dt><dd>{document.lifecycleStatus.label}</dd></div>
+        <div><dt>Importquelle</dt><dd>{document.sourceType}</dd></div>
+        <div><dt>Dateityp</dt><dd>{document.mimeType}</dd></div>
+        <div><dt>Verarbeitungsversion</dt><dd>{document.parserVersion}</dd></div>
+        {document.tags?.length > 0 && (
+          <div><dt>Tags</dt><dd>{document.tags.map(t => t.name).join(', ')}</dd></div>
+        )}
         <div><dt>OCR genutzt</dt><dd>{document.ocrUsed == null ? 'Unbekannt' : document.ocrUsed ? 'Ja' : 'Nein'}</dd></div>
         <div><dt>Versionen</dt><dd>{document.versions.length}</dd></div>
         <div><dt>Chunks</dt><dd>{document.chunkCount}</dd></div>

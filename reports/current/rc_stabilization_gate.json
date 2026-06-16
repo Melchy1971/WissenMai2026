@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "report_id": "rc_stabilization_gate",
+  "generated": "2026-06-15",
+  "evaluation_method": "static_code_analysis",
+  "inputs": {
+    "rc_stabilization_backlog": "reports/current/rc_stabilization_backlog.json",
+    "deployment_readiness_checklist": "reports/current/deployment_readiness_checklist.json",
+    "rc_backup_restore_retest": "reports/current/rc_backup_restore_retest.json",
+    "rc_performance_smoke": "reports/current/rc_performance_smoke.json",
+    "rc_ux_polish_report": "reports/current/rc_ux_polish_report.json",
+    "documentation_truth_lint": "reports/current/documentation_truth_lint.json"
+  },
+  "pass_conditions": [
+    {
+      "id": "SCG-01",
+      "description": "RC Stabilization Backlog: Alle Release Blocker (RCB-001, RCB-002, RCB-003) geschlossen",
+      "status": "BLOCKED",
+      "detail": "RCB-001 (TEST_DATABASE_URL) OFFEN, RCB-002 (NAV_ITEMS PO-Entscheidung) OFFEN, RCB-003 (Router-Guard) OFFEN"
+    },
+    {
+      "id": "SCG-02",
+      "description": "Deployment Readiness Checklist: Keine BLOCKED-Checks",
+      "status": "BLOCKED",
+      "detail": "DRC-01 (ENV vars incomplete) BLOCKED, DRC-03 (TEST_DATABASE_URL) BLOCKED. Verdikt: BLOCKED"
+    },
+    {
+      "id": "SCG-03",
+      "description": "Backup/Restore Re-Test: PASS (alle 6 messbaren Checks PASS, BR-07 NOT_APPLICABLE akzeptiert)",
+      "status": "BLOCKED",
+      "detail": "BR-01 bis BR-06 BLOCKED. Root: TEST_DATABASE_URL fehlt, DATABASE_URL nicht gegen lokale DB erreichbar"
+    },
+    {
+      "id": "SCG-04",
+      "description": "Performance Smoke Test: PASS (PS-01 bis PS-05 innerhalb Schwellenwerte)",
+      "status": "BLOCKED",
+      "detail": "PS-01 bis PS-05 BLOCKED (kein Live-Backend). PS-06 NOT_MEASURABLE."
+    },
+    {
+      "id": "SCG-05",
+      "description": "UX Polish Report: Keine offenen Critical-UX-Items",
+      "status": "PARTIAL_PASS",
+      "detail": "NAV_ITEMS-Entscheidung (RCB-002) und Router-Guard (RCB-003) noch offen. 7/10 Enduser-Flows PASS."
+    },
+    {
+      "id": "SCG-06",
+      "description": "Documentation Truth Lint: PASS",
+      "status": "PASS",
+      "detail": "documentation_truth_lint.json Verdikt: PASS"
+    }
+  ],
+  "pass_conditions_summary": {
+    "total": 6,
+    "pass": 1,
+    "partial_pass": 1,
+    "blocked": 4
+  },
+  "verdict": "BLOCKED",
+  "verdict_reason": "4 von 6 PASS-Conditions BLOCKED. RC-Stabilisierungsphase nicht abgeschlossen. RC-Status bleibt BLOCKED (nicht RELEASE_CANDIDATE). M5c-Lock bleibt LOCKED.",
+  "blockers": [
+    {
+      "id": "SCGB-01",
+      "source": "SCG-01 / RCB-001",
+      "text": "TEST_DATABASE_URL setzen und report_integrity_v2 re-runnen"
+    },
+    {
+      "id": "SCGB-02",
+      "source": "SCG-01 / RCB-002",
+      "text": "PO-Entscheidung zu NAV_ITEMS (Option A oder B)"
+    },
+    {
+      "id": "SCGB-03",
+      "source": "SCG-01 / RCB-003",
+      "text": "Router-Guard fuer /admin/diagnostics implementieren"
+    },
+    {
+      "id": "SCGB-04",
+      "source": "SCG-02",
+      "text": "ENV-Konfiguration vervollstaendigen (alle Pflichtfelder in .env)"
+    },
+    {
+      "id": "SCGB-05",
+      "source": "SCG-03 / SCG-04",
+      "text": "Live-Backend erreichbar machen und Backup/Restore + Performance-Smoke ausfuehren"
+    }
+  ],
+  "next_step": "Minimaler Unblocking-Pfad: SCGB-01 -> SCGB-02 -> SCGB-03 -> RC Gate re-run. Erst nach RC Gate = RELEASE_CANDIDATE wird SCG-03/04 mit Live-System geprueft.",
+  "m5c_implementation_lock": "LOCKED"
+}

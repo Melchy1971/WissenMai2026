@@ -1,0 +1,218 @@
+{
+  "report_schema_version": 1,
+  "report_name": "dashboard_v3_product_ready",
+  "report_type": "feature_readiness",
+  "generated_at": "2026-06-15T22:30:00.000000+00:00",
+  "evaluation_method": "static_code_analysis + gap_spec",
+  "scope": "Dashboard V3 — 7 Widgets aus Endanwendersicht produktionsbereit",
+  "verdict": "BLOCKED",
+
+  "constraints": [
+    "PROHIBIT-02: Kein Repair-Button in keinem Widget",
+    "PROHIBIT-06: Kein Cleanup-Button in keinem Widget",
+    "Drift: Read-Only — DriftWidget zeigt Befunde an, löst keine Aktionen aus",
+    "Keine Gate-/Debug-Daten im Dashboard sichtbar"
+  ],
+
+  "widgets": [
+    {
+      "widget_id": "W01",
+      "name": "Dokumente",
+      "data_source": "GET /api/v1/dashboard/summary → document_count, active_document_count, archived_document_count",
+      "backend_status": "PASS",
+      "empty_state": {
+        "condition": "document_count == 0",
+        "display": "'Noch keine Dokumente importiert' + CTA: Link zur Import-Seite",
+        "implementation_status": "SPEC — nicht per static analysis verifiziert"
+      },
+      "loading_state": {
+        "display": "Skeleton-Card mit grauem Platzhalter",
+        "implementation_status": "SPEC"
+      },
+      "error_state": {
+        "display": "'Dokument-Statistik nicht verfügbar' + Retry",
+        "implementation_status": "SPEC"
+      },
+      "gate_debug_data_excluded": true,
+      "product_ready": "CONDITIONAL — Backend PASS, Frontend-States unverifiziert"
+    },
+    {
+      "widget_id": "W02",
+      "name": "Importe",
+      "data_source": "GET /api/v1/dashboard/imports → list[DashboardImportItem]",
+      "backend_status": "PASS",
+      "schema": "id, status, filename, mime_type, created_at, started_at, finished_at",
+      "empty_state": {
+        "condition": "items.length == 0",
+        "display": "'Noch keine Importe' + Link zu Dokument-Import"
+      },
+      "loading_state": { "display": "Tabellen-Skeleton (3 Zeilen)" },
+      "error_state": { "display": "'Import-Verlauf nicht verfügbar'" },
+      "note": "Kein Retry-Button für fehlgeschlagene Imports — PROHIBIT-02 gilt implizit",
+      "product_ready": "CONDITIONAL — Backend PASS, Frontend-States unverifiziert"
+    },
+    {
+      "widget_id": "W03",
+      "name": "Analysen",
+      "data_source": "GET /api/v1/dashboard/analysis → list[DashboardAnalysisItem]",
+      "backend_status": "PASS",
+      "schema": "id, status, analysis_type, created_at, started_at, finished_at",
+      "empty_state": {
+        "condition": "items.length == 0",
+        "display": "'Noch keine Analysen' + CTA: 'Analyse starten'"
+      },
+      "loading_state": { "display": "Tabellen-Skeleton" },
+      "error_state": { "display": "'Analyse-Verlauf nicht verfügbar'" },
+      "link_target": "/analysis/:id — erfordert AnalysisPage.jsx (AGAP-07)",
+      "product_ready": "CONDITIONAL — Backend PASS, Link-Target fehlt bis AGAP-07 implementiert"
+    },
+    {
+      "widget_id": "W04",
+      "name": "Themen",
+      "data_source": "GET /api/v1/dashboard/topics → aggregiert aus analysis_results.suggested_topics",
+      "backend_status": "PASS (synthetische Daten bis LLM aktiv)",
+      "empty_state": {
+        "condition": "items.length == 0",
+        "display": "'Noch keine Themen erkannt. Führe eine Analyse durch.'"
+      },
+      "loading_state": { "display": "Tag-Cloud-Skeleton" },
+      "error_state": { "display": "'Themen-Übersicht nicht verfügbar'" },
+      "note": "Datenquelle wird auf echte categories/tags-Tabelle umgestellt nach P1-GAP-01/02",
+      "product_ready": "CONDITIONAL — Backend PASS, Topics-API-Anbindung ausstehend"
+    },
+    {
+      "widget_id": "W05",
+      "name": "Data Quality",
+      "data_source": "GET /api/v1/dashboard/quality → list[DashboardQualityItem]",
+      "backend_status": "PASS",
+      "schema": "id, status, quality_score (nullable), total_findings, started_at, finished_at",
+      "empty_state": {
+        "condition": "items.length == 0",
+        "display": "'Noch kein Qualitäts-Check durchgeführt'"
+      },
+      "null_score_handling": {
+        "condition": "quality_score == null",
+        "display": "'N/A' — nicht '0%', nicht '--'"
+      },
+      "loading_state": { "display": "Score-Ring-Skeleton" },
+      "error_state": { "display": "'Qualitätsdaten nicht verfügbar'" },
+      "note": "Kein Trigger-Button — POST /data-quality/runs ist P2, nicht im 1.0-Dashboard",
+      "product_ready": "CONDITIONAL — null-Handling muss im Frontend verifiziert werden"
+    },
+    {
+      "widget_id": "W06",
+      "name": "Drift (Read-Only)",
+      "data_source": "GET /api/v1/dashboard/drift (NEU — nicht implementiert)",
+      "backend_status": "FEHLT",
+      "required_schema": "DashboardDriftItem: latest_run_id, status, total_findings, critical_count, high_count, medium_count, started_at",
+      "backend_implementation": {
+        "file": "backend/app/schemas/dashboard.py",
+        "change": "DashboardDriftItem hinzufügen"
+      },
+      "service_implementation": {
+        "file": "backend/app/services/dashboard_service.py",
+        "method": "list_drift(workspace_id, limit=1): SELECT drift_run + COUNT findings by severity",
+        "sql": "SELECT dr.id, dr.status, dr.started_at, COUNT(df.id) FILTER (WHERE df.severity='critical') as critical_count, COUNT(df.id) FILTER (WHERE df.severity='high') as high_count, COUNT(df.id) FILTER (WHERE df.severity='medium') as medium_count, COUNT(df.id) as total_findings FROM drift_runs dr LEFT JOIN drift_findings df ON df.run_id = dr.id WHERE dr.workspace_id = :ws GROUP BY dr.id ORDER BY dr.started_at DESC LIMIT 1"
+      },
+      "endpoint_implementation": {
+        "file": "backend/app/api/v1/dashboard.py",
+        "change": "GET /dashboard/drift → list[DashboardDriftItem]"
+      },
+      "frontend_component": "DriftWidget.jsx (NEU)",
+      "frontend_display": "Severity-Zusammenfassung: critical/high/medium Counts + Status-Badge + Link zu /drift",
+      "empty_state": {
+        "condition": "items.length == 0",
+        "display": "'Noch kein Drift-Scan durchgeführt'"
+      },
+      "loading_state": { "display": "Skeleton mit 3 Severity-Chips" },
+      "error_state": { "display": "'Drift-Daten nicht verfügbar'" },
+      "prohibit_check": "Kein Repair-Button (PROHIBIT-02), kein Cleanup-Button (PROHIBIT-06), kein Trigger für Drift-Scan",
+      "product_ready": "NICHT IMPLEMENTIERT — T34/T35/T36/T37 erforderlich"
+    },
+    {
+      "widget_id": "W07",
+      "name": "Letzte Aktivitäten",
+      "data_source": "GET /api/v1/dashboard/activity → list[DashboardActivityItem]",
+      "backend_status": "PRÜFEN — /dashboard/activity Endpunkt in backend_coverage_audit als vorhanden gelistet",
+      "schema_expected": "DashboardActivityItem: id, event_type, description, actor, occurred_at, entity_type, entity_id",
+      "empty_state": {
+        "condition": "items.length == 0",
+        "display": "'Noch keine Aktivitäten'"
+      },
+      "loading_state": { "display": "Activity-Feed-Skeleton (5 Zeilen)" },
+      "error_state": { "display": "'Aktivitäten nicht verfügbar'" },
+      "excluded_from_feed": [
+        "Gate-Events",
+        "Debug-Events",
+        "Admin-Diagnostics-Zugriffe",
+        "Report-Generierungen"
+      ],
+      "product_ready": "UNBEKANNT — Backend-Status nicht per static analysis verifiziert, Frontend-Implementierung unklar"
+    }
+  ],
+
+  "dashboard_level_requirements": {
+    "no_gate_data": "Kein Gate-Status, kein RC-Status, kein Production-Gate-Status sichtbar",
+    "no_debug_data": "Keine technischen IDs als primäre Anzeigewerte",
+    "no_repair_cleanup_buttons": "PROHIBIT-02/06 — verifizieren per DOM-Inspektion",
+    "workspace_isolation": "Alle 7 Widgets zeigen nur Daten des aktiven Workspace",
+    "error_resilience": "Jedes Widget hat eigenen Error State — kein globaler White Screen"
+  },
+
+  "product_readiness_summary": {
+    "W01_Dokumente": "CONDITIONAL_PASS",
+    "W02_Importe": "CONDITIONAL_PASS",
+    "W03_Analysen": "CONDITIONAL_PASS",
+    "W04_Themen": "CONDITIONAL_PASS",
+    "W05_DataQuality": "CONDITIONAL_PASS",
+    "W06_Drift": "BLOCKED — Backend fehlt",
+    "W07_Aktivitaeten": "UNBEKANNT — Verifikation ausstehend"
+  },
+
+  "verdict_detail": "Dashboard V3 BLOCKED wegen W06 (kein Backend) und W07 (Status unklar). W01-W05: Backend vollständig, Frontend-States nicht per automatisiertem Test verifiziert. Kein Repair/Cleanup im aktuellen Code (PROHIBIT-02/06 strukturell eingehalten).",
+
+  "required_actions": [
+    {
+      "action_id": "T34",
+      "priority": "SPRINT_P1",
+      "action": "DashboardDriftItem Schema + list_drift() Service-Methode",
+      "effort": "60 min"
+    },
+    {
+      "action_id": "T35",
+      "priority": "SPRINT_P1",
+      "action": "GET /api/v1/dashboard/drift Endpunkt",
+      "effort": "20 min"
+    },
+    {
+      "action_id": "T36",
+      "priority": "SPRINT_P1",
+      "action": "DriftWidget.jsx mit Empty/Error/Loading States, ohne Repair/Cleanup",
+      "effort": "60 min"
+    },
+    {
+      "action_id": "T37",
+      "priority": "SPRINT_P1",
+      "action": "DriftWidget in DashboardPage einbauen",
+      "effort": "15 min"
+    },
+    {
+      "action_id": "W07_VERIFY",
+      "priority": "SPRINT_P1",
+      "action": "GET /dashboard/activity verifizieren — Backend-Response prüfen, Frontend-Anbindung sicherstellen",
+      "effort": "30 min"
+    }
+  ],
+
+  "statistics": {
+    "widgets_total": 7,
+    "widgets_backend_pass": 5,
+    "widgets_backend_blocked": 1,
+    "widgets_backend_unknown": 1,
+    "widgets_frontend_verified": 0,
+    "widgets_product_ready": 0,
+    "widgets_conditional_pass": 5,
+    "widgets_blocked": 1,
+    "widgets_unknown": 1
+  }
+}

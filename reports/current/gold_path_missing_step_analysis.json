@@ -1,0 +1,135 @@
+{
+  "report_schema_version": 1,
+  "report_name": "gold_path_missing_step_analysis",
+  "report_type": "gold_path_gap_analysis",
+  "generated_at": "2026-06-16T00:50:00.000000+00:00",
+  "basis": "product_gold_path.json + version_1_0_candidate_gate.json (Erwartung: 7/8 nach Sprint) + TASKS.md Sprint-Umfang",
+
+  "current_state": {
+    "gold_path_pass": "4/8",
+    "gold_path_fail_steps": ["GP-04", "GP-05", "GP-06", "GP-07"],
+    "overall_verdict": "FAIL"
+  },
+
+  "expected_after_sprint": {
+    "gold_path_pass": "7/8",
+    "sprint_scope": ["T09-T19 Topics-Backend", "T25-T27 AnalysisPage + ApproveButton", "T28-T33 Export Center MVP"],
+    "note": "Schätzung aus version_1_0_candidate_gate.json und product_maturity_v2.json"
+  },
+
+  "step_by_step_post_sprint_assessment": [
+    {
+      "step_id": "GP-01",
+      "name": "Login",
+      "current": "PASS",
+      "after_sprint": "PASS",
+      "sprint_dependency": null
+    },
+    {
+      "step_id": "GP-02",
+      "name": "Dokument importieren",
+      "current": "PASS",
+      "after_sprint": "PASS",
+      "sprint_dependency": null
+    },
+    {
+      "step_id": "GP-03",
+      "name": "Dokument anzeigen",
+      "current": "PASS (DC-F01 behoben)",
+      "after_sprint": "PASS",
+      "sprint_dependency": "DC-F01 Fix — erledigt"
+    },
+    {
+      "step_id": "GP-04",
+      "name": "Thema finden",
+      "current": "FAIL",
+      "after_sprint": "PASS",
+      "sprint_dependency": "T09-T19 Topics-Backend + URL-Bug-Fix topics.js"
+    },
+    {
+      "step_id": "GP-05",
+      "name": "Analyse starten",
+      "current": "FAIL",
+      "after_sprint": "PASS",
+      "sprint_dependency": "T25 AnalysisPage.jsx implementieren",
+      "caveat": "Schritte 5 (Vorschläge) und 7 (Übernahme) im Analyse-Workflow inhaltlich ungeklärt (PO-Diskussion offen). Wenn ungeklärt: CONDITIONAL_PASS statt PASS."
+    },
+    {
+      "step_id": "GP-06",
+      "name": "Analyse freigeben (Approval)",
+      "current": "FAIL",
+      "after_sprint": "PASS",
+      "sprint_dependency": "T26 ApproveButton + POST /api/v1/analysis/jobs/:id/approve",
+      "critical": true,
+      "security_relevance": "Approval-Mechanismus ist sicherheitskritisch — FAIL hier blockiert RC"
+    },
+    {
+      "step_id": "GP-07",
+      "name": "Export erzeugen",
+      "current": "FAIL",
+      "after_sprint": "CONDITIONAL_PASS",
+      "sprint_dependency": "T28-T33 Export Center MVP (POST /api/v1/export, JSON + Markdown, ExportButton)",
+      "reason_for_conditional": "Export MVP liefert JSON und Markdown. PDF-Export ist explizit auf 1.1 verschoben (Backlog). Gold Path Kriterium 'Export erzeugen' ist mit JSON/MD erfüllbar — CONDITIONAL_PASS, weil kein vollständiger Formatumfang.",
+      "missing_scope": "PDF-Export (Backlog 1.1)"
+    },
+    {
+      "step_id": "GP-08",
+      "name": "Logout",
+      "current": "PASS",
+      "after_sprint": "PASS",
+      "sprint_dependency": null
+    }
+  ],
+
+  "missing_step": {
+    "step_id": "GP-07",
+    "name": "Export erzeugen",
+    "verdict_after_sprint": "CONDITIONAL_PASS",
+    "classification": {
+      "primary": "EXPORT",
+      "secondary": "SCOPE",
+      "not": ["UX", "Berechtigung", "Backend_fehlend"],
+      "explanation": "Backend (POST /api/v1/export) und Frontend (ExportButton) werden im Sprint implementiert. CONDITIONAL_PASS entsteht nicht durch fehlende Implementierung, sondern durch eingeschränkten Formatumfang: JSON + MD vorhanden, PDF fehlt. Das ist eine bewusste Scope-Entscheidung (PDF = 1.1)."
+    }
+  },
+
+  "rc_impact": {
+    "blocks_rc": false,
+    "reason": "GP-07 CONDITIONAL_PASS ist für RC zulässig (docs/release_threshold_model.md: CONDITIONAL_PASS bei RC erlaubt). GP-07 ist nicht in der Liste sicherheitskritischer Schritte (GP-01, GP-06, GP-08). JSON-Export ist ein vollständiger Anwendungsfall.",
+    "condition": "RC erfordert dokumentierte Einschränkung in known_limitations.json: 'PDF-Export nicht in 1.0 enthalten, JSON/MD verfügbar'"
+  },
+
+  "ga_impact": {
+    "blocks_ga": true,
+    "reason": "GA erfordert Gold Path 8/8 PASS. GP-07 CONDITIONAL_PASS zählt nicht als PASS für GA. Für GA: PDF-Export oder nachgewiesener PASS auf JSON/MD-Basis erforderlich.",
+    "path_to_ga": "Entweder PDF-Export in 1.0 aufnehmen (Backlog), oder Gold Path Kriterium GP-07 auf JSON/MD-Basis als vollständig werten (PO-Entscheidung nötig)"
+  },
+
+  "workaround": {
+    "available": true,
+    "description": "JSON-Export ermöglicht vollständigen Datenzugriff. Nutzer können exportierte Daten in eigenen Tools weiterverarbeiten. Markdown-Export eignet sich für Dokumentation und Archivierung.",
+    "limitation": "Kein Layout-treuer PDF-Ausdruck. Für Nutzer mit PDF-Anforderungen (Drucken, formale Ablage) nicht vollständig.",
+    "recommendation": "Als RC-Limitation dokumentieren, PO-Freigabe für CONDITIONAL_RC einholen."
+  },
+
+  "recommendation": {
+    "type": "AKZEPTIERTE_RC_LIMITATION",
+    "action": "known_limitations.json um Eintrag 'KL-GP07-EXPORT' ergänzen: 'GP-07 Export erzeugen — CONDITIONAL_PASS. JSON und Markdown verfügbar. PDF-Export in 1.1.'",
+    "po_decision_required": true,
+    "po_decision_scope": "Ist JSON/MD-Export ausreichend für RC-Freigabe? Wenn ja: CONDITIONAL_RC mit KL-GP07-EXPORT dokumentiert."
+  },
+
+  "secondary_risk": {
+    "step_id": "GP-05",
+    "name": "Analyse starten",
+    "risk": "Wenn PO-Diskussion zu Schritt 5 (Vorschläge) und Schritt 7 (Übernahme) im Analyse-Workflow nicht bis Sprint-Ende abgeschlossen, könnte AnalysisPage.jsx mit Platzhaltern geliefert werden → GP-05 CONDITIONAL_PASS statt PASS.",
+    "impact": "Würde Gold Path auf 6/8 oder 6/8 + 1 CP reduzieren — unter RC-Minimum 7/8.",
+    "mitigation": "PO-Entscheidung zu Schritte 5+7 vor Sprint-Start klären (TASKS.md: 'PO-Diskussion ausstehend')."
+  },
+
+  "security_constraints_verified": {
+    "PROHIBIT_02": "EINGEHALTEN",
+    "PROHIBIT_06": "EINGEHALTEN",
+    "PROHIBIT_08": "EINGEHALTEN"
+  }
+}

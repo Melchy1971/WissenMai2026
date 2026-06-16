@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "report_id": "version_1_0_decision",
+  "generated": "2026-06-15",
+  "inputs": {
+    "production_gate": "reports/current/production_gate.json",
+    "masterplan_status": "reports/current/masterplan_status.json",
+    "known_limitations": "reports/current/known_limitations.json"
+  },
+  "conditions": [
+    {
+      "id": "V10-01",
+      "name": "Production Gate PASS",
+      "status": "FAIL",
+      "required": "PASS",
+      "actual": "BLOCKED",
+      "detail": "production_gate.json verdict=BLOCKED. PGC-01 BLOCKED (Production Readiness). PGC-02 PARTIAL_PASS (Monitoring 5 Luecken). PGC-05 PARTIAL_PASS (Release Packaging unvollstaendig). Root: RC Gate BLOCKED (2/7), TEST_DATABASE_URL fehlt, Backup/Restore + Performance ohne Live-Messung."
+    },
+    {
+      "id": "V10-02",
+      "name": "Keine kritischen Blocker (BLOCKING_CORE = 0)",
+      "status": "PASS",
+      "required": "0 BLOCKING_CORE",
+      "actual": "0 BLOCKING_CORE",
+      "detail": "known_limitations.json: blocking_core=0. 0 BLOCKING_CORE Limitations — GATE-06 bestaetigt (release_candidate_gate.json). Bekannte high-severity Limitations: KL-M5-T-001, KL-M5-T-002, KL-GOV-001 (nicht BLOCKING_CORE, da bekannt und dokumentiert)."
+    },
+    {
+      "id": "V10-03",
+      "name": "Cleanup/Repair weiterhin deaktiviert",
+      "status": "PASS",
+      "required": "NO_GO",
+      "actual": "NO_GO",
+      "detail": "m5c_cleanup.status=NO_GO. Aktive Prohibitions: PROHIBIT-02, PROHIBIT-06, PROHIBIT-08. m5c_implementation_lock=LOCKED. Drift Detection Read-Only verifiziert (drift_v2_permission_guard_report.json 6/6 PASS). Kein Repair-, Cleanup- oder Reindex-Button in UI."
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "pass": 2,
+    "fail": 1
+  },
+  "status": "BLOCKED",
+  "status_reason": "V10-01 FAIL: Production Gate ist BLOCKED. Version 1.0 erfordert Production Gate = PASS. Root Cause: RC Gate BLOCKED (2/7) durch TEST_DATABASE_URL, NAV_ITEMS-Abweichung, fehlenden Router-Guard. Solange RC Gate nicht RELEASE_CANDIDATE, ist Production Gate strukturell nicht erreichbar.",
+  "what_is_ready": [
+    "V10-02 PASS: 0 BLOCKING_CORE Limitations — kein konzeptioneller Showstopper",
+    "V10-03 PASS: Cleanup/Repair dauerhaft deaktiviert (PROHIBIT-02/06/08 aktiv)",
+    "Dokumentationspaket vollstaendig (12 Docs)",
+    "14 Runbooks vorhanden",
+    "Deployment Blueprint vollstaendig",
+    "Strukturiertes Logging, Drift-Metriken, Import-Metriken aktiv",
+    "134/134 Frontend-Tests PASS, 11/11 Local Gate Tests PASS"
+  ],
+  "blocking_path_to_v1_0": [
+    "STEP 1: TEST_DATABASE_URL setzen + run_final_gate.ps1 -> RC Gate RELEASE_CANDIDATE",
+    "STEP 2: PO-Entscheidung NAV_ITEMS (Option A oder B)",
+    "STEP 3: Router-Guard /admin/diagnostics implementieren",
+    "STEP 4: Backup/Restore live ausfuehren (run_backup.ps1 + run_restore_test.ps1)",
+    "STEP 5: Performance Smoke live ausfuehren",
+    "STEP 6: Monitoring-Luecken schliessen (3 Backend, 2 Frontend)",
+    "STEP 7: Seed-Paket vervollstaendigen + Frontend-Build",
+    "STEP 8: Externe Tests (72) ausfuehren nach RELEASE_CANDIDATE",
+    "STEP 9: Production Gate re-run -> PASS",
+    "STEP 10: Version 1.0 Entscheidung re-run -> APPROVED"
+  ],
+  "constraints_locked": {
+    "m5c_implementation": "LOCKED",
+    "repair_actions": "NO_GO",
+    "cleanup_actions": "NO_GO",
+    "drift_detection": "READ_ONLY",
+    "external_tests": "LOCKED_UNTIL_RELEASE_CANDIDATE"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "report_schema_version": 2,
+  "report_name": "ui_technical_id_leak_audit",
+  "report_type": "automated_security_ux_audit",
+  "generated_at": "2026-06-16T06:48:25.158002+00:00",
+  "audit_root": "/sessions/relaxed-hopeful-dijkstra/mnt/WissenMai2026/frontend/src",
+  "rule": "Technische IDs (UUIDs, interne Schlüssel) dürfen nicht als sichtbarer Text in der Endanwender-GUI erscheinen. Erlaubt: React-Keys, URL-Parameter, value=-Attribute, API-Layer, Tests, Admin-Ausnahmen.",
+  "scanned_files": 57,
+  "visible_leaks": 0,
+  "leaks": [],
+  "exceptions_accepted": [
+    {
+      "file": "pages/AdminDiagnosticsPage.jsx",
+      "reason": "Admin-Ausnahme: Explizit ausgeschlossen aus 1.0-Scope (docs/version_1_0_scope_freeze.md)"
+    }
+  ],
+  "verdict": "PASS"
+}

@@ -1,80 +1,124 @@
 {
-  "report_schema_version": 3,
+  "report_schema_version": 9,
   "report_name": "masterplan_status",
-  "report_type": "status",
-  "generated_by": "masterplan_status_v3_post_m5c_preparation",
-  "generated_at": "2026-06-12T06:39:21.727894+00:00",
-  "status": "blocked",
-  "result": "blocked",
-  "release_allowed": false,
-  "overall": {
-    "status": "blocked",
-    "progress_percent": 40.0,
-    "release_allowed": false,
-    "blocker_count": 9,
-    "note": "M5a BLOCKED, M5b BLOCKED (Gate-Autorit\u00e4t). M5c Preparation = PREPARED (alle Definitionsdokumente valide, 16/16 Checks). M5c GO nicht erlaubt: Start Gate BLOCKED. Cleanup/Repair: NO_GO."
+  "report_type": "masterplan_status",
+  "generated_at": "2026-06-16T08:20:00.000000+00:00",
+  "engine": "masterplan_status_v9",
+
+  "inputs": {
+    "conditional_rc_decision": "reports/current/conditional_rc_decision.json",
+    "product_maturity_v3": "reports/current/product_maturity_v3.json",
+    "rc_limitation_register": "reports/current/rc_limitation_register.json",
+    "ga_gap_plan": "reports/current/ga_gap_plan.json",
+    "documentation_truth_lint": "reports/current/documentation_truth_lint.json",
+    "ui_technical_id_leak_audit": "reports/current/ui_technical_id_leak_audit.json",
+    "product_gold_path": "reports/current/product_gold_path.json",
+    "product_release_gate": "reports/current/product_release_gate.json"
   },
-  "phases": {
-    "m3a": {
-      "status": "blocked",
-      "gate_status": "BLOCKED",
-      "blocker": "documentation_truth_lint: collected == 0"
-    },
-    "m4": {
-      "status": "gate_passed",
-      "gate_status": "PASS"
-    },
-    "m5a": {
-      "status": "blocked",
-      "gate_status": "BLOCKED",
-      "blockers": [
-        "report_integrity_v2",
-        "source_status_integrity_gate",
-        "orphan_detector_gate",
-        "documentation_truth_lint",
-        "data_quality_report"
-      ]
-    },
-    "m5b": {
-      "status": "blocked",
-      "gate_status": "BLOCKED",
-      "cascade_root": "AHG-BLOCKER-01 + AHG-BLOCKER-02",
-      "alpha_hardening": "BLOCKED",
-      "production_readiness": "BLOCKED"
-    },
-    "m5c": {
-      "status": "prepared",
-      "gate_status": "PREPARED",
-      "preparation_gate": "PREPARED",
-      "preparation_checks": "16/16",
-      "go_decision": "NOT_ALLOWED",
-      "go_blocked_by": "m5c_start_gate=BLOCKED",
-      "cleanup_implementation": "NO_GO",
-      "repair_actions": "NO_GO",
-      "prohibit_02": "ACTIVE",
-      "prohibit_06": "ACTIVE"
-    }
+
+  "gesamtstatus": "BLOCKED",
+  "fortschritt_prozent": 42.0,
+  "produktstatus": "BLOCKED",
+  "release_freigabe": "nein",
+
+  "product_maturity": {
+    "version": "V3",
+    "score": 53,
+    "rc_threshold": 80,
+    "ga_threshold": 85,
+    "delta_to_rc": -27,
+    "delta_to_ga": -32,
+    "rc_decision": "BLOCKED",
+    "ga_decision": "BLOCKED",
+    "technical_id_leaks": 0,
+    "technical_id_leak_blocker": "AUFGEHOBEN",
+    "source": "reports/current/product_maturity_v3.json"
   },
-  "invariants_active": [
-    "Drift Detection: nur erkennen, nie korrigieren",
-    "Cleanup-Implementierung: NO_GO bis Start Gate PASS + PO-Sign-off",
-    "Repair-Aktionen: PROHIBITED (PROHIBIT-02)",
-    "Cleanup-Aktionen: PROHIBITED (PROHIBIT-06)",
-    "Keine POST/PUT/PATCH/DELETE auf Drift-Endpunkten",
-    "M5c Dry-Run-Only: keine echte Ausf\u00fchrung ohne PO-Approval je Proposal"
-  ],
-  "m5c_preparation_summary": {
-    "decision": "PREPARED",
-    "checks_passed": 16,
-    "artifacts_defined": 8,
-    "documents": [
-      "docs/m5c-domain-model.md",
-      "docs/m5c-risk-scoring.md",
-      "docs/m5c-candidate-rules.md",
-      "docs/m5c-dry-run-governance.md",
-      "docs/m5c-audit-trail.md",
-      "docs/m5c-dashboard-scope.md",
-      "docs/m5c-implementation-boundary.md"
-    ]
-  }
+
+  "gold_path": {
+    "pass": 4,
+    "total": 8,
+    "ratio": "4/8",
+    "fail_steps": ["GP-04 Thema finden", "GP-05 Analyse starten", "GP-06 Analyse freigeben", "GP-07 Export erzeugen"],
+    "security_critical_gp06": "FAIL — blockiert RC",
+    "source": "reports/current/product_gold_path.json"
+  },
+
+  "conditional_rc": {
+    "status": "BLOCKED",
+    "criteria_met": 3,
+    "criteria_total": 5,
+    "criteria_failed": ["CRC-C01 Score 53 < 80", "CRC-C03 Gold Path 4/8 < 7/8, GP-06 FAIL"],
+    "expected_after_sprint": "CONDITIONAL_RC moeglich wenn Score >= 80 und GP-06 PASS",
+    "source": "reports/current/conditional_rc_decision.json"
+  },
+
+  "rc_limitations": {
+    "total": 6,
+    "blocks_rc": 0,
+    "blocks_ga": 1,
+    "ga_blocking": ["RCL-01 GP-07 CONDITIONAL_PASS, kein PDF-Export"],
+    "po_decisions_open": 2,
+    "source": "reports/current/rc_limitation_register.json"
+  },
+
+  "ga_gap_plan": {
+    "status": "DEFINIERT",
+    "mandatory_targets": 5,
+    "work_packages": 8,
+    "open_po_decisions": 3,
+    "estimated_score_after_sprint": "78-82",
+    "estimated_ga_score": "83-86 nach GA-Arbeitspaketen",
+    "source": "reports/current/ga_gap_plan.json",
+    "doc": "docs/ga_gap_plan.md"
+  },
+
+  "ui_technical_id_audit": {
+    "scanned_files": 57,
+    "visible_leaks": 0,
+    "verdict": "PASS",
+    "fixes_applied": 7,
+    "fixed_files": [
+      "DocumentMetaCard.jsx (3 Felder: id, workspaceId, ownerUserId)",
+      "AppShell.jsx (option-Text, status-bar, span)",
+      "DocumentsPage.jsx (Job-ID, page-header workspaceId)",
+      "DataQualityDashboard.jsx (latest_run_id)",
+      "SimpleListPage.jsx (item.id fallback)"
+    ],
+    "source": "reports/current/ui_technical_id_leak_audit.json"
+  },
+
+  "documentation": {
+    "truth_lint": "PASS",
+    "truth_lint_checks": "27/27",
+    "rc_limitations_doc": "docs/rc-limitations.md",
+    "ga_gap_plan_doc": "docs/ga_gap_plan.md",
+    "release_threshold_model_doc": "docs/release_threshold_model.md"
+  },
+
+  "security_constraints": {
+    "PROHIBIT_02": "EINGEHALTEN — kein RepairButton",
+    "PROHIBIT_06": "EINGEHALTEN — kein CleanupButton",
+    "PROHIBIT_08": "EINGEHALTEN — keine automatische M5c-Ausfuehrung",
+    "M5c_cleanup": "NO_GO",
+    "drift_readonly": "EINGEHALTEN",
+    "no_credentials_logged": "EINGEHALTEN",
+    "no_env_commit": "EINGEHALTEN"
+  },
+
+  "sprint_expectation": {
+    "sprint_scope": ["T09-T19 Topics-Backend", "T25-T27 AnalysisPage + ApproveButton", "T28-T33 Export Center MVP"],
+    "expected_score_after_sprint": "78-82",
+    "expected_gold_path_after_sprint": "7/8",
+    "rc_decision_after_sprint": "CONDITIONAL_RC — wenn Score >= 80 und GP-06 behoben",
+    "ga_decision_after_sprint": "BLOCKED — Score < 85, GP-07 CONDITIONAL_PASS"
+  },
+
+  "authority": "Nur maschinenlesbare Reports sind autoritativ. Manuelle Statusaussagen duerfen keinen Gate-Status setzen.",
+  "prohibit_overrides": [
+    "PROHIBIT-02: Kein RepairButton",
+    "PROHIBIT-06: Kein CleanupButton",
+    "PROHIBIT-08: Keine automatische M5c-Ausfuehrung",
+    "M5c Cleanup-Implementierung: NO_GO bis m5c_start_gate=PASS und PO-Sign-off"
+  ]
 }

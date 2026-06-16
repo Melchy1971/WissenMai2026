@@ -1,0 +1,134 @@
+{
+  "report_schema_version": 1,
+  "report_name": "conditional_rc_decision",
+  "report_type": "rc_release_decision",
+  "generated_at": "2026-06-16T08:05:00.000000+00:00",
+
+  "inputs": {
+    "product_maturity_v3": "reports/current/product_maturity_v3.json",
+    "product_gold_path": "reports/current/product_gold_path.json",
+    "ui_technical_id_leak_audit": "reports/current/ui_technical_id_leak_audit.json",
+    "release_threshold_decision": "reports/current/release_threshold_decision.json",
+    "known_limitations": "reports/current/known_limitations.json"
+  },
+
+  "current_values": {
+    "product_maturity_score": 53,
+    "gold_path_pass": "4/8",
+    "gold_path_fail_steps": ["GP-04 Thema finden", "GP-05 Analyse starten", "GP-06 Analyse freigeben", "GP-07 Export erzeugen"],
+    "visible_technical_id_leaks": 0,
+    "blocking_security_issues": 0,
+    "documentation_lint_status": "PASS",
+    "open_limitations_documented": true,
+    "open_limitation_count": 6
+  },
+
+  "conditional_rc_criteria": {
+    "description": "CONDITIONAL_RC erlaubt wenn alle fünf Bedingungen erfüllt sind",
+    "criteria": [
+      {
+        "id": "CRC-C01",
+        "name": "Product Maturity >= 80",
+        "required": 80,
+        "actual": 53,
+        "met": false,
+        "delta": -27
+      },
+      {
+        "id": "CRC-C02",
+        "name": "Visible Technical ID Leaks = 0",
+        "required": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "id": "CRC-C03",
+        "name": "Gold Path >= 7/8 (ohne sicherheitskritische FAIL-Schritte)",
+        "required": "7/8",
+        "actual": "4/8",
+        "met": false,
+        "critical_step_gp06": "FAIL — blockiert RC auch bei 7/8 nominell"
+      },
+      {
+        "id": "CRC-C04",
+        "name": "Keine BLOCKING_SECURITY-Befunde",
+        "required": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "id": "CRC-C05",
+        "name": "Offene Limitationen dokumentiert in known_limitations.json",
+        "required": true,
+        "actual": true,
+        "met": true,
+        "count": 6
+      }
+    ],
+    "criteria_met": 3,
+    "criteria_total": 5,
+    "criteria_failed": ["CRC-C01 (Score 53 < 80)", "CRC-C03 (Gold Path 4/8 < 7/8, GP-06 FAIL)"]
+  },
+
+  "ga_exclusion_criteria": {
+    "description": "GA nicht erlaubt wenn eine oder beide Bedingungen nicht erfüllt",
+    "criteria": [
+      {
+        "name": "Product Maturity >= 85",
+        "required": 85,
+        "actual": 53,
+        "met": false
+      },
+      {
+        "name": "Gold Path 8/8 PASS",
+        "required": "8/8",
+        "actual": "4/8",
+        "met": false
+      }
+    ],
+    "ga_blocked": true
+  },
+
+  "decision": "BLOCKED",
+  "status": "BLOCKED",
+  "allowed_release_level": null,
+
+  "decision_reason": [
+    "CRC-C01 nicht erfüllt: Score 53 ist 27 Punkte unter RC-Schwelle 80.",
+    "CRC-C03 nicht erfüllt: Gold Path 4/8 — drei von sieben Nicht-Logout-Schritte FAIL.",
+    "GP-06 (Analyse freigeben / Approval) ist sicherheitskritisch und FAIL — blockiert RC unabhängig vom Gold-Path-Zähler.",
+    "CONDITIONAL_RC ist erst nach Sprint-Completion möglich (erwarteter Score: ~78-82)."
+  ],
+
+  "path_to_conditional_rc": {
+    "description": "Was muss erfüllt sein damit CONDITIONAL_RC erteilt werden kann",
+    "sprint_required": true,
+    "sprint_scope": ["T09-T19 Topics-Backend", "T25-T27 AnalysisPage + ApproveButton", "T28-T33 Export Center MVP"],
+    "conditions": [
+      "Score muss >= 80 erreichen (aktuell 53, Delta -27)",
+      "Gold Path >= 7/8 PASS (GP-04 und GP-06 sind Pflicht für RC)",
+      "GP-06 (Approval) muss PASS sein (sicherheitskritisch)",
+      "visible_leaks = 0 ist bereits erfüllt",
+      "Neue Limitation KL-GP07-EXPORT in known_limitations.json dokumentieren (GP-07 CONDITIONAL_PASS, PDF in 1.1)"
+    ],
+    "estimated_timeline": "Nach aktuellem Sprint-Abschluss (T09-T33)"
+  },
+
+  "path_to_ga": {
+    "description": "GA ist nach CONDITIONAL_RC noch nicht automatisch erreichbar",
+    "additional_work_required": [
+      "Score >= 85 (delta aus CONDITIONAL_RC: ~3-7 Punkte je nach Sprint-Ergebnis)",
+      "Gold Path 8/8 PASS (GP-07 Export: PDF-Export oder PO-Entscheidung JSON/MD als GA-ausreichend)",
+      "Lazy Loading implementiert",
+      "KWIC-Suche implementiert",
+      "Tags vollständig (P1-GAP-01/02 geschlossen)"
+    ]
+  },
+
+  "security_constraints_verified": {
+    "PROHIBIT_02": "EINGEHALTEN",
+    "PROHIBIT_06": "EINGEHALTEN",
+    "PROHIBIT_08": "EINGEHALTEN",
+    "drift_readonly": "EINGEHALTEN"
+  }
+}

@@ -1,0 +1,224 @@
+{
+  "report_schema_version": 1,
+  "report_name": "search_quality_report",
+  "report_type": "quality_assessment",
+  "generated_at": "2026-06-15T20:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "scope": "Suchqualitätsanalyse: Relevanz, Trefferqualität, Themenqualität, Tagqualität",
+  "verdict": "TEILWEISE — Volltext-Suche produktionsreif, strukturelle Qualitätslücken",
+
+  "search_implementation": {
+    "engine": "PostgreSQL Full-Text Search (TSVECTOR / plainto_tsquery / ts_rank)",
+    "index": "search_vector TSVECTOR auf document_chunks",
+    "tsvector_language": "simple",
+    "ranking": "ts_rank(search_vector, ts_query)",
+    "scope_filter": "workspace_id + import_status IN ('parsed', 'chunked') + lifecycle_status = 'active'",
+    "text_preview_length": 200,
+    "max_results_per_request": 100,
+    "pagination": "limit/offset"
+  },
+
+  "metrics": [
+    {
+      "metric_id": "SQ-01",
+      "name": "Relevanz",
+      "assessment": "TEILWEISE",
+      "strengths": [
+        "ts_rank liefert relativen Relevanz-Score auf Chunk-Ebene",
+        "Workspace-Scope verhindert Dokumente anderer Workspaces",
+        "Nur aktive, vollständig importierte Dokumente werden indiziert"
+      ],
+      "weaknesses": [
+        "plainto_tsquery('simple', ...) ignoriert Sprachstemming — Suche nach 'Optimierung' findet kein 'optimieren'",
+        "Deutsche Texte: 'simple'-Konfiguration statt 'german' — Umlaute korrekt, aber keine Stammwortsuche",
+        "Ranking ignoriert Dokumentalter — neuere Dokumente werden nicht bevorzugt (nur als Tie-Breaker)",
+        "Keine TF-IDF-Normalisierung über Dokument-Länge"
+      ],
+      "gaps": [
+        {
+          "gap_id": "SQ-01-G01",
+          "description": "Suche mit 'simple'-Konfiguration findet keine morphologischen Varianten",
+          "priority": "P2",
+          "fix": "plainto_tsquery('german', ...) verwenden; search_vector mit to_tsvector('german', content) neu befüllen"
+        },
+        {
+          "gap_id": "SQ-01-G02",
+          "description": "ts_rank normiert nicht nach Dokumentlänge",
+          "priority": "P3",
+          "fix": "ts_rank_cd() mit Normalisierungsoption 1 (log document length)"
+        }
+      ]
+    },
+    {
+      "metric_id": "SQ-02",
+      "name": "Trefferqualität",
+      "assessment": "TEILWEISE",
+      "strengths": [
+        "Chunk-basierte Suche: Treffer sind präzise Textabschnitte, nicht ganze Dokumente",
+        "heading_path in Chunk-Modell: Trefferkontext ist navigierbar",
+        "source_anchor: page, paragraph, char_start, char_end für genaue Positionsangabe",
+        "text_preview: erste 200 Zeichen des Chunks als Vorschau"
+      ],
+      "weaknesses": [
+        "text_preview ist immer die ersten 200 Zeichen des Chunks — kein Highlighting des Suchworts",
+        "Kein Snippet-Extrakt um den Treffer herum (KWIC: keyword in context)",
+        "Kein Treffer-Highlighting (fett/unterstrichen) im Frontend sichtbar",
+        "Pagination via offset — bei großen Ergebnismengen ineffizient (kein cursor-based)",
+        "Kein total_count in SearchChunkResult — Frontend weiß nicht wie viele Treffer es gibt"
+      ],
+      "gaps": [
+        {
+          "gap_id": "SQ-02-G01",
+          "description": "Kein KWIC-Snippet: Suchwort ist im Vorschautext nicht hervorgehoben",
+          "priority": "P2",
+          "fix": "ts_headline() PostgreSQL-Funktion für kontextbewusste Snippets"
+        },
+        {
+          "gap_id": "SQ-02-G02",
+          "description": "Kein total_count im API-Response — Frontend kann keine Ergebnisanzahl anzeigen",
+          "priority": "P2",
+          "fix": "SELECT COUNT(*) im selben Request, als total-Feld im Response-Schema"
+        },
+        {
+          "gap_id": "SQ-02-G03",
+          "description": "filters-Parameter existiert im Service, ist aber überall None — keine Filter aktiv",
+          "priority": "P2",
+          "fix": "Filter-Parameter in API exponieren: ?document_id=, ?lifecycle_status=, ?tag="
+        }
+      ]
+    },
+    {
+      "metric_id": "SQ-03",
+      "name": "Themenqualität",
+      "assessment": "VORBEREITET",
+      "strengths": [
+        "suggested_topics in AnalysisResult — Themen aus Analyse verfügbar",
+        "dashboard/topics aggregiert Themen workspace-weit mit Häufigkeit"
+      ],
+      "weaknesses": [
+        "Suche kann nicht nach Thema filtern (kein ?topic=-Parameter)",
+        "Themen kommen aus Stub-Engine — keine echten Inhaltsthemen",
+        "Keine direkte Verknüpfung Chunk → Thema in DB",
+        "categories-Tabelle existiert in DB, aber kein ORM-Model, keine API"
+      ],
+      "gaps": [
+        {
+          "gap_id": "SQ-03-G01",
+          "description": "Themenbasierte Suche fehlt vollständig",
+          "priority": "P1",
+          "fix": "GET /search/chunks?topic=xyz — Filter auf analysis_results.suggested_topics via Join"
+        },
+        {
+          "gap_id": "SQ-03-G02",
+          "description": "Themen aus Stub-Engine sind synthetisch",
+          "priority": "P1",
+          "fix": "Abhängig von AGAP-01 (echtes LLM-Binding)"
+        }
+      ]
+    },
+    {
+      "metric_id": "SQ-04",
+      "name": "Tagqualität",
+      "assessment": "NICHT_BEGONNEN",
+      "strengths": [
+        "DB-Schema: tags, document_tags mit source, confidence, normalized_name vorhanden",
+        "document_tags.source erlaubt Herkunfts-Tracking (manual/ki/import)"
+      ],
+      "weaknesses": [
+        "Kein ORM-Model für tags/document_tags",
+        "Suche nach Tag nicht implementiert",
+        "Tags erscheinen nicht in SearchChunkResult",
+        "suggested_tags aus AnalysisResult sind nicht mit document_tags verknüpft"
+      ],
+      "gaps": [
+        {
+          "gap_id": "SQ-04-G01",
+          "description": "Tag-basierte Suche fehlt vollständig",
+          "priority": "P1",
+          "fix": "GET /search/chunks?tag=xyz — erfordert erst ORM-Model + API für Tags"
+        },
+        {
+          "gap_id": "SQ-04-G02",
+          "description": "Tags aus Analyse-Ergebnissen werden nicht in document_tags übernommen",
+          "priority": "P2",
+          "fix": "Approval-Flow: genehmigte suggested_tags → INSERT INTO document_tags (source='ki')"
+        }
+      ]
+    }
+  ],
+
+  "improvement_proposals": [
+    {
+      "proposal_id": "SP-01",
+      "priority": "P1",
+      "title": "Themenbasierte Suche (Filter ?topic=)",
+      "effort": "Mittel",
+      "details": "GET /search/chunks?topic=xyz; Join über analysis_job_source_documents → analysis_results.suggested_topics",
+      "prerequisite": "Topics ORM-Model (SQ-03-G01), echtes LLM (AGAP-01)"
+    },
+    {
+      "proposal_id": "SP-02",
+      "priority": "P1",
+      "title": "Tag-basierte Suche (Filter ?tag=)",
+      "effort": "Mittel",
+      "details": "GET /search/chunks?tag=xyz; tags ORM-Model muss zuerst erstellt werden",
+      "prerequisite": "SQ-04-G01: tags ORM-Model"
+    },
+    {
+      "proposal_id": "SP-03",
+      "priority": "P2",
+      "title": "KWIC-Snippet mit ts_headline()",
+      "effort": "Gering",
+      "details": "PostgreSQL ts_headline('german', content, ts_query) ersetzt text_preview mit kontextbewusstem Snippet; Suchwort-Highlighting möglich",
+      "prerequisite": "SQ-01-G01 (german config) empfohlen zuerst"
+    },
+    {
+      "proposal_id": "SP-04",
+      "priority": "P2",
+      "title": "total_count im API-Response",
+      "effort": "Gering",
+      "details": "SELECT COUNT(*) parallel zu Suchanfrage; Response-Schema erweitern: total: int",
+      "prerequisite": "Keins"
+    },
+    {
+      "proposal_id": "SP-05",
+      "priority": "P2",
+      "title": "Sprachkonfiguration auf 'german' umstellen",
+      "effort": "Mittel",
+      "details": "to_tsvector('german', ...) + plainto_tsquery('german', ...); Neu-Befüllung aller search_vector-Felder via Migration",
+      "prerequisite": "Datenbankzugang, Migration, Live-Backend"
+    },
+    {
+      "proposal_id": "SP-06",
+      "priority": "P2",
+      "title": "Filter: Dokument-ID, Lifecycle-Status, Zeitraum",
+      "effort": "Gering",
+      "details": "Query-Parameter ?document_id=, ?from=, ?to= in search.py exponieren; filters-Mechanismus ist bereits im Service vorbereitet",
+      "prerequisite": "Keins — filters=None ist bereits als Parameter durchgeführt"
+    },
+    {
+      "proposal_id": "SP-07",
+      "priority": "P3",
+      "title": "Semantische / Vektor-Suche",
+      "effort": "Sehr hoch",
+      "details": "Embedding-Modell, pgvector Extension, Embedding-Spalte in document_chunks, Retrieval-Pipeline",
+      "prerequisite": "LLM-Provider-Entscheidung (AGAP-01), pgvector Installation"
+    }
+  ],
+
+  "statistics": {
+    "metrics_total": 4,
+    "vollständig": 0,
+    "teilweise": 2,
+    "vorbereitet": 1,
+    "nicht_begonnen": 1,
+    "gaps_total": 9,
+    "p1_gaps": 3,
+    "p2_gaps": 5,
+    "p3_gaps": 1,
+    "proposals_total": 7,
+    "p1_proposals": 2,
+    "p2_proposals": 4,
+    "p3_proposals": 1
+  }
+}

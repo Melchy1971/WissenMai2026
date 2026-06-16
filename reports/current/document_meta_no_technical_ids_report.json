@@ -1,0 +1,120 @@
+{
+  "report_schema_version": 1,
+  "report_name": "document_meta_no_technical_ids_report",
+  "report_type": "ui_fix_verification",
+  "generated_at": "2026-06-16T00:30:00.000000+00:00",
+  "related_defect": "DC-F01",
+  "scope": "Entfernung technischer IDs aus DocumentMetaCard.jsx und weiteren Metadaten-Komponenten",
+
+  "fix_summary": {
+    "files_modified": [
+      "frontend/src/components/documents/DocumentMetaCard.jsx",
+      "frontend/src/app/AppShell.jsx",
+      "frontend/src/pages/DocumentsPage.jsx",
+      "frontend/src/features/data-quality/DataQualityDashboard.jsx",
+      "frontend/src/pages/SimpleListPage.jsx"
+    ],
+    "test_added": "frontend/src/tests/components/documents/DocumentMetaCard.test.jsx"
+  },
+
+  "changes": [
+    {
+      "file": "frontend/src/components/documents/DocumentMetaCard.jsx",
+      "defect_id": "DC-F01",
+      "removed_fields": [
+        { "label": "ID", "value_expr": "document.id", "type": "UUID" },
+        { "label": "Workspace", "value_expr": "document.workspaceId", "type": "UUID" },
+        { "label": "Owner", "value_expr": "document.ownerUserId || 'Unbekannt'", "type": "UUID" }
+      ],
+      "added_fields": [
+        { "label": "Tags", "value_expr": "document.tags.map(t => t.name).join(', ')", "condition": "document.tags?.length > 0" }
+      ],
+      "renamed_fields": [
+        { "from": "Lifecycle", "to": "Status" },
+        { "from": "Quelle", "to": "Importquelle" },
+        { "from": "MIME", "to": "Dateityp" },
+        { "from": "Parser", "to": "Verarbeitungsversion" }
+      ],
+      "verdict": "BEHOBEN"
+    },
+    {
+      "file": "frontend/src/app/AppShell.jsx",
+      "defect_id": "AS-F01",
+      "removed_fields": [
+        { "label": "Option-Text", "value_expr": "{m.workspace_id}", "type": "UUID", "context": "Workspace-Selektor Dropdown" }
+      ],
+      "replacement": "Workspace {idx + 1} ({m.role}) — lesbare Bezeichnung ohne UUID",
+      "reason": "AuthMembershipResponse enthält kein workspace_name-Feld. Rollenlabel und laufende Nummerierung sind das Maximum fachlicher Information aus dem Schema.",
+      "verdict": "BEHOBEN"
+    },
+    {
+      "file": "frontend/src/pages/DocumentsPage.jsx",
+      "defect_id": "DP-F01",
+      "removed_fields": [
+        { "label": "Job-ID", "value_expr": "uploadState.job?.id", "type": "UUID", "context": "Upload-Polling-Status-Panel" }
+      ],
+      "verdict": "BEHOBEN"
+    },
+    {
+      "file": "frontend/src/features/data-quality/DataQualityDashboard.jsx",
+      "defect_id": "DQ-F01",
+      "removed_fields": [
+        { "label": "h3 Headline", "value_expr": "summary?.latest_run_id ?? '—'", "type": "UUID", "context": "RunSummaryCard h3" }
+      ],
+      "replacement": "summary?.latest_run_status ?? '—' — zeigt lesbaren Laufstatus statt UUID",
+      "testid_updated": "dq-run-id → dq-run-status",
+      "verdict": "BEHOBEN"
+    },
+    {
+      "file": "frontend/src/pages/SimpleListPage.jsx",
+      "defect_id": "SL-F01",
+      "removed_fields": [
+        { "label": "ID (Fallback)", "value_expr": "item.id", "type": "UUID", "context": "VirtualizedTable Spalte 'ID' — Fallback wenn kein name/title" }
+      ],
+      "replacement": "(kein Name) — expliziter Leerplatzhalter statt UUID",
+      "column_label_updated": "ID → Name",
+      "verdict": "BEHOBEN"
+    }
+  ],
+
+  "exceptions_accepted": [
+    {
+      "file": "frontend/src/pages/AdminDiagnosticsPage.jsx",
+      "field": "data.correlation_id",
+      "reason": "AdminDiagnosticsPage ist explizit aus dem 1.0-Endanwender-Scope ausgeschlossen (docs/version_1_0_scope_freeze.md). Correlation-IDs in Diagnose-Seiten sind legitim (Debug-Zweck, kein Endanwender-Feature).",
+      "status": "AUSNAHME_AKZEPTIERT"
+    }
+  ],
+
+  "non_leaks_confirmed": [
+    "ChunkPreviewList.jsx — key={item.id} (React-intern, kein DOM-Text)",
+    "VersionList.jsx — key={item.id} (React-intern)",
+    "DocumentTable.jsx — key={item.id}, /documents/${item.id} (URL-Routing)",
+    "DocumentListPanel.jsx — selectedId === item.id (State-Vergleich)",
+    "TopicDetailPanel.jsx, TopicListPanel.jsx — key={...} / onSelect(id) (intern)",
+    "ChatSessionList.jsx — /chat/${item.id} (URL-Routing)",
+    "useDocumentCenter.js, useSearch.js, useImport.js, useTopics.js — correlationId (API-intern, nicht gerendert)"
+  ],
+
+  "test_coverage": {
+    "file": "frontend/src/tests/components/documents/DocumentMetaCard.test.jsx",
+    "test_cases": [
+      "zeigt keine technischen UUID-Felder an (id, workspaceId, ownerUserId)",
+      "zeigt keine Feldbezeichnungen ID / Workspace / Owner",
+      "zeigt fachliche Pflichtfelder (Importquelle, Dateityp, Erstellt, Aktualisiert)",
+      "zeigt Tags-Zeile wenn Tags vorhanden",
+      "zeigt kein Tags-Feld wenn Tags-Array leer",
+      "keine technischen dt-Bezeichnungen im gerenderten DOM"
+    ],
+    "framework": "vitest + @testing-library/react"
+  },
+
+  "verdict": "BEHOBEN",
+  "leaks_remaining_in_1_0_scope": 0,
+
+  "security_constraints_verified": {
+    "PROHIBIT_02": "EINGEHALTEN",
+    "PROHIBIT_06": "EINGEHALTEN",
+    "PROHIBIT_08": "EINGEHALTEN"
+  }
+}

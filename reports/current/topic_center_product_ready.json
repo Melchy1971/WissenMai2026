@@ -1,0 +1,141 @@
+{
+  "report_schema_version": 1,
+  "report_name": "topic_center_product_ready",
+  "report_type": "feature_readiness",
+  "generated_at": "2026-06-15T23:40:00.000000+00:00",
+  "evaluation_method": "static_code_analysis — useTopics.js, api/topics.js, backend (kein topics.py ORM vorhanden), topic_center_rc.json",
+  "verdict": "NICHT_PRODUKTIONSREIF — Backend vollständig fehlend; Frontend-Hook implementiert aber ohne funktionsfähiges Backend nicht nutzbar",
+
+  "backend_status": {
+    "orm_models": {
+      "status": "FEHLT",
+      "finding": "P1-GAP-01: Kein Topic-ORM-Model (app/models/topics.py oder äquivalent). Keine Datenbanktabelle für Topics, keine KI-Zusammenfassung speicherbar.",
+      "impact": "Alle Topics-API-Endpunkte können nicht existieren ohne ORM-Grundlage."
+    },
+    "api_endpoints": {
+      "status": "FEHLT",
+      "finding": "P1-GAP-02: Keine Topics-API-Router-Datei. Kein GET /api/v1/topics, kein GET /api/v1/topics/:id, kein POST /api/v1/topics, kein DELETE /api/v1/topics/:id.",
+      "url_bug": "api/topics.js im Frontend enthält URL-Pfad-Bug — ruft /topics/* ohne /api/v1/-Präfix auf → 404 garantiert selbst wenn Backend existierte."
+    }
+  },
+
+  "frontend_status": {
+    "useTopics_hook": {
+      "status": "IMPLEMENTIERT (funktionslos)",
+      "implemented": [
+        "loadList() ruft getTopics() auf → mapTopicItem() für Liste",
+        "loadDetail(id) ruft getTopicDetail(id) auf → mapTopicDetail()",
+        "handleCreate(payload) ruft createTopic() auf",
+        "handleDelete(id) ruft deleteTopic() auf",
+        "Lokale Namenssuche: filteredItems = items.filter(item => item.name.toLowerCase().includes(search))",
+        "selectedId-State für Detailansicht"
+      ],
+      "data_model_mapped": {
+        "TopicItem": ["id", "name", "summary", "documentCount", "tagCount", "updatedAt"],
+        "TopicDetail": ["id", "name", "summary", "sources[]", "documents[]", "tags[]", "linkedTopics[]"]
+      },
+      "error_handling": "mapError() gibt 'Backend noch nicht verfügbar. /topics-API fehlt.' zurück bei 404. Nutzer sieht diese Fehlermeldung beim Öffnen des Themenzentrums.",
+      "finding": "Hook ist vollständig codiert, aber alle API-Calls scheitern mit 404. UI zeigt Fehlerzustand."
+    }
+  },
+
+  "funktionen": {
+    "themenliste": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "GET /api/v1/topics → Liste aller Themen im Workspace (name, summary, documentCount, tagCount)",
+      "actual": "404 — Backend fehlt. Frontend-Hook cacht leeres Array und zeigt Fehlermeldung."
+    },
+    "thema_zusammenfassung": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "GET /api/v1/topics/:id → {summary: '...', sources: [...], documents: [...]}",
+      "actual": "404 — Backend fehlt.",
+      "ki_zusammenfassung": {
+        "aktualisierbar": "NICHT_IMPLEMENTIERT — kein Update-Endpoint für summary",
+        "nachvollziehbar": "NICHT_IMPLEMENTIERT — kein sources[]-Feld abrufbar",
+        "quellenbasiert": "NICHT_IMPLEMENTIERT — kein Bezug zu Dokumentchunks herstellbar"
+      }
+    },
+    "thema_dokumente": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "GET /api/v1/topics/:id → documents[] mit {id, title, lifecycleStatus, updatedAt}",
+      "actual": "Frontend-Mapper vorhanden (mapTopicDetail.documents), kein Backend."
+    },
+    "thema_tags": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "GET /api/v1/topics/:id → tags[]",
+      "actual": "Frontend-Mapper vorhanden (mapTopicDetail.tags), kein Backend. Zudem P1-GAP-01/02 für Tags selbst."
+    },
+    "thema_quellen": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "GET /api/v1/topics/:id → sources[] mit {doc_id, title, excerpt}",
+      "actual": "Frontend-Mapper vorhanden (mapTopicDetail.sources), kein Backend."
+    },
+    "thema_verknuepfungen": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "linked_topics[] in TopicDetail — Beziehungen zwischen Themen",
+      "actual": "Frontend-Mapper vorhanden (mapTopicDetail.linkedTopics), kein Backend."
+    },
+    "suche": {
+      "status": "NICHT_VERFÜGBAR",
+      "actual": "Lokale Namenssuche in useTopics.js implementiert — aber ohne Daten aus dem Backend wirkungslos."
+    },
+    "filter": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "finding": "Kein Filter nach Tags, Dokumenten, Quellen implementiert. Nur lokale Namenssuche."
+    },
+    "export": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "finding": "Kein Export-Feature für Themen implementiert (weder Frontend noch Backend)."
+    },
+    "ki_zusammenfassung_aktualisieren": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "finding": "Kein POST /api/v1/topics/:id/refresh-summary oder äquivalenter Endpunkt. Kein 'Zusammenfassung aktualisieren'-Button in Frontend erkennbar."
+    }
+  },
+
+  "blockers": [
+    {
+      "blocker_id": "TC-B01",
+      "severity": "KRITISCH",
+      "description": "P1-GAP-01: Topic-ORM-Models fehlen vollständig",
+      "impact": "Keine Datenpersistenz für Topics, Tags-Beziehungen oder KI-Zusammenfassungen",
+      "sprint_tasks": ["T09", "T10"]
+    },
+    {
+      "blocker_id": "TC-B02",
+      "severity": "KRITISCH",
+      "description": "P1-GAP-02: Topics-API-Endpunkte fehlen vollständig",
+      "impact": "Frontend kann keine Themen laden, erstellen oder anzeigen",
+      "sprint_tasks": ["T11", "T12", "T13", "T14", "T15"]
+    },
+    {
+      "blocker_id": "TC-B03",
+      "severity": "KRITISCH",
+      "description": "URL-Bug in api/topics.js — fehlendes /api/v1/-Präfix",
+      "impact": "Alle API-Calls auch nach Backend-Implementierung sofort korrigieren",
+      "sprint_tasks": ["T17"]
+    },
+    {
+      "blocker_id": "TC-B04",
+      "severity": "HOCH",
+      "description": "KI-Zusammenfassung nicht im Datenmodell — kein summary-Generierungsendpunkt",
+      "impact": "Kern-Feature 'quellenbasierte KI-Zusammenfassung' kann nicht ausgeliefert werden",
+      "sprint_tasks": ["T18", "T19"]
+    }
+  ],
+
+  "security": {
+    "workspace_isolation": "NICHT_PRÜFBAR — Backend fehlt. Sobald implementiert: workspace_id aus Auth-Token zwingend in allen Topics-Endpunkten.",
+    "PROHIBIT_02": "EINGEHALTEN",
+    "PROHIBIT_06": "EINGEHALTEN"
+  },
+
+  "statistics": {
+    "funktionen_total": 9,
+    "vollstaendig": 0,
+    "teilweise": 0,
+    "nicht_implementiert": 9,
+    "kritische_blocker": 4,
+    "overall_verdict": "NICHT_PRODUKTIONSREIF — 0/9 Funktionen implementierbar ohne Backend-Grundlage"
+  }
+}

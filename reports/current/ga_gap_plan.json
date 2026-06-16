@@ -1,0 +1,205 @@
+{
+  "report_schema_version": 1,
+  "report_name": "ga_gap_plan",
+  "report_type": "ga_readiness_plan",
+  "generated_at": "2026-06-16T08:15:00.000000+00:00",
+  "goal": "Von CONDITIONAL_RC zu GA / Version 1.0",
+
+  "inputs": {
+    "product_maturity_v3": "reports/current/product_maturity_v3.json",
+    "gold_path_missing_step_analysis": "reports/current/gold_path_missing_step_analysis.json",
+    "rc_limitation_register": "reports/current/rc_limitation_register.json"
+  },
+
+  "current_state": {
+    "decision": "BLOCKED",
+    "score": 53,
+    "gold_path": "4/8",
+    "note": "CONDITIONAL_RC erst nach Sprint. GA erst danach und nach weiteren Arbeiten."
+  },
+
+  "ga_mandatory_targets": [
+    {
+      "target_id": "GAT-01",
+      "name": "Product Maturity Score >= 85",
+      "current": 53,
+      "required": 85,
+      "delta": 32,
+      "source": "release_threshold_model.md",
+      "drivers": [
+        "Topics-Backend vollständig (T09-T19) → Fachlich +20, UX +15",
+        "AnalysisPage.jsx vollständig (T25-T27) → Fachlich +15, UX +15",
+        "Export Center vollständig (T28-T33) → Fachlich +12, UX +10",
+        "Tags-API vollständig (P1-GAP-01/02) → Fachlich +5",
+        "Lazy Loading implementiert → UX +8",
+        "KWIC-Suche implementiert → UX +5",
+        "Dashboard W06 Drift-Widget → UX +3"
+      ],
+      "estimated_score_after_sprint": "78-82",
+      "remaining_delta_after_sprint": "3-7 Punkte — braucht Lazy Loading + KWIC + Tags + Dashboard W06"
+    },
+    {
+      "target_id": "GAT-02",
+      "name": "Gold Path 8/8 PASS",
+      "current": "4/8",
+      "required": "8/8",
+      "source": "release_threshold_model.md",
+      "steps_to_fix": [
+        {
+          "step": "GP-04 Thema finden",
+          "status": "FAIL",
+          "fix": "T09-T19 Topics-Backend + URL-Bug-Fix topics.js",
+          "sprint": "aktuell"
+        },
+        {
+          "step": "GP-05 Analyse starten",
+          "status": "FAIL",
+          "fix": "T25 AnalysisPage.jsx — PO-Entscheidung zu Schritten 5+7 erforderlich",
+          "sprint": "aktuell",
+          "caveat": "CONDITIONAL_PASS Risiko wenn PO-Entscheidung fehlt"
+        },
+        {
+          "step": "GP-06 Analyse freigeben",
+          "status": "FAIL",
+          "fix": "T26 ApproveButton + POST /api/v1/analysis/jobs/:id/approve",
+          "sprint": "aktuell",
+          "security_critical": true
+        },
+        {
+          "step": "GP-07 Export erzeugen",
+          "status": "FAIL → CONDITIONAL_PASS nach Sprint",
+          "fix_for_ga": "PDF-Export implementieren (Backlog 1.1) ODER PO-Entscheidung: GP-07 auf JSON/MD-Basis als vollständig werten",
+          "sprint": "1.1 oder PO-Entscheidung",
+          "blocks_ga": true,
+          "ref": "RCL-01, gold_path_missing_step_analysis.json"
+        }
+      ]
+    },
+    {
+      "target_id": "GAT-03",
+      "name": "Keine RC-Limitation mit GA-blockierendem Risiko",
+      "current": "1 GA-blockierende Limitation (RCL-01)",
+      "required": "0 GA-blockierende Limitationen",
+      "fix": "RCL-01 auflösen: PDF-Export oder PO-Entscheidung GP-07 als PASS werten",
+      "ref": "rc_limitation_register.json"
+    },
+    {
+      "target_id": "GAT-04",
+      "name": "Sichtbare technische IDs = 0",
+      "current": "ERFÜLLT (leaks=0)",
+      "required": 0,
+      "status": "PASS",
+      "source": "ui_technical_id_leak_audit.json"
+    },
+    {
+      "target_id": "GAT-05",
+      "name": "Product Release Gate PASS (alle RC und GA Gates)",
+      "current": "BLOCKED (RC-G01, RC-G02, GA-G01, GA-G02 BLOCKED)",
+      "required": "Alle Gates PASS",
+      "path": "Nach GAT-01 bis GAT-03 automatisch erreichbar"
+    }
+  ],
+
+  "ga_work_packages": [
+    {
+      "wp_id": "GA-WP-01",
+      "title": "Topics-Backend abschließen",
+      "tasks": ["T09-T19"],
+      "impact": "GP-04 PASS, Fachlich +20, UX +15",
+      "sprint": "aktuell"
+    },
+    {
+      "wp_id": "GA-WP-02",
+      "title": "AnalysisPage.jsx vollständig (PO-Entscheidung Schritte 5+7 vorher)",
+      "tasks": ["T25-T27"],
+      "impact": "GP-05 PASS, GP-06 PASS, Fachlich +15, UX +15",
+      "sprint": "aktuell",
+      "prerequisite": "PO-Entscheidung zu Analyse-Schritten 5+7 vor Sprint-Start"
+    },
+    {
+      "wp_id": "GA-WP-03",
+      "title": "Export Center MVP + GA-Entscheidung",
+      "tasks": ["T28-T33"],
+      "impact": "GP-07 CONDITIONAL_PASS (JSON/MD). Für GA-PASS: PDF-Export oder PO-Entscheidung",
+      "sprint": "aktuell (MVP), 1.1 (PDF)"
+    },
+    {
+      "wp_id": "GA-WP-04",
+      "title": "Tags-API vollständig (P1-GAP-01/02)",
+      "tasks": ["Tags POST + DELETE Backend"],
+      "impact": "Fachlich +5, RCL-03 geschlossen",
+      "sprint": "1.0 Sprint oder 1.1"
+    },
+    {
+      "wp_id": "GA-WP-05",
+      "title": "Lazy Loading (Dokumente, Themen)",
+      "tasks": ["Pagination/Infinite Scroll Frontend"],
+      "impact": "UX +8 — Performance bei großen Datensätzen",
+      "sprint": "1.0 oder 1.1"
+    },
+    {
+      "wp_id": "GA-WP-06",
+      "title": "KWIC-Suche (Keyword in Context)",
+      "tasks": ["KWIC-Highlighting in Suchergebnissen"],
+      "impact": "UX +5",
+      "sprint": "1.0 oder 1.1"
+    },
+    {
+      "wp_id": "GA-WP-07",
+      "title": "Dashboard W06 Drift-Widget",
+      "tasks": ["GET /api/v1/dashboard/drift implementieren", "DriftWidget.jsx"],
+      "impact": "UX +3, RCL-02 geschlossen",
+      "sprint": "1.0 Sprint oder 1.1"
+    },
+    {
+      "wp_id": "GA-WP-08",
+      "title": "PO-Entscheidung GP-07 Export für GA",
+      "tasks": ["PO Sign-off: JSON/MD als GA-ausreichend ODER PDF-Export in 1.0 aufnehmen"],
+      "impact": "RCL-01 schließen, GAT-02/03 erfüllen",
+      "sprint": "Sofort — Entscheidung vor Sprint-Ende",
+      "owner": "Product Owner"
+    }
+  ],
+
+  "ga_score_projection": {
+    "after_current_sprint": {
+      "estimated_score": "78-82",
+      "gold_path": "7/8 (GP-07 CONDITIONAL_PASS)",
+      "decision": "CONDITIONAL_RC möglich"
+    },
+    "after_ga_work_packages_1_to_4": {
+      "estimated_score": "83-86",
+      "gold_path": "7/8 oder 8/8 (je nach PO-Entscheidung GP-07)",
+      "decision": "GA möglich wenn Score >= 85 und GP-07 als PASS gewertet"
+    },
+    "ga_achieved_when": "Score >= 85 + Gold Path 8/8 PASS + 0 GA-blockierende Limitationen"
+  },
+
+  "open_po_decisions": [
+    {
+      "id": "PO-D01",
+      "question": "Ist JSON/MD-Export ausreichend für CONDITIONAL_RC? (GP-07 CONDITIONAL_PASS akzeptieren)",
+      "impact": "Wenn Ja: CONDITIONAL_RC nach Sprint möglich; GP-07 bleibt GA-Blocker bis PDF oder neuer PO-Entscheid",
+      "urgency": "Vor Sprint-Ende"
+    },
+    {
+      "id": "PO-D02",
+      "question": "Welche Aktionen sind für Analyse-Workflow-Schritte 5 (Vorschläge) und 7 (Übernahme) vorgesehen?",
+      "impact": "Wenn ungeklärt: GP-05 CONDITIONAL_PASS, Gold Path 6/8 < RC-Minimum 7/8",
+      "urgency": "Vor Sprint-Start"
+    },
+    {
+      "id": "PO-D03",
+      "question": "Soll PDF-Export in 1.0 aufgenommen werden oder bleibt GP-07 für GA als CONDITIONAL_PASS mit PO-Freigabe?",
+      "impact": "Bestimmt GA-Timeline: mit PDF in 1.0 schneller, ohne PDF braucht es separate PO-Freigabe",
+      "urgency": "Spätestens bei CONDITIONAL_RC-Entscheidung"
+    }
+  ],
+
+  "security_constraints_verified": {
+    "PROHIBIT_02": "EINGEHALTEN — kein RepairButton in GA-Plan",
+    "PROHIBIT_06": "EINGEHALTEN — kein CleanupButton in GA-Plan",
+    "PROHIBIT_08": "EINGEHALTEN — keine M5c-Ausführung ohne PO-Approval",
+    "M5c_cleanup": "NO_GO — nicht Teil des GA-Plans"
+  }
+}

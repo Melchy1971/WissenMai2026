@@ -1,0 +1,61 @@
+{
+  "report_schema_version": 1,
+  "report_name": "release_threshold_decision",
+  "report_type": "threshold_model_decision",
+  "generated_at": "2026-06-16T00:40:00.000000+00:00",
+  "source_document": "docs/release_threshold_model.md",
+
+  "thresholds": {
+    "rc": {
+      "produktreife_score_min": 80,
+      "gold_path_min": "7/8",
+      "gold_path_exceptions": "maximal 1 FAIL, wenn nicht GP-01, GP-06 oder GP-08",
+      "leaks_allowed": 0,
+      "blocking_security": "nicht erlaubt",
+      "conditional_pass": "erlaubt mit Dokumentationspflicht",
+      "entscheidungstypen": ["RC_ALLOWED", "CONDITIONAL_RC", "BLOCKED"]
+    },
+    "ga": {
+      "produktreife_score_min": 85,
+      "gold_path_min": "8/8",
+      "gold_path_exceptions": "keine",
+      "leaks_allowed": 0,
+      "blocking_security": "nicht erlaubt",
+      "conditional_pass": "NICHT erlaubt",
+      "documentation_truth_lint": "PASS erforderlich",
+      "entscheidungstypen": ["GA_ALLOWED", "BLOCKED"]
+    }
+  },
+
+  "critical_steps_for_rc_blocking": ["GP-01 Login", "GP-06 Analyse freigeben", "GP-08 Logout"],
+  "reason_for_criticality": {
+    "GP-01": "Authentifizierung — Security-kritisch",
+    "GP-06": "Approval-Mechanismus — Datenverlust wenn kein Freigabeprozess",
+    "GP-08": "Session-Invalidierung — Security-kritisch"
+  },
+
+  "current_state": {
+    "produktreife_score": 52,
+    "gold_path_pass": "3/8",
+    "ui_technical_id_leaks": 0,
+    "blocking_security_issues": 0,
+    "rc_threshold_distance": -28,
+    "ga_threshold_distance": -33
+  },
+
+  "decision": "BLOCKED",
+  "reason": "Produktreife-Score 52 liegt weit unter RC-Schwellwert 80 (Delta: -28) und GA-Schwellwert 85 (Delta: -33). Gold Path 3/8 liegt unter RC-Minimum 7/8. Technische IDs wurden behoben (leaks=0). Schwellwertmodell ist definiert und aktiv.",
+
+  "expected_after_sprint": {
+    "produktreife_score": "~78-82",
+    "gold_path_pass": "7/8 (erwartet)",
+    "rc_decision": "CONDITIONAL_RC (erwartbar wenn Score >= 80)",
+    "ga_decision": "BLOCKED (Score < 85 nach Sprint)"
+  },
+
+  "security_constraints_verified": {
+    "PROHIBIT_02": "EINGEHALTEN",
+    "PROHIBIT_06": "EINGEHALTEN",
+    "PROHIBIT_08": "EINGEHALTEN"
+  }
+}

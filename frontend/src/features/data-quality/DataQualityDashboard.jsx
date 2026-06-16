@@ -108,8 +108,8 @@ function RunSummaryCard({ summary }) {
       <div className="panel__header">
         <div>
           <p className="panel__eyebrow">Letzter Run</p>
-          <h3 data-testid="dq-run-id">
-            {summary?.latest_run_id ?? '—'}
+          <h3 data-testid="dq-run-status">
+            {summary?.latest_run_status ?? '—'}
           </h3>
         </div>
         <span

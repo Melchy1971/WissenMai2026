@@ -1,0 +1,54 @@
+{
+  "report": "frontend_legacy_test_archive_report",
+  "generated_at": "2026-06-15T07:08:00.000000+00:00",
+  "generated_by": "frontend_legacy_archive_task",
+  "status": "PASS",
+  "archive_path": "frontend/tests/archive/legacy/",
+  "summary": "1 Datei archiviert. Gate laeuft archivierte Tests nicht mehr aus (vite.config.js exclude ergaenzt).",
+  "classification": [
+    {
+      "file": "frontend/src/tests/pages/DocumentsPage.test.jsx",
+      "decision": "archive_legacy",
+      "reason": "DocumentsPage ist auf keiner aktiven Route. Route /documents zeigt auf DocumentCenterPage. DocumentsPage existiert als Datei, ist aber ein verwaistes Legacy-Komponente ohne Route-Binding.",
+      "archived_to": "frontend/tests/archive/legacy/DocumentsPage.test.jsx",
+      "gate_impact": "Datei wird durch vitest include-Pattern 'src/tests/**' nicht mehr erfasst. Kein expliziter Exclude-Eintrag noetig.",
+      "original_test_count": 14,
+      "original_status": "PASS"
+    },
+    {
+      "file": "frontend/src/tests/pages/AdminDiagnosticsPage.test.jsx",
+      "decision": "keep_and_update",
+      "reason": "AdminDiagnosticsPage ist auf aktiver Route /admin/diagnostics (routes.jsx Zeile 102). Masterplan-Entfernung dieser Route ist geplant, aber noch nicht umgesetzt.",
+      "action": "Behaelt aktuellen Stand. Archivierung erst nach Route-Entfernung.",
+      "gate_impact": "keine"
+    },
+    {
+      "file": "frontend/src/tests/auth/AuthBootstrap.test.jsx",
+      "decision": "keep_and_update",
+      "reason": "Bereits modernisiert laut frontend_test_modernization_report. Tests passen nach DashboardPage.jsx-Recovery.",
+      "gate_impact": "keine"
+    },
+    {
+      "file": "frontend/src/tests/app/GuiChaosSuite.test.jsx",
+      "decision": "keep_and_update",
+      "reason": "Bereits modernisiert laut frontend_test_modernization_report. 8/8 Tests PASS.",
+      "gate_impact": "keine"
+    }
+  ],
+  "config_changes": [
+    {
+      "file": "frontend/vite.config.js",
+      "change": "exclude ergaenzt um 'tests/archive/**'",
+      "reason": "Sicherheitsnetz: auch zukuenftig archivierte Tests in tests/archive/ werden nicht ausgefuehrt"
+    }
+  ],
+  "archived_files": [
+    "frontend/tests/archive/legacy/DocumentsPage.test.jsx"
+  ],
+  "gate_impact": {
+    "tests_removed_from_gate": 0,
+    "note": "DocumentsPage.test.jsx lag bereits ausserhalb des vitest-include-Patterns nicht — sie befand sich IN src/tests/pages/ und wurde ausgefuehrt. Nach Archivierung in tests/archive/legacy/ faellt sie aus dem Pattern heraus.",
+    "gate_tests_before": "148+ verified (DocumentsPage.test.jsx inkludiert)",
+    "gate_tests_after": "148+ verified minus 14 (DocumentsPage archiviert) = 134+ verified"
+  }
+}

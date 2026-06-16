@@ -1,0 +1,353 @@
+{
+  "report_schema_version": 1,
+  "report_name": "analysis_e2e_completion",
+  "report_type": "feature_completion_spec",
+  "generated_at": "2026-06-15T21:30:00.000000+00:00",
+  "evaluation_method": "static_code_analysis + gap_closure_spec",
+  "input": "analysis_production_gap_report.json",
+  "scope": "Alle P1-Lücken schließen + vollständige E2E-Feature-Spezifikation",
+  "verdict": "SPEC_COMPLETE — Implementierung ausstehend",
+
+  "constraints": [
+    "PROHIBIT-02: Kein Repair-Button",
+    "PROHIBIT-06: Kein Cleanup-Button",
+    "PROHIBIT-08: Keine automatische M5c-Ausführung ohne PO-Approval",
+    "Drift: Read-Only — Analysis-Suggestions lösen kein Drift-Repair aus",
+    "Kein .env-Commit (API-Keys)"
+  ],
+
+  "p1_gap_closures": [
+    {
+      "gap_id": "AGAP-01",
+      "title": "LLM-Binding",
+      "status": "SPEC_ONLY — API-Key erforderlich",
+      "implementation_spec": {
+        "approach": "Provider-Abstraction via Env-Vars — kein Code-Change bei Provider-Wechsel",
+        "env_vars": {
+          "LLM_PROVIDER": "openai | anthropic | ollama (required)",
+          "LLM_API_KEY": "API-Key — NIEMALS committen",
+          "LLM_MODEL_NAME": "z.B. gpt-4o-mini, claude-haiku-4-5, llama3",
+          "LLM_BASE_URL": "optional — für Ollama oder lokale Endpoints",
+          "LLM_TIMEOUT_SECONDS": "default 60"
+        },
+        "files_to_change": [
+          {
+            "file": "backend/app/core/config.py",
+            "change": "Felder ergänzen: llm_provider, llm_api_key (SecretStr), llm_model_name, llm_base_url, llm_timeout_seconds"
+          },
+          {
+            "file": "backend/app/services/analysis/llm_provider.py (NEU)",
+            "change": "LlmAnalysisProvider-Klasse: implements AnalysisProvider-Interface. Switch auf llm_provider-Env. OpenAI/Anthropic via httpx, Ollama via HTTP."
+          },
+          {
+            "file": "backend/app/services/analysis/service.py",
+            "change": "get_analysis_service() ersetzt DeterministicAnalysisStubEngine durch LlmAnalysisProvider wenn LLM_PROVIDER gesetzt. Stub bleibt als Fallback für Tests."
+          },
+          {
+            "file": "backend/app/api/v1/chat.py",
+            "change": "UnconfiguredLlmProvider ersetzen durch LlmChatProvider. Bei fehlendem Key: HTTP 503 mit klarem error_code='LLM_NOT_CONFIGURED' statt RuntimeError."
+          }
+        ],
+        "analysis_prompt_template": "Du analysierst folgende Dokumente:\n{documents}\n\nErstelle: summary (max 500 Zeichen), suggested_topics (3-8 Themen), suggested_tags (5-15 Tags, normalized_name lowercase).",
+        "blocking": "LLM_API_KEY muss vom PO bereitgestellt werden. Implementierung kann ohne Key codiert werden — Konfiguration blockiert."
+      }
+    },
+    {
+      "gap_id": "AGAP-02",
+      "title": "Job-Abbruch (Cancel)",
+      "status": "IMPLEMENTIERBAR — kein LLM erforderlich",
+      "implementation_spec": {
+        "files_to_change": [
+          {
+            "file": "backend/migrations/versions/YYYYMMDD_0021_analysis_cancelled_status.py (NEU)",
+            "change": "ALTER TABLE analysis_jobs DROP CONSTRAINT ck_analysis_jobs_status; ALTER TABLE analysis_jobs ADD CONSTRAINT ck_analysis_jobs_status CHECK (status IN ('pending','running','completed','failed','approved','cancelled'));"
+          },
+          {
+            "file": "backend/app/models/analysis.py",
+            "change": "ANALYSIS_JOB_STATUS_VALUES = ('pending','running','completed','failed','approved','cancelled')"
+          },
+          {
+            "file": "backend/app/services/analysis/service.py",
+            "change": "AnalysisJobService.cancel_job(job_id, workspace_id): Status-Transition pending|running → cancelled. Guard: already cancelled/completed/approved → raise InvalidStateError."
+          },
+          {
+            "file": "backend/app/api/v1/analysis.py",
+            "change": "POST /analysis/jobs/{job_id}/cancel — require_workspace_member. Returns AnalysisJobResponse with status='cancelled'."
+          }
+        ],
+        "status_transitions": {
+          "pending → cancelled": "ERLAUBT",
+          "running → cancelled": "ERLAUBT — LLM-Task wird nicht abgebrochen (kein Interrupt), aber Status sofort gesetzt",
+          "completed → cancelled": "VERBOTEN — 409 Conflict",
+          "approved → cancelled": "VERBOTEN — 409 Conflict",
+          "cancelled → cancelled": "IDEMPOTENT — 200 OK"
+        }
+      }
+    }
+  ],
+
+  "full_feature_spec": {
+    "F-01": {
+      "name": "Job erstellen",
+      "api_endpoint": "POST /api/v1/analysis/jobs",
+      "status": "VOLLSTÄNDIG",
+      "request": {
+        "source_document_ids": ["uuid", "..."],
+        "analysis_type": "summarize | compare | full",
+        "prompt": "optional — Nutzerprompt"
+      },
+      "response": "AnalysisJobResponse: id, status='pending', created_at, workspace_id",
+      "validations": [
+        "source_document_ids: mindestens 1, alle müssen in workspace existieren",
+        "analysis_type: must be in enum",
+        "require_workspace_member"
+      ],
+      "frontend": "AnalysisPage.jsx: Formular mit Dokument-Auswahl (Multi-Select), Analyse-Typ, optionalem Prompt"
+    },
+    "F-02": {
+      "name": "Job starten / Status verfolgen",
+      "api_endpoint": "GET /api/v1/analysis/jobs/:id",
+      "status": "VOLLSTÄNDIG (Polling)",
+      "polling_interval_ms": 2000,
+      "terminal_states": ["completed", "failed", "cancelled", "approved"],
+      "response_fields": ["id", "status", "analysis_type", "created_at", "error_code", "error_message"],
+      "frontend": "AnalysisJobDetailPanel: Spinner bei pending/running, Result-Anzeige bei completed, Fehlertext bei failed"
+    },
+    "F-03": {
+      "name": "Ergebnis anzeigen",
+      "api_endpoint": "GET /api/v1/analysis/jobs/:id/result",
+      "status": "BACKEND VOLLSTÄNDIG — Frontend fehlt (AGAP-07)",
+      "guard": "status IN ('completed', 'approved') — sonst 409",
+      "response_fields": [
+        "summary (Freitext)",
+        "suggested_topics (list[str])",
+        "suggested_tags (list[{name, normalized_name, confidence}])",
+        "comparison (nullable, wenn compare ausgeführt)"
+      ],
+      "frontend": "ResultPanel: summary als Blocktext, suggested_topics als Tag-Chips, suggested_tags mit Konfidenz-Balken, Approve-Button (Admin only)"
+    },
+    "F-04": {
+      "name": "Verlauf / Historie",
+      "api_endpoint": "GET /api/v1/analysis/jobs?limit=20&offset=0&status=",
+      "status": "BACKEND VOLLSTÄNDIG — P2-Filter fehlen (AGAP-04)",
+      "filters_implemented": ["status", "limit", "offset"],
+      "filters_missing": ["from", "to", "document_id", "analysis_type"],
+      "frontend": "JobHistoryPanel: Tabelle mit status-Badge, created_at, analysis_type, Link zu Detail"
+    },
+    "F-05": {
+      "name": "Fehlerzustand",
+      "api_endpoint": "GET /api/v1/analysis/jobs/:id",
+      "status": "BACKEND TEILWEISE — kein error_code-Vokabular (AGAP-05)",
+      "error_codes_defined": [],
+      "error_codes_planned": [
+        "LLM_TIMEOUT", "LLM_RATE_LIMIT", "LLM_CONTEXT_EXCEEDED",
+        "DOCUMENT_TOO_LARGE", "NO_CONTENT", "INTERNAL_ERROR"
+      ],
+      "frontend": "ErrorPanel: error_code → nutzerfreundliche Meldung + Retry-Angebot"
+    },
+    "F-06": {
+      "name": "Abbruch",
+      "api_endpoint": "POST /api/v1/analysis/jobs/:id/cancel (FEHLT — AGAP-02)",
+      "status": "NICHT_IMPLEMENTIERT",
+      "frontend": "CancelButton: sichtbar bei status IN ('pending','running'). Disabled bei terminal states."
+    },
+    "F-07": {
+      "name": "Wiederholung (Retry)",
+      "api_endpoint": "POST /api/v1/analysis/jobs/:id/retry (FEHLT — AGAP-03)",
+      "status": "NICHT_IMPLEMENTIERT — P2",
+      "spec": "Transition: failed|cancelled → pending. Neuer start_time, attempt_count +1.",
+      "frontend": "RetryButton: sichtbar bei status IN ('failed','cancelled')"
+    },
+    "F-08": {
+      "name": "Approval",
+      "api_endpoint": "POST /api/v1/analysis/jobs/:id/approve",
+      "status": "VOLLSTÄNDIG (Infrastruktur) — AuditRecorder nicht injiziert (AGAP-06)",
+      "request": "{ decision: 'approved' }",
+      "guard": "require_workspace_admin",
+      "post_approve": "status → 'approved', suggestions.status → 'approved', approved_by + approved_at gesetzt",
+      "audit_gap": "approval_audit_recorder=None in get_analysis_service() — kein Audit-Log-Eintrag",
+      "frontend": "ApproveButton: nur für workspace_admin sichtbar. Confirmation-Dialog. Status-Update ohne Reload (optimistic)."
+    }
+  },
+
+  "test_matrix": {
+    "api_tests": [
+      {
+        "test_id": "AT-01",
+        "name": "POST /analysis/jobs — Valid Request",
+        "input": "{ source_document_ids: [<existing_id>], analysis_type: 'summarize' }",
+        "expected": "201 — id, status='pending'"
+      },
+      {
+        "test_id": "AT-02",
+        "name": "POST /analysis/jobs — Unknown Document",
+        "input": "{ source_document_ids: ['00000000-0000-0000-0000-000000000000'], analysis_type: 'summarize' }",
+        "expected": "404 — DOCUMENT_NOT_FOUND"
+      },
+      {
+        "test_id": "AT-03",
+        "name": "GET /analysis/jobs — Workspace Isolation",
+        "setup": "2 Jobs in verschiedenen Workspaces",
+        "expected": "Nur Jobs des aktiven Workspace sichtbar"
+      },
+      {
+        "test_id": "AT-04",
+        "name": "GET /analysis/jobs/:id/result — Status Guard",
+        "setup": "Job mit status='pending'",
+        "expected": "409 — RESULT_NOT_READY"
+      },
+      {
+        "test_id": "AT-05",
+        "name": "POST /analysis/jobs/:id/approve — Non-Admin",
+        "setup": "Nutzer mit role='member'",
+        "expected": "403 — FORBIDDEN"
+      },
+      {
+        "test_id": "AT-06",
+        "name": "POST /analysis/jobs/:id/cancel — Pending Job",
+        "setup": "Job mit status='pending'",
+        "expected": "200 — status='cancelled'"
+      },
+      {
+        "test_id": "AT-07",
+        "name": "POST /analysis/jobs/:id/cancel — Completed Job",
+        "setup": "Job mit status='completed'",
+        "expected": "409 — INVALID_STATE_TRANSITION"
+      },
+      {
+        "test_id": "AT-08",
+        "name": "POST /analysis/jobs/:id/cancel — Idempotent",
+        "setup": "Job mit status='cancelled'",
+        "expected": "200 — status='cancelled' (idempotent)"
+      },
+      {
+        "test_id": "AT-09",
+        "name": "GET /analysis/jobs filter by status",
+        "input": "?status=completed",
+        "expected": "Nur completed Jobs, total korrekt"
+      },
+      {
+        "test_id": "AT-10",
+        "name": "POST /analysis/jobs/:id/summarize — DeterministicStub",
+        "setup": "Job pending, Stub-Engine aktiv",
+        "expected": "202 — status transition pending → running → completed, result vorhanden"
+      }
+    ],
+    "frontend_tests": [
+      {
+        "test_id": "FT-01",
+        "name": "Job-Erstellformular validiert Dokument-Pflichtfeld",
+        "expected": "Submit ohne Dokument-Auswahl → Validation-Fehler sichtbar"
+      },
+      {
+        "test_id": "FT-02",
+        "name": "Status-Polling aktualisiert UI ohne Reload",
+        "expected": "Status-Badge wechselt von 'Ausstehend' zu 'Abgeschlossen' innerhalb 5s"
+      },
+      {
+        "test_id": "FT-03",
+        "name": "Ergebnis-Anzeige zeigt summary + topics + tags",
+        "expected": "Alle drei Felder sichtbar, kein technisches ID-Feld"
+      },
+      {
+        "test_id": "FT-04",
+        "name": "Approve-Button nur für Admins sichtbar",
+        "setup": "Eingeloggt als member",
+        "expected": "Approve-Button nicht im DOM"
+      },
+      {
+        "test_id": "FT-05",
+        "name": "Cancel-Button deaktiviert bei terminalem Status",
+        "expected": "disabled-Attribut bei status=completed/approved/failed"
+      },
+      {
+        "test_id": "FT-06",
+        "name": "Fehlerzustand zeigt nutzerfreundliche Meldung",
+        "setup": "Job mit status=failed, error_code='LLM_TIMEOUT'",
+        "expected": "Meldung: 'Die KI-Analyse hat das Zeitlimit überschritten. Bitte erneut versuchen.'"
+      },
+      {
+        "test_id": "FT-07",
+        "name": "Verlaufsliste paginiert korrekt",
+        "setup": "25 Jobs im Workspace",
+        "expected": "Seite 1 zeigt 20, Seite 2 zeigt 5"
+      }
+    ],
+    "e2e_tests": [
+      {
+        "test_id": "E2E-01",
+        "name": "Vollständiger Analyse-Flow mit Stub-Engine",
+        "steps": [
+          "Login als workspace_admin",
+          "Dokument importieren (warten auf status='chunked')",
+          "Analyse-Job erstellen (source_document_id = importiertes Dokument)",
+          "Status-Polling bis status='completed'",
+          "Ergebnis öffnen: summary, topics, tags prüfen",
+          "Approval durchführen: POST /approve",
+          "Status = 'approved' und suggestions.status = 'approved' prüfen"
+        ],
+        "expected": "PASS — kein manueller Eingriff, keine Debug-Seite",
+        "engine": "DeterministicAnalysisStubEngine",
+        "blocking_on": "AGAP-02 (Cancel) muss implementiert sein für vollständigen Flow"
+      },
+      {
+        "test_id": "E2E-02",
+        "name": "Cancel-Flow",
+        "steps": [
+          "Job erstellen",
+          "Unmittelbar POST /cancel",
+          "Status = 'cancelled' prüfen",
+          "Neuen Job erstellen (Wiederherstellung nach Cancel)"
+        ],
+        "expected": "PASS — kein Datenverlust, Job nicht in 'running' hängen",
+        "blocking_on": "AGAP-02"
+      },
+      {
+        "test_id": "E2E-03",
+        "name": "Workspace-Isolation im Analysis-Flow",
+        "steps": [
+          "User A: Job erstellen in Workspace A",
+          "User B (Workspace B): GET /analysis/jobs — Job von A darf nicht erscheinen",
+          "User B: GET /analysis/jobs/:id_von_A — 404 erwartet"
+        ],
+        "expected": "PASS"
+      }
+    ]
+  },
+
+  "p1_closure_status": {
+    "AGAP-01": {
+      "status": "BLOCKED",
+      "blocker": "LLM_API_KEY + Provider-Entscheidung nicht getroffen. Implementierbar, aber nicht deployfähig ohne Key.",
+      "next_action": "PO stellt LLM_API_KEY bereit. Dann LlmAnalysisProvider implementieren (~2 Tage)."
+    },
+    "AGAP-02": {
+      "status": "READY_TO_IMPLEMENT",
+      "effort": "1 Tag — Migration + Service-Methode + Endpunkt",
+      "prerequisites_met": true,
+      "migration_required": true,
+      "migration_note": "CheckConstraint auf analysis_jobs.status muss 'cancelled' einschließen"
+    }
+  },
+
+  "implementation_order": [
+    "1. AGAP-02 Cancel: Migration → Service → Endpoint → Tests AT-06/07/08",
+    "2. AGAP-06 AuditRecorder: get_analysis_service() Recorder-Injection → AT-10",
+    "3. AGAP-07 Frontend: AnalysisPage.jsx + JobHistoryPanel + ResultPanel + StatusBadge",
+    "4. AGAP-01 LLM: nach PO-Entscheidung → LlmAnalysisProvider + Chat-LLM",
+    "5. AGAP-05 ErrorCodes: nach AGAP-01 (realistische Fehlercodes erst mit LLM)",
+    "6. AGAP-03 Retry: nach AGAP-02 + AGAP-01",
+    "7. AGAP-04 Filter: eigenständig, nach AGAP-07 Frontend"
+  ],
+
+  "statistics": {
+    "p1_gaps_total": 2,
+    "p1_gaps_closed": 0,
+    "p1_gaps_spec_complete": 2,
+    "p1_gaps_ready_to_implement": 1,
+    "p1_gaps_blocked": 1,
+    "api_tests_defined": 10,
+    "frontend_tests_defined": 7,
+    "e2e_tests_defined": 3
+  }
+}

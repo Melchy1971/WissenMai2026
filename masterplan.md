@@ -4,78 +4,45 @@
 
 # Wissensbasis V1 - Masterplan
 
-<!-- BEGIN GENERATED MASTERPLAN STATUS v3 -->
+<!-- BEGIN GENERATED MASTERPLAN STATUS v4 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-06-12T00:00:00+00:00`
-Engine: `masterplan_status_v3_post_gui_cleanup`
+Stand: `2026-06-16T08:20:00.000000+00:00`
+Engine: `masterplan_status_v9`
 
 Gesamtstatus: `BLOCKED`
-Fortschritt: `40.0%`
+Fortschritt: `42.0%`
+Produktstatus: `BLOCKED`
 Release-Freigabe: `nein`
+Product Maturity V3: `Score 53 — BLOCKED (RC: -27, GA: -32) — reports/current/product_maturity_v3.json`
+Technical ID Leaks: `0 — PASS (57 Dateien geprueft) — reports/current/ui_technical_id_leak_audit.json`
+Gold Path: `4/8 PASS — GP-04/05/06/07 FAIL — GP-06 (Approval) sicherheitskritisch — reports/current/product_gold_path.json`
+Conditional RC Decision: `BLOCKED (3/5 Kriterien, CRC-C01+C03 FAIL) — reports/current/conditional_rc_decision.json`
+Product Release Gate V2: `BLOCKED (RC-G01+RC-G02 BLOCKED, RC-G03+RC-G04 PASS) — reports/current/product_release_gate.json`
+RC Limitation Register: `6 Limitationen, 0 blockieren RC, 1 blockiert GA (RCL-01 PDF-Export) — reports/current/rc_limitation_register.json`
+GA Gap Plan: `DEFINIERT (5 Ziele, 8 Arbeitspakete, 3 offene PO-Entscheidungen) — reports/current/ga_gap_plan.json`
+Documentation Truth Lint: `PASS (27/27)`
+Release Threshold Model: `DEFINIERT (docs/release_threshold_model.md)`
+RC Limitations Doku: `docs/rc-limitations.md`
+GA Gap Plan Doku: `docs/ga_gap_plan.md`
+Frontend Vitest (verified): `134/134 PASS`
+Regression Guard Drift v2: `PASS (6/6, reports/current/drift_v2_permission_guard_report.json)`
+Drift v2 Path Recovery: `VOLLSTAENDIG — drift_v2 aktiv, 0 alte Imports, UI Truth 29/29 PASS`
+Drift v2 Component Contract: `PARTIAL_FAIL (3 testid-GAPs, nicht blockierend, docs/drift_v2_component_contract.md)`
+Final Gate Blocker Policy: `DEFINIERT (docs/final_gate_blocker_policy.md)`
 M5c Cleanup-Implementierung: `NO_GO (PROHIBIT-02, PROHIBIT-06)`
 M5c Preparation: `PREPARED (16/16 Checks)`
-GUI Cleanup: `ABGESCHLOSSEN — gui_truth_report PASS (12/12)`
+Post-RC Plan: `DEFINIERT (docs/post_rc_plan.md, reports/current/post_rc_decision.json)`
+VPS Deployment Blueprint: `COMPLETE (docs/vps-deployment-blueprint.md, Voraussetzung: CONDITIONAL_RC)`
+Post-1.0 Roadmap: `COMPLETE (6 Phasen, docs/post_1_0_roadmap.md, Voraussetzung: Version 1.0 APPROVED)`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
-> Gate-Autorität: M5a und M5b bleiben BLOCKED laut reports/current/m5b_alpha_hardening_gate.json + m5b_production_readiness_gate.json.
+> Gate-Autoritaet: CONDITIONAL_RC erfordert Score >= 80, Gold Path >= 7/8, GP-06 PASS, leaks=0, Limitationen dokumentiert.
+> Technical-ID-Leak-Blocker: AUFGEHOBEN (leaks=0). Score 53 bleibt unter RC-Schwelle 80.
+> RC-Stabilisierungsregel: RC bleibt BLOCKED bis CONDITIONAL_RC-Kriterien erfuellt (nach Sprint T09-T33).
+> M5c/Repair bleibt NO_GO. Cleanup-Implementierung: NO_GO bis m5c_start_gate=PASS und PO-Sign-off.
 
-### Phasen
-
-| Phase | Status | Gate-Status | Hinweis |
-|---|---|---|---|
-| M3a Frontend Foundation | `blocked` | `BLOCKED` | documentation_truth_lint: collected == 0 |
-| M4 Backend | `gate_passed` | `PASS` | |
-| M5a Data Quality | `blocked` | `BLOCKED` | 5 Kind-Gates blockiert |
-| M5b Drift Detection | `blocked` | `BLOCKED` | Kaskade aus Alpha Hardening Gate |
-| M5c Cleanup | `prepared` | `PREPARED` | Definitionsdokumente komplett — GO nicht erlaubt, Start Gate BLOCKED |
-
-### M5c Preparation (PREPARED)
-
-Alle 7 M5c-Definitionsdokumente erstellt und validiert (16/16 Gate-Checks bestanden):
-
-- docs/m5c-domain-model.md (CleanupRun, CleanupCandidate, CleanupProposal, CleanupSnapshot)
-- docs/m5c-risk-scoring.md (Score 0–100, 5 Kriterien, 5 Klassen LOW→CRITICAL)
-- docs/m5c-candidate-rules.md (6 Detection-Regeln, je SQL + Strategie)
-- docs/m5c-dry-run-governance.md (6 Pflichtregeln, DR-01 bis DR-06)
-- docs/m5c-audit-trail.md (INSERT-only, 7-Jahres-Retention)
-- docs/m5c-dashboard-scope.md (5 Widgets, read-only, keine Aktionsbuttons)
-- docs/m5c-implementation-boundary.md (Erlaubt/Verboten, DB- und API-Boundary)
-
-**Cleanup-Implementierung bleibt NO_GO** bis m5c_start_gate = PASS + PO-Sign-off.
-
-### M5b Blocker-Kaskade
-
-```
-M5a BLOCKED → AV-01 → AHG-BLOCKER-01 → Alpha Hardening BLOCKED
-                                       → Beta BLOCKED → Production Readiness BLOCKED → M5c Start BLOCKED
-AHG-BLOCKER-02: drift_report_integrity PARTIAL (kein Live-CLI-Run)
-```
-
-### Aktive Blocker
-
-- `documentation_truth_lint`: collected == 0 — blockiert M3a + M5a
-- `report_integrity_v2`: BLOCKED — blockiert M5a
-- `source_status_integrity_gate`: BLOCKED — TEST_DATABASE_URL nicht gesetzt
-- `orphan_detector_gate`: BLOCKED — TEST_DATABASE_URL nicht gesetzt
-- `m5b_alpha_hardening_gate`: BLOCKED — AHG-BLOCKER-01 + AHG-BLOCKER-02
-- `m5b_production_readiness_gate`: BLOCKED — Kaskade
-- `m5c_start_gate`: BLOCKED — alle 5 Release-Conditions unerfüllt
-
-### GUI Cleanup (ABGESCHLOSSEN)
-
-Stand: 2026-06-12. GUI bereinigt auf freigegebene Masterplan-Bereiche.
-
-Entfernte Routen (8): /tools, /memory, /tasks, /projects, /agents, /collaboration, /governance, /admin/diagnostics
-Aktive Routen (6+Auth): /dashboard, /chat, /documents, /rag, /data-quality, /settings
-Entfernte Komponenten: 14 Shared Components, 8 Pages, 1 Feature (DriftDashboard), 8 API-Files
-Dashboard: Gate-Widgets entfernt — nur Systemstatus, Dokumentanzahl, Importstatus, DQ Score, Letzte Analysen
-Einstellungen: Voice/Security/Governance/Memory/Agents/Collaboration entfernt — nur Provider, Import/Suche, UI
-Drift Detection: nicht in Navigation (M5b BLOCKED) — Freigabe erst bei M5b Production Readiness PASS
-
-Nachweis: `reports/current/gui_truth_report.json` — PASS (12/12)
-
-<!-- END GENERATED MASTERPLAN STATUS v3 -->
+<!-- END GENERATED MASTERPLAN STATUS v4 -->
 
 ## Status-Authority
 
@@ -1697,91 +1664,4 @@ Regeln:
 
 - Jede Komponente liefert einen Teilscore von `0` bis `100`.
 - Der Gesamtwert wird auf `0..100` begrenzt und als ganzzahliger Score gerundet.
-- Fehlende oder veraltete Messgrundlagen duerfen den Score nicht kuenstlich hoch halten; in solchen Faellen ist die betroffene Komponente konservativ als `degraded` zu behandeln.
-
-#### Komponenten und Gewichtung
-
-| Komponente | Gewicht | Begruendung |
-|---|---:|---|
-| Data Quality | 25 % | Datenqualitaet ist die Grundlage fuer Search, Retrieval, Cleanup, Restore und alle spaeteren M5-Bewertungen. Wenn die Basisdaten inkonsistent sind, sind nachgelagerte Signale nur begrenzt vertrauenswuerdig. |
-| Drift | 20 % | Drift zwischen Soll- und Laufzeitzustand ist der naechstwichtigste Fruehindikator fuer fachliche und technische Erosion. Search-, Lifecycle- und Snapshot-Drift wirken direkt auf Wahrheitsgehalt. |
-| Queue Health | 15 % | Queue-Stabilitaet bestimmt, ob Import, Recovery und Betriebsprozesse ueberhaupt verlÃ¤sslich weiterlaufen. Ein Stau wirkt schnell systemweit, ist aber etwas indirekter als Basisdaten- oder Driftfehler. |
-| Search/Retrieval Health | 15 % | Retrieval-Qualitaet ist fuer M3c/M4-RAG zentral. Sie haengt jedoch teilweise bereits von Data Quality und Drift ab und wird deshalb bewusst nicht hoeher als diese gewichtet. |
-| Backup Freshness | 10 % | Backup-Frische ist fuer Wiederherstellbarkeit entscheidend, aber kein permanentes Live-Signal jeder einzelnen Nutzerinteraktion. |
-| Error Rate | 10 % | Fehlerquote zeigt operative Instabilitaet schnell an, ist aber ohne Daten- und Driftkontext allein nicht ausreichend fuer Systemreife. |
-| Documentation Truth | 5 % | Dokumentationswahrheit ist wichtig fuer Governance und Freigaben, aber kein primaerer Laufzeitindikator. Deshalb bewusst geringstes Gewicht. |
-
-#### Komponentenlogik
-
-`data_quality_score`:
-
-- basiert auf den in M5 definierten Data-Quality-Regeln
-- Startwert `100`
-- Abzuege fuer nachgewiesene Fehlerklassen wie orphaned Daten, fehlende `source_anchor`, doppelte `content_hash` oder unerwartete dangling citations
-- harte Invariantenverletzungen sollen staerker gewichtet werden als Warnungen
-
-`drift_score_component`:
-
-- basiert auf den in M5 definierten Drift-Checks
-- nutzt insbesondere Search-Index-Drift, Lifecycle/Searchability-Abweichungen, Citation-Snapshot-Abweichungen, Queue-Drift und Backup-Manifest-Abweichungen
-- persistente Drift ausserhalb markierter Betriebsfenster fuehrt zu deutlichen Abzuegen
-
-`queue_health_score`:
-
-- basiert auf `running_jobs`, `failed_jobs_last_24h`, `retryable`, `dead_letter`, Job-Alter und sichtbarem Fortschritt
-- laenger haengende `running`-Jobs und wachsender Dead-Letter-Bestand verschlechtern den Teilscore deutlich
-
-`search_retrieval_health_score`:
-
-- basiert auf `retrieval_score_max`, `retrieval_score_avg`, `insufficient_context_rate`, Citation-Konsistenz und Search-Stichproben
-- Baseline- und Trendbewertung sind wichtiger als ein isolierter Einzelwert
-
-`backup_freshness_score`:
-
-- basiert auf letztem gueltigen `verify-backup`, Backup-Alter und letztem Restore-Nachweis
-- alte oder nicht verifizierte Backups ziehen den Teilscore ab, auch wenn der Live-Betrieb aktuell ruhig wirkt
-
-`error_rate_score`:
-
-- basiert auf dokumentierter Fehlerquote, insbesondere Import-/DB-/Diagnostics-/Retrieval-Fehlern
-- Fehlerhaeufungen ueber kurze Zeitfenster verschlechtern den Teilscore schneller als einzelne sporadische Fehler
-
-`documentation_truth_score`:
-
-- basiert auf Synchronitaet zwischen Gate-Dokumenten, Reports und tatsaechlich nachgewiesenem Systemzustand
-- veraltete, ueberschriebene oder unbelegte Freigabeaussagen ziehen den Teilscore ab
-
-#### Schwellenwerte
-
-- `>= 90` = `healthy`
-- `75-89` = `degraded`
-- `< 75` = `unhealthy`
-
-Interpretation:
-
-- `healthy`
-  - der Systemzustand ist fuer M5-Steuerung stabil
-  - kleinere Defizite koennen vorhanden sein, sind aber nicht dominierend
-- `degraded`
-  - relevante Abweichungen oder Alterungstendenzen sind sichtbar
-  - M5-Priorisierung und Gegenmassnahmen muessen aktiv nachgezogen werden
-- `unhealthy`
-  - der Zustand ist fuer Systemreife nicht ausreichend stabil
-  - Cleanup-, Repair- oder weitere Freigabeschritte duerfen nicht auf einem ungeprueften Score aufbauen
-
-#### Bewertungsleitlinien
-
-- Ein hoher Score darf keinen formalen Truth-Gate-Pass ersetzen.
-- Eine einzelne schwere Invariantenverletzung in Data Quality oder Drift kann trotz rechnerisch noch brauchbarem Gesamtwert eine separate Eskalation erfordern.
-- Documentation Truth bleibt bewusst niedrig gewichtet, darf aber fuer Freigabetexte nicht ignoriert werden.
-- Wenn eine Komponente mangels aktueller Evidenz nicht belastbar messbar ist, soll sie nicht mit `100` angesetzt werden, sondern konservativ auf einen degradierenden Standardwert fallen.
-
-### M5 Truth-Test-Erweiterungskonzept
-
-Ziel:
-
-- M5 darf keine rein dokumentarische Phase bleiben.
-- Jeder M5-Kernbereich braucht einen belastbaren Nachweis in der bestehenden `postgres_truth`-Logik.
-- SQLite bleibt fuer M5 nur Fast Feedback und ersetzt keinen PostgreSQL-Wahrheitsnachweis.
-
-##
+- Fehlende oder veraltete Messgrundlagen duerfen den Score nicht kuenstlich hoch halten; in solchen Faellen ist die betroffene Komponente kon

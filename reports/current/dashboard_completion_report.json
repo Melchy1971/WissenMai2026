@@ -1,0 +1,159 @@
+{
+  "report_schema_version": 1,
+  "report_name": "dashboard_completion_report",
+  "report_type": "completion_assessment",
+  "generated_at": "2026-06-15T20:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "scope": "Task #13 — 6 Widgets × 6 Dimensionen",
+  "verdict": "TEILWEISE_IMPLEMENTIERT",
+  "api_prefix": "GET /api/v1/dashboard/",
+  "frontend_page": "frontend/src/pages/DashboardPage.jsx",
+  "service": "backend/app/services/dashboard_service.py",
+
+  "widgets": [
+    {
+      "widget_id": "W01",
+      "name": "Dokumente",
+      "api_endpoint": "GET /dashboard/summary (document_count, active_document_count, archived_document_count)",
+      "data_source": "SELECT COUNT(*) FROM documents WHERE workspace_id = :ws AND lifecycle_status = :s",
+      "frontend_component": "DashboardPage.jsx (summary card)",
+      "empty_state": "UNBEKANNT — kein separater Zero-State-Handler sichtbar in static analysis",
+      "error_state": "UNBEKANNT — kein error_boundary in Frontend-Routes",
+      "loading_state": "UNBEKANNT — kein suspense/loading-state in static analysis",
+      "overall_status": "BACKEND_VOLLSTÄNDIG",
+      "gaps": [
+        "Frontend Empty/Error/Loading States nicht per static analysis verifizierbar",
+        "Keine Aufschlüsselung nach Dokumenttyp (MIME) im Summary"
+      ]
+    },
+    {
+      "widget_id": "W02",
+      "name": "Importe",
+      "api_endpoint": "GET /dashboard/imports",
+      "data_source": "SELECT * FROM background_jobs WHERE workspace_id = :ws AND job_type = 'document_import' ORDER BY created_at DESC LIMIT :n",
+      "schema": "DashboardImportItem: id, status, filename, mime_type, created_at, started_at, finished_at",
+      "frontend_component": "DashboardPage.jsx",
+      "empty_state": "UNBEKANNT",
+      "error_state": "UNBEKANNT",
+      "loading_state": "UNBEKANNT",
+      "overall_status": "BACKEND_VOLLSTÄNDIG",
+      "gaps": [
+        "Kein dedizierter Retry-Button für fehlgeschlagene Imports im Dashboard",
+        "filename kommt aus payload_.filename — kein Schema-Feld auf BackgroundJob direkt"
+      ]
+    },
+    {
+      "widget_id": "W03",
+      "name": "Analysen",
+      "api_endpoint": "GET /dashboard/analysis",
+      "data_source": "SELECT * FROM analysis_jobs WHERE workspace_id = :ws ORDER BY created_at DESC LIMIT :n",
+      "schema": "DashboardAnalysisItem: id, status, analysis_type, created_at, started_at, finished_at",
+      "frontend_component": "DashboardPage.jsx",
+      "empty_state": "UNBEKANNT",
+      "error_state": "UNBEKANNT",
+      "loading_state": "UNBEKANNT",
+      "overall_status": "BACKEND_VOLLSTÄNDIG",
+      "gaps": [
+        "Kein direkter Link von Dashboard-Eintrag zu Job-Detail (kein /analysis-Route vorhanden)",
+        "Stub-Engine: Ergebnisse sind synthetisch bis LLM-Binding implementiert"
+      ]
+    },
+    {
+      "widget_id": "W04",
+      "name": "Themen (Topics)",
+      "api_endpoint": "GET /dashboard/topics",
+      "data_source": "SELECT suggested_topics FROM analysis_results — aggregiert über AnalysisResult.suggested_topics (JSONB)",
+      "schema": "DashboardTopicItem: name, count, latest_job_id",
+      "frontend_component": "DashboardPage.jsx",
+      "empty_state": "UNBEKANNT",
+      "error_state": "UNBEKANNT",
+      "loading_state": "UNBEKANNT",
+      "overall_status": "TEILWEISE",
+      "gaps": [
+        "Themen kommen aus Analysis-Stub-Ergebnissen — keine echten Tags aus categories/tags-Tabelle",
+        "Kein dedicated /topics CRUD-Endpunkt — Dashboard ist einzige Themenübersicht",
+        "count-Feld zeigt Häufigkeit in Analyse-Ergebnissen, nicht Dokument-Zuordnungen"
+      ]
+    },
+    {
+      "widget_id": "W05",
+      "name": "Qualität (Data Quality)",
+      "api_endpoint": "GET /dashboard/quality",
+      "data_source": "SELECT * FROM data_quality_runs WHERE workspace_id = :ws ORDER BY started_at DESC LIMIT :n",
+      "schema": "DashboardQualityItem: id, status, quality_score, total_findings, started_at, finished_at",
+      "frontend_component": "DataQualityPage.jsx (eigene Seite), DashboardPage.jsx (Widget)",
+      "empty_state": "UNBEKANNT",
+      "error_state": "UNBEKANNT",
+      "loading_state": "UNBEKANNT",
+      "overall_status": "BACKEND_VOLLSTÄNDIG",
+      "gaps": [
+        "Kein Trigger zum Starten eines neuen Qualitäts-Runs aus dem Dashboard (POST /data-quality/runs fehlt generell)",
+        "quality_score nullable — Widget muss N/A-Zustand rendern"
+      ]
+    },
+    {
+      "widget_id": "W06",
+      "name": "Drift",
+      "api_endpoint": "FEHLT — kein GET /dashboard/drift-Endpunkt",
+      "data_source": "drift_status im DashboardSummary: latest DriftRun.status aus drift_runs — nur ein String-Feld",
+      "schema": "Nur: DashboardSummary.drift_status (str | None)",
+      "frontend_component": "DashboardPage.jsx (unklar ob Widget gerendert wird)",
+      "empty_state": "NICHT_IMPLEMENTIERT",
+      "error_state": "NICHT_IMPLEMENTIERT",
+      "loading_state": "NICHT_IMPLEMENTIERT",
+      "overall_status": "NICHT_BEGONNEN",
+      "gaps": [
+        "Kein GET /dashboard/drift-Endpunkt mit paginierter Run-Liste",
+        "Nur drift_status (String) im Summary — kein Widget mit Findings, Severity, Run-Liste",
+        "DriftRun-Einträge tauchen in /dashboard/activity auf, aber kein dediziertes Widget",
+        "Kein Schema DashboardDriftItem definiert in dashboard.py"
+      ]
+    }
+  ],
+
+  "summary_endpoint": {
+    "endpoint": "GET /dashboard/summary",
+    "schema": "DashboardSummary",
+    "fields": [
+      "document_count",
+      "active_document_count",
+      "archived_document_count",
+      "new_imports_count",
+      "open_analysis_count",
+      "topic_count",
+      "quality_score (nullable)",
+      "drift_status (nullable str)"
+    ],
+    "status": "VOLLSTÄNDIG"
+  },
+
+  "statistics": {
+    "widgets_total": 6,
+    "widgets_backend_complete": 5,
+    "widgets_not_started": 1,
+    "backend_missing": ["GET /dashboard/drift"],
+    "frontend_states_verified": 0,
+    "frontend_states_unverifiable_via_static_analysis": 18
+  },
+
+  "required_actions": [
+    {
+      "action_id": "DA-01",
+      "priority": "P2",
+      "action": "GET /dashboard/drift implementieren",
+      "details": "Schema DashboardDriftItem, Service-Methode list_drift(), Endpunkt in dashboard.py"
+    },
+    {
+      "action_id": "DA-02",
+      "priority": "P2",
+      "action": "Frontend Empty/Error/Loading States dokumentieren oder per E2E-Test verifizieren",
+      "details": "Static Analysis reicht nicht — Live-Backend erforderlich für Verifikation"
+    },
+    {
+      "action_id": "DA-03",
+      "priority": "P2",
+      "action": "error_boundary und route_error_handler im Frontend implementieren",
+      "details": "Fehlt laut observability_report (5 fehlende Komponenten)"
+    }
+  ]
+}

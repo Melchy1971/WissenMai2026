@@ -1,0 +1,191 @@
+{
+  "report_schema_version": 1,
+  "report_name": "document_center_product_ready",
+  "report_type": "feature_readiness",
+  "generated_at": "2026-06-15T23:30:00.000000+00:00",
+  "evaluation_method": "static_code_analysis — documents.py, DocumentMetaCard.jsx, DocumentPreviewPanel.jsx, DocumentDetailPage.jsx, DocumentCenterPage.jsx, useDocumentCenter.js, DocumentFilterPanel.jsx, DocumentListPanel.jsx, api/documents.js",
+  "verdict": "TEILWEISE — Kernfunktionen (Liste, Archivieren, Löschen, Lifecycle) vollständig; Tags/Themen fehlen; technische IDs sichtbar; Bearbeiten nicht implementiert",
+
+  "dokumentenliste": {
+    "pagination": {
+      "status": "TEILWEISE",
+      "backend": "GET /documents?limit=&offset= — response_model=list[DocumentListItem], kein total_count im Response",
+      "frontend": "useDocumentCenter.js lädt pauschal 200 aktive + 200 archivierte Dokumente; keine Paginierungssteuerung in der UI; kein 'Seite X von Y'",
+      "finding": "Server-seitige Pagination technisch vorhanden (limit/offset), aber ohne total_count nicht nutzbar. Frontend umgeht dies durch Bulk-Load."
+    },
+    "sortierung": {
+      "status": "VOLLSTÄNDIG (client-seitig)",
+      "backend": "Keine sort_by / sort_order Parameter in GET /documents",
+      "frontend": "DocumentListPanel.jsx — Sort-Buttons für Titel, Typ, Status, Aktualisiert, Chunks. useDocumentCenter.js führt localeCompare('de') und numerischen Sort lokal aus.",
+      "finding": "Sort funktioniert vollständig, aber nur innerhalb der geladenen 200+200 Dokumente. Bei > 200 aktiven Dokumenten wird der Rest nicht sortiert."
+    },
+    "filter": {
+      "status": "TEILWEISE",
+      "backend_params": ["lifecycle_status", "include_archived"],
+      "frontend_implemented": [
+        "Titelsuche (lokale Substring-Suche auf item.title)",
+        "Status-Radio (Alle / Aktiv / Archiviert — via lifecycle_status Backend-Param)",
+        "Kategorie-Dropdown (aus items.category — lokal abgeleitet)",
+        "Tags-Chips (aus items.tags — lokal abgeleitet)"
+      ],
+      "frontend_gap": "item.category und item.tags sind nicht im DocumentListItem-Schema des Backends enthalten. extractFiltersFromItems() gibt leere Sets zurück. Kategorie-Dropdown und Tags-Chips werden nie gerendert (Bedingung: allTags.length > 0 / categories.length > 0).",
+      "finding": "Status-Filter vollständig. Tag-Filter und Kategorie-Filter: UI-Code vorhanden, aber ohne Backend-Daten dauerhaft ausgeblendet."
+    },
+    "suche": {
+      "status": "TEILWEISE (lokal / Titel-only)",
+      "implementation": "Lokale Titelsuche in DocumentFilterPanel.jsx — filtert geladene Dokumente nach item.title.toLowerCase().includes(query)",
+      "not_implemented": "Keine Integration des /api/v1/search/chunks Volltext-Endpunkts im Dokumentenzentrum. Inhaltssuche nur über /search-Seite erreichbar.",
+      "finding": "Titelsuche ausreichend für einfache Nutzung. Volltextsuche im Dokumentenzentrum fehlt."
+    }
+  },
+
+  "dokumentdetail": {
+    "vorschau": {
+      "status": "TEILWEISE",
+      "implemented": "DocumentDetailPage.jsx lädt getDocumentChunks(id, {limit: 5}). ChunkPreviewList rendert bis zu 5 Text-Chunks. source_anchor (Seite / Absatz / Zeichen) via formatSourceAnchor() angezeigt.",
+      "not_implemented": [
+        "Kein PDF-Viewer — binäre Dokumente werden nur als extrahierte Textchunks dargestellt",
+        "MIME-spezifische Preview-Varianten fehlen (application/pdf, image/*, text/markdown)",
+        "Kein KWIC-Highlighting",
+        "Lazy Loading: Nicht implementiert — immer genau 5 Chunks geladen, kein 'weitere laden'"
+      ],
+      "large_documents": "Chunks-Endpunkt unterstützt bis zu 500 Chunks (limit param), aber DetailPage lädt statisch limit=5. Große Dokumente werden nur fragmentarisch angezeigt."
+    },
+    "metadaten": {
+      "status": "VOLLSTÄNDIG (mit Befund zu technischen IDs)",
+      "displayed_in_DocumentMetaCard": [
+        "title", "lifecycleStatus (label)", "importStatus (label)",
+        "sourceType", "mimeType", "parserVersion", "ocrUsed",
+        "versions.length", "chunkCount", "totalChars",
+        "archivedAtLabel", "createdAtLabel", "updatedAtLabel"
+      ],
+      "BEFUND_technische_IDs": {
+        "severity": "MITTEL",
+        "finding": "DocumentMetaCard.jsx zeigt folgende rohen technischen IDs sichtbar an: document.id (UUID), document.workspaceId (UUID), document.ownerUserId (UUID). Diese sind für Endnutzer ohne Bedeutung und verstoßen gegen das Anforderungsprofil 'Keine technischen IDs'.",
+        "fix": "Zeile <div><dt>ID</dt><dd>{document.id}</dd></div>, <div><dt>Workspace</dt><dd>{document.workspaceId}</dd></div>, <div><dt>Owner</dt><dd>{document.ownerUserId || 'Unbekannt'}</dd></div> aus DocumentMetaCard.jsx entfernen oder ausblenden"
+      }
+    },
+    "tags": {
+      "status": "NICHT_VERFÜGBAR",
+      "frontend_code": "DocumentPreviewPanel.jsx: {item.tags?.length > 0 && <TagList tags={item.tags} />} — conditional render",
+      "actual_state": "item.tags ist immer undefined/leer, da GET /documents das tags-Feld nicht zurückgibt (P1-GAP-01/02). Tags-Sektion wird nie gerendert.",
+      "blocker": "P1-GAP-01: Category, Tag, DocumentTag ORM-Models fehlen. P1-GAP-02: Tags-API fehlt."
+    },
+    "themen": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "frontend_code": "DocumentPreviewPanel.jsx enthält expliziten Platzhalter: <span className='doc-preview__future-note'>Themen — folgt in nächster Phase</span>",
+      "blocker": "Topics-Backend vollständig fehlend. Keine ORM-Models, keine API-Endpunkte."
+    },
+    "quellen": {
+      "status": "TEILWEISE",
+      "implemented": "VersionList-Komponente in DocumentDetailPage.jsx zeigt Dokumentversionen (version_id, parser_version, created_at). source_type aus DocumentDetail vorhanden.",
+      "not_implemented": "Keine dedizierte Quellenansicht (source_url, original Dateiname, Upload-Zeitpunkt). source_url nicht in DocumentListItem — nur im Detail vorhanden.",
+      "finding": "Versionsverlauf vorhanden als Proxy für Quellen-Nachvollziehbarkeit, aber kein Quellenfeld im Sinne von 'Herkunft des Dokuments' explizit sichtbar."
+    }
+  },
+
+  "aktionen": {
+    "bearbeiten": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "backend": "Kein PATCH /documents/:id Endpunkt — weder in documents.py noch in der Router-Konfiguration",
+      "frontend": "Kein Edit-Button, kein Inline-Edit-Formular in DocumentDetailPage.jsx oder DocumentPreviewPanel.jsx",
+      "note": "Dokument-Inhalt ist per Design immutable (Versions-Konzept). Editierbar wären: title, source_url, tags. Für 1.0 als P2 eingestuft.",
+      "priority": "P2"
+    },
+    "archivieren": {
+      "status": "VOLLSTÄNDIG",
+      "backend": "PATCH /documents/:id/archive — archiveDocument() setzt lifecycle_status='archived'",
+      "frontend": "DocumentDetailPage.jsx: Archivieren-Button (nur bei lifecycle_status='active'). DocumentPreviewPanel.jsx: Archivieren-Button + ConfirmDialog mit Bestätigungstext.",
+      "post_action": "Reload der Dokumentliste. Dokument verschwindet aus Aktiv-Ansicht.",
+      "security": "Workspace-Mitgliedschaft geprüft via require_workspace_member"
+    },
+    "loeschen": {
+      "status": "VOLLSTÄNDIG",
+      "backend": "DELETE /documents/:id — Soft-Delete (lifecycle_status='deleted')",
+      "frontend": "DocumentDetailPage.jsx: Löschen-Button (nur bei lifecycle_status='archived') mit window.confirm(). DocumentPreviewPanel.jsx: Löschen-Button mit ConfirmDialog.",
+      "note": "Nur archivierte Dokumente können gelöscht werden — korrekte Lifecycle-Reihenfolge."
+    },
+    "wiederherstellen": {
+      "status": "VOLLSTÄNDIG",
+      "backend": "PATCH /documents/:id/restore",
+      "frontend": "Restore-Möglichkeit via DocumentDetailPage.jsx und DocumentPreviewPanel.jsx (bei archived-Status)"
+    },
+    "retry_import": {
+      "status": "BACKEND_VOLLSTÄNDIG — FRONTEND_FEHLT",
+      "backend": "POST /documents/:id/retry-import vollständig implementiert",
+      "frontend": "Kein Retry-Button für Dokumente mit importStatus='error' in irgendeiner Komponente",
+      "priority": "P2"
+    }
+  },
+
+  "nicht_anzeigen_check": {
+    "technische_IDs": {
+      "status": "BEFUND",
+      "finding": "DocumentMetaCard.jsx zeigt document.id, document.workspaceId, document.ownerUserId als sichtbare Felder. VERSTOSS gegen Anforderung 'Keine technischen IDs'.",
+      "location": "frontend/src/components/documents/DocumentMetaCard.jsx — Zeilen <dt>ID</dt>, <dt>Workspace</dt>, <dt>Owner</dt>"
+    },
+    "gate_reports": {
+      "status": "EINGEHALTEN",
+      "finding": "Keine Links zu Gate-Reports, Report-Übersichten oder RC-Ansichten im Dokumentenzentrum."
+    },
+    "debug_informationen": {
+      "status": "EINGEHALTEN",
+      "finding": "Keine Debug-Panels, keine AdminDiagnosticsPage-Links, keine internen Fehlerdetails im Normalbetrieb sichtbar."
+    }
+  },
+
+  "security": {
+    "workspace_isolation": "PASS — alle /documents/-Endpunkte prüfen workspace_id aus Auth-Token",
+    "soft_delete": "PASS — kein Hard-Delete ohne explizites Flag, Daten bleiben erhalten",
+    "PROHIBIT_02": "EINGEHALTEN — kein RepairButton in Dokumentenzentrum-Komponenten",
+    "PROHIBIT_06": "EINGEHALTEN — kein CleanupButton in Dokumentenzentrum-Komponenten"
+  },
+
+  "open_findings": [
+    {
+      "finding_id": "DC-F01",
+      "severity": "MITTEL",
+      "description": "DocumentMetaCard zeigt rohe UUIDs (id, workspaceId, ownerUserId) — technische IDs für Endnutzer sichtbar",
+      "fix": "Felder aus DocumentMetaCard.jsx entfernen",
+      "priority": "P1 (vor 1.0)"
+    },
+    {
+      "finding_id": "DC-F02",
+      "severity": "MITTEL",
+      "description": "Tags vollständig nicht verfügbar — P1-GAP-01/02 blockiert Anzeige und Filterung",
+      "fix": "Tags ORM + API implementieren",
+      "priority": "P1"
+    },
+    {
+      "finding_id": "DC-F03",
+      "severity": "NIEDRIG",
+      "description": "Themen-Platzhalter explizit im UI — kein produktreifer Zustand",
+      "fix": "Topics-Backend implementieren (P1-GAP-01/02 Basis, dann Topics-Verknüpfung)",
+      "priority": "P1"
+    },
+    {
+      "finding_id": "DC-F04",
+      "severity": "NIEDRIG",
+      "description": "Retry-Button für importStatus='error' fehlt im Frontend — Backend-Endpunkt vorhanden",
+      "fix": "Retry-Button in DocumentPreviewPanel oder DocumentDetailPage ergänzen",
+      "priority": "P2"
+    },
+    {
+      "finding_id": "DC-F05",
+      "severity": "INFO",
+      "description": "Kein total_count in Listenresponse — bei > 200 Dokumenten werden Treffer nicht vollständig angezeigt",
+      "fix": "total_count in DocumentListResponse ergänzen oder Server-seitige Pagination in UI implementieren",
+      "priority": "P2"
+    }
+  ],
+
+  "statistics": {
+    "bereiche_total": 8,
+    "vollstaendig": 3,
+    "teilweise": 3,
+    "nicht_implementiert": 2,
+    "befunde_p1": 2,
+    "befunde_p2": 3,
+    "overall_verdict": "TEILWEISE — P1-Befund DC-F01 (technische IDs) muss vor 1.0 behoben werden"
+  }
+}

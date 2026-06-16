@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "report_id": "external_env_testplan",
+  "generated": "2026-06-15",
+  "title": "Testplan Externe Umgebung",
+  "purpose": "Tests, die lokal bewusst nicht blockieren, separat in produktionsaehnlicher Umgebung validieren.",
+  "current_status": "NOT_RUN (72 Tests, external_env_gate.json)",
+  "scope": {
+    "markers": ["legacy_live_http", "external_env_only"],
+    "test_files": [
+      "tests/api/test_gui_backend_endpoints.py",
+      "tests/api/test_gui_contracts.py",
+      "tests/api/test_gui_secret_masking.py",
+      "tests/api/test_secret_masking_api.py",
+      "tests/api/test_settings_endpoints.py",
+      "tests/api/test_settings_patch.py"
+    ],
+    "test_count": 72,
+    "excluded_from_local_gate": true,
+    "blocks_rc_gate": false
+  },
+  "infrastructure_requirements": {
+    "backend_url": "https://api.example.com oder http://localhost:8000 (laufend)",
+    "database": "produktionsaehnliche PostgreSQL-Instanz (nicht lokale Dev-DB)",
+    "ssl": "HTTPS mit gueltigem Zertifikat fuer Produktionstests",
+    "reverse_proxy": "nginx oder vergleichbar (CORS-Header, SSL-Termination)",
+    "cors": "Allow-Origin fuer Frontend-Domain konfiguriert",
+    "env_vars_required": [
+      "TEST_DATABASE_URL=postgresql+psycopg://user:pw@host:5432/dbname",
+      "API_BASE_URL=https://api.example.com",
+      "TEST_ENV=external"
+    ]
+  },
+  "test_groups": [
+    {
+      "group_id": "TG-01",
+      "name": "GUI Backend Endpoints",
+      "file": "tests/api/test_gui_backend_endpoints.py",
+      "marker": "external_env_only",
+      "scope": "Alle vom Frontend genutzten REST-Endpunkte gegen reales Backend pruefen",
+      "checks": [
+        "GET /api/v1/status HTTP 200, Schema validieren",
+        "GET /api/v1/documents HTTP 200, Pagination-Header vorhanden",
+        "POST /api/v1/documents/import Datei-Upload, HTTP 202 oder 200",
+        "GET /api/v1/rag/documents HTTP 200",
+        "POST /api/v1/rag/retrieve mit Suchbegriff, HTTP 200, results-Array vorhanden",
+        "GET /api/v1/data-quality/summary HTTP 200",
+        "GET /api/v1/drift/summary HTTP 200 (read-only)",
+        "GET /api/v1/settings HTTP 200",
+        "PATCH /api/v1/settings gueltige Aenderung, HTTP 200"
+      ],
+      "pass_criteria": "Alle Endpunkte HTTP 2xx, Response-Schema korrekt, keine 5xx"
+    },
+    {
+      "group_id": "TG-02",
+      "name": "GUI Contracts",
+      "file": "tests/api/test_gui_contracts.py",
+      "marker": "external_env_only",
+      "scope": "API-Vertraege zwischen Frontend und Backend validieren",
+      "checks": [
+        "Response-Schemas stimmen mit Frontend-Erwartungen ueberein",
+        "Pflichtfelder (id, workspace_id, created_at) in allen Responses vorhanden",
+        "Fehler-Response-Format einheitlich (code, message, technicalCode)",
+        "Pagination-Format: items, total, page, page_size",
+        "Workspace-Isolation: X-Workspace-Id aus Request wird korrekt verarbeitet"
+      ],
+      "pass_criteria": "Alle Contract-Tests PASS, kein Schemabruch"
+    },
+    {
+      "group_id": "TG-03",
+      "name": "GUI Secret Masking",
+      "file": "tests/api/test_gui_secret_masking.py",
+      "marker": "legacy_live_http",
+      "scope": "Sicherstellen, dass keine Secrets in API-Responses sichtbar sind",
+      "checks": [
+        "Kein password/token/api_key in JSON-Response-Bodies",
+        "Authorization-Header im Backend-Log maskiert",
+        "DATABASE_URL nicht in /health oder /status Response",
+        "Seed-Credentials nicht in API-Response sichtbar"
+      ],
+      "pass_criteria": "Keine Credentials in Responses, kein Raw-Stacktrace"
+    },
+    {
+      "group_id": "TG-04",
+      "name": "Secret Masking API",
+      "file": "tests/api/test_secret_masking_api.py",
+      "marker": "legacy_live_http",
+      "scope": "API-seitige Maskierung von Secrets in Fehlermeldungen",
+      "checks": [
+        "Fehlermeldungen enthalten keine DB-Credentials",
+        "500-Responses zeigen kein raw traceback",
+        "Log-Ausgaben maskieren sensitive Werte"
+      ],
+      "pass_criteria": "Alle Masking-Tests PASS"
+    },
+    {
+      "group_id": "TG-05",
+      "name": "Settings Endpoints",
+      "file": "tests/api/test_settings_endpoints.py",
+      "marker": "external_env_only",
+      "scope": "CRUD-Operationen auf /api/v1/settings gegen reales Backend",
+      "checks": [
+        "GET /api/v1/settings liefert aktuellen Stand",
+        "PATCH mit gueltigen Werten: HTTP 200, Aenderung persistiert",
+        "PATCH mit ungueltigen Werten: HTTP 422, Fehlermeldung korrekt",
+        "Workspace-Isolation: Settings-Aenderung betrifft nur eigenen Workspace"
+      ],
+      "pass_criteria": "CRUD funktional, Isolation nachgewiesen"
+    },
+    {
+      "group_id": "TG-06",
+      "name": "Settings Patch",
+      "file": "tests/api/test_settings_patch.py",
+      "marker": "external_env_only",
+      "scope": "Partial-Update-Verhalten fuer Settings-Endpunkte",
+      "checks": [
+        "PATCH aendert nur angegebene Felder",
+        "Nicht angegebene Felder bleiben unveraendert",
+        "PATCH auf read-only Felder: HTTP 422 oder 403"
+      ],
+      "pass_criteria": "Partial-Update korrekt, keine ungewollten Nebenwirkungen"
+    }
+  ],
+  "infrastructure_checks": [
+    {
+      "id": "IC-01",
+      "name": "CORS",
+      "check": "OPTIONS-Request auf /api/v1/status vom Frontend-Origin: Access-Control-Allow-Origin vorhanden",
+      "pass_criteria": "CORS-Header korrekt, kein CORS-Fehler im Browser"
+    },
+    {
+      "id": "IC-02",
+      "name": "SSL/HTTPS",
+      "check": "HTTPS-Verbindung mit gueltigem Zertifikat. Kein HTTP-Fallback.",
+      "pass_criteria": "TLS-Handshake erfolgreich, Zertifikat nicht abgelaufen, HSTS-Header vorhanden"
+    },
+    {
+      "id": "IC-03",
+      "name": "Reverse Proxy",
+      "check": "Request via Proxy an Backend weitergeleitet. X-Forwarded-For gesetzt. Kein Timeout.",
+      "pass_criteria": "Backend-Responses via Proxy identisch zu direktem Backend-Aufruf"
+    },
+    {
+      "id": "IC-04",
+      "name": "Auth Flow",
+      "check": "POST /auth/login mit Seed-Credentials: HTTP 200, Token zurueck. Token in Header fuer naechsten Request: HTTP 200.",
+      "pass_criteria": "Auth-Flow vollstaendig funktional in externer Umgebung"
+    },
+    {
+      "id": "IC-05",
+      "name": "Workspace-Header",
+      "check": "Request ohne X-Workspace-Id: HTTP 400 oder Default-Workspace. Request mit falschem Workspace: HTTP 403.",
+      "pass_criteria": "Workspace-Isolation greift auch in externer Umgebung"
+    }
+  ],
+  "execution": {
+    "command": "pytest tests/api -m 'external_env_only or legacy_live_http' -v --tb=short",
+    "prerequisite_commands": [
+      "Sicherstellen: Backend laeuft auf API_BASE_URL",
+      "Sicherstellen: TEST_DATABASE_URL gesetzt und DB erreichbar",
+      "Sicherstellen: Seed-Daten vorhanden (dev_bootstrap.ps1 oder aequivalent)",
+      "pytest tests/api -m 'external_env_only or legacy_live_http' --collect-only  (Vorpruefung)"
+    ],
+    "expected_duration_minutes": 5,
+    "expected_result_on_pass": "72/72 PASS, external_env_gate.json: PASS"
+  },
+  "post_rc_phase": "OPT-2 (nach RC-Stabilisierung, vor Installer/Deployment)",
+  "prerequisite": "RC Gate = RELEASE_CANDIDATE (OPT-1 abgeschlossen)"
+}

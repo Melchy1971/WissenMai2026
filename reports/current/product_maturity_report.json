@@ -1,0 +1,165 @@
+{
+  "report_schema_version": 1,
+  "report_name": "product_maturity_report",
+  "report_type": "maturity_assessment",
+  "generated_at": "2026-06-15T20:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "inputs": [
+    "docs/feature_gap_analysis.md",
+    "reports/current/dashboard_completion_report.json",
+    "reports/current/analysis_production_gap_report.json",
+    "reports/current/product_gap_closure_report.json",
+    "reports/current/search_quality_report.json",
+    "reports/current/user_management_review.json",
+    "reports/current/masterplan_status.json"
+  ],
+  "overall_maturity_score": 47,
+  "overall_verdict": "ALPHA — Kern-Infrastruktur solide, wesentliche Funktionen unvollständig oder per Stub abgebildet",
+
+  "dimensions": [
+    {
+      "dimension_id": "DIM-01",
+      "name": "Technische Reife",
+      "score_percent": 65,
+      "verdict": "SOLIDE GRUNDLAGE",
+      "rationale": "DB-Schema vollständig und produktionsreif (20 Migrationen, PostgreSQL 18, alle Constraints korrekt). Backend-API-Struktur klar strukturiert (FastAPI, Pydantic, Workspace-Isolation). Testinfrastruktur vorhanden. Hauptmangel: TEST_DATABASE_URL nicht gesetzt blockiert automatisierte Tests; search_vector-Konfiguration suboptimal (simple statt german); Governance-State in-memory.",
+      "evidence": {
+        "strengths": [
+          "20 DB-Migrationen, alle Constraints implementiert",
+          "Workspace-Isolation durchgängig (alle Queries workspace-scoped)",
+          "Auth-Token-Revocation in DB (kein JWT-only)",
+          "Drift Detection sauber Read-Only modelliert",
+          "Analysis-Approval mit DB-Constraint (ck_analysis_suggestions_approval_metadata)"
+        ],
+        "weaknesses": [
+          "TEST_DATABASE_URL nicht gesetzt → Gate-Kaskade BLOCKED",
+          "plainto_tsquery('simple') statt 'german' — morphologisch unvollständig",
+          "Governance-Changesets in-memory (list[dict]) — Datenverlust bei Neustart",
+          "AuditRecorder in AnalysisService nicht injiziert",
+          "LLM: UnconfiguredLlmProvider wirft RuntimeError"
+        ]
+      }
+    },
+    {
+      "dimension_id": "DIM-02",
+      "name": "Funktionale Reife",
+      "score_percent": 42,
+      "verdict": "UNVOLLSTÄNDIG — 4 von 14 Kernfunktionen vollständig",
+      "rationale": "3 Kategorien vollständig (Dokumente, Import, Drift Detection), 9 teilweise, 1 vorbereitet, 1 nicht begonnen. Kritische P1-Lücken: Topics ORM fehlt, LLM nicht gebunden, Data Quality nicht triggerbar, Analyse-Job-Abbruch fehlt. Dashboard 5/6 Widgets. Suche ohne Filter und ohne Sprachkonfiguration.",
+      "evidence": {
+        "categories_complete": ["Dokumente", "Import", "Drift Detection"],
+        "categories_partial": ["Suche", "Themen", "Datenanalyse", "Dashboard", "Benutzer", "Rollen", "Data Quality", "API/Governance", "Monitoring"],
+        "categories_prepared": ["OCR"],
+        "categories_not_started": ["Export"],
+        "p1_gaps_open": 9,
+        "p2_gaps_open": 14,
+        "p3_gaps_open": 4
+      }
+    },
+    {
+      "dimension_id": "DIM-03",
+      "name": "Benutzerreife",
+      "score_percent": 35,
+      "verdict": "EINGESCHRÄNKT — Basispfade nutzbar, Kernfeatures nicht erreichbar",
+      "rationale": "Ein Nutzer kann sich einloggen, Dokumente importieren, durchsuchen und archivieren. Themen sind nicht per CRUD verwaltbar. Analyse liefert nur Stub-Daten. Kein Export. Data Quality nicht manuell triggerbar. Benutzerverwaltung (Einladung, Passwort ändern) fehlt. Navigation hat bekannte Abweichungen (RC Blocker RCB-001/002).",
+      "evidence": {
+        "user_flows_working": [
+          "Login + Logout",
+          "Dokument importieren (Upload + BackgroundJob)",
+          "Dokumentliste + Detailansicht",
+          "Volltext-Suche (ohne Filter, ohne Highlighting)",
+          "Dashboard-Übersicht (5/6 Widgets)",
+          "Data Quality Read (Runs + Findings anzeigen)",
+          "Drift Detection Read (Runs + Findings anzeigen)"
+        ],
+        "user_flows_broken_or_missing": [
+          "Analyse starten → Stub-Ergebnis, kein echtes LLM",
+          "Themen verwalten → kein CRUD-Endpunkt",
+          "Dokument taggen → kein Tagging-API",
+          "Data Quality Run starten → kein Trigger-Endpunkt",
+          "Export → nicht implementiert",
+          "Benutzer einladen → nicht implementiert",
+          "Passwort ändern → nicht implementiert",
+          "Analyse abbrechen → kein Cancel-Endpunkt",
+          "Chat mit echtem LLM → UnconfiguredLlmProvider"
+        ],
+        "navigation_blockers": ["RCB-001 (search vs chat)", "RCB-002 (NAV_ITEMS Abweichungen)"]
+      }
+    },
+    {
+      "dimension_id": "DIM-04",
+      "name": "Produktionsreife",
+      "score_percent": 28,
+      "verdict": "BLOCKIERT — RC Gate BLOCKED, Production Gate BLOCKED",
+      "rationale": "Produktionsreife wird durch den maschinenlesbaren Gate-Status bestimmt. RC Gate: 2/7 (BLOCKED). Production Gate: 2/5 (BLOCKED). Root Cause: TEST_DATABASE_URL fehlt → Gate-Kaskade. Zusätzlich: Monitoring 9/14, kein Auth-Failure-Counter, kein Request-Access-Log, kein Frontend error_boundary. Seed Package 4/9 Dateien. Frontend Build fehlt (release_manifest: frontend_build=MISSING).",
+      "evidence": {
+        "rc_gate": "BLOCKED (2/7)",
+        "production_gate": "BLOCKED (2/5)",
+        "version_1_0_decision": "BLOCKED",
+        "monitoring": "PARTIAL_PASS (9/14, 5 fehlend)",
+        "seed_package": "PARTIAL (4/9)",
+        "frontend_build": "MISSING",
+        "release_blockers": 3,
+        "blockers": [
+          "RCB-001: TEST_DATABASE_URL nicht gesetzt",
+          "RCB-002: AppShell NAV_ITEMS 4 Abweichungen",
+          "RCB-003: /admin/diagnostics kein Router-Guard"
+        ],
+        "vps_deployment_blueprint": "COMPLETE (Voraussetzung: RC Gate = RELEASE_CANDIDATE)",
+        "incident_runbooks": "COMPLETE (8/8)"
+      }
+    }
+  ],
+
+  "scoring_methodology": {
+    "note": "Scores basieren auf static_code_analysis. Kein Live-Backend verfügbar. Scores können bei Live-Verifikation abweichen.",
+    "technische_reife": "65% — gewichtet: Schema-Vollständigkeit (30%), API-Korrektheit (30%), Test-Abdeckung (20%), Security (20%)",
+    "funktionale_reife": "42% — gewichtet: vollständige Kategorien / 14 gesamt (3/14=21%), teilweise Kategorien anteilig (50% von 9=32%), offene P1-Gaps abgezogen",
+    "benutzerreife": "35% — gewichtet: funktionierende User Flows (7 von 16 identifizierten Flows = 44%), Navigation-Blocker abgezogen",
+    "produktionsreife": "28% — direkt aus Gate-Status: RC Gate 2/7=29%, Production Gate 2/5=40%, Monitoring 9/14=64%; gewichteter Schnitt"
+  },
+
+  "maturity_path_to_beta": {
+    "target_score": 65,
+    "target_label": "BETA",
+    "required_actions": [
+      "RCB-001 lösen: TEST_DATABASE_URL setzen → alle BLOCKED Gates re-evaluieren",
+      "RCB-002 lösen: NAV_ITEMS-Entscheidung PO → Option A oder B",
+      "RCB-003 lösen: Router-Guard für /admin/diagnostics",
+      "P1-GAP-01: Topics ORM-Models",
+      "P1-GAP-02: Topics/Tags CRUD-API",
+      "P1-GAP-05: LLM-Provider (PO-Entscheidung)",
+      "P1-GAP-07: Data Quality Trigger",
+      "P1-GAP-08: auth_failure_counter",
+      "P1-GAP-09: request_access_log"
+    ],
+    "estimated_effort": "4-6 Wochen nach RCB-001-Fix"
+  },
+
+  "maturity_path_to_rc": {
+    "target_score": 80,
+    "target_label": "RELEASE_CANDIDATE",
+    "additional_to_beta": [
+      "Frontend error_boundary + route_error_handler",
+      "Passwort-Änderung für Nutzer",
+      "Data Quality automatischer Scheduler (P2)",
+      "Suche: KWIC-Snippet + total_count",
+      "Export Center: JSON + Markdown (P2)"
+    ]
+  },
+
+  "statistics": {
+    "overall_maturity_score": 47,
+    "technical_maturity": 65,
+    "functional_maturity": 42,
+    "user_maturity": 35,
+    "production_maturity": 28,
+    "features_complete": 3,
+    "features_partial": 9,
+    "features_prepared": 1,
+    "features_not_started": 1,
+    "p1_gaps_open": 9,
+    "p2_gaps_open": 14,
+    "p3_gaps_open": 4
+  }
+}

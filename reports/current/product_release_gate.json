@@ -1,0 +1,225 @@
+{
+  "report_schema_version": 2,
+  "report_name": "product_release_gate",
+  "report_type": "release_gate",
+  "generated_at": "2026-06-16T00:45:00.000000+00:00",
+  "threshold_model": "docs/release_threshold_model.md",
+  "inputs": {
+    "product_maturity_v2": "reports/current/product_maturity_v2.json",
+    "product_gold_path": "reports/current/product_gold_path.json",
+    "ui_technical_id_leak_audit": "reports/current/ui_technical_id_leak_audit.json",
+    "documentation_truth_lint": "reports/current/documentation_truth_lint.json",
+    "known_limitations": "reports/current/known_limitations.json"
+  },
+
+  "current_values": {
+    "produktreife_score": 52,
+    "gold_path_pass": 4,
+    "gold_path_total": 8,
+    "gold_path_fail_steps": ["GP-04 Thema finden", "GP-05 Analyse starten", "GP-06 Analyse freigeben", "GP-07 Export erzeugen"],
+    "gold_path_dc_f01_korrektur": "GP-03 war CONDITIONAL_PASS (DC-F01). DC-F01 ist behoben → GP-03 gilt als PASS. Effektiver Stand: 4/8 PASS.",
+    "ui_technical_id_leaks": 0,
+    "blocking_security_issues": 0,
+    "documentation_truth_lint_status": "PASS",
+    "known_limitations_documented": true
+  },
+
+  "rc_gates": {
+    "description": "RC (Release Candidate) — Schwellwert: Produktreife >= 80, Gold Path >= 7/8, Leaks = 0",
+    "gates": [
+      {
+        "gate_id": "RC-G01",
+        "name": "Produktreife-Score >= 80",
+        "required": 80,
+        "actual": 52,
+        "verdict": "BLOCKED",
+        "reason": "Score 52 < 80. Delta: -28. Hauptblocker: Topics-Backend (0 Punkte), AnalysisPage.jsx (0 UX-Schritte), Export Center (vollständig fehlend)."
+      },
+      {
+        "gate_id": "RC-G02",
+        "name": "Gold Path >= 7/8 PASS (ohne sicherheitskritische FAIL-Schritte)",
+        "required": "7/8",
+        "actual": "4/8",
+        "critical_steps_status": {
+          "GP-01_Login": "PASS",
+          "GP-06_Analyse_freigeben": "FAIL",
+          "GP-08_Logout": "PASS"
+        },
+        "verdict": "BLOCKED",
+        "reason": "4/8 PASS — unter Mindestwert 7/8. Zusätzlich: GP-06 (Analyse freigeben / Approval) ist sicherheitskritisch und FAIL — blockiert RC auch wenn 7/8 nominal erreicht würde."
+      },
+      {
+        "gate_id": "RC-G03",
+        "name": "Sichtbare technische IDs = 0",
+        "required": 0,
+        "actual": 0,
+        "verdict": "PASS",
+        "reason": "ui_technical_id_leak_audit.json: leaks=0. Alle 5 Leaks behoben (DocumentMetaCard, AppShell, DocumentsPage, DataQualityDashboard, SimpleListPage)."
+      },
+      {
+        "gate_id": "RC-G04",
+        "name": "Keine BLOCKING_SECURITY-Befunde",
+        "required": 0,
+        "actual": 0,
+        "verdict": "PASS",
+        "reason": "Keine kritischen Sicherheitslücken. PROHIBIT-02, -06, -08 eingehalten."
+      }
+    ],
+    "rc_gates_total": 4,
+    "rc_pass": 2,
+    "rc_blocked": 2,
+    "rc_decision": "BLOCKED",
+    "rc_blocked_reason": "RC-G01 (Score 52 < 80) und RC-G02 (Gold Path 4/8 < 7/8 und GP-06 FAIL) blockieren RC."
+  },
+
+  "ga_gates": {
+    "description": "GA (General Availability / 1.0) — Schwellwert: Produktreife >= 85, Gold Path 8/8, kein CONDITIONAL_PASS",
+    "gates": [
+      {
+        "gate_id": "GA-G01",
+        "name": "Produktreife-Score >= 85",
+        "required": 85,
+        "actual": 52,
+        "verdict": "BLOCKED",
+        "reason": "Score 52 < 85. Delta: -33."
+      },
+      {
+        "gate_id": "GA-G02",
+        "name": "Gold Path 8/8 PASS",
+        "required": "8/8",
+        "actual": "4/8",
+        "verdict": "BLOCKED",
+        "reason": "4/8 PASS. GP-04 bis GP-07 FAIL."
+      },
+      {
+        "gate_id": "GA-G03",
+        "name": "documentation_truth_lint PASS",
+        "required": "PASS",
+        "actual": "PASS",
+        "verdict": "PASS",
+        "source": "reports/current/documentation_truth_lint.json"
+      },
+      {
+        "gate_id": "GA-G04",
+        "name": "Sichtbare technische IDs = 0",
+        "required": 0,
+        "actual": 0,
+        "verdict": "PASS"
+      }
+    ],
+    "ga_gates_total": 4,
+    "ga_pass": 2,
+    "ga_blocked": 2,
+    "ga_decision": "BLOCKED"
+  },
+
+  "feature_gates": {
+    "gates": [
+      {
+        "gate_id": "G01",
+        "name": "Dashboard",
+        "verdict": "CONDITIONAL_PASS",
+        "reason": "W01-W05 implementiert. W06 Drift: GET /api/v1/dashboard/drift fehlt. Für RC akzeptabel als dokumentierte Einschränkung."
+      },
+      {
+        "gate_id": "G02",
+        "name": "Datenanalyse",
+        "verdict": "BLOCKED",
+        "reason": "Backend vollständig vorhanden. AnalysisPage.jsx fehlt (AGAP-07). 0/7 UX-Schritte erreichbar. GP-06 FAIL."
+      },
+      {
+        "gate_id": "G03",
+        "name": "Dokumentenzentrum",
+        "verdict": "CONDITIONAL_PASS",
+        "reason": "Kern vollständig. Tags API fehlt (P1-GAP-01/02). DC-F01 (technische IDs) behoben. Themen-Platzhalter vorhanden."
+      },
+      {
+        "gate_id": "G04",
+        "name": "Themenzentrum",
+        "verdict": "BLOCKED",
+        "reason": "Backend vollständig fehlend (ORM, API, URL-Bug in topics.js). 0/9 Funktionen erreichbar."
+      },
+      {
+        "gate_id": "G05",
+        "name": "Export Center",
+        "verdict": "BLOCKED",
+        "reason": "Vollständig fehlend. Kein Backend, kein Frontend."
+      },
+      {
+        "gate_id": "G06",
+        "name": "E2E Truth Suite",
+        "verdict": "BLOCKED",
+        "reason": "product_e2e_truth_suite.json: 5/9 FAIL. Kein vollständiger Durchlauf."
+      },
+      {
+        "gate_id": "G07",
+        "name": "Benutzerverwaltung",
+        "verdict": "PASS",
+        "reason": "Login, Logout, Session-Revocation, Workspace-Rollen vollständig implementiert."
+      }
+    ],
+    "feature_gates_total": 7,
+    "pass": 1,
+    "conditional_pass": 2,
+    "blocked": 4
+  },
+
+  "decision": "BLOCKED",
+  "release_decision": "BLOCKED",
+  "allowed_release_level": null,
+
+  "primary_blockers": [
+    {
+      "blocker_id": "PRG-B01",
+      "description": "Produktreife-Score 52 unter RC-Schwelle 80 und GA-Schwelle 85",
+      "delta_to_rc": -28,
+      "delta_to_ga": -33,
+      "sprint_tasks": ["T09-T19 (Topics)", "T25-T27 (AnalysisPage)", "T28-T33 (Export)"]
+    },
+    {
+      "blocker_id": "PRG-B02",
+      "description": "Gold Path 4/8 — GP-06 (Analyse freigeben / Approval) FAIL ist sicherheitskritisch und blockiert RC",
+      "affected_rc_gate": "RC-G02",
+      "sprint_tasks": ["T25 AnalysisPage.jsx", "T26 ApproveButton"]
+    },
+    {
+      "blocker_id": "PRG-B03",
+      "description": "Themenzentrum vollständig fehlend — GP-04 FAIL, blockiert GA Gold Path 8/8",
+      "affected_gate": "G04",
+      "sprint_tasks": ["T09-T19"]
+    },
+    {
+      "blocker_id": "PRG-B04",
+      "description": "Export Center vollständig fehlend — GP-07 FAIL, blockiert GA Gold Path 8/8",
+      "affected_gate": "G05",
+      "sprint_tasks": ["T28-T33"]
+    }
+  ],
+
+  "non_blockers_resolved": [
+    {
+      "item": "Sichtbare technische IDs (DC-F01 + 4 weitere Leaks)",
+      "status": "BEHOBEN",
+      "ref": "reports/current/ui_technical_id_leak_audit.json"
+    },
+    {
+      "item": "Documentation Truth Lint",
+      "status": "PASS",
+      "ref": "reports/current/documentation_truth_lint.json"
+    }
+  ],
+
+  "expected_after_sprint": {
+    "produktreife_score": "~78-82",
+    "gold_path_pass": "7/8 (nach Topics + AnalysisPage + Export Sprint-Fixes)",
+    "rc_decision": "CONDITIONAL_RC — wenn Score >= 80 und GP-06 behoben",
+    "ga_decision": "BLOCKED — Score bleibt unter 85 ohne Lazy Loading, KWIC, Tags vollständig"
+  },
+
+  "security_constraints_verified": {
+    "PROHIBIT_02": "EINGEHALTEN",
+    "PROHIBIT_06": "EINGEHALTEN",
+    "PROHIBIT_08": "EINGEHALTEN",
+    "drift_readonly": "EINGEHALTEN"
+  }
+}

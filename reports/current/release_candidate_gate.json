@@ -1,0 +1,110 @@
+{
+  "schema_version": "1",
+  "report_id": "release_candidate_gate",
+  "generated": "2026-06-15T10:20:00Z",
+  "verdict": "BLOCKED",
+  "inputs": {
+    "local_final_gate": "reports/current/final_gate_report.json",
+    "enduser_acceptance_rc": "reports/current/enduser_acceptance_rc.json",
+    "rc_security_smoke_report": "reports/current/rc_security_smoke_report.json",
+    "final_navigation_release_check": "reports/current/final_navigation_release_check.json",
+    "rc_report_integrity_final": "reports/current/rc_report_integrity_final.json",
+    "known_limitations": "reports/current/known_limitations.json",
+    "documentation_truth_lint": "reports/current/documentation_truth_lint.json"
+  },
+  "conditions": [
+    {
+      "id": "GATE-01",
+      "condition": "local_final_gate PASS",
+      "required": true,
+      "actual": "BLOCKED",
+      "met": false,
+      "root_cause": "TEST_DATABASE_URL nicht gesetzt -> pytest 0 collected -> report_integrity_v2 BLOCKED (20 Blocker) -> Cascade auf final_gate_report"
+    },
+    {
+      "id": "GATE-02",
+      "condition": "Enduser Acceptance PASS",
+      "required": true,
+      "actual": "BLOCKED",
+      "met": false,
+      "blocking_scenarios": ["S04 (Suche /search vs /chat)", "S08 (Data Quality fehlt in NAV)"],
+      "root_cause": "AppShell NAV_ITEMS divergiert vom Masterplan final_navigation.md"
+    },
+    {
+      "id": "GATE-03",
+      "condition": "Security Smoke PASS",
+      "required": true,
+      "actual": "BLOCKED",
+      "met": false,
+      "blocking_checks": ["SEC-10 (/admin/diagnostics kein Router-seitiger Admin-Guard, 7 undokumentierte Routen)"],
+      "root_cause": "routes.jsx enthaelt Routen ohne ausreichenden Zugangsschutz auf Router-Ebene"
+    },
+    {
+      "id": "GATE-04",
+      "condition": "Navigation Release Check PASS",
+      "required": true,
+      "actual": "BLOCKED",
+      "met": false,
+      "blocking_rules": ["R1 (Suche /search vs /chat, /data-quality fehlt)", "R7 (/topics, /import nicht im Masterplan)", "R8 (verbotene Routen erreichbar)"],
+      "root_cause": "AppShell NAV_ITEMS nicht mit Masterplan synchronisiert"
+    },
+    {
+      "id": "GATE-05",
+      "condition": "Report Integrity Final PASS",
+      "required": true,
+      "actual": "BLOCKED",
+      "met": false,
+      "root_cause": "Mindestens 5 der 7 Pflicht-Reports sind BLOCKED; release_candidate_decision ist BLOCKED"
+    },
+    {
+      "id": "GATE-06",
+      "condition": "0 BLOCKING_CORE Limitations",
+      "required": true,
+      "actual": "0",
+      "met": true,
+      "detail": "known_limitations.json: 0 Limitations mit classification=BLOCKING_CORE. 6 Limitations (3 high, 3 low), alle non-blocking."
+    },
+    {
+      "id": "GATE-07",
+      "condition": "Cleanup/Repair NO-GO bestaetigt",
+      "required": true,
+      "actual": "CONFIRMED",
+      "met": true,
+      "detail": "PROHIBIT-02 und PROHIBIT-06 aktiv. cleanup_governance_boundary.json: DRAFT (M5c nicht gestartet). Kein Cleanup/Repair-Lauf erfolgt. NO-GO bestaetigt."
+    }
+  ],
+  "conditions_met": 2,
+  "conditions_required": 7,
+  "conditions_not_met": 5,
+  "unmet_conditions": ["GATE-01", "GATE-02", "GATE-03", "GATE-04", "GATE-05"],
+  "root_causes": {
+    "primary": "TEST_DATABASE_URL nicht gesetzt -> Blocker-Kaskade blockiert final_gate_report und report_integrity_v2",
+    "secondary": "AppShell NAV_ITEMS nicht mit Masterplan synchronisiert (4 Abweichungen: /search vs /chat, /data-quality fehlt, /topics extra, /import extra)",
+    "tertiary": "routes.jsx: /admin/diagnostics ohne Router-seitigen Admin-Guard; 7 undokumentierte Routen ohne Rollentrennung"
+  },
+  "documentation_truth_lint": "PASS — 19/19 Pruefungen bestanden. Unveraendert.",
+  "external_env_gate": "NOT_RUN — blockiert RC nicht (GATE-Typ: external_only)",
+  "required_fixes_before_rc": [
+    {
+      "id": "RC-PREREQ-01",
+      "priority": 1,
+      "category": "Backend/Test-Infra",
+      "action": "TEST_DATABASE_URL setzen, pytest ausfuehren, report_integrity_v2 regenerieren",
+      "unblocks": ["GATE-01", "GATE-05"]
+    },
+    {
+      "id": "RC-PREREQ-02",
+      "priority": 2,
+      "category": "Navigation",
+      "action": "AppShell NAV_ITEMS mit Masterplan synchronisieren: /chat statt /search, /data-quality hinzufuegen, /topics + /import entfernen (oder Masterplan aktualisieren)",
+      "unblocks": ["GATE-02", "GATE-04"]
+    },
+    {
+      "id": "RC-PREREQ-03",
+      "priority": 3,
+      "category": "Security/Routing",
+      "action": "AdminRoute-Wrapper fuer /admin/diagnostics; verbotene Routen aus routes.jsx entfernen oder per Admin-Guard sichern",
+      "unblocks": ["GATE-03", "GATE-04"]
+    }
+  ]
+}

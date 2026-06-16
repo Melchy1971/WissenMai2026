@@ -1,0 +1,141 @@
+{
+  "schema_version": "1",
+  "report_id": "rc_security_smoke_report",
+  "generated": "2026-06-15T10:00:00Z",
+  "verdict": "BLOCKED",
+  "evaluation_method": "static_code_analysis",
+  "note": "Kein Live-Backend. Alle Checks per statischer Analyse von Frontend-Quellcode.",
+  "checks": [
+    {
+      "id": "SEC-01",
+      "name": "Auth required fuer alle nicht-login Routen",
+      "result": "PASS",
+      "evidence": [
+        "routes.jsx: alle nicht-/login Routen unter ProtectedRoute",
+        "ProtectedRoute prueft token; redirect auf /login wenn nicht authentifiziert",
+        "useAuth().isAuthReady + bootstrapError geprueft vor Zugang"
+      ]
+    },
+    {
+      "id": "SEC-02",
+      "name": "Workspace-Isolation: Requests enthalten Workspace-ID aus Context",
+      "result": "PASS",
+      "evidence": [
+        "client.js: X-Workspace-Id Header wird zentral aus requestContext injiziert",
+        "CENTRAL_HEADER_NAMES = {authorization, x-workspace-id}",
+        "Caller-seitige Auth/Workspace-Header werden entfernt (Zeile 105)",
+        "workspaceId wird aus localStorage gelesen, nicht vom Caller ueberschreibbar"
+      ]
+    },
+    {
+      "id": "SEC-03",
+      "name": "Kein Auth-Token in UI sichtbar",
+      "result": "PASS",
+      "evidence": [
+        "Tokens in localStorage (wissen.authToken, wissen.authState) — nicht im DOM gerendert",
+        "Keine JSX-Expression {token} oder {authToken} in Page-Komponenten gefunden",
+        "Authorization-Header nur in HTTP-Requests, nicht in UI-Text"
+      ]
+    },
+    {
+      "id": "SEC-04",
+      "name": "Kein Token/Passwort in console.log",
+      "result": "PASS",
+      "evidence": [
+        "Keine console.log-Aufrufe mit token/password/secret/api_key in src/pages/ gefunden",
+        "LoginPage verwendet passwordInput als lokalen State, kein Logging"
+      ]
+    },
+    {
+      "id": "SEC-05",
+      "name": "Kein Klartext-Passwort in Nicht-Login-Seiten",
+      "result": "PASS",
+      "evidence": [
+        "password-Verwendung nur in LoginPage.jsx (input[type=password])",
+        "Kein Passwort-Wert in anderen Seiten oder API-Aufrufen"
+      ]
+    },
+    {
+      "id": "SEC-06",
+      "name": "Drift Detection und Data Quality sind read-only (PROHIBIT-02, PROHIBIT-06)",
+      "result": "PASS",
+      "evidence": [
+        "driftApi.js: nur GET-Methoden (DriftV2RegressionGuard 6/6 PASS)",
+        "dataQuality.js: nur GET-Methoden (getDataQualitySummary, listDataQualityRuns, ...)",
+        "DriftDashboard.jsx: keine Mutations-Buttons oder Handler",
+        "PROHIBIT-02 und PROHIBIT-06 eingehalten"
+      ]
+    },
+    {
+      "id": "SEC-07",
+      "name": "Kein Drift-Cleanup/Repair-Endpoint im Frontend",
+      "result": "PASS",
+      "evidence": [
+        "driftApi.js enthaelt keine repair/cleanup/reindex/restore Funktionen",
+        "restoreDocument in documents.js und reindexDocument in rag.js sind scopespezifisch (nicht Drift)",
+        "Kein callApi-Aufruf auf /api/v1/drift/repair oder /api/v1/drift/cleanup"
+      ]
+    },
+    {
+      "id": "SEC-08",
+      "name": "Kein Debug-Menu in Navigation",
+      "result": "PASS",
+      "evidence": [
+        "AppShell NAV_ITEMS enthalten kein Debug/Diagnostics/Admin-Menuitem",
+        "Keine Debug-Schaltflaeche in AppShell-Render-Logik",
+        "DashboardPage: governance_gate/security_gate/gui_gate als Status-Felder (kein Menuitem)"
+      ]
+    },
+    {
+      "id": "SEC-09",
+      "name": "Kein roher Stacktrace in ErrorState",
+      "result": "PASS",
+      "evidence": [
+        "ErrorState.jsx: zeigt error.code, error.message, error.technicalCode",
+        "mapError() normalisiert Fehler vor Anzeige",
+        "Kein err.stack oder raw Exception-Objekt im DOM gerendert",
+        "data-error-code, data-technical-code als Attribute — kein Freitext-Stack"
+      ]
+    },
+    {
+      "id": "SEC-10",
+      "name": "Admin-Routen mit angemessenem Schutz",
+      "result": "BLOCKED",
+      "severity": "BLOCKING",
+      "findings": [
+        {
+          "route": "/admin/diagnostics",
+          "issue": "Kein Admin-Guard auf Router-Ebene. Nur ProtectedRoute (Login-Check). AdminDiagnosticsPage hat isAdmin()-Check im Komponenten-Body — API-Aufruf wird bei nicht-Admin unterdrueckt, aber Route ist fuer jeden angemeldeten User erreichbar.",
+          "actual_risk": "Niedrig: Komponente zeigt 'Kein Admin-Zugriff' und laedt keine Daten. Backend muss ebenfalls guardet sein (nicht pruefbar ohne Live-Backend).",
+          "required_fix": "NAV-FIX-05: isAdmin-Guard auf Router-Ebene hinzufuegen (AdminRoute-Wrapper)"
+        },
+        {
+          "routes": ["/tools", "/memory", "/tasks", "/projects", "/agents", "/collaboration", "/governance"],
+          "issue": "7 Routen in routes.jsx erreichbar fuer alle angemeldeten User. Nicht im Masterplan. Kein Rollen-Gate.",
+          "actual_risk": "Mittel: Datenexposition abhaengig von Backend-Guards (nicht pruefbar). Angreifsflaeche unnoetig vergroessert.",
+          "required_fix": "NAV-FIX-04: Routen entfernen oder hinter Admin-Guard legen"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "total_checks": 10,
+    "pass": 9,
+    "blocked": 1
+  },
+  "blocking_checks": ["SEC-10"],
+  "required_fixes": [
+    {
+      "fix_id": "SEC-FIX-01",
+      "priority": 1,
+      "references": ["NAV-FIX-05"],
+      "action": "AdminRoute-Wrapper fuer /admin/diagnostics in routes.jsx — isAdmin()-Guard auf Router-Ebene"
+    },
+    {
+      "fix_id": "SEC-FIX-02",
+      "priority": 2,
+      "references": ["NAV-FIX-04"],
+      "action": "/tools /memory /tasks /projects /agents /collaboration /governance aus routes.jsx entfernen oder hinter Admin-Guard"
+    }
+  ]
+}

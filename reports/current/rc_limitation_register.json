@@ -1,0 +1,122 @@
+{
+  "report_schema_version": 1,
+  "report_name": "rc_limitation_register",
+  "report_type": "limitation_register",
+  "generated_at": "2026-06-16T08:10:00.000000+00:00",
+
+  "inputs": {
+    "conditional_rc_decision": "reports/current/conditional_rc_decision.json",
+    "gold_path_missing_step_analysis": "reports/current/gold_path_missing_step_analysis.json",
+    "known_limitations": "reports/current/known_limitations.json"
+  },
+
+  "scope": "Limitationen die bei CONDITIONAL_RC (nach Sprint) bekannt und dokumentiert sein müssen. Nur Limitationen mit RC-Relevanz. Bestehende M5b/GOV-Limitationen ohne RC-Wirkung werden referenziert, nicht neu bewertet.",
+
+  "rc_limitations": [
+    {
+      "id": "RCL-01",
+      "source": "gold_path_missing_step_analysis.json — GP-07",
+      "title": "GP-07 Export erzeugen — CONDITIONAL_PASS (kein PDF-Export in 1.0)",
+      "description": "Export Center implementiert JSON und Markdown. PDF-Export ist auf Version 1.1 verschoben. Gold Path Schritt GP-07 erreicht CONDITIONAL_PASS, nicht PASS. JSON/MD-Export ermöglicht vollständigen Datenzugriff; Nutzer mit PDF-Anforderungen (Drucken, formale Ablage) sind eingeschränkt.",
+      "risk": "Mittel. Betrifft Nutzer mit strikter PDF-Anforderung. JSON-Export kompensiert fachlich.",
+      "workaround": "JSON-Export für Datenzugriff, Markdown für Dokumentation und Archivierung. Keine Layout-treuen PDFs in 1.0.",
+      "blocks_rc": false,
+      "blocks_ga": true,
+      "ga_block_reason": "GA erfordert Gold Path 8/8 PASS. GP-07 CONDITIONAL_PASS zählt nicht als PASS für GA.",
+      "target_fix": "Version 1.1 — PDF-Export aus Backlog aufnehmen oder PO-Entscheidung: JSON/MD als GA-ausreichend festlegen",
+      "responsible_area": "Export Center / Product Owner",
+      "po_approval_required": true,
+      "po_approval_scope": "Ist JSON/MD-Export ausreichend für RC-Freigabe? Wenn ja: CONDITIONAL_RC mit RCL-01 dokumentiert.",
+      "known_limitations_ref": "KL-GP07-EXPORT (neu — in known_limitations.json hinzuzufügen)"
+    },
+    {
+      "id": "RCL-02",
+      "source": "product_release_gate.json — G01 Dashboard W06",
+      "title": "Dashboard W06 Drift-Widget fehlt — GET /api/v1/dashboard/drift nicht implementiert",
+      "description": "Dashboard ist vollständig für Kernfunktionen W01-W05 (Dokumentenübersicht, Import-Status, Datenqualität, Analyse-Übersicht, Systemstatus). W06 Drift-Widget benötigt GET /api/v1/dashboard/drift — Endpoint fehlt. Dashboard zeigt stattdessen Platzhalter.",
+      "risk": "Niedrig. Kein Funktionsverlust für primäre Anwendungsfälle. Drift-Status separat über /drift-Seite erreichbar.",
+      "workaround": "Drift-Status über /drift Seite abrufen. Dashboard-Widget bleibt Platzhalter.",
+      "blocks_rc": false,
+      "blocks_ga": false,
+      "ga_block_reason": null,
+      "target_fix": "Version 1.0 Sprint oder 1.1 — je nach PO-Priorisierung",
+      "responsible_area": "Dashboard / API",
+      "po_approval_required": false
+    },
+    {
+      "id": "RCL-03",
+      "source": "product_release_gate.json — G03, P1-GAP-01/02",
+      "title": "Tags-API unvollständig — POST /api/v1/documents/:id/tags und DELETE fehlen",
+      "description": "Dokumentenzentrum zeigt vorhandene Tags korrekt an. Anlegen und Entfernen von Tags über die UI ist nicht möglich, da Backend-Endpoints fehlen (P1-GAP-01: POST, P1-GAP-02: DELETE). Tags-Verwaltung ist eine P1-Funktion, aber kein Gold-Path-Schritt.",
+      "risk": "Mittel. Nutzer können keine Tags zuweisen oder entfernen. Bereits importierte Tags bleiben sichtbar.",
+      "workaround": "Tags müssen vor Import an Dokumenten vorhanden sein (Import-Metadaten). Nachträgliche Tag-Verwaltung nicht möglich.",
+      "blocks_rc": false,
+      "blocks_ga": false,
+      "ga_block_reason": null,
+      "target_fix": "Version 1.0 Sprint oder 1.1",
+      "responsible_area": "Dokumentenzentrum / API",
+      "po_approval_required": false
+    },
+    {
+      "id": "RCL-04",
+      "source": "gold_path_missing_step_analysis.json — GP-05 Sekundärrisiko",
+      "title": "GP-05 Analyse starten — Schritte 5+7 im Analyse-Workflow inhaltlich ungeklärt (PO-Diskussion offen)",
+      "description": "AnalysisPage.jsx wird im Sprint implementiert. Die Analyse-Workflow-Schritte 5 (Vorschläge anzeigen) und 7 (Übernahme in Dokumentenstruktur) sind inhaltlich noch nicht spezifiziert (PO-Diskussion ausstehend). Wenn ungeklärt bis Sprint-Ende: GP-05 bleibt CONDITIONAL_PASS statt PASS, was Gold Path auf unter 7/8 reduzieren würde.",
+      "risk": "Hoch — wenn PO-Entscheidung ausbleibt. Gold Path könnte auf 6/8 fallen (unter RC-Minimum 7/8).",
+      "workaround": "PO-Entscheidung zu Schritten 5+7 vor Sprint-Start erzwingen. Ohne Entscheidung: AnalysisPage.jsx nur mit definierten Schritten implementieren, Schritte 5+7 als 'ausstehend' kennzeichnen.",
+      "blocks_rc": false,
+      "blocks_ga": false,
+      "ga_block_reason": null,
+      "target_fix": "PO-Entscheidung vor Sprint-Start",
+      "responsible_area": "Product Owner / AnalysisPage",
+      "po_approval_required": true,
+      "po_approval_scope": "Klärung: Welche konkreten Aktionen sind für Schritte 5 (Vorschläge) und 7 (Übernahme) im Analyse-Workflow vorgesehen?"
+    },
+    {
+      "id": "RCL-05",
+      "source": "known_limitations.json — KL-DEF-001",
+      "title": "OCR für gescannte PDFs nicht Teil von 1.0",
+      "description": "PDFs ohne extrahierbaren Text bleiben im Status OCR_REQUIRED. Gescannte Dokumente können nicht verarbeitet werden.",
+      "risk": "Niedrig für primäre Zielgruppe (Wissensmanagement mit text-basierten Dokumenten). Relevant bei starkem Nutzung von Scan-PDFs.",
+      "workaround": "Nur text-basierte PDFs, DOCX und Plaintext importieren.",
+      "blocks_rc": false,
+      "blocks_ga": false,
+      "ga_block_reason": null,
+      "target_fix": "Version 1.1 oder dediziertes Feature-Paket",
+      "responsible_area": "Product Owner",
+      "po_approval_required": false,
+      "known_limitations_ref": "KL-DEF-001"
+    },
+    {
+      "id": "RCL-06",
+      "source": "known_limitations.json — KL-NB-001",
+      "title": "API-Pfad /api/v1/documents nicht durchgängig — Routing-Inkonsistenz",
+      "description": "documents_router ist unter /documents/* gemountet, nicht unter /api/v1/documents. Externe Clients müssen /documents/ verwenden. API-Vertrag docs/api.md dokumentiert dieses Verhalten.",
+      "risk": "Niedrig. Kein Funktionsverlust. Relevant für externe API-Konsumenten.",
+      "workaround": "API-Vertrag prüfen vor Clientbindung. Pfade /documents/* verwenden.",
+      "blocks_rc": false,
+      "blocks_ga": false,
+      "ga_block_reason": null,
+      "target_fix": "Version 1.1 — Routing konsolidieren",
+      "responsible_area": "API",
+      "po_approval_required": false,
+      "known_limitations_ref": "KL-NB-001"
+    }
+  ],
+
+  "summary": {
+    "total_rc_limitations": 6,
+    "blocks_rc": 0,
+    "blocks_ga": 1,
+    "po_approval_required": 2,
+    "ga_blocking_limitations": ["RCL-01 (GP-07 CONDITIONAL_PASS, kein PDF-Export)"],
+    "rc_clearance": "Alle Limitationen sind bei CONDITIONAL_RC dokumentiert akzeptierbar — keine blockiert RC direkt.",
+    "ga_path": "RCL-01 muss für GA gelöst sein: entweder PDF-Export implementiert oder PO-Entscheidung GP-07 auf JSON/MD-Basis als PASS."
+  },
+
+  "security_constraints_verified": {
+    "PROHIBIT_02": "EINGEHALTEN",
+    "PROHIBIT_06": "EINGEHALTEN",
+    "PROHIBIT_08": "EINGEHALTEN"
+  }
+}

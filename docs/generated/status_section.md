@@ -1,49 +1,34 @@
-<!-- BEGIN GENERATED MASTERPLAN STATUS v3 -->
+<!-- GENERATED 2026-06-16T08:20:00 — Engine: masterplan_status_v9 -->
+<!-- Quelle: reports/current/masterplan_status.json -->
+
 ## Maschinenstatus Masterplan
 
-Stand: `2026-06-12T00:00:00+00:00`
-Engine: `masterplan_status_v3_post_m5b`
+Stand: `2026-06-16T08:20:00.000000+00:00`
+Engine: `masterplan_status_v9`
 
 Gesamtstatus: `BLOCKED`
-Fortschritt: `40.0%`
+Fortschritt: `42.0%`
+Produktstatus: `BLOCKED`
 Release-Freigabe: `nein`
-M5c Cleanup: `NO_GO (PROHIBIT-02, PROHIBIT-06)`
+
+Product Maturity V3: `Score 53 — BLOCKED (RC: -27, GA: -32) — reports/current/product_maturity_v3.json`
+Technical ID Leaks: `0 — PASS (57 Dateien geprüft) — reports/current/ui_technical_id_leak_audit.json`
+Gold Path: `4/8 PASS — GP-04/05/06/07 FAIL — GP-06 (Approval) sicherheitskritisch — reports/current/product_gold_path.json`
+Conditional RC Decision: `BLOCKED (3/5 Kriterien, CRC-C01+C03 FAIL) — reports/current/conditional_rc_decision.json`
+Product Release Gate: `BLOCKED (RC-G01+RC-G02 BLOCKED, RC-G03+RC-G04 PASS) — reports/current/product_release_gate.json`
+RC Limitation Register: `6 Limitationen, 0 blockieren RC, 1 blockiert GA (RCL-01 PDF-Export) — reports/current/rc_limitation_register.json`
+GA Gap Plan: `DEFINIERT (5 Ziele, 8 Arbeitspakete, 3 offene PO-Entscheidungen) — reports/current/ga_gap_plan.json`
+Documentation Truth Lint: `PASS (27/27)`
+Release Threshold Model: `DEFINIERT (docs/release_threshold_model.md)`
+RC Limitations Doku: `docs/rc-limitations.md`
+GA Gap Plan Doku: `docs/ga_gap_plan.md`
+Frontend Vitest (verified): `134/134 PASS`
+Regression Guard Drift v2: `PASS (6/6, reports/current/drift_v2_permission_guard_report.json)`
+M5c Cleanup-Implementierung: `NO_GO (PROHIBIT-02, PROHIBIT-06)`
+M5c Preparation: `PREPARED (16/16 Checks)`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
-
-### Phasen
-
-| Phase | Status | Entscheidung | Gate-Status |
-|---|---|---|---|
-| M3a Frontend Foundation | `blocked` | `NO_GO` | `BLOCKED` — documentation_truth_lint: collected == 0 |
-| M4 Backend | `gate_passed` | `GO` | `PASS` |
-| M5a Data Quality | `blocked` | `NO_GO` | `BLOCKED` — 5 Kind-Gates blockiert |
-| M5b Drift Detection | `blocked` | `NO_GO` | `BLOCKED` — Kaskade aus Alpha Hardening Gate |
-| M5c Cleanup | `no_go` | `PROHIBITED` | `BLOCKED` — Cleanup/Repair dauerhaft verboten bis Gate-Kaskade auflöst |
-
-### M5b Implementierungsstand
-
-M5b-Code vollständig. Gate-Kaskade blockiert Freigabe.
-
-**Bestandene Sub-Gates:** drift_dashboard_truth_report (23/23), drift_performance_baseline (sub-linear), drift_observability_report (21/21), no_mutation_truth, workspace_isolation, drift_api, idempotency, severity
-
-**Blocker-Kaskade:**
-```
-M5a BLOCKED → AV-01 → AHG-BLOCKER-01 → Alpha Hardening BLOCKED
-                                       → Beta BLOCKED → Production Readiness BLOCKED → M5c Start BLOCKED
-AHG-BLOCKER-02: drift_report_integrity PARTIAL (kein Live-CLI-Run)
-```
-
-### Blocker
-
-- `documentation_truth_lint`: collected == 0 — blockiert M3a + M5a (laut gate_hierarchy.json)
-- `report_integrity_v2`: BLOCKED — blockiert M5a (laut reports/current/report_integrity_v2.json)
-- `source_status_integrity_gate`: BLOCKED — blockiert M5a (TEST_DATABASE_URL nicht gesetzt)
-- `orphan_detector_gate`: BLOCKED — blockiert M5a (TEST_DATABASE_URL nicht gesetzt)
-- `m5b_alpha_validation_report`: BLOCKED — AV-01: M5a nicht READY_FOR_M5B (laut reports/current/m5b_alpha_validation_report.json)
-- `drift_report_integrity`: PARTIAL — drift_report.json nicht durch Live-CLI-Run erzeugt (laut reports/current/drift_report_integrity.json)
-- `m5b_alpha_hardening_gate`: BLOCKED — AHG-BLOCKER-01 + AHG-BLOCKER-02 (laut reports/current/m5b_alpha_hardening_gate.json)
-- `m5b_production_readiness_gate`: BLOCKED — Kaskade (laut reports/current/m5b_production_readiness_gate.json)
-- `m5c_start_gate`: BLOCKED — alle 5 Release-Conditions unerfüllt (laut reports/current/m5c_start_gate.json)
-
-<!-- END GENERATED MASTERPLAN STATUS v3 -->
+> Gate-Autoritaet: CONDITIONAL_RC erfordert Score >= 80, Gold Path >= 7/8, GP-06 PASS, leaks=0, Limitationen dokumentiert.
+> Technical-ID-Leak-Blocker: AUFGEHOBEN (leaks=0). Score 53 bleibt unter RC-Schwelle 80.
+> RC-Stabilisierungsregel: RC bleibt BLOCKED bis CONDITIONAL_RC-Kriterien erfuellt (nach Sprint T09-T33).
+> M5c/Repair bleibt NO_GO. Cleanup-Implementierung: NO_GO bis m5c_start_gate=PASS und PO-Sign-off.

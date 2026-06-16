@@ -1,0 +1,142 @@
+{
+  "schema_version": "1",
+  "report_id": "enduser_acceptance_rc",
+  "generated": "2026-06-15T09:50:00Z",
+  "verdict": "BLOCKED",
+  "evaluation_method": "static_code_analysis",
+  "note": "Kein Live-Backend verfuegbar (TEST_DATABASE_URL nicht gesetzt). Alle Szenarien werden per statischer Analyse der Quellcode-Artefakte bewertet.",
+  "scenarios": [
+    {
+      "id": "S01",
+      "name": "Login",
+      "steps": ["Aufruf /login", "Eingabe Credentials", "Redirect auf /dashboard"],
+      "evidence": [
+        "LoginPage in routes.jsx vorhanden",
+        "ProtectedRoute leitet nicht-authentifizierte User auf /login um",
+        "AuthContext.jsx mit signIn/signOut implementiert",
+        "Redirect nach Login: Navigate to /dashboard"
+      ],
+      "result": "PASS"
+    },
+    {
+      "id": "S02",
+      "name": "Dashboard aufrufen",
+      "steps": ["Navigation zu /dashboard", "Status-Anzeige", "System-Health sichtbar"],
+      "evidence": [
+        "DashboardPage importiert dashboardApi, getSystemStatus",
+        "STATUS_FIELDS: release_status, system_health, governance_gate, security_gate, gui_gate etc.",
+        "LoadingState und ErrorState implementiert",
+        "Backend-Endpoint: /api/v1/status"
+      ],
+      "result": "PASS"
+    },
+    {
+      "id": "S03",
+      "name": "Dokument importieren",
+      "steps": ["Navigation zu /import via NAV", "Datei hochladen", "Bestaetigung"],
+      "evidence": [
+        "/import ist in AppShell NAV_ITEMS vorhanden",
+        "ImportCenterPage vorhanden (routes.jsx Zeile 87)",
+        "ABER: /import ist nicht im Masterplan final_navigation.md"
+      ],
+      "finding": "Route funktional erreichbar. Navigation-Diskrepanz (NAV-FIX-03) dokumentiert. Funktionaler Flow nicht blockiert.",
+      "result": "PASS_WITH_WARNING",
+      "warning": "/import nicht im Masterplan — NAV-FIX-03 ausstehend"
+    },
+    {
+      "id": "S04",
+      "name": "Dokumente suchen",
+      "steps": ["Navigation zu Suche", "Suchbegriff eingeben", "Ergebnisse sehen"],
+      "evidence": [
+        "SearchPage vorhanden (/search)",
+        "useSearch.js und SearchResultCard vorhanden",
+        "ABER: AppShell NAV_ITEMS zeigt auf /search, Masterplan fordert /chat (ChatPage)"
+      ],
+      "finding": "SearchPage (/search) ist funktional erreichbar. Der Masterplan definiert Suche als /chat (ChatPage). Die beiden Routen sind unterschiedliche Komponenten mit unterschiedlichen Funktionen.",
+      "result": "BLOCKED",
+      "blocker": "NAV-FIX-01: /search vs /chat — unklar welche Route als 'Suche' gelten soll. Masterplan-Divergenz unaufgeloest."
+    },
+    {
+      "id": "S05",
+      "name": "Themen-Uebersicht aufrufen",
+      "steps": ["Navigation zu /topics", "Topic-Liste sehen", "Topic-Detail aufrufen"],
+      "evidence": [
+        "/topics ist in AppShell NAV_ITEMS vorhanden",
+        "TopicsPage, useTopics.js, TopicListPanel, TopicDetailPanel vorhanden",
+        "ABER: /topics ist nicht im Masterplan final_navigation.md"
+      ],
+      "finding": "Route funktional erreichbar. Navigation-Diskrepanz (NAV-FIX-03) dokumentiert.",
+      "result": "PASS_WITH_WARNING",
+      "warning": "/topics nicht im Masterplan — NAV-FIX-03 ausstehend"
+    },
+    {
+      "id": "S06",
+      "name": "Datenanalyse aufrufen",
+      "steps": ["Navigation zu /rag via NAV", "Dokumente sehen", "Retrieve-Anfrage stellen"],
+      "evidence": [
+        "/rag in AppShell NAV_ITEMS vorhanden",
+        "RAGCenterPage vorhanden",
+        "Backend-Endpoints: /api/v1/rag/documents, /api/v1/rag/retrieve"
+      ],
+      "result": "PASS"
+    },
+    {
+      "id": "S07",
+      "name": "Analyse-Ergebnis ansehen",
+      "steps": ["Retrieve-Anfrage abschicken", "Ergebnis angezeigt bekommen"],
+      "evidence": [
+        "RAGCenterPage hat Retrieve-Logik (callApi /api/v1/rag/retrieve mit POST body)",
+        "Ergebnis-Anzeige implementiert"
+      ],
+      "result": "PASS"
+    },
+    {
+      "id": "S08",
+      "name": "Data Quality aufrufen (read-only)",
+      "steps": ["Navigation zu Data Quality via NAV", "Quality-Uebersicht sehen"],
+      "evidence": [
+        "/data-quality ist in routes.jsx vorhanden (DataQualityPage -> DataQualityDashboard)",
+        "dataQuality.js: nur GET-Methoden",
+        "ABER: /data-quality fehlt in AppShell NAV_ITEMS — nicht per Klick erreichbar"
+      ],
+      "result": "BLOCKED",
+      "blocker": "NAV-FIX-02: /data-quality nicht in AppShell NAV_ITEMS. User kann Data Quality nicht per Navigationsklick aufrufen. Nur per direktem URL."
+    },
+    {
+      "id": "S09",
+      "name": "Drift Detection aufrufen (read-only)",
+      "steps": ["Navigation zu /drift via NAV", "Drift-Dashboard sehen", "Keine Mutations-Aktion moeglich"],
+      "evidence": [
+        "/drift in AppShell NAV_ITEMS vorhanden",
+        "DriftPage -> drift_v2/DriftDashboard",
+        "driftApi.js: nur GET-Methoden (DriftV2RegressionGuard 6/6 PASS)",
+        "Keine Repair/Cleanup-Buttons in DriftDashboard.jsx"
+      ],
+      "result": "PASS"
+    },
+    {
+      "id": "S10",
+      "name": "Logout",
+      "steps": ["Abmelden-Button klicken", "Redirect auf /login"],
+      "evidence": [
+        "AppShell.jsx: handleLogout -> signOut() -> navigate('/login')",
+        "signOut in AuthContext implementiert",
+        "Abmelden-Button vorhanden (data-testid nicht geprueft)"
+      ],
+      "result": "PASS"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "pass": 7,
+    "pass_with_warning": 2,
+    "blocked": 2,
+    "failed": 0
+  },
+  "blocking_scenarios": ["S04", "S08"],
+  "warning_scenarios": ["S03", "S05"],
+  "root_cause_mapping": {
+    "S04_blocker": "NAV-FIX-01 (final_navigation_release_check.json R1)",
+    "S08_blocker": "NAV-FIX-02 (final_navigation_release_check.json R1)"
+  }
+}

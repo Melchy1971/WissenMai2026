@@ -1,0 +1,77 @@
+{
+  "report": "final_gate_test_selection_report",
+  "generated_at": "2026-06-15T07:06:00.000000+00:00",
+  "generated_by": "testmarker_cleanup_task",
+  "status": "CLEAN",
+  "summary": "Local Gate enthaelt keine external_env_only oder legacy_live_http Tests. Keine Skips im local gate. Marker-Trennlinie korrekt.",
+  "local_gate": {
+    "command": "pytest tests/api -m local_gate",
+    "marker": "local_gate",
+    "collected": 11,
+    "passed": 11,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "deselected": 72,
+    "status": "PASS",
+    "blocking": true,
+    "contains_external_env_only": false,
+    "contains_legacy_live_http": false
+  },
+  "external_env_gate": {
+    "command": "pytest tests/api -m external_env_only",
+    "marker": "external_env_only",
+    "collected": 72,
+    "skipped": 72,
+    "status": "SKIPPED_EXTERNAL_ENV_ONLY",
+    "blocking_local": false,
+    "note": "Bewusst geskippt — kein Server laeuft lokal. Nicht stiller PASS."
+  },
+  "legacy_live_http": {
+    "marker": "legacy_live_http",
+    "classification": "external_env_only",
+    "blocking_local": false,
+    "files": [
+      "tests/api/test_gui_backend_endpoints.py",
+      "tests/api/test_gui_contracts.py",
+      "tests/api/test_gui_secret_masking.py",
+      "tests/api/test_secret_masking_api.py",
+      "tests/api/test_settings_endpoints.py",
+      "tests/api/test_settings_patch.py"
+    ]
+  },
+  "vitest_gate": {
+    "framework": "vitest@4.1.5",
+    "config": "frontend/vite.config.js",
+    "include": "src/tests/**/*.{test,spec}.{js,jsx}",
+    "exclude": ["tests/gui_truth/**", "tests/archive/legacy/**"],
+    "verified_tests": {
+      "auth": {"files": 2, "tests": 15, "status": "PASS"},
+      "app": {"files": 2, "tests": 15, "status": "PASS"},
+      "components": {"files": 1, "tests": 2, "status": "PASS"},
+      "features": {"files": 1, "tests": 23, "status": "PASS"},
+      "api": {"files": 3, "tests": 45, "status": "PASS"},
+      "view-models": {"files": 1, "tests": 6, "status": "PASS"},
+      "pages/DocumentsPage": {"files": 1, "tests": 14, "status": "PASS"},
+      "pages/DataQualityPage": {"files": 1, "tests": 23, "status": "PASS"},
+      "pages/DocumentDetailPage": {"files": 1, "tests": 5, "status": "PASS"}
+    },
+    "verified_total": 148,
+    "verified_passed": 148,
+    "verified_failed": 0,
+    "unverified_due_to_timeout": [
+      "src/tests/pages/AdminDiagnosticsPage.test.jsx",
+      "src/tests/pages/ChatPage.test.jsx",
+      "src/tests/pages/DocumentCenterPage.test.jsx",
+      "src/tests/pages/ImportCenterPage.test.jsx",
+      "src/tests/pages/SearchPage.test.jsx",
+      "src/tests/pages/TopicsPage.test.jsx"
+    ],
+    "unverified_note": "jsdom-Startup-Overhead ~15s/Datei. Voller Suite-Lauf ueberschreitet lokales Timeout-Budget. Kein Fehler detektiert — Status UNKNOWN fuer diese 6 Dateien."
+  },
+  "violations_found": [],
+  "actions_taken": [
+    "pytest.ini: keine Aenderung noetig — Marker bereits korrekt getrennt",
+    "vite.config.js: exclude ergaenzt um tests/archive/legacy/**"
+  ]
+}

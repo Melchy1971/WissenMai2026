@@ -1,0 +1,223 @@
+{
+  "report_schema_version": 2,
+  "report_name": "product_maturity_v2",
+  "report_type": "maturity_assessment",
+  "generated_at": "2026-06-15T23:52:00.000000+00:00",
+  "evaluation_method": "Synthese aus 6 Input-Reports: document_center_product_ready.json, topic_center_product_ready.json, search_experience_ready.json, export_center_product_ready.json, analysis_ux_ready.json, product_gold_path.json",
+  "score_range": "0-100. Schwellwert für 1.0-Release: 85",
+
+  "inputs": {
+    "document_center_product_ready": "reports/current/document_center_product_ready.json",
+    "topic_center_product_ready": "reports/current/topic_center_product_ready.json",
+    "search_experience_ready": "reports/current/search_experience_ready.json",
+    "export_center_product_ready": "reports/current/export_center_product_ready.json",
+    "analysis_ux_ready": "reports/current/analysis_ux_ready.json",
+    "product_gold_path": "reports/current/product_gold_path.json"
+  },
+
+  "dimensionen": {
+    "fachliche_reife": {
+      "gewichtung": 0.40,
+      "beschreibung": "Funktionale Abdeckung der 1.0-Anforderungen je Bereich",
+      "bewertung_je_bereich": {
+        "dashboard": {
+          "score": 50,
+          "begruendung": "5/7 Widgets implementiert. W06 Drift fehlt (Backend). W07 Aktivitäten unklar. Kern-Widgets (W01-W05) CONDITIONAL_PASS."
+        },
+        "dokumente": {
+          "score": 65,
+          "begruendung": "Liste, Lifecycle, Archivieren, Löschen vollständig. Tags NICHT_VERFÜGBAR (P1-GAP). Themen Platzhalter. Bearbeiten fehlt. Technische IDs sichtbar (DC-F01)."
+        },
+        "import": {
+          "score": 85,
+          "begruendung": "Import-Flow vollständig. Retry-Backend vorhanden, kein Frontend-Button. Duplicate-Erkennung vorhanden."
+        },
+        "suche": {
+          "score": 40,
+          "begruendung": "Chunk-Volltext-Suche implementiert. Tag-Suche, Themen-Suche, Dokument-Suche fehlen. Kein deutsches Stemming. Kein KWIC. 1/4 Suchtypen vollständig."
+        },
+        "themen": {
+          "score": 5,
+          "begruendung": "Frontend-Hook codiert aber wirkungslos. Backend (ORM + API) vollständig fehlend. 0/9 Funktionen verfügbar. Score 5 statt 0 wegen vollständig spezifiziertem Datenmodell im Frontend."
+        },
+        "datenanalyse": {
+          "score": 20,
+          "begruendung": "Backend-API vollständig (POST /jobs, GET /jobs/:id, POST /approve). AnalysisPage.jsx fehlt komplett (AGAP-07). 0/7 UX-Schritte erreichbar. Score 20 wegen vorhandenem Backend."
+        },
+        "export": {
+          "score": 0,
+          "begruendung": "Export Center vollständig fehlend. Kein Endpunkt, kein Service, kein Frontend. JSON-Export und Markdown-Export nicht implementiert."
+        },
+        "benutzerverwaltung": {
+          "score": 90,
+          "begruendung": "Login/Logout/Session-Revocation vollständig. Workspace-Rollen (member/admin) implementiert. Kleine Lücke: Self-Service im Scope? (aus vorigen Reports als P3 eingestuft)"
+        }
+      },
+      "durchschnitt_berechnung": "(50+65+85+40+5+20+0+90) / 8 = 44.4",
+      "score": 44
+    },
+
+    "ux_reife": {
+      "gewichtung": 0.25,
+      "beschreibung": "Nutzerführung, Fehlerzustände, Leerseiten, Navigation, keine technischen IDs im UI",
+      "bewertung_je_bereich": {
+        "dokumente_ux": {
+          "score": 65,
+          "begruendung": "FilterPanel, ListPanel, PreviewPanel vorhanden. ConfirmDialogs für Archive/Delete. Loading/Empty/Error States implementiert. Defekt: technische IDs in DocumentMetaCard sichtbar."
+        },
+        "import_ux": {
+          "score": 75,
+          "begruendung": "Upload-Dialog + Status-Polling + Fehleranzeige implementiert. Kein Retry-Button im Error-Zustand."
+        },
+        "suche_ux": {
+          "score": 55,
+          "begruendung": "300ms Debounce, Relevanz-Balken, Fehler-Zustand implementiert. Kein KWIC, keine Trefferzahl."
+        },
+        "themen_ux": {
+          "score": 10,
+          "begruendung": "Fehlermeldung 'Backend noch nicht verfügbar' wird angezeigt — das ist ein korrekter Fehlerzustand, aber kein funktionaler UX-Flow. Nutzer sieht nur Error."
+        },
+        "analyse_ux": {
+          "score": 5,
+          "begruendung": "AnalysisPage.jsx fehlt — kein UX-Flow vorhanden. Kein Loading, kein Fortschritt, kein Ergebnis sichtbar."
+        },
+        "export_ux": {
+          "score": 0,
+          "begruendung": "Kein UI-Einstiegspunkt."
+        },
+        "login_logout_ux": {
+          "score": 90,
+          "begruendung": "Login und Logout vollständig, saubere Weiterleitungen, Token-Handling."
+        }
+      },
+      "durchschnitt_berechnung": "(65+75+55+10+5+0+90) / 7 = 42.9",
+      "score": 43
+    },
+
+    "betriebsreife": {
+      "gewichtung": 0.15,
+      "beschreibung": "Sicherheit, Workspace-Isolation, Fehlerresistenz, keine Credential-Logs, Soft-Delete",
+      "bewertung_aspekte": {
+        "workspace_isolation": {
+          "score": 90,
+          "begruendung": "Alle implementierten Endpunkte prüfen workspace_id aus Auth-Token. Konsistent."
+        },
+        "soft_delete": {
+          "score": 95,
+          "begruendung": "Kein Hard-Delete ohne explizites Flag. Lifecycle-Status-Konzept vollständig."
+        },
+        "security_prohibits": {
+          "score": 100,
+          "begruendung": "PROHIBIT-02, -06, -08 eingehalten. Kein RepairButton, kein CleanupButton, keine automatische M5c-Ausführung."
+        },
+        "fehlerresistenz_backend": {
+          "score": 70,
+          "begruendung": "Error-Handling in vorhandenen Endpunkten gut. Fehlende Endpunkte (Export, Topics, Cancel) können jedoch Fehler produzieren."
+        },
+        "logging_sicherheit": {
+          "score": 90,
+          "begruendung": "Keine Credential-/Token-Logs verifiziert. Keine .env-Commits. HTTP-Korrelations-IDs implementiert."
+        }
+      },
+      "durchschnitt_berechnung": "(90+95+100+70+90) / 5 = 89",
+      "score": 89
+    },
+
+    "release_reife": {
+      "gewichtung": 0.20,
+      "beschreibung": "Gold Path Pass-Rate, E2E-Suite-Ergebnis, Release Gate Status, Scope Freeze",
+      "bewertung_aspekte": {
+        "gold_path": {
+          "score": 37,
+          "begruendung": "3/8 Schritte PASS, 4 FAIL, 1 mit Befund. Vollständiger Durchlauf ohne Eingriff nicht möglich.",
+          "berechnung": "3/8 = 37.5 → 37"
+        },
+        "e2e_truth_suite": {
+          "score": 44,
+          "begruendung": "3 PASS + 1 CONDITIONAL_PASS + 5 FAIL. Gesamtverdikt FAIL.",
+          "berechnung": "(3 + 0.5) / 9 = 38.9% vollständig, aber CONDITIONAL_PASS zählt als halber Punkt"
+        },
+        "release_gate": {
+          "score": 14,
+          "begruendung": "product_release_gate.json: 1 PASS + 1 CONDITIONAL_PASS + 5 BLOCKED von 7 Gates. Entscheidung: BLOCKED.",
+          "berechnung": "(1 + 0.5) / 7 = 21.4% → 21, aber Gate-Entscheidung BLOCKED gibt Abzug → 14"
+        },
+        "scope_freeze": {
+          "score": 100,
+          "begruendung": "docs/version_1_0_scope_freeze.md erstellt und vollständig. In-Scope und Not-in-Scope klar definiert."
+        }
+      },
+      "durchschnitt_berechnung": "(37+44+14+100) / 4 = 48.75",
+      "score": 49
+    }
+  },
+
+  "gesamtscore": {
+    "berechnung": {
+      "fachliche_reife": "44 × 0.40 = 17.6",
+      "ux_reife": "43 × 0.25 = 10.75",
+      "betriebsreife": "89 × 0.15 = 13.35",
+      "release_reife": "49 × 0.20 = 9.8"
+    },
+    "summe": "17.6 + 10.75 + 13.35 + 9.8 = 51.5",
+    "score": 52,
+    "schwellwert": 85,
+    "delta_zu_schwellwert": -33,
+    "verdict": "UNTER_SCHWELLWERT"
+  },
+
+  "score_entwicklung": {
+    "product_maturity_v1": {
+      "score": "nicht verfügbar als Vergleichswert aus dieser Analyse",
+      "note": "product_maturity_report.json (#37) nicht neu eingelesen. Wert aus diesem Report: TEILWEISE/NOT_READY."
+    },
+    "current_v2": 52,
+    "trend": "NICHT_MESSBAR — fehlender V1-Vergleichswert. Absoluter Stand: WEIT unter 85."
+  },
+
+  "haupthindernisse": [
+    {
+      "hindernis": "Topics-Backend komplett fehlend",
+      "impact_auf_score": "-15 Punkte (Fachliche Reife Themen 5 statt 80, UX Themen 10 statt 75)",
+      "sprint_fix": ["T09-T19"]
+    },
+    {
+      "hindernis": "AnalysisPage.jsx fehlt — 0 UX-Schritte im 7-Schritt-Workflow",
+      "impact_auf_score": "-10 Punkte (Fachliche Reife Analyse 20 statt 70, UX Analyse 5 statt 70)",
+      "sprint_fix": ["T25", "T26", "T27"]
+    },
+    {
+      "hindernis": "Export Center vollständig fehlend",
+      "impact_auf_score": "-8 Punkte (Fachliche Reife Export 0 statt 70, UX Export 0 statt 60)",
+      "sprint_fix": ["T28-T33"]
+    },
+    {
+      "hindernis": "Gold Path FAIL (4/8 Schritte)",
+      "impact_auf_score": "-7 Punkte auf Release-Reife",
+      "sprint_fix": ["Kombination aus obigen Fixes"]
+    },
+    {
+      "hindernis": "Technische IDs in DocumentMetaCard sichtbar",
+      "impact_auf_score": "-2 Punkte (UX-Reife Dokumente)",
+      "sprint_fix": ["Einzel-Fix < 1h"]
+    }
+  ],
+
+  "score_nach_sprint": {
+    "erwarteter_score": "~78-82",
+    "note": "Nach Implementierung von Topics-Backend, AnalysisPage.jsx, Export Center und technische IDs-Fix. Verbleibende Lücken (Lazy Loading, KWIC, deutsch Stemming) halten Score unter 85.",
+    "fuer_85_zusaetzlich_noetig": [
+      "Lazy Loading in Dokumentenvorschau",
+      "KWIC-Highlighting in Suche",
+      "Tags vollständig nutzbar (Filter + Zuweisung)",
+      "Cancel für Analyse-Jobs (AGAP-02)"
+    ]
+  },
+
+  "security_constraints_verified": {
+    "PROHIBIT_02": "EINGEHALTEN",
+    "PROHIBIT_06": "EINGEHALTEN",
+    "PROHIBIT_08": "EINGEHALTEN",
+    "drift_readonly": "EINGEHALTEN"
+  }
+}

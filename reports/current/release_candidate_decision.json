@@ -1,0 +1,121 @@
+{
+  "report": "release_candidate_decision",
+  "schema_version": 1,
+  "generated_at": "2026-06-15T08:00:00.000000+00:00",
+  "generated_by": "release_candidate_decision_task",
+  "decision": "BLOCKED",
+  "inputs": {
+    "final_gate_report": {
+      "file": "reports/current/final_gate_report.json",
+      "verdict": "BLOCKED",
+      "required_pass": 6,
+      "required_blocked": 4,
+      "blockers": [
+        "report_integrity_v2",
+        "m5b_alpha_hardening_gate",
+        "m5b_production_readiness_gate",
+        "m5c_start_gate"
+      ]
+    },
+    "external_env_gate": {
+      "file": "reports/current/external_env_gate.json",
+      "status": "NOT_RUN",
+      "blocks_rc": false,
+      "note": "NOT_RUN ist erlaubt für Release Candidate Decision"
+    },
+    "masterplan_status": {
+      "file": "reports/current/masterplan_status_v2.json",
+      "status": "blocked",
+      "note": "masterplan_status.json truncated (JSON parse error) — masterplan_status_v2.json verwendet"
+    },
+    "known_limitations": {
+      "file": "reports/current/known_limitations.json",
+      "status": "INFO",
+      "total_limitations": 6,
+      "blocking_core_count": 0,
+      "condition_met": true,
+      "note": "Keine BLOCKING_CORE Limitations. Severity-Werte: high (3), low (3)."
+    },
+    "documentation_truth_lint": {
+      "file": "reports/current/documentation_truth_lint.json",
+      "status": "PASS",
+      "checks_pass": 19,
+      "checks_total": 19,
+      "condition_met": true
+    },
+    "report_integrity_v2": {
+      "file": "reports/current/report_integrity_v2.json",
+      "status": "BLOCKED",
+      "blockers": 20,
+      "condition_met": false,
+      "root_cause": "TEST_DATABASE_URL nicht gesetzt → m5a_source_status_integrity_gate + m5a_orphan_detector_gate liefen nicht gegen echte Datenbank (collected=0, errors=1). 20 Blocker in report_integrity_v2."
+    }
+  },
+  "rc_criteria": {
+    "local_final_gate_pass": {
+      "required": true,
+      "met": false,
+      "actual": "BLOCKED",
+      "reason": "final_gate_report.json verdict=BLOCKED (4 required gates BLOCKED)"
+    },
+    "no_blocking_core_limitations": {
+      "required": true,
+      "met": true,
+      "actual": 0,
+      "reason": "0 Limitations mit severity=BLOCKING_CORE"
+    },
+    "documentation_truth_lint_pass": {
+      "required": true,
+      "met": true,
+      "actual": "PASS",
+      "reason": "19/19 Checks PASS"
+    },
+    "report_integrity_v2_pass": {
+      "required": true,
+      "met": false,
+      "actual": "BLOCKED",
+      "reason": "20 Blocker. Root cause: TEST_DATABASE_URL nicht gesetzt."
+    },
+    "external_env_gate_not_required": {
+      "required": false,
+      "met": true,
+      "actual": "NOT_RUN",
+      "reason": "External Env Gate darf NOT_RUN sein — Bedingung erfüllt"
+    }
+  },
+  "unmet_criteria": [
+    {
+      "criterion": "local_final_gate_pass",
+      "reason": "final_gate_report.json verdict=BLOCKED"
+    },
+    {
+      "criterion": "report_integrity_v2_pass",
+      "reason": "status=BLOCKED, 20 Blocker, root cause: TEST_DATABASE_URL nicht gesetzt"
+    }
+  ],
+  "blocker_chain": {
+    "root_cause": "TEST_DATABASE_URL nicht gesetzt",
+    "chain": [
+      "TEST_DATABASE_URL fehlt",
+      "→ m5a_source_status_integrity_gate: collected=0, errors=1",
+      "→ m5a_orphan_detector_gate: collected=0, errors=1",
+      "→ m5a_data_quality_gate: nicht lauffähig",
+      "→ m5a_final_readiness_review: blockiert",
+      "→ report_integrity_v2: BLOCKED (20 Blocker)",
+      "→ m5b_alpha_hardening_gate: BLOCKED (cascade)",
+      "→ m5b_production_readiness_gate: BLOCKED (cascade)",
+      "→ m5c_start_gate: BLOCKED (cascade)",
+      "→ local_final_gate: BLOCKED",
+      "→ release_candidate_decision: BLOCKED"
+    ],
+    "unblock_action": "TEST_DATABASE_URL setzen, pytest tests/api -m local_gate erneut ausführen, report_integrity_v2 neu generieren"
+  },
+  "result": {
+    "decision": "BLOCKED",
+    "release_candidate": false,
+    "criteria_met": 3,
+    "criteria_required": 4,
+    "unmet_count": 2,
+    "note": "RELEASE_CANDIDATE erfordert: local_final_gate PASS + keine BLOCKING_CORE Limitations + documentation_truth_lint PASS + report_integrity_v2 PASS. Zwei Bedingungen nicht erfüllt (beide auf denselben root cause zurückzuführen: TEST_DATABASE_URL)."
+  }
+}

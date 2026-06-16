@@ -1,0 +1,219 @@
+{
+  "report": "final_gate_report",
+  "schema_version": 2,
+  "validator": "local_final_gate_validator_v2",
+  "dependency_graph": "local_final_gate_dependency_graph.json",
+  "generated_at": "2026-06-15T07:42:37.784685+00:00",
+  "verdict": "BLOCKED",
+  "summary": {
+    "total_gates": 14,
+    "required_pass": 6,
+    "required_blocked": 4,
+    "optional_warnings": 2,
+    "external_only": 1,
+    "non_blocking": 1
+  },
+  "blockers": [
+    {
+      "gate": "report_integrity_v2",
+      "reason": "Regel 1: status=BLOCKED blockiert required gate (pass_values=['PASS'])"
+    },
+    {
+      "gate": "m5b_alpha_hardening_gate",
+      "reason": "Regel 1: status=BLOCKED blockiert required gate (pass_values=['PASS'])"
+    },
+    {
+      "gate": "m5b_production_readiness_gate",
+      "reason": "Regel 1: status=BLOCKED blockiert required gate (pass_values=['PASS'])"
+    },
+    {
+      "gate": "m5c_start_gate",
+      "reason": "Regel 1: status=BLOCKED blockiert required gate (pass_values=['PASS'])"
+    }
+  ],
+  "warnings": [
+    {
+      "gate": "drift_v2_component_contract",
+      "reason": "Optional gate drift_v2_component_contract status=PARTIAL_FAIL: Warning erzeugt, kein Blocker. 3 GAP-Assertions wegen testid-Abweichung (drift-run-summary, drift-severity-breakdown, drift-type-breakdown). Kein neuer Defekt."
+    },
+    {
+      "gate": "drift_dashboard_truth_report",
+      "reason": "Optional gate drift_dashboard_truth_report: Report nicht lesbar (JSON_PARSE_ERROR: Expecting ',' delimiter: line 111 column 3 (char 2750)) \u2014 Warning"
+    }
+  ],
+  "external_only": [
+    {
+      "gate": "external_env_gate",
+      "status": "NOT_RUN"
+    }
+  ],
+  "non_blocking": [
+    {
+      "gate": "permission_blocker",
+      "reason": "Aktiver Pfad ist 'frontend/src/features/drift_v2' (drift_v2). ACL-Blockierung auf 'frontend/src/features/drift' (alt) betrifft keinen aktiven Pfad. Regel 6: NON_BLOCKING."
+    }
+  ],
+  "archive_check": {
+    "report": "frontend_legacy_test_archive_report.json",
+    "status": "PASS",
+    "reason": "frontend_legacy_test_archive_report.json status=PASS \u2014 legacy tests archived"
+  },
+  "gate_results": [
+    {
+      "id": "backend_local_gate",
+      "type": "required",
+      "report": "final_gate_test_split.json",
+      "description": "pytest -m local_gate: 11 Tests, kein Skip erlaubt",
+      "resolved_field": "local_gate.status",
+      "resolved_value": "PASS",
+      "status": "PASS",
+      "skip_count": 0,
+      "verdict": "PASS",
+      "reason": "status=PASS in pass_values"
+    },
+    {
+      "id": "frontend_vitest_gate",
+      "type": "required",
+      "report": "drift_v2_ui_truth_report.json",
+      "description": "Vitest: drift_v2 UI Truth + Component Contract + DriftDashboard (52+ Tests). Status aus drift_v2_ui_truth_report.",
+      "resolved_field": "status",
+      "resolved_value": "PASS",
+      "status": "PASS",
+      "verdict": "PASS",
+      "reason": "status=PASS in pass_values"
+    },
+    {
+      "id": "documentation_truth_lint",
+      "type": "required",
+      "report": "documentation_truth_lint.json",
+      "description": "Dokumentations-Lint: 19/19 Checks m\u00fcssen PASS sein",
+      "resolved_field": "status",
+      "resolved_value": "PASS",
+      "status": "PASS",
+      "verdict": "PASS",
+      "reason": "status=PASS in pass_values"
+    },
+    {
+      "id": "drift_v2_import_audit",
+      "type": "required",
+      "report": "drift_v2_import_audit.json",
+      "description": "Kein aktiver Import aus features/drift (alt). Alle Drift-Imports auf drift_v2.",
+      "resolved_field": "status",
+      "resolved_value": "PASS",
+      "status": "PASS",
+      "verdict": "PASS",
+      "reason": "status=PASS in pass_values"
+    },
+    {
+      "id": "drift_route_recovery",
+      "type": "required",
+      "report": "drift_route_recovery_report.json",
+      "description": "Route /drift \u2192 DriftPage \u2192 drift_v2/DriftDashboard korrekt verdrahtet",
+      "resolved_field": "status",
+      "resolved_value": "PASS",
+      "status": "PASS",
+      "verdict": "PASS",
+      "reason": "status=PASS in pass_values"
+    },
+    {
+      "id": "known_limitations",
+      "type": "required",
+      "report": "known_limitations.json",
+      "description": "Keine Limitation mit severity=BLOCKING_CORE vorhanden",
+      "resolved_field": "blocking_limitations",
+      "blocking_limitations": 0,
+      "resolved_value": 0,
+      "status": "PASS",
+      "verdict": "PASS",
+      "reason": "known_limitations: 0 BLOCKING_CORE Limitations"
+    },
+    {
+      "id": "report_integrity_v2",
+      "type": "required",
+      "report": "report_integrity_v2.json",
+      "description": "Report Integrity: Alle Gate-Reports konsistent. Blockiert wenn TEST_DATABASE_URL nicht gesetzt.",
+      "resolved_field": "status",
+      "resolved_value": "BLOCKED",
+      "status": "BLOCKED",
+      "verdict": "BLOCKED",
+      "reason": "Regel 1: status=BLOCKED blockiert required gate (pass_values=['PASS'])"
+    },
+    {
+      "id": "m5b_alpha_hardening_gate",
+      "type": "required",
+      "report": "m5b_alpha_hardening_gate.json",
+      "description": "M5b Alpha Hardening Gate: Alle Alpha-Kriterien erf\u00fcllt",
+      "resolved_field": "decision",
+      "resolved_value": "BLOCKED",
+      "status": "BLOCKED",
+      "verdict": "BLOCKED",
+      "reason": "Regel 1: status=BLOCKED blockiert required gate (pass_values=['PASS'])"
+    },
+    {
+      "id": "m5b_production_readiness_gate",
+      "type": "required",
+      "report": "m5b_production_readiness_gate.json",
+      "description": "M5b Production Readiness: Produktionsreife nachgewiesen",
+      "resolved_field": "status",
+      "resolved_value": "BLOCKED",
+      "status": "BLOCKED",
+      "verdict": "BLOCKED",
+      "reason": "Regel 1: status=BLOCKED blockiert required gate (pass_values=['PASS'])"
+    },
+    {
+      "id": "m5c_start_gate",
+      "type": "required",
+      "report": "m5c_start_gate.json",
+      "description": "M5c Start Gate: Voraussetzungen f\u00fcr Cleanup-Phase erf\u00fcllt (aktuell BLOCKED, Cleanup NO_GO)",
+      "resolved_field": "status",
+      "resolved_value": "BLOCKED",
+      "status": "BLOCKED",
+      "verdict": "BLOCKED",
+      "reason": "Regel 1: status=BLOCKED blockiert required gate (pass_values=['PASS'])"
+    },
+    {
+      "id": "drift_v2_component_contract",
+      "type": "optional",
+      "report": "drift_v2_ui_truth_report.json",
+      "description": "Drift v2 Component Contract: 3 testid-GAPs bekannt und dokumentiert. PARTIAL_FAIL erwartet bis Migration.",
+      "resolved_field": "test_files_run.2.status",
+      "resolved_value": "PARTIAL_FAIL",
+      "status": "PARTIAL_FAIL",
+      "note": "3 GAP-Assertions wegen testid-Abweichung (drift-run-summary, drift-severity-breakdown, drift-type-breakdown). Kein neuer Defekt.",
+      "verdict": "WARNING",
+      "reason": "Optional gate drift_v2_component_contract status=PARTIAL_FAIL: Warning erzeugt, kein Blocker. 3 GAP-Assertions wegen testid-Abweichung (drift-run-summary, drift-severity-breakdown, drift-type-breakdown). Kein neuer Defekt."
+    },
+    {
+      "id": "drift_dashboard_truth_report",
+      "type": "optional",
+      "report": "drift_dashboard_truth_report.json",
+      "description": "Drift Dashboard Truth Report \u2014 JSON truncated, INVALID. War zuvor PASS (23/23).",
+      "status": "INVALID",
+      "error": "JSON_PARSE_ERROR: Expecting ',' delimiter: line 111 column 3 (char 2750)",
+      "verdict": "WARNING",
+      "reason": "Optional gate drift_dashboard_truth_report: Report nicht lesbar (JSON_PARSE_ERROR: Expecting ',' delimiter: line 111 column 3 (char 2750)) \u2014 Warning"
+    },
+    {
+      "id": "external_env_gate",
+      "type": "external_only",
+      "report": "external_env_gate.json",
+      "description": "External Env Gate: 72 Tests in 6 Dateien (legacy_live_http + external_env_only). NOT_RUN lokal. Kein Blocker f\u00fcr local_final_gate.",
+      "status": "NOT_RUN",
+      "verdict": "EXTERNAL_ONLY",
+      "reason": "external_only Gate: dokumentiert, blockiert local_final_gate nicht"
+    },
+    {
+      "id": "permission_blocker",
+      "type": "legacy_non_blocking",
+      "report": "permission_blocker_report.json",
+      "description": "Filesystem ACL auf features/drift (alt). Aktiver Pfad ist features/drift_v2. Regel 6: NON_BLOCKING.",
+      "blocked_path": "frontend/src/features/drift",
+      "safe_replacement_path": "frontend/src/features/drift_v2",
+      "safe_replacement_active": true,
+      "rule_applied": "rule_6",
+      "status": "BLOCKED_BY_FILESYSTEM_ACL",
+      "verdict": "NON_BLOCKING",
+      "reason": "Aktiver Pfad ist 'frontend/src/features/drift_v2' (drift_v2). ACL-Blockierung auf 'frontend/src/features/drift' (alt) betrifft keinen aktiven Pfad. Regel 6: NON_BLOCKING."
+    }
+  ]
+}

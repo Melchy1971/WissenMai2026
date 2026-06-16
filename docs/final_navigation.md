@@ -1,6 +1,6 @@
 # Finale Navigation
 
-**Datum:** 2026-06-12
+**Datum:** 2026-06-15 (aktualisiert)
 **Quelle:** frontend/src/app/AppShell.jsx + frontend/src/app/routes.jsx
 
 ---
@@ -35,13 +35,17 @@
 
 ---
 
-## Drift Detection (vorgemerkt, nicht aktiv)
+## Drift Detection (aktiv — formale Freigabe ausstehend)
 
-Sobald `reports/current/m5b_production_readiness_gate.json` = PASS:
+Route und Komponente sind implementiert und erreichbar. Formale Freigabe blockiert durch m5b_production_readiness_gate BLOCKED.
 
-| Label | Route | Komponente |
-|-------|-------|-----------|
-| Drift Detection | /drift | DriftDashboard (neu zu erstellen) |
+| Label | Route | Komponente | Status |
+|-------|-------|-----------|--------|
+| Drift | /drift | DriftPage → drift_v2/DriftDashboard | Aktiv (Read-Only) |
 
-Einfügen zwischen "Data Quality" und "Einstellungen". Gate-Bedingung: M5b Production Readiness PASS.
+Position: zwischen "Data Quality" und "Einstellungen".
+Nachweis: `reports/current/drift_route_recovery_report.json` PASS, `reports/current/drift_v2_ui_truth_report.json` PASS (29/29).
+Formale Freigabe: `reports/current/m5b_production_readiness_gate.json` BLOCKED — Gate-Kaskade aus M5a, root: TEST_DATABASE_URL.
+
+**Cleanup/Repair in Drift: NO_GO** — PROHIBIT-02 (kein RepairButton), PROHIBIT-06 (kein CleanupButton). Drift Dashboard ist Read-Only ohne Ausnahme.
 

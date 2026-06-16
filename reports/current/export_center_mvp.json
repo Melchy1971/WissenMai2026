@@ -1,0 +1,182 @@
+{
+  "report_schema_version": 1,
+  "report_name": "export_center_mvp",
+  "report_type": "feature_spec",
+  "generated_at": "2026-06-15T22:00:00.000000+00:00",
+  "scope": "MVP Export Center — PDF, Markdown, JSON für Themen/Dokumente/Analyseergebnisse",
+  "verdict": "SPEC_COMPLETE — Implementierung ausstehend",
+
+  "principles": [
+    "Quellenangaben immer erhalten",
+    "Workspace-Isolation: Export enthält nur Daten des aktiven Workspace",
+    "Audit-Event bei jedem Export",
+    "Kein Export ohne Auth-Token"
+  ],
+
+  "constraints": [
+    "PROHIBIT-02: Kein Repair im Export-Flow",
+    "PROHIBIT-06: Kein Cleanup im Export-Flow",
+    "Keine personenbezogenen Daten exportieren außer was in den Dokumenten enthalten ist",
+    "API-Keys und Credentials niemals im Export"
+  ],
+
+  "export_sources": [
+    {
+      "source_id": "ES-01",
+      "name": "Themen (Topics)",
+      "data": ["topic.name", "topic.summary", "topic.sources[] mit document_title + chunk_preview", "topic.tags[]", "topic.documents[]"],
+      "dependency": "topic_center_rc.json — Backend-API fehlt aktuell. Export nicht lieferbar bis P1-GAP-01/02 implementiert.",
+      "status": "BLOCKED_BY_DEPENDENCY"
+    },
+    {
+      "source_id": "ES-02",
+      "name": "Dokumente",
+      "data": ["document.title", "document.source_url", "document.created_at", "document.lifecycle_status", "document.chunks[] (Textinhalt)", "document.tags[]"],
+      "dependency": "Dokument-API vollständig (getDocumentDetail + getDocumentChunks) — VERFÜGBAR",
+      "status": "IMPLEMENTIERBAR"
+    },
+    {
+      "source_id": "ES-03",
+      "name": "Analyseergebnisse",
+      "data": ["analysis_job.id", "analysis_job.analysis_type", "analysis_job.created_at", "analysis_job.status", "result.summary", "result.suggested_topics[]", "result.suggested_tags[]", "source_documents[] (Titel + ID)"],
+      "dependency": "analysis_e2e_completion.json — Backend vollständig, Result-Endpunkt vorhanden",
+      "status": "IMPLEMENTIERBAR"
+    }
+  ],
+
+  "export_formats": [
+    {
+      "format_id": "EF-01",
+      "format": "JSON",
+      "mime_type": "application/json",
+      "use_case": "Maschinenlesbar, Weiterverarbeitung, Archivierung",
+      "structure": {
+        "meta": "{ export_type, workspace_id, exported_at, exported_by }",
+        "sources": "Vollständiger Datensatz der Quelle (Dokument / Analyse / Thema)",
+        "source_references": "[ { document_id, document_title, source_url } ]"
+      },
+      "implementation": "json.dumps(payload, ensure_ascii=False, indent=2) — Python-Standard",
+      "status": "EINFACH"
+    },
+    {
+      "format_id": "EF-02",
+      "format": "Markdown",
+      "mime_type": "text/markdown",
+      "use_case": "Menschenlesbar, Wiki-Import, Confluence, Notion",
+      "structure": {
+        "header": "# Titel (Dokumentname / Thema / Analyse-ID)",
+        "meta_block": "**Exportiert:** {date} | **Typ:** {type} | **Workspace:** {ws}",
+        "content": "Chunks als Fließtext-Sektionen mit ## Überschriften",
+        "sources_section": "## Quellen\n- [Dokumenttitel](source_url) — chunk_preview"
+      },
+      "implementation": "String-Template — kein externer Renderer erforderlich",
+      "status": "EINFACH"
+    },
+    {
+      "format_id": "EF-03",
+      "format": "PDF",
+      "mime_type": "application/pdf",
+      "use_case": "Druckbar, formale Weitergabe, Archivierung",
+      "implementation_options": [
+        {
+          "option": "reportlab (Python)",
+          "pros": "Keine externe Abhängigkeit, volle Kontrolle",
+          "cons": "Styling-Aufwand"
+        },
+        {
+          "option": "WeasyPrint (HTML→PDF)",
+          "pros": "CSS-Styling einfach",
+          "cons": "Zusätzliche System-Abhängigkeit"
+        },
+        {
+          "option": "Markdown → HTML → PDF (via Jinja2 + WeasyPrint)",
+          "pros": "Template-basiert, wiederverwendbar",
+          "cons": "Zwei Build-Schritte"
+        }
+      ],
+      "recommended": "reportlab für MVP — keine externe System-Abhängigkeit",
+      "sections": ["Titel + Meta", "Inhaltsverzeichnis", "Hauptinhalt", "Quellenverzeichnis"],
+      "status": "AUFWÄNDIG — reportlab-Dependency + Layout-Arbeit"
+    }
+  ],
+
+  "api_spec": {
+    "endpoint": "POST /api/v1/export",
+    "auth": "require_workspace_member",
+    "request": {
+      "source_type": "document | analysis | topic",
+      "source_id": "uuid",
+      "format": "json | markdown | pdf"
+    },
+    "response": "Binary-Stream mit Content-Disposition: attachment; filename=export-{id}.{ext}",
+    "error_codes": [
+      "SOURCE_NOT_FOUND — 404",
+      "FORMAT_NOT_SUPPORTED — 400",
+      "EXPORT_TOO_LARGE — 413 (> 50 MB Export-Payload)",
+      "FORBIDDEN — 403 (Workspace-Mismatch)"
+    ]
+  },
+
+  "audit_event_spec": {
+    "event_type": "document_exported | analysis_exported | topic_exported",
+    "logged_fields": ["user_id", "workspace_id", "source_type", "source_id", "format", "timestamp"],
+    "not_logged": ["export_content", "document_text"],
+    "implementation": "AuditRecorder.record(event_type='document_exported', ...)"
+  },
+
+  "workspace_isolation": {
+    "guard": "Vor Export prüfen: source.workspace_id == auth.workspace_id — sonst 404",
+    "export_payload_scope": "Nur Daten des workspace_id aus Auth-Token",
+    "no_cross_workspace": "Auch Quellen-Referenzen dürfen nur auf Dokumente aus demselben Workspace zeigen"
+  },
+
+  "source_citation_rules": {
+    "rule_01": "Jeder Textabschnitt enthält Verweis auf Quell-Dokument (document_id + title)",
+    "rule_02": "source_url aus Dokument wird übernommen wenn vorhanden",
+    "rule_03": "Chunk-Präfixe im Export: '— Quelle: [Dokumenttitel]'",
+    "rule_04": "Bei Analyse-Export: source_documents-Liste am Ende als 'Verwendete Dokumente'"
+  },
+
+  "implementation_order": [
+    "1. POST /api/v1/export Endpunkt (Router + Schema)",
+    "2. ExportService: JSON-Format (einfachste Implementierung)",
+    "3. ExportService: Markdown-Format",
+    "4. AuditRecorder-Integration für Export-Events",
+    "5. ExportService: PDF-Format (reportlab)",
+    "6. Frontend: Export-Button in Dokumentdetail + Analyse-Ergebnis",
+    "7. Frontend: Export-Dialog (Format-Auswahl)"
+  ],
+
+  "files_to_create": [
+    "backend/app/services/export_service.py",
+    "backend/app/api/v1/export.py",
+    "backend/app/schemas/export.py",
+    "frontend/src/api/export.js",
+    "frontend/src/components/ExportButton.jsx"
+  ],
+
+  "mvp_scope": {
+    "in_scope": [
+      "Export von Analyseergebnissen als JSON + Markdown",
+      "Export von Dokumenten (Metadaten + Textinhalt) als JSON + Markdown",
+      "Quellenangaben im Export",
+      "Audit-Event"
+    ],
+    "out_of_scope_mvp": [
+      "PDF (aufwändig — P2)",
+      "Export von Themen (blockiert bis Topics-Backend implementiert)",
+      "Bulk-Export (mehrere Quellen in einer Datei)",
+      "E-Mail-Versand des Exports"
+    ]
+  },
+
+  "statistics": {
+    "export_sources": 3,
+    "sources_implementierbar": 2,
+    "sources_blocked": 1,
+    "export_formats": 3,
+    "formats_einfach": 2,
+    "formats_aufwaendig": 1,
+    "estimated_effort_days": 4
+  }
+}

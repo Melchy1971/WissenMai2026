@@ -1,9 +1,9 @@
 {
   "report_id": "drift_dashboard_truth_report",
-  "generated_at": "2026-06-11T16:49:33.323854+00:00",
+  "generated_at": "2026-06-15T07:01:00.000000+00:00",
   "status": "PASS",
   "component": "DriftDashboard",
-  "component_path": "frontend/src/features/drift/DriftDashboard.jsx",
+  "component_path": "frontend/src/features/drift_v2/DriftDashboard.jsx",
   "test_file": "frontend/src/tests/features/DriftDashboard.test.jsx",
   "test_runner": "vitest@4.1.5",
   "test_environment": "jsdom",

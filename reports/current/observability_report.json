@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "report_id": "observability_report",
+  "generated": "2026-06-15",
+  "evaluation_method": "static_code_analysis",
+  "verdict": "PARTIAL_PASS",
+  "backend": {
+    "structured_logging": {
+      "status": "PASS",
+      "file": "app/observability/logging.py",
+      "detail": "StructuredObservabilityFormatter, JSON-Output, MetricsRegistry (In-Memory), log_event, log_import_event"
+    },
+    "correlation_id": {
+      "status": "PASS",
+      "file": "app/observability/middleware.py",
+      "detail": "CorrelationIdMiddleware setzt x-correlation-id pro Request, misst Request-Start-Zeit"
+    },
+    "auth_context": {
+      "status": "PASS",
+      "file": "app/observability/auth_middleware.py",
+      "detail": "AuthContextMiddleware prueft Bearer-Token und workspace_id, gibt 401/403 bei Fehler"
+    },
+    "auth_failure_counter": {
+      "status": "MISSING",
+      "detail": "AuthContextMiddleware._error_response() ruft log_event nicht auf. Auth-Failures werden nicht in MetricsRegistry erfasst.",
+      "fix": "log_event('auth_failure', status='failed', error_code=error.code) in _error_response() einfuegen"
+    },
+    "request_access_log": {
+      "status": "MISSING",
+      "detail": "Kein Middleware das HTTP-Method/Path/Status-Code/Duration pro Request loggt.",
+      "fix": "RequestLogMiddleware implementieren und in main.py registrieren (siehe monitoring_config.md)"
+    },
+    "import_job_metrics": {
+      "status": "PASS",
+      "file": "app/observability/logging.py",
+      "detail": "log_import_event mit document_id, workspace_id, job_id, parser_type, chunk_count, duration_ms, status"
+    },
+    "analysis_job_metrics": {
+      "status": "MISSING",
+      "detail": "Kein dediziertes analysis_metrics.py. app/api/v1/analysis.py vorhanden, aber keine Metriken an Job-Status-Transitionen.",
+      "fix": "app/observability/analysis_metrics.py erstellen, in AnalysisService einbinden"
+    },
+    "drift_metrics": {
+      "status": "PASS",
+      "file": "app/observability/drift_metrics.py",
+      "detail": "drift_run_started, drift_run_completed, drift_run_failed, findings_count, critical_findings_count, drift_run_duration_ms. drift_run_span Context-Manager. SAFE_FIELDS Whitelist aktiv."
+    },
+    "credential_redaction": {
+      "status": "PASS",
+      "file": "app/core/redaction.py",
+      "detail": "SECRET_FIELD_NAMES Set, SECRET_PATTERNS Regex (sk-*, Bearer *, api_key=*). is_secret_field() Hilfsfunktion."
+    },
+    "no_credentials_in_logs": {
+      "status": "PASS",
+      "evidence": [
+        "redaction.py: SECRET_FIELD_NAMES und SECRET_PATTERNS",
+        "drift_metrics.py: _SAFE_FIELDS Whitelist (kein Dokumentinhalt)",
+        "log_import_event: kein Dokumentinhalt, kein Dateiname in Payload",
+        "run_backup.ps1: URL-Masking regex '://user:***@'"
+      ]
+    }
+  },
+  "frontend": {
+    "api_result_pattern": {
+      "status": "PASS",
+      "file": "src/lib/apiClient.js",
+      "detail": "callApi() gibt {ok, data} oder {ok, error:{code,message,status}}. Kein Raw-Error-Object mit Stack-Trace."
+    },
+    "api_error_normalization": {
+      "status": "PASS",
+      "file": "src/api/client.js",
+      "detail": "ApiClientError normalisiert HTTP-Fehler auf code/message/status"
+    },
+    "api_failure_logging": {
+      "status": "MISSING",
+      "detail": "callApi() gibt Fehler als Result zurueck, loggt sie aber nicht. Kein console.error fuer API-Failures.",
+      "fix": "logApiFailure({path, code, status}) in callApi() Fehlerast einfuegen (kein Token, kein Body)"
+    },
+    "error_boundary": {
+      "status": "MISSING",
+      "detail": "Kein React ErrorBoundary in statischer Analyse identifiziert.",
+      "fix": "ErrorBoundary.jsx erstellen, in App.jsx oder RouterProvider wrappen (siehe monitoring_config.md)"
+    },
+    "route_error_handler": {
+      "status": "MISSING",
+      "detail": "Kein errorElement in Router-Konfiguration identifiziert.",
+      "fix": "RouteErrorPage mit useRouteError() + JSON-Log in Router eintragen"
+    },
+    "no_credentials_in_logs": {
+      "status": "PASS",
+      "evidence": [
+        "apiClient.js: Result-Pattern gibt nur code/message/status weiter",
+        "Kein console.log mit Auth-Header oder Token in analysiertem Code"
+      ]
+    }
+  },
+  "summary": {
+    "pass": 9,
+    "missing": 5,
+    "total": 14
+  },
+  "missing_items": [
+    "BE: RequestLogMiddleware (api_request Counter)",
+    "BE: auth_failure Counter in AuthContextMiddleware",
+    "BE: analysis_metrics.py + AnalysisService-Integration",
+    "FE: ErrorBoundary (ui_error Event)",
+    "FE: RouteErrorPage (route_error Event) + api_failure Logger"
+  ],
+  "verdict_reason": "Strukturiertes Logging, Credential-Redaction, Drift-Metriken und Import-Metriken aktiv. 5 fehlende Komponenten, davon 3 Backend (RequestLog, AuthFailure, AnalysisMetrics) und 2 Frontend (ErrorBoundary, RouteError). Kein PASS bis alle 5 implementiert."
+}

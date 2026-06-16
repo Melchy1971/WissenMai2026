@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "report_id": "rc_ux_polish_report",
+  "generated": "2026-06-15",
+  "evaluation_method": "static_code_analysis",
+  "verdict": "PARTIAL_PASS",
+  "checks": [
+    {
+      "id": "UX-01",
+      "name": "Keine kaputten Routen (404-Freiheit)",
+      "status": "PARTIAL_PASS",
+      "evidence": [
+        "6 aktive Routen implementiert: /dashboard, /chat, /documents, /rag, /data-quality, /settings",
+        "Auth-Routen (/login, /logout) vorhanden",
+        "RISK: 7 undokumentierte Routen in routes.jsx (RCB-003 aus rc_stabilization_backlog.json)",
+        "/admin/diagnostics ohne Router-Guard erreichbar (GATE-03 BLOCKED)"
+      ]
+    },
+    {
+      "id": "UX-02",
+      "name": "Navigation konsistent mit Masterplan",
+      "status": "PARTIAL_PASS",
+      "evidence": [
+        "4 NAV_ITEMS-Abweichungen bekannt (GATE-02, RCB-002)",
+        "PO-Entscheidung Option A oder B ausstehend",
+        "Sidebar-Struktur grundsaetzlich implementiert"
+      ]
+    },
+    {
+      "id": "UX-03",
+      "name": "Enduser Acceptance (7/10 PASS)",
+      "status": "PARTIAL_PASS",
+      "evidence": [
+        "S01 (Login), S02 (Dashboard), S03 (Dokumente), S04 (Suche), S06 (RAG), S07 (Data Quality), S08 (Settings) PASS",
+        "S05 (Navigation vollstaendig), S09 (Drift Dashboard), S10 (Admin) FAIL oder NOT_RUN",
+        "Quelle: release_candidate_gate.json"
+      ]
+    },
+    {
+      "id": "UX-04",
+      "name": "Keine sichtbaren JS-Fehler im Happy Path",
+      "status": "UNKNOWN",
+      "evidence": [
+        "Kein Live-System verfuegbar — Browser-Konsolenprüfung nicht moeglich",
+        "OXC-Parser-Fix (Unicode) wurde angewendet — kein Build-Fehler erwartet"
+      ]
+    },
+    {
+      "id": "UX-05",
+      "name": "Security Smoke (9/10 PASS)",
+      "status": "PARTIAL_PASS",
+      "evidence": [
+        "9/10 Security Smoke Checks PASS laut release_candidate_gate.json",
+        "1 Check FAIL: Admin-Bereich ohne Router-Guard (deckungsgleich mit RCB-003)"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "pass": 0,
+    "partial_pass": 4,
+    "unknown": 1
+  },
+  "open_items": [
+    "NAV_ITEMS-Entscheidung (RCB-002): PO muss Option A oder B waehlen",
+    "Router-Guard /admin/diagnostics (RCB-003)",
+    "7 undokumentierte Routen klaeren"
+  ]
+}

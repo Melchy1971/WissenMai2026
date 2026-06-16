@@ -32,7 +32,7 @@ export function SimpleListPage({ title, endpoint, testId }) {
         <VirtualizedTable
           items={state.items}
           columns={[
-            { key: 'id', label: 'ID', render: (item) => item.name || item.title || item.id },
+            { key: 'id', label: 'Name', render: (item) => item.name || item.title || '(kein Name)' },
             { key: 'status', label: 'Status', render: (item) => item.status || '-' },
           ]}
         />

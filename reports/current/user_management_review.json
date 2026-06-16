@@ -1,0 +1,202 @@
+{
+  "report_schema_version": 1,
+  "report_name": "user_management_review",
+  "report_type": "feature_review",
+  "generated_at": "2026-06-15T20:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "scope": "Benutzerverwaltung — Login, Logout, Profil, Passwort, Workspace Isolation",
+  "mvp_roles": ["benutzer", "administrator"],
+  "verdict": "TEILWEISE — Auth-Kern produktionsreif, Verwaltungs-CRUD fehlt",
+
+  "roles": {
+    "benutzer": {
+      "db_value": "member",
+      "permissions": ["workspace:read", "document:import"],
+      "guards": ["require_workspace_member"]
+    },
+    "administrator": {
+      "db_values": ["admin", "owner"],
+      "permissions": [
+        "workspace:read", "document:import", "workspace:admin",
+        "settings:write", "governance:write", "approval:decide",
+        "orchestrator:run", "collaboration:run", "tools:write", "plugins:write"
+      ],
+      "guards": ["require_workspace_admin"]
+    }
+  },
+
+  "features": [
+    {
+      "feature_id": "UM-01",
+      "name": "Login",
+      "status": "VOLLSTÄNDIG",
+      "endpoint": "POST /api/v1/auth/login",
+      "request": "AuthLoginRequest: login (str), password (str)",
+      "response": "AuthLoginResponse: token, expires_at, user (id, login, display_name), memberships ([workspace_id, role]), active_workspace_id",
+      "implementation": [
+        "AuthService.login(): login + password → AuthenticatedContext",
+        "Passwort-Hash-Vergleich (kein Plaintext-Logging)",
+        "Session-Token mit expires_at",
+        "Rückgabe: alle Workspace-Memberships des Users"
+      ],
+      "security": [
+        "AuthenticationError → 401 (AuthInvalidCredentialsApiError)",
+        "Kein Passwort-Logging",
+        "Bearer-Token in Authorization-Header (kein Cookie)"
+      ],
+      "gaps": [
+        "Kein Rate-Limiting sichtbar (auth_failure_counter fehlt — observability_report missing)",
+        "Kein Lockout nach N fehlgeschlagenen Versuchen"
+      ]
+    },
+    {
+      "feature_id": "UM-02",
+      "name": "Logout",
+      "status": "VOLLSTÄNDIG",
+      "endpoint": "POST /api/v1/auth/logout",
+      "implementation": [
+        "service.revoke_session(bearer_token) — Session wird als revoked markiert (revoked_at)",
+        "Response: HTTP 204 No Content",
+        "Token-Extraktion aus Authorization: Bearer-Header",
+        "Ungültiger Token → 401"
+      ],
+      "security": [
+        "Session-Revocation in DB (auth_sessions.revoked_at)",
+        "Kein Token-Blacklist-Problem — Token-Status in DB geprüft"
+      ],
+      "gaps": []
+    },
+    {
+      "feature_id": "UM-03",
+      "name": "Profil (Session-Zustand)",
+      "status": "TEILWEISE",
+      "endpoint": "GET /api/v1/auth/me",
+      "response": "AuthSessionResponse: user (id, login, display_name), memberships, active_workspace_id",
+      "implementation": [
+        "GET /auth/me liefert aktuellen User + alle Workspace-Memberships",
+        "display_name lesbar"
+      ],
+      "not_implemented": [
+        "Kein PATCH /auth/me oder /users/:id — display_name nicht änderbar",
+        "Kein Avatar/Profilbild",
+        "Kein GET /users/:id für Admin-Zugriff auf fremde Profile",
+        "Kein GET /users für Workspace-User-Liste"
+      ],
+      "gaps": [
+        {
+          "gap_id": "UM-03-G01",
+          "priority": "P2",
+          "description": "Profil-Update (display_name) nicht möglich — kein PATCH-Endpunkt"
+        }
+      ]
+    },
+    {
+      "feature_id": "UM-04",
+      "name": "Passwort ändern",
+      "status": "NICHT_BEGONNEN",
+      "endpoint": "FEHLT",
+      "not_implemented": [
+        "Kein POST /auth/change-password oder PATCH /users/:id/password",
+        "Kein Passwort-Reset-Flow (kein E-Mail-Versand, kein Token)",
+        "password_hash in users-Tabelle vorhanden — Änderung technisch möglich"
+      ],
+      "gaps": [
+        {
+          "gap_id": "UM-04-G01",
+          "priority": "P2",
+          "description": "Passwort kann nach initialem Setzen nicht geändert werden. Admin muss direkt in DB eingreifen."
+        }
+      ]
+    },
+    {
+      "feature_id": "UM-05",
+      "name": "Workspace Isolation",
+      "status": "VOLLSTÄNDIG",
+      "implementation": [
+        "Alle Endpunkte ziehen workspace_id aus RequestAuthContext (aus Token)",
+        "require_workspace_member prüft ctx.workspace_id != empty",
+        "DB-Queries filtern immer auf workspace_id = auth.workspace_id",
+        "documents, analysis_jobs, drift_runs, data_quality_runs: alle workspace-scoped",
+        "BackgroundJob.workspace_id geprüft in GET /jobs/:id",
+        "analysis_job: workspace_id überprüft in _require_job()"
+      ],
+      "security": [
+        "Cross-Workspace-Zugriff: job.workspace_id != auth.workspace_id → 404 (nicht 403)",
+        "Auth-Session-Revocation nach Logout verhindert Token-Wiederverwendung",
+        "AuthSession.expires_at: Token hat Ablaufdatum"
+      ],
+      "gaps": [
+        "ChatSession-Isolierung: workspace_id in ChatSession direkt gespeichert, aber keine explizite Guard-Prüfung sichtbar in chat.py (HINWEIS: Chat-API nicht vollständig analysiert)"
+      ]
+    },
+    {
+      "feature_id": "UM-06",
+      "name": "Benutzerverwaltung (Admin)",
+      "status": "NICHT_BEGONNEN",
+      "not_implemented": [
+        "POST /users — Benutzer anlegen",
+        "GET /users — Benutzer-Liste für Workspace",
+        "PATCH /users/:id/role — Rolle ändern",
+        "DELETE /users/:id oder /memberships/:id — Nutzer entfernen",
+        "POST /users/:id/activate oder /deactivate — users.is_active steuern"
+      ],
+      "gaps": [
+        {
+          "gap_id": "UM-06-G01",
+          "priority": "P2",
+          "description": "Neue Nutzer können nur direkt in DB angelegt werden. Kein Invite-Flow."
+        },
+        {
+          "gap_id": "UM-06-G02",
+          "priority": "P2",
+          "description": "is_active-Flag nicht per API steuerbar — inaktive Nutzer können nicht gesperrt werden."
+        }
+      ]
+    }
+  ],
+
+  "security_assessment": {
+    "password_handling": "PASS — password_hash in DB, kein Plaintext-Log",
+    "session_management": "PASS — revoked_at + expires_at",
+    "rate_limiting": "FEHLT — auth_failure_counter nicht implementiert (observability_report: missing)",
+    "role_enforcement": "PASS — require_workspace_member + require_workspace_admin Guards konsistent eingesetzt",
+    "workspace_isolation": "PASS — workspace_id aus Token, nicht aus Request-Body",
+    "admin_route_guard": "FAIL — /admin/diagnostics ohne Router-Guard (RC Blocker RCB-003)"
+  },
+
+  "statistics": {
+    "features_total": 6,
+    "vollständig": 3,
+    "teilweise": 1,
+    "nicht_begonnen": 2,
+    "p1_gaps": 0,
+    "p2_gaps": 4
+  },
+
+  "required_actions": [
+    {
+      "action_id": "UM-ACT-01",
+      "priority": "P2",
+      "action": "POST /users + PATCH /users/:id/role + GET /users (Admin-only)",
+      "details": "require_workspace_admin Guard; users.is_active steuerbar"
+    },
+    {
+      "action_id": "UM-ACT-02",
+      "priority": "P2",
+      "action": "PATCH /auth/me — display_name ändern",
+      "details": "Einfachste Form: nur display_name, kein Login-Ändern"
+    },
+    {
+      "action_id": "UM-ACT-03",
+      "priority": "P2",
+      "action": "POST /auth/change-password",
+      "details": "current_password + new_password; Hash-Vergleich; kein E-Mail-Flow notwendig für MVP"
+    },
+    {
+      "action_id": "UM-ACT-04",
+      "priority": "P1",
+      "action": "auth_failure_counter implementieren",
+      "details": "Rate-Limiting bei Login-Fehlversuchen — Security-Pflicht vor Production Gate"
+    }
+  ]
+}

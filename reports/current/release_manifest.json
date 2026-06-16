@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "report_id": "release_manifest",
+  "version": "0.1.0-rc1",
+  "build_date": "2026-06-15",
+  "generated": "2026-06-15T12:00:30.619445+00:00",
+  "git": {
+    "commit": "06d9e77e3a8ef35ad339ae68190d08c1ecf1b919",
+    "commit_short": "06d9e77e3a",
+    "branch": "main"
+  },
+  "artefacts": {
+    "frontend_build": {
+      "status": "PASS",
+      "path": "frontend/dist/",
+      "detail": "Vite static build (npm run build)"
+    },
+    "backend": {
+      "status": "PASS",
+      "entry_point": "app.main:app",
+      "wsgi": "uvicorn",
+      "python": "3.11+"
+    },
+    "migrations": {
+      "status": "PASS",
+      "latest_file": "20260612_0021_analysis_jobs.py",
+      "migration_id": "20260612",
+      "total_migrations": 23,
+      "alembic_head_verified": "DRC-04 PASS (deployment_readiness_checklist.json)"
+    },
+    "seed_package": {
+      "status": "PARTIAL",
+      "path": "seed_data/",
+      "files": [
+        "users.json",
+        "topics.json",
+        "tags.json"
+      ],
+      "missing": [
+        "documents.json",
+        "analysis_jobs.json",
+        "drift_reports.json",
+        "load_seed_demo.py"
+      ],
+      "detail": "Seed-Paket teilweise erstellt. documents.json und Loader-Script ausstehend."
+    },
+    "documentation": {
+      "status": "PASS",
+      "files": [
+        "docs/install.md",
+        "docs/start.md",
+        "docs/known-limitations.md",
+        "docs/final-navigation.md",
+        "docs/enduser-flows.md",
+        "docs/release-candidate.md",
+        "docs/vps-deployment-blueprint.md",
+        "docs/monitoring_config.md",
+        "docs/external-env-testplan.md",
+        "docs/deployment-readiness.md",
+        "docs/post_rc_plan.md",
+        "docs/external-test-decision.md"
+      ]
+    }
+  },
+  "migration_state": {
+    "latest_migration": "20260612_0021_analysis_jobs.py",
+    "migration_id": "20260612",
+    "alembic_head": "VERIFIED (DRC-04 PASS)"
+  },
+  "known_limitations": [
+    {
+      "id": "KL-M5-T-001",
+      "title": "M5 Entropy-/Drift-Truth-Failures blockieren Slice-Start",
+      "severity": "high"
+    },
+    {
+      "id": "KL-M5-T-002",
+      "title": "Drei Pflicht-Artefakte pro M5-Slice fehlen vor Slice-Start",
+      "severity": "high"
+    },
+    {
+      "id": "KL-GOV-001",
+      "title": "Mutierende Admin-Aktionen ohne Runbook und Gate-Freigabe gesperrt",
+      "severity": "high"
+    },
+    {
+      "id": "KL-DEF-001",
+      "title": "OCR fuer gescannte PDFs nicht Teil von V1",
+      "severity": "low"
+    },
+    {
+      "id": "KL-DEF-002",
+      "title": "Embeddings und Vektorsuche optional und nicht V1-kritisch",
+      "severity": "low"
+    },
+    {
+      "id": "KL-NB-001",
+      "title": "API-Alias /api/v1/documents nicht durchgaengig verfuegbar",
+      "severity": "low"
+    }
+  ],
+  "release_blockers": [
+    "RC Gate BLOCKED (2/7) — TEST_DATABASE_URL fehlt, NAV_ITEMS divergiert, Router-Guard fehlt",
+    "Production Readiness BLOCKED — Backup/Restore und Performance nie live ausgefuehrt",
+    "Seed-Paket unvollstaendig (documents.json, load_seed_demo.py fehlen)"
+  ],
+  "rc_gate_status": "BLOCKED",
+  "production_readiness_status": "BLOCKED"
+}

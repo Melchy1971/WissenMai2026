@@ -1,0 +1,211 @@
+{
+  "report_schema_version": 2,
+  "report_name": "product_e2e_truth_suite",
+  "report_type": "e2e_truth_suite",
+  "generated_at": "2026-06-15T22:45:00.000000+00:00",
+  "evaluation_method": "static_code_analysis + gap_report_synthesis",
+  "pass_criteria": "PASS nur wenn: kein manueller Eingriff, keine Debug-Seiten, keine Gate-Seiten, keine technischen IDs als primäre Anzeigewerte, keine manuelle DB-Aktion nötig, Endpunkt antwortet ohne 404/500",
+
+  "scenarios": [
+    {
+      "scenario_id": "S01",
+      "name": "Login",
+      "steps": [
+        "Loginseite aufrufen",
+        "login + password eingeben",
+        "POST /api/v1/auth/login",
+        "Token gespeichert, Weiterleitung zu /dashboard"
+      ],
+      "expected_result": "PASS",
+      "verdict": "PASS",
+      "rationale": "Login vollständig implementiert. POST /auth/login → AuthLoginResponse mit Token, expires_at, Memberships. Kein RuntimeError bekannt.",
+      "no_debug_pages": true,
+      "no_technical_ids": true,
+      "no_db_action": true
+    },
+    {
+      "scenario_id": "S02",
+      "name": "Dokument importieren",
+      "steps": [
+        "Zu Import-Seite navigieren",
+        "Datei auswählen oder URL eingeben",
+        "POST /documents/import (multipart oder URL)",
+        "BackgroundJob.id erhalten",
+        "Polling GET /api/v1/jobs/:id bis status='completed'",
+        "Dokument erscheint in Dokumentenzentrum mit status='chunked'"
+      ],
+      "expected_result": "PASS",
+      "verdict": "PASS",
+      "rationale": "Import-Flow vollständig. documents_router korrekt gemountet. BackgroundJob-Polling via /api/v1/jobs/:id. lifecycle_states korrekt. useImport.js: 250ms Poll, max 120 Versuche.",
+      "no_debug_pages": true,
+      "no_technical_ids": false,
+      "technical_ids_note": "Job-ID intern — nicht primär im UI sichtbar",
+      "no_db_action": true
+    },
+    {
+      "scenario_id": "S03",
+      "name": "Dokument im Dokumentenzentrum finden",
+      "steps": [
+        "Zu /documents navigieren",
+        "Dokumentliste mit Status='chunked' anzeigen",
+        "Dokument anklicken → Detailansicht",
+        "title, status, Textvorschau sichtbar"
+      ],
+      "expected_result": "PASS",
+      "verdict": "PASS",
+      "rationale": "GET /documents und GET /documents/:id vollständig. Detailansicht + Chunks über getDocumentDetail + getDocumentChunks. Lifecycle-Status im UI angezeigt.",
+      "no_debug_pages": true,
+      "no_technical_ids": true,
+      "no_db_action": true
+    },
+    {
+      "scenario_id": "S04",
+      "name": "Dokument suchen",
+      "steps": [
+        "Sucheingabe in Navigationsleiste oder /search-Seite",
+        "GET /api/v1/search/chunks?q={query}",
+        "Ergebnisliste: document_title + text_preview"
+      ],
+      "expected_result": "CONDITIONAL_PASS",
+      "verdict": "CONDITIONAL_PASS",
+      "rationale": "Suche technisch funktionsfähig. Einschränkungen: RCB-001 (NAV-Link /search vs /chat kann Suchseite nicht erreichbar machen), kein deutsches FTS-Stemming (simple statt german), kein KWIC-Highlighting, kein total_count.",
+      "conditions": [
+        "RCB-001 muss gelöst sein: NAV-Link auf /search oder /chat je nach Masterplan",
+        "Mindestens ein indexiertes Dokument vorhanden"
+      ],
+      "no_debug_pages": true,
+      "no_technical_ids": true,
+      "no_db_action": true
+    },
+    {
+      "scenario_id": "S05",
+      "name": "Thema öffnen",
+      "steps": [
+        "Zu /topics navigieren",
+        "GET /api/v1/topics — Themenliste",
+        "Thema anklicken → GET /api/v1/topics/:id",
+        "Themendetail: name, summary, sources[], documents[], tags[]"
+      ],
+      "expected_result": "FAIL",
+      "verdict": "FAIL",
+      "rationale": "Topics-Backend komplett fehlend. topics.js ruft /topics/* mit falschem Präfix — 404 garantiert. useTopics.js zeigt Fehlermeldung 'Backend noch nicht verfügbar'. Keine ORM-Models, keine API-Endpunkte.",
+      "root_cause": "P1-GAP-01 (ORM fehlend) + P1-GAP-02 (API fehlend) + URL-Pfad-Bug in topics.js",
+      "fix_sprint_tasks": ["T09", "T10", "T11", "T12", "T13", "T14", "T15", "T17", "T18", "T19"],
+      "blocking_for_1_0": true,
+      "no_debug_pages": true
+    },
+    {
+      "scenario_id": "S06",
+      "name": "Analyse starten",
+      "steps": [
+        "Zu /analysis navigieren",
+        "Dokument auswählen + Analyse-Typ wählen",
+        "POST /api/v1/analysis/jobs",
+        "Status-Polling bis completed",
+        "Ergebnis anzeigen: summary, topics, tags",
+        "Optional: Abbrechen (Cancel) oder Wiederholen (Retry)"
+      ],
+      "expected_result": "FAIL",
+      "verdict": "FAIL",
+      "rationale": "AnalysisPage.jsx nicht implementiert (AGAP-07). Kein Frontend-Zugang zum Analyse-Flow. Cancel-Endpunkt fehlt (AGAP-02). Backend-API vollständig, aber ohne Frontend kein End-to-End-Szenario möglich.",
+      "root_cause": "AGAP-07 (kein Frontend) + AGAP-02 (kein Cancel-Endpunkt)",
+      "fix_sprint_tasks": ["T05", "T06", "T07", "T25", "T26", "T27"],
+      "blocking_for_1_0": true,
+      "no_debug_pages": true
+    },
+    {
+      "scenario_id": "S07",
+      "name": "Analyseergebnis freigeben (Approval)",
+      "steps": [
+        "Auf abgeschlossenes Analyseergebnis navigieren",
+        "Als workspace_admin: ApproveButton klicken",
+        "POST /api/v1/analysis/jobs/:id/approve { decision: 'approved' }",
+        "Status wechselt zu 'approved'"
+      ],
+      "expected_result": "FAIL",
+      "verdict": "FAIL",
+      "rationale": "Kein Frontend für Approval (AGAP-07). ApproveButton nicht implementiert. Backend-API korrekt. Nur direkt per API aufrufbar — das erfüllt das PASS-Kriterium 'kein manueller Eingriff' nicht (API-Call = manuell).",
+      "root_cause": "AGAP-07 (kein ApproveButton im Frontend)",
+      "fix_sprint_tasks": ["T25", "T26"],
+      "blocking_for_1_0": true,
+      "no_debug_pages": true
+    },
+    {
+      "scenario_id": "S08",
+      "name": "Export erzeugen",
+      "steps": [
+        "Auf Analyseergebnis oder Dokument navigieren",
+        "ExportButton: Format wählen (JSON / Markdown)",
+        "POST /api/v1/export { source_type, source_id, format }",
+        "Datei-Download startet automatisch",
+        "Quellenangaben im Export enthalten"
+      ],
+      "expected_result": "FAIL",
+      "verdict": "FAIL",
+      "rationale": "Export Center nicht implementiert. POST /api/v1/export fehlt. Kein ExportButton im Frontend. Kein ExportService.",
+      "root_cause": "Export Center ist P2 — noch nicht implementiert",
+      "fix_sprint_tasks": ["T28", "T29", "T30", "T31", "T32", "T33"],
+      "blocking_for_1_0": true,
+      "no_debug_pages": true
+    },
+    {
+      "scenario_id": "S09",
+      "name": "Logout",
+      "steps": [
+        "Logout-Button klicken",
+        "POST /api/v1/auth/logout",
+        "Session revoked_at in DB gesetzt",
+        "Token ungültig, Weiterleitung zu /login"
+      ],
+      "expected_result": "PASS",
+      "verdict": "PASS",
+      "rationale": "Logout vollständig implementiert. Session-Revocation in DB. Token nach Logout ungültig. 204 No Content Response.",
+      "no_debug_pages": true,
+      "no_technical_ids": true,
+      "no_db_action": true
+    }
+  ],
+
+  "suite_summary": {
+    "total_scenarios": 9,
+    "pass": 3,
+    "conditional_pass": 1,
+    "fail": 5,
+    "overall_verdict": "FAIL",
+    "overall_rationale": "5 Szenarien FAIL (S05 Topics, S06 Analyse, S07 Approval, S08 Export + verschärfte Bewertung durch AGAP-07). Vollständiger Flow S01→S09 ohne manuellen Eingriff nicht möglich.",
+    "pass_scenarios": ["S01 Login", "S02 Import", "S03 Dokumentenzentrum", "S09 Logout"],
+    "conditional_scenarios": ["S04 Suche"],
+    "fail_scenarios": ["S05 Thema öffnen", "S06 Analyse starten", "S07 Approval", "S08 Export"]
+  },
+
+  "path_to_full_pass": [
+    {
+      "fix_id": "FIX-01",
+      "targets": ["S05"],
+      "action": "P1-GAP-01/02: Topics ORM + API + URL-Fix frontend",
+      "sprint_tasks": ["T09", "T10", "T11", "T12", "T13", "T14", "T15", "T17", "T18", "T19"],
+      "effort": "Tag 2-3 Sprint"
+    },
+    {
+      "fix_id": "FIX-02",
+      "targets": ["S06", "S07"],
+      "action": "AGAP-02 Cancel + AGAP-07 AnalysisPage.jsx",
+      "sprint_tasks": ["T05", "T06", "T07", "T25", "T26", "T27"],
+      "effort": "Tag 1 + Tag 4 Sprint"
+    },
+    {
+      "fix_id": "FIX-03",
+      "targets": ["S08"],
+      "action": "Export Center MVP: JSON + Markdown",
+      "sprint_tasks": ["T28", "T29", "T30", "T31", "T32", "T33"],
+      "effort": "Tag 4 Sprint (Nachmittag)"
+    },
+    {
+      "fix_id": "FIX-04",
+      "targets": ["S04"],
+      "action": "RCB-001: NAV_ITEMS synchronisieren",
+      "sprint_tasks": ["T02", "T03"],
+      "effort": "Tag 1 Sprint (1h)"
+    }
+  ]
+}

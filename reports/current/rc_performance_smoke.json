@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "report_id": "rc_performance_smoke",
+  "generated": "2026-06-15",
+  "evaluation_method": "static_code_analysis",
+  "note": "Kein Live-Backend verfuegbar. Pruefung per statischer Analyse von Konfiguration, Middleware-Stack und vorhandenen Reports. Messbare Laufzeit-Metriken koennen nicht ermittelt werden.",
+  "verdict": "BLOCKED",
+  "scenarios": [
+    {
+      "id": "PS-01",
+      "name": "Frontend-Ladezeit (Cold Load)",
+      "status": "BLOCKED",
+      "target": {
+        "p50_ms": 2000,
+        "p95_ms": 4000
+      },
+      "measured": null,
+      "evidence": [
+        "Vite Build vorhanden (DRC-08 PASS in deployment_readiness_checklist.json)",
+        "dist/ enthaelt gebaute Artefakte (statisch verifiziert)",
+        "BLOCKER: Kein laufendes Frontend, kein Messwert ermittelbar",
+        "Risiko: OXC-Parser-Fix (Unicode) koennte Bundle-Groesse minimal aendern — kein Regressionsrisiko erwartet"
+      ],
+      "required_action": "npm run build && vite preview, Lighthouse oder manuelle Browser-Messung auf localhost:4173"
+    },
+    {
+      "id": "PS-02",
+      "name": "API Health Endpoint (/health)",
+      "status": "BLOCKED",
+      "target": {
+        "p50_ms": 100,
+        "p95_ms": 300
+      },
+      "measured": null,
+      "evidence": [
+        "Health-Endpoint in FastAPI implementiert (app.main:app, start_backend.ps1 referenziert /health)",
+        "BLOCKER: Kein laufendes Backend"
+      ],
+      "required_action": "start_backend.ps1 ausfuehren, dann: for i in $(seq 20); do curl -s -o /dev/null -w '%{time_total}' http://localhost:8000/health; done"
+    },
+    {
+      "id": "PS-03",
+      "name": "Dokumentenliste (/api/documents, paginiert)",
+      "status": "BLOCKED",
+      "target": {
+        "p50_ms": 300,
+        "p95_ms": 1000,
+        "error_rate_pct": 0
+      },
+      "measured": null,
+      "evidence": [
+        "Endpoint vorhanden (routes_api_documents aus gui_inventory.md bekannt)",
+        "Pagination implementiert (Offset/Limit-Pattern aus Codebase bekannt)",
+        "BLOCKER: Kein laufendes Backend, keine DB-Verbindung"
+      ],
+      "required_action": "Backend + DB starten, 20x GET /api/documents?limit=50, p50/p95 messen"
+    },
+    {
+      "id": "PS-04",
+      "name": "Suche (/api/search oder Chat-Endpoint)",
+      "status": "BLOCKED",
+      "target": {
+        "p50_ms": 1500,
+        "p95_ms": 5000,
+        "error_rate_pct": 0
+      },
+      "measured": null,
+      "evidence": [
+        "Suchfunktion ist aktiver Masterplan-Bereich (/chat als Suche laut final_navigation.md)",
+        "BLOCKER: Kein laufendes Backend, kein AI-Provider-Key bekannt verfuegbar"
+      ],
+      "required_action": "Backend + DB + AI-Provider starten, 10x Suchanfragen mit typischen Queries, p50/p95 messen"
+    },
+    {
+      "id": "PS-05",
+      "name": "Drift CLI Laufzeit (python -m drift.cli run)",
+      "status": "BLOCKED",
+      "target": {
+        "max_duration_s": 30,
+        "error_rate_pct": 0
+      },
+      "measured": null,
+      "evidence": [
+        "Drift CLI implementiert (M5b PASS, 106/106 Tests laut Entwicklung.md)",
+        "Performance Baseline: sub-linear 100 bis 10k Dokumente (aus m5b_architecture_review.json bekannt)",
+        "BLOCKER: Drift CLI nie ausgefuehrt (RCH-001 aus rc_stabilization_backlog.json)",
+        "BLOCKER: TEST_DATABASE_URL fehlt (RC-PREREQ-01)",
+        "drift_report.json und drift_summary.json fehlen"
+      ],
+      "required_action": "TEST_DATABASE_URL setzen, dann: python -m drift.cli run && Zeit messen"
+    },
+    {
+      "id": "PS-06",
+      "name": "DB Query Count pro Request (N+1-Pruefung)",
+      "status": "NOT_MEASURABLE",
+      "target": {
+        "queries_per_request_max": 10
+      },
+      "measured": null,
+      "evidence": [
+        "Kein Query-Profiling in statischer Analyse moeglich",
+        "SQLAlchemy ORM im Einsatz — N+1-Risiko bei Relationship-Loads besteht generell",
+        "Kein Slow-Query-Log oder pgBadger-Output vorhanden",
+        "Empfehlung: pgBadger oder EXPLAIN ANALYZE bei Live-Tests aktivieren"
+      ],
+      "required_action": "Backend mit SQL-Logging starten (echo=True in SQLAlchemy), DB Query Count pro Request erfassen"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "pass": 0,
+    "blocked": 5,
+    "not_measurable": 1
+  },
+  "verdict_reason": "Alle messbaren Szenarien BLOCKED. Root Causes: kein laufendes Backend (DATABASE_URL nicht konfiguriert fuer lokale Ausfuehrung), TEST_DATABASE_URL fehlt, Drift CLI nie ausgefuehrt. Performance-Baseline aus M5b-Architektur-Review existiert nur fuer Drift CLI, nicht fuer API-Endpunkte.",
+  "api_error_rate_summary": {
+    "value": null,
+    "note": "Kein Messwert. Erfordert Live-Backend."
+  },
+  "unblocking_path": [
+    "1. DATABASE_URL gegen erreichbare DB konfigurieren",
+    "2. TEST_DATABASE_URL setzen",
+    "3. Backend starten (start_backend.ps1)",
+    "4. Frontend starten (start_frontend.ps1)",
+    "5. PS-01 bis PS-05 messen",
+    "6. PS-06: SQL-Logging aktivieren, N+1 pruefen"
+  ]
+}

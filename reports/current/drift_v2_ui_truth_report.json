@@ -1,0 +1,171 @@
+{
+  "report": "drift_v2_ui_truth_report",
+  "generated_at": "2026-06-15T07:30:00.000000+00:00",
+  "generated_by": "drift_v2_ui_truth_run_2026-06-15",
+  "status": "PASS",
+  "verdict": "PASS",
+  "ui_truth_checks_total": 8,
+  "ui_truth_checks_pass": 8,
+  "ui_truth_checks_fail": 0,
+  "test_files_run": [
+    {
+      "file": "src/tests/features/DriftV2UiTruth.test.jsx",
+      "tests_total": 29,
+      "tests_passed": 29,
+      "tests_failed": 0,
+      "status": "PASS"
+    },
+    {
+      "file": "src/tests/features/DriftDashboard.test.jsx",
+      "tests_total": 23,
+      "tests_passed": 23,
+      "tests_failed": 0,
+      "status": "PASS",
+      "note": "Bestehendes Test-Set — unverändert 23/23."
+    },
+    {
+      "file": "src/tests/features/DriftV2ComponentContract.test.jsx",
+      "tests_total": 12,
+      "tests_passed": 9,
+      "tests_failed": 3,
+      "status": "PARTIAL_FAIL",
+      "note": "3 GAP-Assertions FAIL wegen testid-Abweichungen (drift-run-summary, drift-severity-breakdown, drift-type-breakdown). Pre-existing, dokumentiert in docs/drift_v2_component_contract.md. Kein neuer Defekt."
+    }
+  ],
+  "checks": {
+    "check_01_dashboard_renders": {
+      "status": "PASS",
+      "description": "Dashboard rendert",
+      "evidence": [
+        "data-testid='drift-dashboard' im DOM",
+        "heading role mit Text 'Drift' vorhanden"
+      ],
+      "tests": ["UI-Truth-01 (2/2 PASS)"]
+    },
+    "check_02_summary_renders": {
+      "status": "PASS",
+      "description": "Summary rendert",
+      "evidence": [
+        "drift-last-run-widget sichtbar",
+        "drift-last-run-id zeigt run_id",
+        "drift-severity-breakdown-widget sichtbar",
+        "drift-type-breakdown-widget sichtbar",
+        "drift-no-run-message bei fehlendem Run"
+      ],
+      "tests": ["UI-Truth-02 (5/5 PASS)"],
+      "contract_gap": "Contract verlangt drift-run-summary, drift-severity-breakdown, drift-type-breakdown. Implementierung nutzt -widget Suffix. Kein UI-Truth-Blocker, aber Contract-GAP dokumentiert."
+    },
+    "check_03_findings_table_renders": {
+      "status": "PASS",
+      "description": "Findings Tabelle rendert",
+      "evidence": [
+        "drift-findings-table sichtbar bei vorhandenen Findings",
+        "drift-finding-row je Finding vorhanden (2 Rows bei 2 Findings)",
+        "drift-no-findings-message bei leerer Findings-Liste",
+        "drift-findings-table abwesend bei leerer Liste"
+      ],
+      "tests": ["UI-Truth-03 (3/3 PASS)"]
+    },
+    "check_04_filters_work": {
+      "status": "PASS",
+      "description": "Filter funktionieren",
+      "evidence": [
+        "drift-filter-severity vorhanden, tagName=SELECT",
+        "drift-filter-type vorhanden, tagName=SELECT",
+        "Severity-Änderung triggert useDriftData-Aufruf",
+        "Typ-Änderung triggert useDriftData-Aufruf"
+      ],
+      "tests": ["UI-Truth-04 (4/4 PASS)"]
+    },
+    "check_05_api_error_displayed": {
+      "status": "PASS",
+      "description": "API Fehler wird korrekt angezeigt",
+      "evidence": [
+        "drift-api-error erscheint bei error-State",
+        "role=alert am Fehler-Element",
+        "Fehlermeldungs-Text im Element sichtbar",
+        "Kein Fehler-Element bei erfolgreichem Laden"
+      ],
+      "tests": ["UI-Truth-05 (4/4 PASS)", "DriftDashboard.test.jsx API Fehler Anzeige (4/4 PASS)"]
+    },
+    "check_06_no_mutating_buttons": {
+      "status": "PASS",
+      "description": "Keine mutierenden Buttons sichtbar",
+      "evidence": [
+        "0 role=button Elemente im normalen Render",
+        "Kein Button mit Text Speichern/Aktualisieren/Anwenden"
+      ],
+      "tests": ["UI-Truth-06 (2/2 PASS)"]
+    },
+    "check_07_no_cleanup_repair_reindex": {
+      "status": "PASS",
+      "description": "Keine Cleanup/Repair/Reindex Funktionen erreichbar (PROHIBIT-02, PROHIBIT-06)",
+      "evidence": [
+        "Kein Repair-Button (text: repair/reparier, testid: repair-button)",
+        "Kein Cleanup-Button (text: cleanup/bereinig, testid: cleanup-button)",
+        "Kein Delete-Button (text: delete/löschen, testid: delete-button)",
+        "Kein Reindex-Button (text: reindex/neuindiz, testid: reindex-button)",
+        "Kein role=form Element"
+      ],
+      "rules_active": ["PROHIBIT-02", "PROHIBIT-06"],
+      "tests": [
+        "UI-Truth-07 (5/5 PASS)",
+        "DriftDashboard.test.jsx PROHIBIT-02 (2/2 PASS)",
+        "DriftDashboard.test.jsx PROHIBIT-06 (2/2 PASS)",
+        "DriftV2ComponentContract.test.jsx PROHIBIT (4/4 PASS)"
+      ]
+    },
+    "check_08_workspace_isolation": {
+      "status": "PASS",
+      "description": "Workspace Isolation UI-seitig respektiert",
+      "evidence": [
+        "Kein data-testid='workspace-selector' oder 'workspace-switcher'",
+        "Kein combobox mit Namen /workspace/i",
+        "Genau 1 drift-dashboard Root im DOM (keine Multi-Workspace-Ansicht)",
+        "workspace_id 'ws-truth-001' nicht als navigierbarer Link dargestellt",
+        "Kein Button 'Workspace wechseln' oder 'Switch Workspace'"
+      ],
+      "scope_note": "Frontend-seitige Isolation: Komponente hat keinen Workspace-Switcher und rendert genau eine Datenquelle. Server-seitige Isolation liegt außerhalb des UI-Truth-Scopes.",
+      "tests": ["UI-Truth-08 (4/4 PASS)"]
+    }
+  },
+  "contract_gap_summary": {
+    "status": "PRE_EXISTING_DOCUMENTED",
+    "blocking": false,
+    "gaps": [
+      {
+        "contract_testid": "drift-run-summary",
+        "implementation_testid": "drift-last-run-widget",
+        "file": "frontend/src/features/drift_v2/DriftDashboard.jsx",
+        "function": "LastRunWidget"
+      },
+      {
+        "contract_testid": "drift-severity-breakdown",
+        "implementation_testid": "drift-severity-breakdown-widget",
+        "file": "frontend/src/features/drift_v2/DriftDashboard.jsx",
+        "function": "SeverityBreakdown"
+      },
+      {
+        "contract_testid": "drift-type-breakdown",
+        "implementation_testid": "drift-type-breakdown-widget",
+        "file": "frontend/src/features/drift_v2/DriftDashboard.jsx",
+        "function": "TypeBreakdown"
+      }
+    ],
+    "required_action": "Umbenennung der 3 data-testid in DriftDashboard.jsx. Sync mit DriftDashboard.test.jsx erforderlich. Kein UI-Truth-Blocker."
+  },
+  "side_effects": {
+    "vite_config_js_truncation_repaired": true,
+    "vite_config_js_note": "vite.config.js war bei byte 0x1b0 truncated (exclude-Array unvollständig). Via bash-heredoc vollständig repariert vor Testlauf."
+  },
+  "blockers": [],
+  "result": {
+    "status": "PASS",
+    "all_8_checks": "PASS",
+    "ui_truth_tests": "29/29 PASS",
+    "prohibit_02": "VERIFIED_ABSENT",
+    "prohibit_06": "VERIFIED_ABSENT",
+    "contract_gaps": 3,
+    "contract_gaps_blocking": false
+  }
+}

@@ -51,7 +51,7 @@ export function AppShell() {
 
       {/* Status-Header */}
       <div className="shell__status-bar" data-testid="status-bar">
-        <span>Workspace: <strong>{workspaceId || '—'}</strong></span>
+        <span>Workspace: <strong>{memberships.length > 0 ? 'aktiv' : '—'}</strong></span>
         <span>Provider: <strong>{provider}</strong></span>
         <span>Autonomie: <strong>{autonomy}</strong></span>
         <span>Release: <strong>{release}</strong></span>
@@ -84,12 +84,12 @@ export function AppShell() {
             {memberships.length > 1 ? (
               <select aria-label="Workspace wechseln" value={workspaceId || ''}
                 onChange={e => switchWorkspace(e.target.value)}>
-                {memberships.map(m => (
-                  <option key={m.workspace_id} value={m.workspace_id}>{m.workspace_id}</option>
+                {memberships.map((m, idx) => (
+                  <option key={m.workspace_id} value={m.workspace_id}>{`Workspace ${idx + 1} (${m.role})`}</option>
                 ))}
               </select>
             ) : (
-              <span>{workspaceId || 'Workspace fehlt'}</span>
+              <span>{memberships.length > 0 ? memberships[0].role : 'Kein Workspace'}</span>
             )}
           </div>
           {token && (

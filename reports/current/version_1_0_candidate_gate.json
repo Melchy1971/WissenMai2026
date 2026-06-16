@@ -1,0 +1,170 @@
+{
+  "report_schema_version": 1,
+  "report_name": "version_1_0_candidate_gate",
+  "report_type": "release_candidate_gate",
+  "generated_at": "2026-06-15T23:55:00.000000+00:00",
+  "evaluation_method": "Synthese aus product_maturity_v2.json, product_gold_path.json, product_release_gate.json, docs/version_1_0_scope_freeze.md",
+
+  "gate_conditions": [
+    {
+      "condition_id": "C01",
+      "name": "Produktreife >= 85",
+      "source": "reports/current/product_maturity_v2.json",
+      "required": "Gesamtscore >= 85 (gewichtete Summe aus Fachlicher Reife, UX-Reife, Betriebsreife, Release-Reife)",
+      "actual": {
+        "score": 52,
+        "fachliche_reife": 44,
+        "ux_reife": 43,
+        "betriebsreife": 89,
+        "release_reife": 49,
+        "delta_zu_schwellwert": -33
+      },
+      "verdict": "FAIL",
+      "reason": "Score 52 von 85 erforderlich. Delta: -33. Hauptursachen: Topics-Backend (0 Punkte), AnalysisPage.jsx (0 UX-Schritte erreichbar), Export Center (vollständig fehlend). Nach Sprint erwartet: ~78-82 — immer noch unter 85."
+    },
+    {
+      "condition_id": "C02",
+      "name": "Gold Path PASS",
+      "source": "reports/current/product_gold_path.json",
+      "required": "Alle 8 Schritte PASS ohne manuellen Eingriff, keine 404/500 auf Hauptpfad, keine technischen IDs als primärer UI-Wert",
+      "actual": {
+        "schritte_total": 8,
+        "pass": 3,
+        "fail": 4,
+        "conditional_pass": 1,
+        "vollstaendiger_durchlauf": false,
+        "fail_schritte": ["GP-04 Thema finden", "GP-05 Analyse starten", "GP-06 Analyse freigeben", "GP-07 Export erzeugen"],
+        "befund_gp03": "Technische IDs (id, workspaceId, ownerUserId) in DocumentMetaCard sichtbar — Defekt außerhalb direktem Gold-Path-Kriterium, vor 1.0 zu beheben"
+      },
+      "verdict": "FAIL",
+      "reason": "4/8 Schritte FAIL. Kein vollständiger Durchlauf möglich. GP-04 bis GP-07 blockiert durch fehlende Backends (Topics, Analyse-Frontend, Export)."
+    },
+    {
+      "condition_id": "C03",
+      "name": "Product Release Gate PASS",
+      "source": "reports/current/product_release_gate.json",
+      "required": "release_decision = READY_FOR_1_0 — alle Gate-Conditions PASS oder CONDITIONAL_PASS, 0 BLOCKED",
+      "actual": {
+        "decision": "BLOCKED",
+        "release_decision": "NOT_READY_FOR_1_0",
+        "gates_total": 7,
+        "pass": 1,
+        "conditional_pass": 1,
+        "blocked": 5,
+        "blocked_gates": ["G01 Dashboard", "G02 Datenanalyse", "G04 Themenzentrum", "G05 Export", "G06 E2E Suite"],
+        "primary_blockers": ["B01 Topics ORM/API", "B02 AnalysisPage.jsx", "B03 Export Center", "B04 Dashboard Drift", "B05 Cancel Endpoint"]
+      },
+      "verdict": "FAIL",
+      "reason": "product_release_gate.json: BLOCKED / NOT_READY_FOR_1_0. 5/7 Gates blockiert. Bedingung C03 nicht erfüllt."
+    },
+    {
+      "condition_id": "C04",
+      "name": "Scope Freeze dokumentiert",
+      "source": "docs/version_1_0_scope_freeze.md",
+      "required": "Datei existiert, In-Scope und Not-in-Scope klar definiert",
+      "actual": {
+        "file_exists": true,
+        "path": "docs/version_1_0_scope_freeze.md",
+        "in_scope_bereiche": 8,
+        "not_in_scope_bereiche": ["Cleanup", "Repair", "Governance Automation", "Spezial-Adminfunktionen"],
+        "prohibits_dokumentiert": true
+      },
+      "verdict": "PASS",
+      "reason": "Scope Freeze vollständig dokumentiert. Alle In-Scope-Bereiche und Not-in-Scope-Ausschlüsse klar definiert."
+    }
+  ],
+
+  "gate_summary": {
+    "conditions_total": 4,
+    "pass": 1,
+    "fail": 3,
+    "pass_conditions": ["C04 Scope Freeze"],
+    "fail_conditions": ["C01 Produktreife", "C02 Gold Path", "C03 Release Gate"]
+  },
+
+  "status": "BLOCKED",
+  "release_status": "NOT_READY_FOR_1_0",
+
+  "primary_blockers": [
+    {
+      "blocker_id": "CG-B01",
+      "gates": ["C01", "C02", "C03"],
+      "description": "Topics-Backend vollständig fehlend (P1-GAP-01/02) — blockiert Themenzentrum, Gold Path GP-04, E2E S05",
+      "sprint_tasks": ["T09-T19"],
+      "score_impact": "-15 Punkte auf Produktreife"
+    },
+    {
+      "blocker_id": "CG-B02",
+      "gates": ["C01", "C02", "C03"],
+      "description": "AnalysisPage.jsx fehlt (AGAP-07) — kein Frontend für 7-Schritt-Analyse-UX, Approval-Flow nicht erreichbar",
+      "sprint_tasks": ["T25", "T26", "T27"],
+      "score_impact": "-10 Punkte auf Produktreife"
+    },
+    {
+      "blocker_id": "CG-B03",
+      "gates": ["C01", "C02", "C03"],
+      "description": "Export Center vollständig fehlend — kein POST /api/v1/export, kein ExportButton, kein ExportService",
+      "sprint_tasks": ["T28-T33"],
+      "score_impact": "-8 Punkte auf Produktreife"
+    },
+    {
+      "blocker_id": "CG-B04",
+      "gates": ["C01", "C03"],
+      "description": "Dashboard W06 Drift fehlt — GET /api/v1/dashboard/drift nicht implementiert",
+      "sprint_tasks": ["T34-T37"],
+      "score_impact": "-3 Punkte auf Produktreife"
+    },
+    {
+      "blocker_id": "CG-B05",
+      "gates": ["C02"],
+      "description": "Technische IDs (UUID) in DocumentMetaCard sichtbar — Anforderung verletzt",
+      "sprint_tasks": ["Einzel-Fix < 1h"],
+      "score_impact": "-2 Punkte auf UX-Reife"
+    }
+  ],
+
+  "path_to_ready": {
+    "sprint_plan": "docs/product_gap_sprint.md",
+    "task_list": "tasks/product_gap_tasks.md",
+    "estimated_sprint_effort": "1 Woche (Solo, Ollama lokal, 39 Tasks)",
+    "expected_after_sprint": {
+      "C01_produktreife": {
+        "expected_score": "~78-82",
+        "gap_to_85": "Für 85 zusätzlich nötig: Lazy Loading, KWIC-Highlighting, deutsches FTS-Stemming, Cancel AGAP-02, Tags vollständig nutzbar",
+        "verdict_after_sprint": "FAIL (knapp unter 85)"
+      },
+      "C02_gold_path": {
+        "expected": "7/8 PASS (nach Sprint-Fixes), GP-03 Befund behoben",
+        "verdict_after_sprint": "PASS (erwartbar)"
+      },
+      "C03_release_gate": {
+        "expected": "5/7 CONDITIONAL_PASS, 0 BLOCKED (nach Sprint)",
+        "verdict_after_sprint": "CONDITIONAL_PASS (erwartbar)"
+      },
+      "C04_scope_freeze": {
+        "verdict_after_sprint": "PASS (unverändert)"
+      }
+    },
+    "re_evaluation_trigger": "Nach Sprint-Abschluss: product_maturity_v2.json und product_gold_path.json neu evaluieren, dann version_1_0_candidate_gate.json re-ausführen",
+    "note": "Produktreife-Schwellwert 85 erfordert auch nach Blocker-Sprint zusätzliche Qualitätsmaßnahmen. Kandidat für Diskussion: Schwellwert auf 80 für 1.0-RC und 85 für GA anpassen."
+  },
+
+  "security_constraints_verified": {
+    "PROHIBIT_02": "EINGEHALTEN — kein RepairButton in keinem Report oder Komponenten-Spec",
+    "PROHIBIT_06": "EINGEHALTEN — kein CleanupButton, kein M5c-Trigger",
+    "PROHIBIT_08": "EINGEHALTEN — Approval ist explizit manuell (GP-06, AW-06), keine Automatisierung",
+    "m5c_start": "NO_GO — m5c_start_gate nicht PASS, kein PO-Sign-off vorhanden",
+    "drift_readonly": "EINGEHALTEN — W06 Drift als Read-Only-Widget spezifiziert"
+  },
+
+  "statistics": {
+    "gate_conditions_total": 4,
+    "pass": 1,
+    "fail": 3,
+    "produktreife_score": 52,
+    "produktreife_schwellwert": 85,
+    "gold_path_pass_rate": "3/8 = 37.5%",
+    "release_gate_blocked": 5,
+    "scope_freeze": "DOKUMENTIERT"
+  }
+}

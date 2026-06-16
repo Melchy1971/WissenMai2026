@@ -1,8 +1,9 @@
 # Final GUI Scope
 
-**Datum:** 2026-06-12
-**Masterplan-Referenz:** reports/current/masterplan_status.json (progress_percent=40.0, M5a/M5b BLOCKED, M5c PREPARED)
+**Datum:** 2026-06-15 (aktualisiert)
+**Masterplan-Referenz:** reports/current/masterplan_status.json (progress_percent=42.0, M5a/M5b BLOCKED, M5c PREPARED)
 **Gate-Referenz:** reports/current/m5b_production_readiness_gate.json (BLOCKED), reports/current/m5c_start_gate.json (BLOCKED)
+**RC-Entscheidung:** reports/current/release_candidate_decision.json (BLOCKED — root: TEST_DATABASE_URL)
 
 ---
 
@@ -20,9 +21,14 @@
 
 ### Drift Detection
 
-Drift Detection (M5b) ist **NICHT freigegeben** — M5b-Gates BLOCKED (Alpha Hardening Gate BLOCKED durch AHG-BLOCKER-01 + AHG-BLOCKER-02, Kaskade zu Production Readiness BLOCKED).
+Drift Detection (M5b) ist implementiert und erreichbar unter `/drift` via `DriftPage` → `drift_v2/DriftDashboard`. Formale Freigabe blockiert: M5b Production Readiness Gate BLOCKED (cascade aus M5a, root: TEST_DATABASE_URL).
 
-Sobald M5b Production Readiness Gate = PASS: Drift Detection Seite hinzufügen (Route /drift, Komponente DriftDashboard).
+| Bereich | Route | Komponente | Status |
+|---------|-------|-----------|--------|
+| Drift Detection | /drift | DriftPage → drift_v2/DriftDashboard | Implementiert, Read-Only, formale Freigabe ausstehend |
+
+Nachweis: `reports/current/drift_v2_ui_truth_report.json` PASS (29/29), `reports/current/drift_v2_import_audit.json` PASS.
+**Cleanup/Repair in Drift: NO_GO** — PROHIBIT-02, PROHIBIT-06.
 
 ---
 

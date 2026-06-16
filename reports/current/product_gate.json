@@ -1,0 +1,176 @@
+{
+  "report_schema_version": 1,
+  "report_name": "product_gate",
+  "report_type": "product_gate",
+  "generated_at": "2026-06-15T22:15:00.000000+00:00",
+  "evaluation_method": "synthesis of input reports",
+  "inputs": {
+    "product_release_readiness": "reports/current/product_release_readiness.json",
+    "product_e2e_truth_suite": "reports/current/product_e2e_truth_suite.json",
+    "final_gate_report": "reports/current/final_gate_report.json",
+    "release_candidate_gate": "reports/current/release_candidate_gate.json"
+  },
+
+  "status": "FAIL",
+  "decision": "NOT_READY",
+
+  "gate_conditions": [
+    {
+      "condition_id": "PG-01",
+      "condition": "product_release_readiness.overall_score >= 70",
+      "required": true,
+      "actual_value": 34,
+      "threshold": 70,
+      "met": false,
+      "verdict": "FAIL"
+    },
+    {
+      "condition_id": "PG-02",
+      "condition": "product_e2e_truth_suite: alle 8 Szenarien PASS oder CONDITIONAL_PASS",
+      "required": true,
+      "actual_value": "2 FAIL (S04 Topics, S07 Export)",
+      "met": false,
+      "verdict": "FAIL"
+    },
+    {
+      "condition_id": "PG-03",
+      "condition": "final_gate_report.verdict = PASS",
+      "required": true,
+      "actual_value": "BLOCKED",
+      "met": false,
+      "verdict": "FAIL",
+      "root_cause": "4 Blocker: report_integrity_v2, m5b_alpha_hardening, m5b_production_readiness, m5c_start"
+    },
+    {
+      "condition_id": "PG-04",
+      "condition": "release_candidate_gate.verdict = PASS",
+      "required": true,
+      "actual_value": "BLOCKED",
+      "met": false,
+      "verdict": "FAIL",
+      "root_cause": "5/7 Conditions nicht erfüllt: TEST_DATABASE_URL, NAV_ITEMS, /admin-Guard, Report-Integrity, Enduser-Acceptance"
+    },
+    {
+      "condition_id": "PG-05",
+      "condition": "PROHIBIT-02/06/08 eingehalten — kein Cleanup/Repair/Auto-M5c",
+      "required": true,
+      "actual_value": "CONFIRMED",
+      "met": true,
+      "verdict": "PASS"
+    },
+    {
+      "condition_id": "PG-06",
+      "condition": "0 BLOCKING_CORE Limitations in known_limitations.json",
+      "required": true,
+      "actual_value": 0,
+      "met": true,
+      "verdict": "PASS"
+    }
+  ],
+
+  "conditions_total": 6,
+  "conditions_met": 2,
+  "conditions_failed": 4,
+
+  "primary_blockers": [
+    {
+      "blocker_id": "PG-BLOCK-01",
+      "title": "TEST_DATABASE_URL nicht gesetzt",
+      "severity": "CRITICAL",
+      "cascade": "→ Testpipeline tot → report_integrity_v2 BLOCKED → final_gate BLOCKED → release_candidate BLOCKED",
+      "fix": "Umgebungsvariable TEST_DATABASE_URL setzen, pytest ausführen",
+      "unblocks": ["PG-01 (Score)", "PG-03 (final_gate)", "PG-04 (RC-gate)"]
+    },
+    {
+      "blocker_id": "PG-BLOCK-02",
+      "title": "Topics-Backend fehlt (P1-GAP-01/02)",
+      "severity": "CRITICAL",
+      "cascade": "→ S04 Truth-Suite FAIL → PG-02 FAIL → PG-01 (Score zu niedrig)",
+      "fix": "Category/Tag ORM-Models + GET /api/v1/topics Endpunkte + URL-Fix in topics.js",
+      "effort": "3-5 Tage",
+      "unblocks": ["PG-02 (S04)"]
+    },
+    {
+      "blocker_id": "PG-BLOCK-03",
+      "title": "Export Center fehlt",
+      "severity": "HIGH",
+      "cascade": "→ S07 Truth-Suite FAIL → PG-02 FAIL",
+      "fix": "Export-Service MVP (POST /api/v1/export, JSON + Markdown)",
+      "effort": "4 Tage",
+      "unblocks": ["PG-02 (S07)"]
+    },
+    {
+      "blocker_id": "PG-BLOCK-04",
+      "title": "Navigation-Abweichungen RCB-001/002/003",
+      "severity": "HIGH",
+      "cascade": "→ Enduser Acceptance BLOCKED → RC-Gate BLOCKED → PG-04 FAIL",
+      "fix": "NAV_ITEMS synchronisieren + AdminRoute-Guard",
+      "effort": "< 1 Tag (nach PO-Entscheidung NAV)",
+      "unblocks": ["PG-04 (RC-gate GATE-02/03/04)"]
+    }
+  ],
+
+  "what_is_working": [
+    "Login / Logout vollständig",
+    "Dokumenten-Import vollständig",
+    "Volltext-Suche funktioniert (eingeschränkt)",
+    "Drift Detection Read-Only vollständig",
+    "Dashboard 5/6 Widgets",
+    "Approval-Flow strukturell korrekt",
+    "Workspace-Isolation durchgängig",
+    "PROHIBIT-02/06/08 eingehalten",
+    "VPS-Deployment-Blueprint vorhanden",
+    "8 Incident-Runbooks vorhanden",
+    "Dokumentationen: 19/19 Truth-Lint bestanden"
+  ],
+
+  "path_to_ready": {
+    "phase_a": {
+      "name": "Infrastruktur + RC-Blocker",
+      "duration": "< 1 Woche",
+      "items": [
+        "TEST_DATABASE_URL setzen",
+        "RCB-001: NAV_ITEMS /chat (nicht /search)",
+        "RCB-002: PO-Entscheidung NAV_ITEMS + umsetzen",
+        "RCB-003: AdminRoute-Wrapper für /admin/diagnostics",
+        "AGAP-02: Cancel-Endpunkt + Migration",
+        "AGAP-06: AuditRecorder-Injection"
+      ]
+    },
+    "phase_b": {
+      "name": "Kernfunktionen",
+      "duration": "2-3 Wochen",
+      "items": [
+        "P1-GAP-01: Category/Tag ORM-Models",
+        "P1-GAP-02: Tags/Topics CRUD-API",
+        "AGAP-07: AnalysisPage.jsx",
+        "Export Center MVP (JSON + Markdown)",
+        "Dashboard W06: DriftWidget"
+      ]
+    },
+    "phase_c": {
+      "name": "LLM + Gate-Verifikation",
+      "duration": "1-2 Wochen",
+      "items": [
+        "PO stellt LLM-Provider + API-Key bereit",
+        "LlmAnalysisProvider implementieren",
+        "pytest ausführen (nach TEST_DATABASE_URL-Fix)",
+        "Gates re-evaluieren",
+        "Frontend Build erzeugen"
+      ]
+    },
+    "total_estimate": "5-7 Wochen bis READY_FOR_1_0"
+  },
+
+  "statistics": {
+    "overall_score": 34,
+    "required_score": 70,
+    "gap": 36,
+    "e2e_pass": 2,
+    "e2e_fail": 2,
+    "e2e_conditional": 3,
+    "gate_conditions_met": 2,
+    "gate_conditions_failed": 4,
+    "primary_blockers": 4
+  }
+}

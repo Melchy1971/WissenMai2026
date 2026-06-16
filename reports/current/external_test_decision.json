@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "report_id": "external_test_decision",
+  "generated": "2026-06-15",
+  "evaluation_method": "static_code_analysis",
+  "inputs": {
+    "rc_stabilization_gate": "reports/current/rc_stabilization_gate.json",
+    "external_env_testplan": "reports/current/external_env_testplan.json",
+    "deployment_readiness_checklist": "reports/current/deployment_readiness_checklist.json",
+    "post_rc_decision": "reports/current/post_rc_decision.json",
+    "rc_stabilization_backlog": "reports/current/rc_stabilization_backlog.json"
+  },
+  "prerequisite_check": {
+    "rc_gate_status": "BLOCKED",
+    "rc_gate_required": "RELEASE_CANDIDATE",
+    "prerequisite_met": false,
+    "blocker": "RC Gate ist BLOCKED (2/7). Externe Tests setzen RC Gate = RELEASE_CANDIDATE voraus. Entscheidung kann vorbereitet, aber nicht vollzogen werden."
+  },
+  "options": [
+    {
+      "id": "EXT-OPT-1",
+      "title": "Externe Tests starten",
+      "status": "BLOCKED",
+      "reason": "Prerequisite nicht erfuellt: RC Gate BLOCKED. Externe Tests erst nach RELEASE_CANDIDATE.",
+      "unlock_condition": "RC Gate = RELEASE_CANDIDATE (alle 7 Bedingungen PASS)"
+    },
+    {
+      "id": "EXT-OPT-2",
+      "title": "Erst weitere RC-Stabilisierung",
+      "status": "ACTIVE",
+      "reason": "RC Stabilization Gate BLOCKED (1/6). 3 Release Blocker offen. RC-Stabilisierung muss abgeschlossen werden, bevor Externe Tests entschieden werden koennen. Dieser Pfad ist korrekt.",
+      "next_steps": [
+        "RCB-001 beheben: TEST_DATABASE_URL setzen, pytest ausfuehren, report_integrity_v2 re-runnen",
+        "RCB-002 beheben: PO-Entscheidung zu NAV_ITEMS (Option A oder B)",
+        "RCB-003 beheben: Router-Guard fuer /admin/diagnostics implementieren",
+        "run_final_gate.ps1 ausfuehren -> local_final_gate_validator_v2.py",
+        "RC Gate re-run -> Ziel: RELEASE_CANDIDATE (7/7)"
+      ]
+    },
+    {
+      "id": "EXT-OPT-3",
+      "title": "Deployment vorbereiten (Installer)",
+      "status": "BLOCKED",
+      "reason": "Deployment Readiness BLOCKED (DRC-01, DRC-03). Installer-Vorbereitung erst nach RELEASE_CANDIDATE sinnvoll.",
+      "unlock_condition": "RC Gate = RELEASE_CANDIDATE + Deployment Readiness alle Checks PASS"
+    },
+    {
+      "id": "EXT-OPT-4",
+      "title": "Nicht bereit — Pause",
+      "status": "AVAILABLE_NOT_RECOMMENDED",
+      "reason": "Technisch moeglich, aber 3 Release Blocker haben bekannte Fixes. Pause verzoegert RC ohne Mehrwert."
+    }
+  ],
+  "decision": "EXT-OPT-2",
+  "decision_title": "Erst weitere RC-Stabilisierung",
+  "decision_reason": "RC Gate ist BLOCKED (2/7). Externe Tests koennen erst nach RC Gate = RELEASE_CANDIDATE entschieden werden. Der Entscheid wird auf nach RC-Stabilisierung verschoben. EXT-OPT-1 wird nach RELEASE_CANDIDATE neu bewertet.",
+  "external_test_scope": {
+    "test_count": 72,
+    "markers": ["external_env_only", "legacy_live_http"],
+    "test_plan": "reports/current/external_env_testplan.json",
+    "execution_command": "pytest tests/api -m 'external_env_only or legacy_live_http' -v --tb=short",
+    "estimated_duration_min": 5
+  },
+  "m5c_implementation_lock": "LOCKED",
+  "next_decision_trigger": "RC Gate re-run ergibt RELEASE_CANDIDATE -> externe Testentscheidung neu auswerten -> EXT-OPT-1 freigeschaltet"
+}

@@ -1,0 +1,123 @@
+{
+  "report_schema_version": 1,
+  "report_name": "export_center_product_ready",
+  "report_type": "feature_readiness",
+  "generated_at": "2026-06-15T23:44:00.000000+00:00",
+  "evaluation_method": "static_code_analysis — backend/app/api/ (kein export.py vorhanden), frontend/src/ (kein ExportButton/ExportService gefunden), export_center_mvp.json",
+  "verdict": "NICHT_IMPLEMENTIERT — Export Center vollständig fehlend; kein Backend-Endpunkt, kein Frontend-Einstiegspunkt, kein ExportService",
+
+  "formate": {
+    "PDF": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "scope": "OUT_OF_SCOPE für 1.0 per export_center_mvp.json-Befund",
+      "finding": "PDF-Export-Generierung (pdfkit, reportlab, wkhtmltopdf oder äquivalent) nicht im Codebase vorhanden. Für Version 1.0 explizit ausgeschlossen."
+    },
+    "Markdown": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "scope": "IN_SCOPE für 1.0",
+      "finding": "Kein POST /api/v1/export?format=markdown Endpunkt. DocumentVersion.normalized_markdown ist im Backend vorhanden und wäre die direkte Exportquelle. Logik fehlt vollständig."
+    },
+    "JSON": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "scope": "IN_SCOPE für 1.0",
+      "finding": "Kein POST /api/v1/export?format=json Endpunkt. JSON-Serialisierung der vorhandenen Pydantic-Schemas ist technisch einfach umsetzbar. Implementierung fehlt."
+    }
+  },
+
+  "exportquellen": {
+    "dokumente": {
+      "status": "IMPLEMENTIERBAR — nicht implementiert",
+      "backend_voraussetzung": "DocumentDetail + DocumentChunks über vorhandene Endpunkte abrufbar. ExportService müsste diese zusammenführen.",
+      "finding": "Technische Basis vorhanden, kein Trigger und keine Formatierung implementiert."
+    },
+    "themen": {
+      "status": "BLOCKIERT",
+      "blocker": "Topics-Backend vollständig fehlend (P1-GAP-01/02). Topic-Daten nicht exportierbar.",
+      "finding": "Export von Themen erst nach Topics-Backend-Implementierung möglich."
+    },
+    "analyseergebnisse": {
+      "status": "IMPLEMENTIERBAR — nicht implementiert",
+      "backend_voraussetzung": "GET /api/v1/analysis/jobs/:id gibt Analyseergebnis zurück. ExportService müsste Ergebnis-JSON formatieren.",
+      "finding": "Analyse-Backend vollständig. Kein Export-Trigger."
+    }
+  },
+
+  "pflicht_felder": {
+    "quellenangaben": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "Jeder Export enthält Quellenangabe (Dokument-Titel, Chunk-Positionen, source_type, source_url)",
+      "actual": "Export-Endpunkt existiert nicht. Quellenangaben daher nicht prüfbar."
+    },
+    "datum": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "Export-Metadaten enthalten Erstellungsdatum des Exports",
+      "actual": "Kein Export-Endpunkt."
+    },
+    "ersteller": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "Export-Metadaten enthalten User-ID / Username des Exportierenden",
+      "actual": "Kein Export-Endpunkt. Auth-Token-Kontext wäre technisch verfügbar."
+    },
+    "workspace_isolation": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "expected": "Export nur für Daten des eigenen Workspace. Cross-Workspace-Export verhindert.",
+      "actual": "Kein Export-Endpunkt. Wenn implementiert: workspace_id aus Auth-Token zwingend in Exportlogik.",
+      "security_note": "Workspace-Isolation muss von Anfang an in ExportService eingebaut werden — nicht nachträglich."
+    }
+  },
+
+  "backend_gap": {
+    "endpoint": "POST /api/v1/export — existiert nicht",
+    "service": "ExportService — existiert nicht",
+    "router": "Kein export.py in backend/app/api/",
+    "estimated_complexity": "Mittel — JSON/Markdown-Export innerhalb von 1-2 Tagen implementierbar; PDF erfordert Bibliothek"
+  },
+
+  "frontend_gap": {
+    "export_button": "Kein ExportButton-Komponent in frontend/src/components/ oder frontend/src/features/",
+    "export_page": "Keine /export-Route oder Export-Page",
+    "download_trigger": "Kein file-download-Mechanismus (Blob + URL.createObjectURL) implementiert"
+  },
+
+  "blockers": [
+    {
+      "blocker_id": "EX-B01",
+      "severity": "KRITISCH",
+      "description": "POST /api/v1/export Endpunkt fehlt vollständig",
+      "sprint_tasks": ["T28", "T29"]
+    },
+    {
+      "blocker_id": "EX-B02",
+      "severity": "KRITISCH",
+      "description": "ExportService fehlt — keine Formatierungslogik für JSON/Markdown",
+      "sprint_tasks": ["T30", "T31"]
+    },
+    {
+      "blocker_id": "EX-B03",
+      "severity": "HOCH",
+      "description": "Kein ExportButton im Frontend — Nutzer kann keinen Export starten",
+      "sprint_tasks": ["T32", "T33"]
+    },
+    {
+      "blocker_id": "EX-B04",
+      "severity": "HOCH",
+      "description": "Themen-Export blockiert durch Topics-Backend-Ausfall",
+      "dependency": "TC-B01, TC-B02 müssen zuerst gelöst werden"
+    }
+  ],
+
+  "statistics": {
+    "formate_total": 3,
+    "vollstaendig": 0,
+    "implementiert": 0,
+    "nicht_implementiert": 2,
+    "out_of_scope": 1,
+    "exportquellen_total": 3,
+    "exportierbar": 0,
+    "blockiert": 1,
+    "implementierbar_nicht_implementiert": 2,
+    "pflichtfelder_erfuellt": 0,
+    "pflichtfelder_total": 4,
+    "overall_verdict": "NICHT_IMPLEMENTIERT — vollständig fehlend, S08 im Gold Path FAIL"
+  }
+}

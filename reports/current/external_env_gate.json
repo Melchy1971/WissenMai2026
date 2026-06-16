@@ -1,0 +1,39 @@
+{
+  "report": "external_env_gate",
+  "schema_version": 1,
+  "generated_at": "2026-06-15T08:00:00.000000+00:00",
+  "generated_by": "local_final_gate_validator_v2",
+  "status": "NOT_RUN",
+  "verdict": "NOT_RUN",
+  "policy": {
+    "rule": "external_env_gate dokumentiert Testergebnisse für externe Tests. Blockiert local_final_gate NICHT.",
+    "local_gate_impact": "NONE",
+    "release_candidate_impact": "NOT_RUN ist erlaubt für Release Candidate Decision",
+    "markers": ["external_env_only", "legacy_live_http"],
+    "reason_not_run": "Tests verwenden httpx gegen localhost:8000 (laufender Server erforderlich). Lokal ohne aktiven Backend-Server nicht ausführbar. TEST_DATABASE_URL nicht gesetzt."
+  },
+  "test_files": [
+    "tests/api/test_gui_backend_endpoints.py",
+    "tests/api/test_gui_contracts.py",
+    "tests/api/test_gui_secret_masking.py",
+    "tests/api/test_secret_masking_api.py",
+    "tests/api/test_settings_endpoints.py",
+    "tests/api/test_settings_patch.py"
+  ],
+  "collected": 72,
+  "passed": 0,
+  "failed": 0,
+  "skipped": 72,
+  "errors": 0,
+  "source": "reports/current/final_gate_test_split.json — external_env_gate.status=SKIPPED_EXTERNAL_ENV_ONLY",
+  "classification": {
+    "external_env_only": "Tests die einen laufenden Server benötigen (httpx, nicht TestClient)",
+    "legacy_live_http": "Legacy-Tests die HTTP gegen localhost:8000 schicken — nicht für lokale Ausführung geeignet"
+  },
+  "how_to_run": "pytest tests/api -m 'external_env_only or legacy_live_http' (Server muss laufen, TEST_DATABASE_URL muss gesetzt sein)",
+  "result": {
+    "blocks_local_final_gate": false,
+    "blocks_release_candidate": false,
+    "note": "NOT_RUN ist valider Zustand für den lokalen Entwicklungskontext. Ausführung im CI/CD-Environment mit laufendem Server erforderlich."
+  }
+}

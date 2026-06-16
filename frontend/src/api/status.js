@@ -1,9 +1,9 @@
-import { callApi } from '../lib/apiClient.js';
+import { requestJson } from './client.js';
 
-export async function getSystemStatus() {
-  return callApi('/api/v1/status');
+export async function getSystemStatus(options = {}) {
+  return requestJson('/api/v1/status', options);
 }
 
-export async function getHealth() {
-  return callApi('/api/v1/health');
+export async function getHealth(options = {}) {
+  return requestJson('/api/v1/health', options);
 }

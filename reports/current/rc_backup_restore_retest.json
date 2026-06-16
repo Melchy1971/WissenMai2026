@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "report_id": "rc_backup_restore_retest",
+  "generated": "2026-06-15",
+  "evaluation_method": "static_code_analysis",
+  "note": "Kein Live-Backend verfuegbar. Pruefung per statischer Analyse von Scripts, Konfiguration und vorhandenen Reports. Ergebnis = BLOCKED da run_backup.ps1/run_restore_test.ps1 erst in dieser Session erstellt wurden und noch kein tatsaechlicher Lauf erfolgte.",
+  "verdict": "BLOCKED",
+  "checks": [
+    {
+      "id": "BR-01",
+      "name": "Backup erzeugbar",
+      "status": "BLOCKED",
+      "evidence": [
+        "run_backup.ps1 in dieser Session erstellt (scripts/run_backup.ps1)",
+        "pg_dump-Aufruf mit FORMAT=custom und EXIT-Code-Pruefung implementiert",
+        "DATABASE_URL wird aus .env geladen und maskiert im Log",
+        "BLOCKER: Kein tatsaechlicher Lauf erfolgt — DATABASE_URL auf Produktions-DB nicht erreichbar (Connection-Timeout auf 85.215.131.200:5432 aus lokaler Env bekannt)"
+      ],
+      "required_action": "run_backup.ps1 gegen erreichbare DB ausfuehren. Exit 0 = PASS.",
+      "severity": "blocking"
+    },
+    {
+      "id": "BR-02",
+      "name": "Backup verifizierbar (pg_restore --list)",
+      "status": "BLOCKED",
+      "evidence": [
+        "run_backup.ps1 Schritt 2: pg_restore --list mit Entry-Count-Pruefung implementiert",
+        "BLOCKER: Abhaengig von BR-01 (kein Backup vorhanden)"
+      ],
+      "required_action": "Folgt automatisch aus BR-01 wenn PASS.",
+      "severity": "blocking"
+    },
+    {
+      "id": "BR-03",
+      "name": "Restore in leere Test-DB",
+      "status": "BLOCKED",
+      "evidence": [
+        "run_restore_test.ps1 in dieser Session erstellt (scripts/run_restore_test.ps1)",
+        "pg_restore --clean --if-exists gegen TEST_DATABASE_URL implementiert",
+        "BLOCKER: TEST_DATABASE_URL nicht gesetzt (RC-PREREQ-01)",
+        "BLOCKER: Kein Backup vorhanden (abhaengig von BR-01)"
+      ],
+      "required_action": "TEST_DATABASE_URL setzen, Backup erstellen, dann run_restore_test.ps1 ausfuehren.",
+      "severity": "blocking"
+    },
+    {
+      "id": "BR-04",
+      "name": "Alembic Head nach Restore",
+      "status": "BLOCKED",
+      "evidence": [
+        "run_restore_test.ps1 Schritt 3: alembic current mit 'head'-Pruefung im Output implementiert",
+        "BLOCKER: Abhaengig von BR-03"
+      ],
+      "required_action": "Folgt automatisch aus BR-03 wenn PASS.",
+      "severity": "blocking"
+    },
+    {
+      "id": "BR-05",
+      "name": "Seed/Login nach Restore",
+      "status": "BLOCKED",
+      "evidence": [
+        "run_restore_test.ps1 Schritt 4: check_auth_bootstrap.py --no-start-api implementiert",
+        "Seed-User wird durch pg_restore wiederhergestellt (war vor Backup vorhanden)",
+        "BLOCKER: Abhaengig von BR-03"
+      ],
+      "required_action": "Folgt automatisch aus BR-03 wenn PASS.",
+      "severity": "blocking"
+    },
+    {
+      "id": "BR-06",
+      "name": "Reports nach Restore (Drift, Data Quality)",
+      "status": "BLOCKED",
+      "evidence": [
+        "reports/current/*.json werden mit Daten wiederhergestellt wenn sie in DB gespeichert sind",
+        "Aktuelle Implementierung speichert Reports als Dateien, nicht in DB (statische JSON-Dateien)",
+        "BLOCKER: Dateisystem-Reports muessen separat gesichert werden (pg_dump enthaelt keine Dateisystem-Daten)",
+        "Empfehlung: reports/current/ vor Restore sichern und nach Restore wiederherstellen"
+      ],
+      "required_action": "Backup-Strategie fuer reports/current/ definieren (Datei-Backup neben pg_dump).",
+      "severity": "high"
+    },
+    {
+      "id": "BR-07",
+      "name": "Reindex nach Restore",
+      "status": "NOT_APPLICABLE",
+      "evidence": [
+        "Reindex-Funktion ist nicht Teil von M5b (Drift ist Read-Only, PROHIBIT-02/06 aktiv)",
+        "generate_reindex_recovery_report.py vorhanden (scripts/), aber kein Reindex-Gate-Requirement fuer RC",
+        "Reindex wuerde mutierende Operation erfordern — gesperrt bis M5c GO"
+      ],
+      "required_action": "Kein Handlungsbedarf fuer RC. Erst relevant nach M5c GO.",
+      "severity": "not_applicable"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "pass": 0,
+    "blocked": 5,
+    "high": 1,
+    "not_applicable": 1
+  },
+  "verdict_reason": "5 Checks BLOCKED. Root Causes: TEST_DATABASE_URL fehlt (RC-PREREQ-01), keine erreichbare Produktions-DB aus lokaler Umgebung, run_backup.ps1 und run_restore_test.ps1 erst in dieser Session erstellt und noch nicht ausgefuehrt.",
+  "unblocking_path": [
+    "1. TEST_DATABASE_URL setzen (RC-PREREQ-01)",
+    "2. Erreichbare DB sicherstellen (DATABASE_URL gegen Ziel-DB testen)",
+    "3. run_backup.ps1 ausfuehren -> backups/YYYY-MM-DD.dump erstellt",
+    "4. run_restore_test.ps1 ausfuehren -> alle Schritte PASS",
+    "5. Backup-Strategie fuer reports/current/ definieren (BR-06)"
+  ]
+}

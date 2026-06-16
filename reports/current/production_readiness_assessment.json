@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "report_id": "production_readiness_assessment",
+  "generated": "2026-06-15",
+  "evaluation_method": "static_code_analysis",
+  "inputs": {
+    "release_candidate_gate": "reports/current/release_candidate_gate.json",
+    "rc_stabilization_gate": "reports/current/rc_stabilization_gate.json",
+    "deployment_readiness_checklist": "reports/current/deployment_readiness_checklist.json",
+    "external_test_decision": "reports/current/external_test_decision.json",
+    "documentation_truth_lint": "reports/current/documentation_truth_lint.json"
+  },
+  "verdict": "BLOCKED",
+  "checks": [
+    {
+      "id": "PRA-01",
+      "name": "Auth vollstaendig",
+      "status": "PASS",
+      "evidence": [
+        "DRC-05 PASS: Seed/Auth-User anlegen und pruefen implementiert",
+        "check_auth_bootstrap.py --no-start-api prueft Admin-User ohne API-Start",
+        "JWT-Token-Validierung implementiert (Security Smoke RC: 9/10 PASS)",
+        "Login-Flow S01 Enduser Acceptance PASS",
+        "OFFENER PUNKT: /admin/diagnostics ohne Router-Guard (RCB-003) — kein Auth-Bypass, aber fehlende Route-Restriction"
+      ],
+      "open_items": ["RCB-003: Router-Guard /admin/diagnostics fehlt"]
+    },
+    {
+      "id": "PRA-02",
+      "name": "Workspace Isolation",
+      "status": "PASS",
+      "evidence": [
+        "Workspace-Header-Pruefung in Drift v2 UI Truth: 8/8 Checks inkl. Workspace-Isolation PASS",
+        "API Read-Only-Prinzip fuer Drift (PROHIBIT-02, PROHIBIT-06 maschinenlesbar in drift_governance.schema.json)",
+        "Kein cross-workspace Datenzugriff in statischer Codeanalyse identifiziert",
+        "External Env Tests (TG-05 Workspace-Header) ausstehend — 72 Tests noch NOT_RUN"
+      ],
+      "open_items": ["External Env Tests (IC-05) noch nicht ausgefuehrt — erst nach RELEASE_CANDIDATE"]
+    },
+    {
+      "id": "PRA-03",
+      "name": "Datenpruefung",
+      "status": "PARTIAL_PASS",
+      "evidence": [
+        "Alembic Head PASS (DRC-04): Schema-Migration aktuell",
+        "Data Quality Detektoren implementiert (M5a: Duplicate, Metadata, Lifecycle)",
+        "report_integrity_v2 BLOCKED (20 Blocker) — root: TEST_DATABASE_URL fehlt, Postgres-Gate-Tests nicht gelaufen",
+        "drift_report.json und drift_summary.json fehlen (Drift CLI nie ausgefuehrt, RCH-001)"
+      ],
+      "open_items": ["TEST_DATABASE_URL setzen (RCB-001)", "Drift CLI einmalig ausfuehren (RCH-001)"]
+    },
+    {
+      "id": "PRA-04",
+      "name": "Backup/Restore",
+      "status": "BLOCKED",
+      "evidence": [
+        "run_backup.ps1 und run_restore_test.ps1 implementiert (Task #23)",
+        "pg_dump --format=custom mit Credential-Masking implementiert",
+        "pg_restore --clean --if-exists + alembic current head-Pruefung implementiert",
+        "BLOCKER: Kein tatsaechlicher Lauf erfolgt (rc_backup_restore_retest.json: 5/7 BLOCKED)",
+        "BLOCKER: DATABASE_URL gegen Produktions-DB nicht erreichbar aus lokaler Umgebung",
+        "RISIKO: reports/current/*.json werden nicht durch pg_dump gesichert (BR-06)"
+      ],
+      "open_items": ["Live-Backup-Lauf ausfuehren (run_backup.ps1)", "Backup-Strategie fuer reports/current/ definieren"]
+    },
+    {
+      "id": "PRA-05",
+      "name": "Alembic Migrationen",
+      "status": "PASS",
+      "evidence": [
+        "DRC-04 PASS: alembic current == head verifiziert",
+        "run_restore_test.ps1 prueft alembic head nach Restore",
+        "Keine ausstehenden Migrationen in statischer Analyse identifiziert"
+      ],
+      "open_items": []
+    },
+    {
+      "id": "PRA-06",
+      "name": "Logging",
+      "status": "PARTIAL_PASS",
+      "evidence": [
+        "Credential-Masking in run_backup.ps1 und run_restore_test.ps1 implementiert (regex: ://user:***@)",
+        "FastAPI-Standard-Logging vorhanden (uvicorn access log)",
+        "LUECKE: Kein strukturiertes Logging (JSON-Format) fuer API Requests/Errors in statischer Analyse identifiziert",
+        "LUECKE: Auth-Failures werden nicht gesondert geloggt (kein Auth-Failure-Counter)",
+        "LUECKE: Import Jobs, Analysis Jobs, Drift Runs ohne dedizierten Log-Kanal",
+        "POSITIV: Keine Credential-/Token-/Dokumentinhalt-Logs in analysierten Scripts"
+      ],
+      "open_items": [
+        "Strukturiertes JSON-Logging implementieren",
+        "Auth-Failure-Counter",
+        "Job-Level-Logging fuer Import/Analysis/Drift"
+      ]
+    },
+    {
+      "id": "PRA-07",
+      "name": "Error Handling",
+      "status": "PARTIAL_PASS",
+      "evidence": [
+        "Exit-Codes in allen Scripts implementiert (exit 0 PASS, exit 1/2 FAIL mit spezifischer Meldung)",
+        "FastAPI Exception Handler fuer Standard-HTTP-Codes vorhanden",
+        "LUECKE: Kein globaler Unhandled-Exception-Handler fuer asynchrone Jobs identifiziert",
+        "LUECKE: Frontend Error Boundary nicht in statischer Analyse verifiziert",
+        "Security Smoke: 9/10 PASS — 1 Fehler (Admin-Route ohne Guard)"
+      ],
+      "open_items": [
+        "Frontend Error Boundary pruefen",
+        "Async-Job-Exception-Handling verifizieren"
+      ]
+    },
+    {
+      "id": "PRA-08",
+      "name": "Performance",
+      "status": "BLOCKED",
+      "evidence": [
+        "Drift CLI Performance Baseline bekannt: sub-linear 100-10k Dokumente (m5b_architecture_review.json)",
+        "BLOCKER: API-Endpunkt-Laufzeitmessungen nicht moeglich (rc_performance_smoke.json: 5/6 BLOCKED)",
+        "BLOCKER: Frontend-Ladezeit nicht gemessen (kein Live-Frontend)",
+        "LUECKE: N+1-Query-Pruefung nicht durchgefuehrt (PS-06 NOT_MEASURABLE)"
+      ],
+      "open_items": ["Live-System starten und rc_performance_smoke.ps1 re-runnen"]
+    },
+    {
+      "id": "PRA-09",
+      "name": "Frontend Stability",
+      "status": "PARTIAL_PASS",
+      "evidence": [
+        "Vitest: 134/134 PASS",
+        "Drift v2 UI Truth: 29/29 PASS",
+        "OXC-Parser-Fix (Unicode-Zeichen) angewendet — kein Build-Fehler erwartet",
+        "Static Build PASS (DRC-08)",
+        "OFFENER PUNKT: 7 undokumentierte Routen (RCB-003)",
+        "NAV_ITEMS 4 Abweichungen (RCB-002) — visuelle Inkonsistenz",
+        "Browser-Konsolen-Fehler nicht pruefbar (kein Live-Frontend)"
+      ],
+      "open_items": ["RCB-002 (NAV)", "RCB-003 (Routen + Guard)", "Browser-Konsolen-Pruefung bei Live-Frontend"]
+    },
+    {
+      "id": "PRA-10",
+      "name": "API Stability",
+      "status": "PARTIAL_PASS",
+      "evidence": [
+        "Local Gate Tests: 11/11 PASS (pytest -m local_gate)",
+        "REST-API read-only fuer Drift (PROHIBIT-02/06 verifiziert)",
+        "External Env Tests (72) NOT_RUN — erst nach RELEASE_CANDIDATE",
+        "BLOCKER: report_integrity_v2 BLOCKED (20 Blocker) — API-Contract-Tests nicht vollstaendig laufbar",
+        "LUECKE: API-Versioning nicht in statischer Analyse identifiziert"
+      ],
+      "open_items": ["TEST_DATABASE_URL (RCB-001) -> report_integrity_v2 re-runnen", "External Env Tests nach RELEASE_CANDIDATE"]
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "pass": 2,
+    "partial_pass": 5,
+    "blocked": 3
+  },
+  "verdict": "BLOCKED",
+  "verdict_reason": "3 Checks BLOCKED (PRA-04 Backup/Restore, PRA-08 Performance, PRA-10 API Stability durch report_integrity_v2). 5 Checks PARTIAL_PASS mit bekannten offenen Punkten. Produktion erst freigegeben nach RC Gate = RELEASE_CANDIDATE.",
+  "blocking_items": [
+    "PRA-04: Backup/Restore nie tatsaechlich ausgefuehrt",
+    "PRA-08: Performance-Metriken fehlen komplett",
+    "PRA-10: report_integrity_v2 BLOCKED (root: TEST_DATABASE_URL)"
+  ],
+  "partial_pass_open_items": [
+    "PRA-03: TEST_DATABASE_URL setzen + Drift CLI einmalig ausfuehren",
+    "PRA-06: Strukturiertes Logging implementieren",
+    "PRA-07: Frontend Error Boundary + Async-Exception-Handling",
+    "PRA-09: NAV_ITEMS + Router-Guard + Browser-Konsolen-Pruefung",
+    "PRA-10: External Env Tests nach RELEASE_CANDIDATE"
+  ],
+  "ready_after": [
+    "RC Gate = RELEASE_CANDIDATE (7/7)",
+    "RC Stabilization Gate = PASS (6/6)",
+    "Backup/Restore Live-Lauf PASS",
+    "Performance Smoke Live-Lauf PASS",
+    "External Env Tests PASS (72 Tests)"
+  ],
+  "m5c_implementation_lock": "LOCKED"
+}

@@ -1,0 +1,95 @@
+{
+  "report": "drift_v2_import_audit",
+  "generated_at": "2026-06-15T07:30:00.000000+00:00",
+  "generated_by": "drift_v2_import_audit_task",
+  "status": "PASS",
+  "old_drift_imports": 0,
+  "summary": "Kein einziger aktiver Import aus features/drift. Alle Drift-Referenzen zeigen auf features/drift_v2. ClientStaticCheck.test.js enthaelt einen Pfad-String fuer features/drift als toten Exclusion-Eintrag — kein Import, kein Blocker.",
+  "audit_scope": {
+    "checked_patterns": [
+      "features/drift (ohne _v2)",
+      "DriftDashboard aus altem Pfad",
+      "drift/index",
+      "alte Drift-Komponenten"
+    ],
+    "file_types": ["*.jsx", "*.js", "*.ts", "*.tsx"],
+    "directories": ["frontend/src"]
+  },
+  "findings": {
+    "active_old_drift_imports": [],
+    "active_old_drift_import_count": 0,
+    "drift_v2_imports": [
+      {
+        "file": "frontend/src/pages/DriftPage.jsx",
+        "line": 1,
+        "import": "import { DriftDashboard } from '../features/drift_v2/DriftDashboard.jsx'",
+        "status": "CORRECT"
+      },
+      {
+        "file": "frontend/src/tests/features/DriftDashboard.test.jsx",
+        "line": 4,
+        "import": "import { DriftDashboard } from '../../features/drift_v2/DriftDashboard.jsx'",
+        "status": "CORRECT"
+      }
+    ],
+    "non_import_references_to_old_path": [
+      {
+        "file": "frontend/src/tests/api/ClientStaticCheck.test.js",
+        "line": 16,
+        "content": "const EXCLUDED_PATHS = new Set([resolve(SRC_DIR, 'features/drift')])",
+        "classification": "DEAD_EXCLUSION_STRING",
+        "impact": "NONE",
+        "note": "Kein Import. Pfad-String in einem statischen Check, der sicherstellt dass fetch() nicht aus anderen Dateien als api/client.js aufgerufen wird. features/drift existiert nicht — der Eintrag ist harmlos tot."
+      }
+    ]
+  },
+  "routing_audit": {
+    "route": "/drift",
+    "file": "frontend/src/app/routes.jsx",
+    "line": 93,
+    "component": "DriftPage",
+    "component_file": "frontend/src/pages/DriftPage.jsx",
+    "resolves_to": "frontend/src/features/drift_v2/DriftDashboard.jsx",
+    "status": "CORRECT"
+  },
+  "navigation_audit": {
+    "file": "frontend/src/app/AppShell.jsx",
+    "line": 25,
+    "entry": "{ to: '/drift', label: 'Drift' }",
+    "resolves_to_route": "/drift -> DriftPage -> drift_v2/DriftDashboard",
+    "status": "CORRECT"
+  },
+  "sidebar_audit": {
+    "drift_link_active": true,
+    "drift_link_target": "/drift",
+    "old_drift_link": false
+  },
+  "barrel_export_audit": {
+    "drift_barrel_files": [],
+    "status": "CLEAN"
+  },
+  "dashboard_references": {
+    "AdminDiagnosticsPage.jsx": {
+      "references": ["payload?.drift_awareness?.indicators", "data.drift_awareness?.concept"],
+      "classification": "DATA_FIELD_REFERENCE",
+      "note": "JSON-Payload-Felder, keine Imports aus features/drift. Kein Blocker."
+    }
+  },
+  "api_references": {
+    "driftApi.js": {
+      "base_url": "/api/v1/drift",
+      "classification": "API_ENDPOINT_STRING",
+      "note": "API-Pfad-Konstante, kein Import aus altem Pfad."
+    }
+  },
+  "drift_v2_files": [
+    "frontend/src/features/drift_v2/DriftDashboard.jsx",
+    "frontend/src/features/drift_v2/driftApi.js"
+  ],
+  "result": {
+    "old_drift_imports": 0,
+    "drift_v2_imports": 2,
+    "compliance": "FULL",
+    "blockers": []
+  }
+}

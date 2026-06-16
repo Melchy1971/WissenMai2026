@@ -1,0 +1,155 @@
+{
+  "report": "test_marker_matrix",
+  "generated_at": "2026-06-15T07:05:00.000000+00:00",
+  "generated_by": "testmarker_cleanup_task",
+  "policy_version": "1.0",
+  "rules": {
+    "local_gate_blocks": "local_gate marker — failures, errors, skips blockieren Final Gate",
+    "external_env_not_local": "external_env_only und legacy_live_http blockieren nicht lokal",
+    "deprecated_must_be_archived": "deprecated_frontend Tests muessen archiviert oder modernisiert sein vor Gate",
+    "skips_in_local_gate": "BLOCKING — Skip in local_gate gilt als Blocker",
+    "skips_in_external_env": "NON-BLOCKING lokal"
+  },
+  "pytest_markers": [
+    {
+      "marker": "local_gate",
+      "gate": "LOCAL_FINAL_GATE",
+      "blocking": true,
+      "allows_skip": false,
+      "description": "Tests included in the local final gate",
+      "current_count": 11,
+      "current_status": "PASS",
+      "contains_external_env_only": false,
+      "contains_legacy_live_http": false,
+      "violation": null
+    },
+    {
+      "marker": "external_env_only",
+      "gate": "EXTERNAL_ENV_GATE",
+      "blocking": false,
+      "blocking_local": false,
+      "description": "Tests that require external services",
+      "current_count": 72,
+      "current_status": "SKIPPED_EXTERNAL_ENV_ONLY",
+      "files": [
+        "tests/api/test_gui_backend_endpoints.py",
+        "tests/api/test_gui_contracts.py",
+        "tests/api/test_gui_secret_masking.py",
+        "tests/api/test_secret_masking_api.py",
+        "tests/api/test_settings_endpoints.py",
+        "tests/api/test_settings_patch.py"
+      ]
+    },
+    {
+      "marker": "legacy_live_http",
+      "gate": "EXTERNAL_ENV_GATE",
+      "blocking": false,
+      "blocking_local": false,
+      "description": "Legacy live HTTP smoke tests — httpx gegen localhost:8000, kein TestClient",
+      "current_count": 72,
+      "note": "Identisch mit external_env_only in dieser Codebase. Doppelmarker nach Policy korrekt.",
+      "co_marked_with": "external_env_only"
+    },
+    {
+      "marker": "frontend_truth",
+      "gate": "M3A_GATE",
+      "blocking": true,
+      "description": "Frontend/Backend contract truth; blocks M3a"
+    },
+    {
+      "marker": "m3a_truth",
+      "gate": "M3A_GATE",
+      "blocking": true,
+      "description": "M3a backend baseline truth"
+    },
+    {
+      "marker": "m4_truth",
+      "gate": "M4_GATE",
+      "blocking": true,
+      "description": "M4 backend stabilization truth"
+    },
+    {
+      "marker": "m4a_auth_truth",
+      "gate": "M4_GATE",
+      "blocking": true
+    },
+    {
+      "marker": "m4b_upload_queue_truth",
+      "gate": "M4_GATE",
+      "blocking": true
+    },
+    {
+      "marker": "m4c_lifecycle_retrieval_truth",
+      "gate": "M4_GATE",
+      "blocking": true
+    },
+    {
+      "marker": "m4e_backup_restore_truth",
+      "gate": "M4_GATE",
+      "blocking": true
+    },
+    {
+      "marker": "m5_truth",
+      "gate": "NON_BLOCKING",
+      "blocking": false,
+      "description": "M5 operational hardening truth; non-blocking for M4"
+    },
+    {
+      "marker": "governance_truth",
+      "gate": "NON_BLOCKING",
+      "blocking": false
+    },
+    {
+      "marker": "observability_truth",
+      "gate": "NON_BLOCKING",
+      "blocking": false
+    },
+    {
+      "marker": "chaos_truth",
+      "gate": "NON_BLOCKING",
+      "blocking": false
+    },
+    {
+      "marker": "slow_truth",
+      "gate": "NON_BLOCKING",
+      "blocking": false
+    },
+    {
+      "marker": "unit_fast",
+      "gate": "SPLIT_REPORTING",
+      "blocking": false,
+      "description": "Fast unit tests; nicht in M4 Gate"
+    },
+    {
+      "marker": "postgres",
+      "gate": "EXTERNAL_ENV_GATE",
+      "blocking": false,
+      "blocking_local": false,
+      "description": "Requires real PostgreSQL — TEST_DATABASE_URL oder docker-compose.test.yml"
+    },
+    {
+      "marker": "postgres_truth",
+      "gate": "EXTERNAL_ENV_GATE",
+      "blocking": true,
+      "blocking_local": false,
+      "description": "Hard PostgreSQL truth — TEST_DATABASE_URL-Fehler sind gate-blocking im externen Gate"
+    }
+  ],
+  "vitest_markers": {
+    "framework": "vitest@4.1.5",
+    "environment": "jsdom",
+    "config": "frontend/vite.config.js",
+    "include": "src/tests/**/*.{test,spec}.{js,jsx}",
+    "exclude": ["tests/gui_truth/**"],
+    "no_pytest_marker_equivalent": true,
+    "note": "Vitest hat keine Marker im pytest-Sinne. Gate-Zugehoerigkeit durch include/exclude-Pattern und Dateistruktur geregelt.",
+    "effective_gate_tests": "src/tests/**/* (alle ausser tests/gui_truth/)"
+  },
+  "violations": [],
+  "compliance": {
+    "local_gate_free_of_external_env": true,
+    "local_gate_free_of_legacy_live_http": true,
+    "no_skips_in_local_gate": true,
+    "deprecated_frontend_handled": "N/A — kein deprecated_frontend Marker aktiv in pytest.ini"
+  }
+}

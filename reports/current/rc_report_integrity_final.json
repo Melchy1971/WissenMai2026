@@ -1,0 +1,143 @@
+{
+  "schema_version": "1",
+  "report_id": "rc_report_integrity_final",
+  "generated": "2026-06-15T10:10:00Z",
+  "verdict": "BLOCKED",
+  "checks_performed": ["all_required_reports_present", "no_stale_reports", "valid_json", "no_contradictory_status", "cross_reference_consistency"],
+  "reports": [
+    {
+      "id": "final_gate_report",
+      "path": "reports/current/final_gate_report.json",
+      "present": true,
+      "valid_json": true,
+      "size_bytes": 8764,
+      "verdict_field": "verdict",
+      "verdict_value": "BLOCKED",
+      "stale": false,
+      "integrity": "OK"
+    },
+    {
+      "id": "release_candidate_decision",
+      "path": "reports/current/release_candidate_decision.json",
+      "present": true,
+      "valid_json": true,
+      "size_bytes": 4299,
+      "verdict_field": "decision",
+      "verdict_value": "BLOCKED",
+      "stale": false,
+      "integrity": "OK"
+    },
+    {
+      "id": "enduser_acceptance_rc",
+      "path": "reports/current/enduser_acceptance_rc.json",
+      "present": true,
+      "valid_json": true,
+      "size_bytes": 5727,
+      "verdict_field": "verdict",
+      "verdict_value": "BLOCKED",
+      "stale": false,
+      "integrity": "OK"
+    },
+    {
+      "id": "rc_security_smoke_report",
+      "path": "reports/current/rc_security_smoke_report.json",
+      "present": true,
+      "valid_json": true,
+      "size_bytes": 5647,
+      "verdict_field": "verdict",
+      "verdict_value": "BLOCKED",
+      "stale": false,
+      "integrity": "OK"
+    },
+    {
+      "id": "final_navigation_release_check",
+      "path": "reports/current/final_navigation_release_check.json",
+      "present": true,
+      "valid_json": true,
+      "size_bytes": 6427,
+      "verdict_field": "verdict",
+      "verdict_value": "BLOCKED",
+      "stale": false,
+      "integrity": "OK"
+    },
+    {
+      "id": "documentation_truth_lint",
+      "path": "reports/current/documentation_truth_lint.json",
+      "present": true,
+      "valid_json": true,
+      "size_bytes": 2430,
+      "verdict_field": "status",
+      "verdict_value": "PASS",
+      "stale": false,
+      "integrity": "OK"
+    },
+    {
+      "id": "report_integrity_v2",
+      "path": "reports/current/report_integrity_v2.json",
+      "present": true,
+      "valid_json": true,
+      "size_bytes": 172692,
+      "verdict_field": "status",
+      "verdict_value": "BLOCKED",
+      "stale": false,
+      "integrity": "OK"
+    }
+  ],
+  "integrity_rules": [
+    {
+      "rule": "Alle 7 Pflicht-Reports vorhanden",
+      "result": "PASS",
+      "detail": "7/7 Reports gefunden"
+    },
+    {
+      "rule": "Kein stale Report (Datum nicht aelter als Report-Lauf)",
+      "result": "PASS",
+      "detail": "Alle Reports aus aktueller Session (2026-06-15). Kein Report aus veralteter Gate-Runde ohne Neubewertung."
+    },
+    {
+      "rule": "Alle Reports valides JSON",
+      "result": "PASS",
+      "detail": "7/7 Reports ohne JSON-Parse-Fehler"
+    },
+    {
+      "rule": "Keine widersprüchlichen Status-Werte",
+      "result": "PASS",
+      "detail": "Alle BLOCKED-Reports sind konsistent BLOCKED. documentation_truth_lint ist konsistent PASS. Kein Report behauptet PASS waehrend ein abhaengiger Report BLOCKED ist.",
+      "cross_checks": [
+        {
+          "check": "documentation_truth_lint PASS bei BLOCKED release_candidate_decision",
+          "consistent": true,
+          "reason": "documentation_truth_lint prueft Doku-Konsistenz, unabhaengig vom Release-Gate. Kein Widerspruch."
+        },
+        {
+          "check": "final_gate_report BLOCKED + release_candidate_decision BLOCKED",
+          "consistent": true,
+          "reason": "release_candidate_decision referenziert final_gate_report als Eingabe. Beide BLOCKED. Konsistent."
+        },
+        {
+          "check": "enduser_acceptance_rc BLOCKED + final_navigation_release_check BLOCKED",
+          "consistent": true,
+          "reason": "S08 (Data Quality) in Acceptance geblockt durch NAV-FIX-02, identischer Befund wie R1 in Navigation-Check. Root cause uebereinstimmend."
+        },
+        {
+          "check": "rc_security_smoke_report BLOCKED + final_navigation_release_check BLOCKED",
+          "consistent": true,
+          "reason": "SEC-10 und R8 beschreiben denselben Sachverhalt (/admin/diagnostics, verbotene Routen). Kein Widerspruch."
+        }
+      ]
+    },
+    {
+      "rule": "report_integrity_v2 PASS oder dokumentierter BLOCKED-Grund",
+      "result": "NOTED",
+      "detail": "report_integrity_v2 ist BLOCKED. Root cause: TEST_DATABASE_URL nicht gesetzt -> pytest-Lauf 0 collected -> report_integrity_v2 zaehlt fehlende Backend-Reports. Dies ist dokumentiert in rc_blocker_root_cause.json (FIX-001). Kein neuer unbekannter Blocker."
+    }
+  ],
+  "verdict_summary": {
+    "reports_pass": ["documentation_truth_lint"],
+    "reports_blocked": ["final_gate_report", "release_candidate_decision", "enduser_acceptance_rc", "rc_security_smoke_report", "final_navigation_release_check", "report_integrity_v2"],
+    "reports_missing": [],
+    "reports_invalid_json": [],
+    "contradictions_found": 0
+  },
+  "why_blocked": "Pflicht-Condition fuer RC_GATE: release_candidate_decision PASS erforderlich. Aktueller Wert: BLOCKED. Zusaetzlich: enduser_acceptance_rc, rc_security_smoke_report, final_navigation_release_check alle BLOCKED. RC Gate kann nicht RELEASE_CANDIDATE sein."
+}

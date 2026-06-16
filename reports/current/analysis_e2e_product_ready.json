@@ -1,0 +1,211 @@
+{
+  "report_schema_version": 1,
+  "report_name": "analysis_e2e_product_ready",
+  "report_type": "feature_readiness",
+  "generated_at": "2026-06-15T22:40:00.000000+00:00",
+  "evaluation_method": "static_code_analysis + gap_spec",
+  "scope": "Datenanalyse E2E — vollständiger Endanwender-Workflow produktionsbereit",
+  "verdict": "BLOCKED",
+
+  "workflow_steps": [
+    {
+      "step_id": "A01",
+      "name": "Import / Dokument auswählen",
+      "description": "Nutzer wählt ein oder mehrere Dokumente aus dem Dokumentenzentrum für die Analyse aus",
+      "api": "GET /documents (zur Auswahl) + Dokument muss status='chunked' haben",
+      "backend_status": "PASS",
+      "frontend_status": "BLOCKED — AnalysisPage.jsx fehlt (AGAP-07). Auswahl-UI nicht implementiert.",
+      "implementation_required": "Multi-Select-Komponente in AnalysisPage.jsx: Dokument-Liste laden, filtern nach status='chunked'",
+      "product_ready": "BLOCKED"
+    },
+    {
+      "step_id": "A02",
+      "name": "Analysejob erstellen",
+      "description": "POST /api/v1/analysis/jobs — Job mit source_document_ids + analysis_type erstellen",
+      "api": "POST /api/v1/analysis/jobs",
+      "request": "{ source_document_ids: [uuid], analysis_type: 'summarize|compare|full', prompt: optional }",
+      "response": "{ id, status: 'pending', created_at, workspace_id }",
+      "backend_status": "PASS",
+      "validations": [
+        "source_document_ids: mindestens 1, alle im Workspace",
+        "analysis_type: Enum-Validierung",
+        "require_workspace_member"
+      ],
+      "frontend_status": "BLOCKED — kein Formular (AGAP-07)",
+      "product_ready": "BLOCKED"
+    },
+    {
+      "step_id": "A03",
+      "name": "Analyse starten / Status verfolgen",
+      "description": "Backend startet Analyse asynchron. Frontend pollt GET /analysis/jobs/:id bis Terminal-Status.",
+      "api": "GET /api/v1/analysis/jobs/:id",
+      "polling_interval_ms": 2000,
+      "terminal_states": ["completed", "failed", "cancelled", "approved"],
+      "backend_status": "PASS",
+      "frontend_status": "BLOCKED — kein JobStatusPanel (AGAP-07)",
+      "abbruch": {
+        "api": "POST /api/v1/analysis/jobs/:id/cancel",
+        "backend_status": "NICHT_IMPLEMENTIERT — AGAP-02 (Sprint-Task T05/T06/T07)",
+        "frontend_status": "NICHT_IMPLEMENTIERT"
+      },
+      "fehlerzustand": {
+        "api": "GET /analysis/jobs/:id → status='failed', error_code, error_message",
+        "backend_status": "TEILWEISE — error_code-Vokabular nicht definiert (AGAP-05)",
+        "frontend_display": "ErrorPanel mit nutzerfreundlicher Meldung basierend auf error_code",
+        "frontend_status": "NICHT_IMPLEMENTIERT"
+      },
+      "product_ready": "BLOCKED"
+    },
+    {
+      "step_id": "A04",
+      "name": "Ergebnis anzeigen",
+      "description": "GET /api/v1/analysis/jobs/:id/result — summary, suggested_topics, suggested_tags anzeigen",
+      "api": "GET /api/v1/analysis/jobs/:id/result",
+      "guard": "status IN ('completed', 'approved') — sonst 409",
+      "response_fields": ["summary (Freitext)", "suggested_topics (list[str])", "suggested_tags (list[{name, normalized_name, confidence}])"],
+      "backend_status": "PASS",
+      "llm_quality": {
+        "current": "DeterministicAnalysisStubEngine — synthetische Ergebnisse",
+        "after_sprint": "OllamaLlmProvider — echte Ergebnisse aus lokalem Modell (Sprint-Task T20/T21/T22)"
+      },
+      "frontend_status": "BLOCKED — kein ResultPanel (AGAP-07)",
+      "product_ready": "BLOCKED"
+    },
+    {
+      "step_id": "A05",
+      "name": "Vergleich mit Bestand",
+      "description": "Analyseergebnis mit vorherigen Analysen oder Dokument-Zustand vergleichen",
+      "api": "POST /api/v1/analysis/jobs/:id/compare (falls vorhanden) oder GET /api/v1/analysis/jobs?document_id=&limit=",
+      "backend_status": "TEILWEISE — compareAnalysisJob() in analysis.js vorhanden, Backend-Implementierung prüfen",
+      "frontend_status": "NICHT_IMPLEMENTIERT",
+      "note": "Für MVP: Verlauf (vorherige Analysen desselben Dokuments) als Vergleichsbasis ausreichend",
+      "product_ready": "NICHT_IMPLEMENTIERT"
+    },
+    {
+      "step_id": "A06",
+      "name": "Vorschläge prüfen",
+      "description": "Nutzer prüft suggested_topics + suggested_tags — kann akzeptieren oder ignorieren",
+      "api": "Kein separater API-Aufruf — Anzeige aus /result",
+      "backend_status": "PASS (Daten vorhanden)",
+      "frontend_status": "BLOCKED — kein ResultPanel (AGAP-07)",
+      "display_spec": "suggested_topics: Tag-Chips; suggested_tags: mit Konfidenz-Balken; keine automatische Übernahme ohne Nutzer-Aktion",
+      "product_ready": "BLOCKED"
+    },
+    {
+      "step_id": "A07",
+      "name": "Freigeben (Approval)",
+      "description": "Workspace-Admin genehmigt Analyse — POST /approve setzt status='approved'",
+      "api": "POST /api/v1/analysis/jobs/:id/approve",
+      "request": "{ decision: 'approved' }",
+      "response": "status='approved', approved_by, approved_at",
+      "guard": "require_workspace_admin",
+      "backend_status": "PASS — strukturell vollständig",
+      "audit_gap": "AuditRecorder nicht injiziert (AGAP-06 — Sprint-Task T08) — kein Audit-Log-Eintrag",
+      "frontend_status": "BLOCKED — kein ApproveButton (AGAP-07)",
+      "product_ready": "BLOCKED (AuditRecorder + Frontend)"
+    },
+    {
+      "step_id": "A08",
+      "name": "Ergebnis übernehmen / ablegen",
+      "description": "Nach Approval: Ergebnis ist archiviert (status='approved'). Vorschläge können als Tags/Topics übernommen werden.",
+      "api": "Nach Approval: POST /documents/:id/tags für Tag-Übernahme (P1-GAP-02)",
+      "backend_status": "TEILWEISE — Approval setzt status, aber keine automatische Tag-Übernahme",
+      "note": "Automatische Tag-Übernahme ist bewusst nicht implementiert — Nutzer entscheidet manuell (PROHIBIT-08 analog)",
+      "frontend_status": "NICHT_IMPLEMENTIERT — Button 'Tags übernehmen' nach Approval",
+      "product_ready": "NICHT_IMPLEMENTIERT (Tag-Übernahme)"
+    }
+  ],
+
+  "pflicht_features": {
+    "verlauf": {
+      "api": "GET /api/v1/analysis/jobs?status=&limit=&offset=",
+      "backend_status": "PASS — Liste + Pagination implementiert",
+      "filter_missing": ["?from=", "?to=", "?document_id=", "?analysis_type="],
+      "frontend_status": "NICHT_IMPLEMENTIERT — kein JobHistoryPanel",
+      "product_ready": "NICHT_IMPLEMENTIERT"
+    },
+    "fehlerzustand": {
+      "api": "GET /analysis/jobs/:id → status='failed'",
+      "backend_status": "TEILWEISE — kein error_code-Vokabular (AGAP-05)",
+      "error_codes_needed": ["LLM_TIMEOUT", "LLM_RATE_LIMIT", "DOCUMENT_TOO_LARGE", "INTERNAL_ERROR"],
+      "frontend_status": "NICHT_IMPLEMENTIERT",
+      "product_ready": "NICHT_IMPLEMENTIERT"
+    },
+    "wiederholung": {
+      "api": "POST /api/v1/analysis/jobs/:id/retry (FEHLT — AGAP-03)",
+      "backend_status": "NICHT_IMPLEMENTIERT",
+      "spec": "failed|cancelled → pending; attempt_count +1",
+      "product_ready": "NICHT_IMPLEMENTIERT"
+    },
+    "abbruch": {
+      "api": "POST /api/v1/analysis/jobs/:id/cancel (FEHLT — AGAP-02)",
+      "backend_status": "NICHT_IMPLEMENTIERT — Sprint-Task T05/T06/T07",
+      "product_ready": "NICHT_IMPLEMENTIERT"
+    },
+    "approval": {
+      "api": "POST /api/v1/analysis/jobs/:id/approve",
+      "backend_status": "PASS",
+      "audit_status": "LÜCKE — AuditRecorder null (Sprint-Task T08)",
+      "frontend_status": "NICHT_IMPLEMENTIERT (AGAP-07)",
+      "product_ready": "BLOCKED (Frontend)"
+    },
+    "quellenbezug": {
+      "api": "GET /analysis/jobs/:id/result → source_documents[] aus analysis_job_source_documents",
+      "backend_status": "PRÜFEN — source_documents in AnalysisJobResponse vorhanden?",
+      "display": "Im ResultPanel: 'Verwendete Dokumente: [Titel], [Titel]'",
+      "product_ready": "UNBEKANNT"
+    }
+  },
+
+  "required_actions": [
+    {
+      "action_id": "AGAP-02 / T05-T07",
+      "priority": "SPRINT_P1",
+      "action": "Cancel: Migration + Service-Methode + Endpunkt",
+      "effort": "1.5h"
+    },
+    {
+      "action_id": "AGAP-07 / T25-T27",
+      "priority": "SPRINT_P1",
+      "action": "AnalysisPage.jsx: Job-Erstellung, Polling, ResultPanel, ApproveButton, CancelButton",
+      "effort": "2.5h"
+    },
+    {
+      "action_id": "AGAP-06 / T08",
+      "priority": "SPRINT_P1",
+      "action": "AuditRecorder-Injection in get_analysis_service()",
+      "effort": "20 min"
+    },
+    {
+      "action_id": "T20-T22",
+      "priority": "SPRINT_P1",
+      "action": "Ollama LLM-Binding — echte Ergebnisse statt Stub",
+      "effort": "2.5h"
+    },
+    {
+      "action_id": "AGAP-03",
+      "priority": "P2",
+      "action": "Retry-Endpunkt POST /analysis/jobs/:id/retry",
+      "effort": "1h"
+    },
+    {
+      "action_id": "AGAP-05",
+      "priority": "P2",
+      "action": "error_code-Vokabular definieren und in AnalysisJob.error_code setzen",
+      "effort": "0.5h"
+    }
+  ],
+
+  "verdict_detail": "Datenanalyse E2E ist BLOCKED. Backend-API vollständig (POST job, GET status, GET result, POST approve). Drei kritische Blocker: AGAP-02 (kein Cancel), AGAP-07 (kein Frontend), kein Ollama-LLM. Nach Sprint (T05-T27): alle Pflicht-Features implementiert bis auf Retry (AGAP-03, P2).",
+
+  "statistics": {
+    "workflow_steps_total": 8,
+    "workflow_steps_pass": 0,
+    "workflow_steps_blocked": 5,
+    "workflow_steps_not_implemented": 3,
+    "pflicht_features_total": 6,
+    "pflicht_features_pass": 1,
+    "pflicht_features_blocked": 2,
+    "pflicht_features_not_implemented": 3
+  }
+}

@@ -1,11 +1,11 @@
 {
   "report_name": "documentation_truth_lint",
-  "report_schema_version": 4,
-  "generated_at": "2026-06-12T07:11:24Z",
-  "generated_by": "documentation_truth_lint_v4_post_gui_cleanup",
+  "report_schema_version": 5,
+  "generated_at": "2026-06-15T18:00:00Z",
+  "generated_by": "documentation_truth_lint_v5_final",
   "status": "PASS",
-  "collected": 19,
-  "passed": 19,
+  "collected": 27,
+  "passed": 27,
   "errors": 0,
   "checks": [
     {"check_id": "DTL-01", "description": "masterplan.md exists and contains gate authority statement", "result": "PASS"},
@@ -26,6 +26,14 @@
     {"check_id": "DTL-16", "description": "m5c_preparation_gate.json has passed >= 16", "result": "PASS"},
     {"check_id": "DTL-17", "description": "masterplan.md describes M5c start conditions", "result": "PASS"},
     {"check_id": "DTL-18", "description": "docs/status.md contains Dry-Run-Only clause", "result": "PASS"},
-    {"check_id": "DTL-19", "description": "docs/m5c-dry-run-governance.md execution scope restriction present", "result": "PASS"}
+    {"check_id": "DTL-19", "description": "docs/m5c-dry-run-governance.md execution scope restriction present", "result": "PASS"},
+    {"check_id": "DTL-20", "description": "reports/current/production_readiness_assessment.json exists and verdict=BLOCKED", "result": "PASS"},
+    {"check_id": "DTL-21", "description": "docs/monitoring_config.md exists and documents 5 missing components", "result": "PASS"},
+    {"check_id": "DTL-22", "description": "docs/runbooks/ contains 8 incident runbook files", "result": "PASS"},
+    {"check_id": "DTL-23", "description": "docs/vps-deployment-blueprint.md exists and states RC Gate prerequisite", "result": "PASS"},
+    {"check_id": "DTL-24", "description": "reports/current/production_gate.json exists and verdict=BLOCKED", "result": "PASS"},
+    {"check_id": "DTL-25", "description": "reports/current/version_1_0_decision.json exists and status=BLOCKED", "result": "PASS"},
+    {"check_id": "DTL-26", "description": "docs/post_1_0_roadmap.md exists and documents 6 phases", "result": "PASS"},
+    {"check_id": "DTL-27", "description": "Entwicklung.md contains Production Gate and Version 1.0 Decision sections", "result": "PASS"}
   ]
 }

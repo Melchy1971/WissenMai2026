@@ -1,0 +1,181 @@
+{
+  "report_schema_version": 1,
+  "report_name": "topic_center_rc",
+  "report_type": "feature_review",
+  "generated_at": "2026-06-15T21:55:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "scope": "Themenzentrum — Themenliste, KI-Zusammenfassung, Quellen, Dokumentbezug, Tags, Export",
+  "verdict": "NICHT_PRODUKTIONSREIF — Backend-API fehlt vollständig, Frontend nutzt falsche URL-Pfade",
+
+  "critical_findings": [
+    {
+      "finding_id": "TC-CRIT-01",
+      "title": "Topics-API komplett fehlend",
+      "severity": "CRITICAL",
+      "detail": "frontend/src/api/topics.js ruft /topics/* auf — kein /api/v1/-Präfix. Selbst wenn Backend implementiert wäre, würden alle Calls 404 liefern. Kommentar in topics.js: 'Expected backend API contract — endpoints return 404 until backend is implemented.'"
+    },
+    {
+      "finding_id": "TC-CRIT-02",
+      "title": "Topics ORM-Models fehlen",
+      "severity": "CRITICAL",
+      "detail": "DB-Tabellen categories/tags/document_tags in Migration 0003 vorhanden. Kein app/models/categories.py. Kein app/api/v1/topics.py. Blockiert P1-GAP-01/02."
+    },
+    {
+      "finding_id": "TC-CRIT-03",
+      "title": "URL-Präfix-Bug in topics.js",
+      "severity": "CRITICAL",
+      "detail": "topics.js ruft /topics/* — Backend-Router unter /api/v1/topics/*. Pfad muss auf /api/v1/topics korrigiert werden wenn Backend implementiert ist."
+    }
+  ],
+
+  "features": [
+    {
+      "feature_id": "TC-01",
+      "name": "Themenliste",
+      "status": "FRONTEND_VORHANDEN — Backend fehlt",
+      "frontend": {
+        "hook": "frontend/src/features/topics/useTopics.js — ruft getTopics() auf",
+        "page": "frontend/src/pages/TopicsPage.jsx (Annahme basierend auf routing)",
+        "error_handling": "useTopics.js: 404 → Anzeige 'Backend noch nicht verfügbar. /topics-API fehlt.'"
+      },
+      "backend": {
+        "endpoint": "FEHLT — GET /api/v1/topics",
+        "required_schema": "{ items: list[TopicItem], total: int } — TopicItem: id, name, summary, document_count, tag_count, updated_at"
+      },
+      "gaps": [
+        "Backend-Endpunkt GET /api/v1/topics fehlt",
+        "URL-Pfad in topics.js falsch (/topics statt /api/v1/topics)"
+      ]
+    },
+    {
+      "feature_id": "TC-02",
+      "name": "KI-Zusammenfassung",
+      "status": "NICHT_IMPLEMENTIERT",
+      "backend": {
+        "source": "Geplant: summary-Feld aus analysis_results.suggested_topics (JSONB) oder dediziertes LLM-Summarization-Call",
+        "endpoint": "FEHLT — GET /api/v1/topics/:id → topic.summary",
+        "dependency": "Echte Topics aus ORM + LLM-Binding (AGAP-01)"
+      },
+      "frontend": {
+        "mapping": "useTopics.js mappt raw.summary — wartet auf Backend"
+      },
+      "gaps": [
+        "Keine Topic-Summary bis P1-GAP-01 (ORM) + P1-GAP-05 (LLM) implementiert",
+        "Stub-Engine liefert keine meaningful summaries"
+      ]
+    },
+    {
+      "feature_id": "TC-03",
+      "name": "Quellen",
+      "status": "NICHT_IMPLEMENTIERT",
+      "backend": {
+        "endpoint": "FEHLT — GET /api/v1/topics/:id → topic.sources[]",
+        "required_schema": "sources: list[{ document_id, document_title, chunk_preview, relevance_score }]"
+      },
+      "frontend": {
+        "mapping": "useTopics.js mappt detail.sources[] — wartet auf Backend"
+      },
+      "gaps": [
+        "Quellen können erst angezeigt werden wenn Topics einen Bezug zu Dokument-Chunks haben",
+        "Erfordert: Analysis-Ergebnis → Topic → Quelle-Join"
+      ]
+    },
+    {
+      "feature_id": "TC-04",
+      "name": "Dokumentbezug",
+      "status": "NICHT_IMPLEMENTIERT",
+      "backend": {
+        "endpoint": "FEHLT — GET /api/v1/topics/:id → topic.documents[]",
+        "required_schema": "documents: list[{ document_id, document_title, related_chunks_count }]",
+        "implementation_note": "Join über analysis_job_source_documents + analysis_results"
+      },
+      "frontend": {
+        "mapping": "useTopics.js mappt detail.documents[] — wartet auf Backend"
+      },
+      "gaps": [
+        "Dokumentbezug nur aus Analysis-Ergebnissen ableitbar",
+        "Direkte Dokument-Tag-Verknüpfung erfordert P1-GAP-01/02"
+      ]
+    },
+    {
+      "feature_id": "TC-05",
+      "name": "Tags",
+      "status": "NICHT_IMPLEMENTIERT",
+      "backend": {
+        "endpoint": "FEHLT — Tags per Topic: GET /api/v1/topics/:id → topic.tags[]",
+        "dependency": "P1-GAP-01 (Tag ORM) + P1-GAP-02 (Tag API)"
+      },
+      "frontend": {
+        "mapping": "useTopics.js mappt detail.tags[] + linked_topics[]"
+      },
+      "gaps": [
+        "Kein Tag-ORM, kein Tag-API",
+        "Topic→Tag-Beziehung nicht modelliert"
+      ]
+    },
+    {
+      "feature_id": "TC-06",
+      "name": "Export",
+      "status": "NICHT_IMPLEMENTIERT",
+      "scope": "Export von Thema-Daten als Markdown/JSON/PDF",
+      "backend": {
+        "endpoint": "FEHLT — kein /api/v1/topics/:id/export",
+        "dependency": "export_center_mvp.json — Export Center ist P2"
+      },
+      "frontend": {
+        "implementation": "FEHLT"
+      },
+      "gaps": [
+        "Export-Funktion ist P2 — nicht im 1.0-Scope als eigenständige Feature-Ebene",
+        "Export-Center wird Topics als Quelle verwenden"
+      ]
+    }
+  ],
+
+  "implementation_plan": {
+    "phase_1": {
+      "name": "Topic-Backend",
+      "duration": "3-5 Tage",
+      "steps": [
+        "P1-GAP-01: Category, Tag, DocumentTag ORM-Models",
+        "GET /api/v1/topics (Liste) + GET /api/v1/topics/:id (Detail)",
+        "Router in backend/app/api/v1/router.py registrieren",
+        "topics_router prefix=/topics → /api/v1/topics/*"
+      ]
+    },
+    "phase_2": {
+      "name": "Frontend-Fix",
+      "duration": "0.5 Tage",
+      "steps": [
+        "frontend/src/api/topics.js: Pfade von /topics/* auf /api/v1/topics/* korrigieren",
+        "Leicht: nur URL-String-Änderung"
+      ]
+    },
+    "phase_3": {
+      "name": "KI-Integration",
+      "duration": "nach LLM-Binding",
+      "steps": [
+        "Topic-Summary aus LLM-Analyse",
+        "Quellen-Mapping via analysis_results"
+      ]
+    }
+  },
+
+  "security_assessment": {
+    "workspace_isolation": "REQUIRED — alle /topics/-Endpunkte müssen workspace_id aus Auth prüfen",
+    "write_guard": "require_workspace_member für Read, require_workspace_admin für DELETE",
+    "no_cross_workspace": "Topics dürfen nicht workspace-übergreifend sichtbar sein"
+  },
+
+  "statistics": {
+    "features_total": 6,
+    "vollständig": 0,
+    "teilweise": 0,
+    "frontend_vorhanden_backend_fehlt": 2,
+    "nicht_implementiert": 4,
+    "critical_blockers": 3,
+    "p1_gaps_blocking": 2
+  },
+
+  "verdict_detail": "Das Themenzentrum ist funktional nicht nutzbar. Frontend-Komponenten existieren, aber rufen 404-Endpunkte auf. Für 1.0 müssen mindestens TC-01 (Themenliste) und TC-04 (Dokumentbezug) implementiert sein. TC-02 (KI-Zusammenfassung) ist LLM-abhängig."
+}

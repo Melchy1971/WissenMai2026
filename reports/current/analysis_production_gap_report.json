@@ -1,0 +1,184 @@
+{
+  "report_schema_version": 1,
+  "report_name": "analysis_production_gap_report",
+  "report_type": "gap_analysis",
+  "generated_at": "2026-06-15T20:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "scope": "Task #11 — AnalysisJob, AnalysisResult, AnalysisComparison, ApprovalFlow",
+  "verdict": "TEILWEISE_IMPLEMENTIERT",
+
+  "implemented": {
+    "summary": "Backend-Infrastruktur vollständig. DB-Schema produktionsreif.",
+    "items": [
+      "DB: analysis_jobs, analysis_results, analysis_comparisons, analysis_suggestions, Link-Tabellen",
+      "Status-Maschine: pending → running → completed/failed → approved",
+      "GET /analysis/jobs — paginiert, Status-Filter, Workspace-Scope",
+      "POST /analysis/jobs — Job-Erstellung mit Dokument-Validierung",
+      "GET /analysis/jobs/:id — Job-Detail inkl. result, comparison, suggestions",
+      "POST /analysis/jobs/:id/summarize — Laufende Analyse + Result-Persistenz",
+      "POST /analysis/jobs/:id/compare — Vergleich mit Referenzdokumenten",
+      "POST /analysis/jobs/:id/approve — Admin-Only, AuditRecorder-Hook vorhanden",
+      "GET /analysis/jobs/:id/result — Result-Abruf, Guard: status in {completed, approved}",
+      "AnalysisApprovalService: Approval-Constraint in DB (ck_analysis_suggestions_approval_metadata)",
+      "DeterministicAnalysisStubEngine: deterministisch, testbar, kein Zufallsverhalten"
+    ]
+  },
+
+  "gaps": [
+    {
+      "gap_id": "AGAP-01",
+      "title": "Echte Ergebnisanzeige — LLM-Binding fehlt",
+      "priority": "P1",
+      "category": "engine",
+      "current_state": "DeterministicAnalysisStubEngine liefert deterministischen Stub-Output. Kein echter LLM-Aufruf.",
+      "missing": [
+        "LLM-Provider-Interface in AnalysisProvider/AnalysisComparisonProvider nicht gebunden",
+        "UnconfiguredLlmProvider in chat.py wirft RuntimeError — gleiche Lücke",
+        "Keine Konfiguration für OpenAI / Ollama / Anthropic API-Key"
+      ],
+      "affected_files": [
+        "backend/app/services/analysis/analysis_stub_engine.py",
+        "backend/app/api/v1/chat.py (UnconfiguredLlmProvider)",
+        "backend/app/core/config.py (vermutlich kein LLM_API_KEY)"
+      ],
+      "impact": "Alle Analyse-Ergebnisse sind synthetisch. Nutzer sehen keine echten Inhalts-Analysen.",
+      "prerequisite_for_fix": "LLM-Provider-Entscheidung (Modell, Key-Management) — PO-Entscheidung erforderlich"
+    },
+    {
+      "gap_id": "AGAP-02",
+      "title": "Job-Abbruch (Cancel) fehlt",
+      "priority": "P1",
+      "category": "lifecycle",
+      "current_state": "Kein DELETE/POST /analysis/jobs/:id/cancel-Endpunkt. Status 'running' kann nicht unterbrochen werden.",
+      "missing": [
+        "POST /analysis/jobs/:id/cancel Endpunkt",
+        "Status-Transition: running → cancelled (Status-Wert 'cancelled' existiert nicht im ANALYSIS_JOB_STATUS_VALUES)",
+        "Service-Methode cancel_job() in AnalysisJobService"
+      ],
+      "affected_files": [
+        "backend/app/api/v1/analysis.py",
+        "backend/app/models/analysis.py (ANALYSIS_JOB_STATUS_VALUES)",
+        "backend/app/services/analysis/service.py"
+      ],
+      "impact": "Hängende Jobs können nicht beendet werden. Bei LLM-Timeouts blockiert der Job dauerhaft.",
+      "prerequisite_for_fix": "Migration erforderlich (neuer Status-Wert 'cancelled')"
+    },
+    {
+      "gap_id": "AGAP-03",
+      "title": "Job-Wiederholung (Retry) fehlt",
+      "priority": "P2",
+      "category": "lifecycle",
+      "current_state": "Fehlerhafte Jobs (status=failed) können nicht neu gestartet werden.",
+      "missing": [
+        "POST /analysis/jobs/:id/retry Endpunkt",
+        "Status-Transition: failed → pending",
+        "Retry-Zähler (kein attempt_count-Feld im AnalysisJob-Model)"
+      ],
+      "affected_files": [
+        "backend/app/api/v1/analysis.py",
+        "backend/app/services/analysis/service.py"
+      ],
+      "impact": "Bei LLM-Fehler muss der Nutzer einen neuen Job anlegen. Keine Wiederverwendung von Job-Kontext.",
+      "prerequisite_for_fix": "AGAP-02 (Cancel) empfohlen zuerst"
+    },
+    {
+      "gap_id": "AGAP-04",
+      "title": "Verlaufsansicht — kein Zeitraum-Filter",
+      "priority": "P2",
+      "category": "api",
+      "current_state": "GET /analysis/jobs liefert paginierte Liste, geordnet nach created_at DESC. Kein Filter nach Datum, Dokument-ID oder analysis_type.",
+      "missing": [
+        "Query-Parameter: ?from=, ?to=, ?document_id=, ?analysis_type=",
+        "Index ix_analysis_jobs_created_at bereits vorhanden — nur API-Parameter fehlen"
+      ],
+      "affected_files": [
+        "backend/app/api/v1/analysis.py",
+        "backend/app/services/analysis/service.py (list_jobs)"
+      ],
+      "impact": "Bei wachsendem Job-Bestand (>100) ist die Verlaufssuche unpraktisch.",
+      "prerequisite_for_fix": "Kein Schema-Change erforderlich"
+    },
+    {
+      "gap_id": "AGAP-05",
+      "title": "Fehlerbehandlung — kein strukturiertes error_code-Vokabular",
+      "priority": "P2",
+      "category": "errors",
+      "current_state": "error_code und error_message im AnalysisJob-Model vorhanden. Kein definiertes Vokabular für error_codes.",
+      "missing": [
+        "Enum oder Konstanten für error_code-Werte (z.B. LLM_TIMEOUT, LLM_RATE_LIMIT, DOCUMENT_TOO_LARGE)",
+        "Fehler-Code im Frontend auswertbar für spezifische Nutzer-Hinweise"
+      ],
+      "affected_files": [
+        "backend/app/models/analysis.py",
+        "backend/app/services/analysis/service.py (fail_job)"
+      ],
+      "impact": "Fehler-Ursache nicht maschinell auswertbar. Frontend zeigt generische Meldung.",
+      "prerequisite_for_fix": "AGAP-01 (echtes LLM) — erst dann treten realistische Fehlercodes auf"
+    },
+    {
+      "gap_id": "AGAP-06",
+      "title": "Historie — Suggestion-Annahme nicht im Audit-Log sichtbar",
+      "priority": "P2",
+      "category": "audit",
+      "current_state": "AnalysisApprovalAuditRecorder-Interface definiert. Ob in app/api/v1/analysis.py ein Recorder injiziert wird: nein — Standard-Parameter ist None.",
+      "missing": [
+        "AuditRecorder-Implementierung für Approval-Events (wer, wann, welche Suggestion)",
+        "Injection des Recorders in get_analysis_service()"
+      ],
+      "affected_files": [
+        "backend/app/api/v1/analysis.py (get_analysis_service — übergibt kein audit_recorder)",
+        "backend/app/services/analysis/approval_service.py"
+      ],
+      "impact": "Approvals sind weder im Audit-Log noch in der API-History nachvollziehbar.",
+      "prerequisite_for_fix": "Kein Schema-Change erforderlich"
+    },
+    {
+      "gap_id": "AGAP-07",
+      "title": "Frontend — kein dedizierter Analysis-Screen",
+      "priority": "P2",
+      "category": "frontend",
+      "current_state": "Kein /analysis-Route in routes.jsx. Analyse-Interaktion nur über Dashboard-Widget oder implizit via Chat.",
+      "missing": [
+        "Route /analysis in routes.jsx",
+        "AnalysisPage.jsx — Job-Liste, Job-Detail, Result-Anzeige, Approval-Flow",
+        "Nav-Eintrag"
+      ],
+      "affected_files": [
+        "frontend/src/app/routes.jsx",
+        "frontend/src/pages/ (fehlt: AnalysisPage.jsx)"
+      ],
+      "impact": "Nutzer können keine Analyse-Jobs direkt starten und verwalten. Feature nicht zugänglich.",
+      "prerequisite_for_fix": "AGAP-01 (LLM-Binding) empfohlen vor Frontend-Ausbau"
+    }
+  ],
+
+  "statistics": {
+    "total_gaps": 7,
+    "p1": 2,
+    "p2": 5,
+    "p3": 0,
+    "blocking_for_production": ["AGAP-01", "AGAP-02"],
+    "can_be_done_without_llm": ["AGAP-02", "AGAP-03", "AGAP-04", "AGAP-05", "AGAP-06"]
+  },
+
+  "approval_flow_assessment": {
+    "verdict": "STRUKTURELL_VOLLSTÄNDIG",
+    "implemented": [
+      "require_workspace_admin Guard auf POST /analysis/jobs/:id/approve",
+      "AnalysisApprovalService.approve_job() mit Status-Validierung",
+      "DB-Constraint: approved_by + approved_at nur bei status='approved' gesetzt",
+      "AnalysisSuggestion.status in ('pending', 'approved')"
+    ],
+    "not_implemented": [
+      "AuditRecorder nicht injiziert (AGAP-06)",
+      "Rejection-Flow fehlt (nur 'approved' als decision akzeptiert, alles andere = 422)",
+      "Kein GET /analysis/jobs/:id/approvals-Endpunkt für Approval-History"
+    ]
+  },
+
+  "rules": [
+    "Drift Detection bleibt Read-Only — kein Repair via Analysis-Suggestions",
+    "M5c Cleanup: NO_GO (PROHIBIT-02, PROHIBIT-06, PROHIBIT-08)",
+    "Kein LLM-Binding vor PO-Entscheidung zu Modell und Key-Management"
+  ]
+}

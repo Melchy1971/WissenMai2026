@@ -1,0 +1,428 @@
+{
+  "report": "rc_blocker_root_cause",
+  "schema_version": 1,
+  "generated_at": "2026-06-15T09:00:00.000000+00:00",
+  "generated_by": "rc_blocker_root_cause_task",
+  "rc_decision": "BLOCKED",
+  "rc_decision_source": "reports/current/release_candidate_decision.json",
+  "input_reports": [
+    "reports/current/final_gate_report.json",
+    "reports/current/release_candidate_decision.json",
+    "local_final_gate_dependency_graph.json",
+    "reports/current/known_limitations.json",
+    "reports/current/documentation_truth_lint.json",
+    "reports/current/report_integrity_v2.json",
+    "reports/current/m5b_alpha_hardening_gate.json",
+    "reports/current/m5b_production_readiness_gate.json",
+    "reports/current/m5c_start_gate.json",
+    "reports/current/m5a_source_status_integrity_gate.json",
+    "reports/current/m5a_orphan_detector_gate.json",
+    "reports/current/m5a_data_quality_gate.json"
+  ],
+  "root_cause": {
+    "id": "RC-ROOT-001",
+    "summary": "TEST_DATABASE_URL nicht gesetzt",
+    "detail": "Die Umgebungsvariable TEST_DATABASE_URL ist in der lokalen Entwicklungsumgebung nicht konfiguriert. Dadurch können die PostgreSQL-Truth-Tests für m5a_source_status_integrity_gate und m5a_orphan_detector_gate nicht ausgeführt werden (collected=0, errors=1). Dies löst eine Kaskade aus, die 4 required Gates blockiert und damit die Release Candidate Decision auf BLOCKED setzt.",
+    "single_action_to_unblock": "TEST_DATABASE_URL=postgresql+psycopg://user:password@host:5432/dbname setzen und pytest tests/api -m local_gate erneut ausführen"
+  },
+  "blocker_cascade": [
+    {
+      "step": 1,
+      "gate": "m5a_source_status_integrity_gate",
+      "status": "BLOCKED",
+      "cause": "TEST_DATABASE_URL fehlt",
+      "detail": "collected=0, errors=1. Blocker: SOURCE_STATUS_GATE_NOT_EXECUTABLE",
+      "test_file": "backend/tests/postgres_truth/test_m5a_source_status_integrity_truth.py"
+    },
+    {
+      "step": 2,
+      "gate": "m5a_orphan_detector_gate",
+      "status": "BLOCKED",
+      "cause": "TEST_DATABASE_URL fehlt",
+      "detail": "collected=0, errors=1. Blocker: ORPHAN_GATE_NOT_EXECUTABLE",
+      "test_file": "backend/tests/postgres_truth/test_m5a_orphan_detector_truth.py"
+    },
+    {
+      "step": 3,
+      "gate": "report_integrity_v2",
+      "status": "BLOCKED",
+      "cause": "Cascade aus Step 1+2",
+      "detail": "20 Blocker. Checks failed: required_reports_valid (m5a_source_status_integrity_gate + m5a_orphan_detector_gate BLOCKED), supporting_parent_references_valid. 3 BLOCKED evaluated_reports: m5a_source_status_integrity_gate, m5a_orphan_detector_gate, m5a_data_quality_gate.",
+      "blocks_rc_criterion": "report_integrity_v2_pass"
+    },
+    {
+      "step": 4,
+      "gate": "m5b_alpha_hardening_gate",
+      "status": "BLOCKED",
+      "cause": "Cascade aus Step 3 (AHG-BLOCKER-01) + unabhängiger Blocker (AHG-BLOCKER-02)",
+      "detail": "AHG-BLOCKER-01: m5b_alpha_validation_report BLOCKED (AV-01: M5a nicht READY_FOR_M5B, report_integrity_v2 BLOCKED). AHG-BLOCKER-02: drift_report_integrity PARTIAL (drift_report.json + drift_summary.json fehlen — kein CLI-Run). 5/7 Kriterien PASS.",
+      "score": "5/7",
+      "primary_blocker": "AHG-BLOCKER-01",
+      "secondary_blocker": "AHG-BLOCKER-02"
+    },
+    {
+      "step": 5,
+      "gate": "m5b_production_readiness_gate",
+      "status": "BLOCKED",
+      "cause": "Cascade aus Step 4",
+      "detail": "PRG-01: Beta Validation Gate BLOCKED (cascade aus Alpha Hardening). 6/7 Checks PASS. Alle Drift-spezifischen Checks (API, CLI, PROHIBIT, Performance, Observability, Read-Only) PASS.",
+      "checks_passed": "6/7"
+    },
+    {
+      "step": 6,
+      "gate": "m5c_start_gate",
+      "status": "BLOCKED",
+      "cause": "Cascade aus Step 4+5 + Governance-Status",
+      "detail": "SG-01 (Production Readiness BLOCKED), SG-02 (Alpha Hardening BLOCKED), SG-03 (drift_report_integrity PARTIAL — kein CLI-Run), SG-04 (m5b_alpha_validation_report BLOCKED), SG-05 (Cleanup Governance DRAFT statt RATIFIED). 0/5 Checks PASS.",
+      "checks_passed": "0/5"
+    },
+    {
+      "step": 7,
+      "gate": "local_final_gate",
+      "status": "BLOCKED",
+      "cause": "Cascade aus Steps 3–6",
+      "detail": "4 required gates BLOCKED: report_integrity_v2, m5b_alpha_hardening_gate, m5b_production_readiness_gate, m5c_start_gate.",
+      "required_pass": 6,
+      "required_blocked": 4
+    },
+    {
+      "step": 8,
+      "gate": "release_candidate_decision",
+      "status": "BLOCKED",
+      "cause": "Cascade aus Step 7",
+      "detail": "2/4 RC-Kriterien nicht erfüllt: local_final_gate_pass (BLOCKED), report_integrity_v2_pass (BLOCKED). Beide auf denselben Root Cause zurückführbar."
+    }
+  ],
+  "blocker_groups": {
+    "Test_Infra": {
+      "classification": "echter_release_blocker",
+      "description": "Fehlende Datenbankverbindung für PostgreSQL-Truth-Tests",
+      "blockers": [
+        {
+          "id": "BLOCKER-TI-001",
+          "gate": "m5a_source_status_integrity_gate",
+          "status": "BLOCKED",
+          "cause": "TEST_DATABASE_URL nicht gesetzt",
+          "detail": "collected=0, errors=1. Test-Datei vorhanden, aber nicht ausführbar ohne DB-Verbindung.",
+          "fix": "TEST_DATABASE_URL setzen → pytest backend/tests/postgres_truth/test_m5a_source_status_integrity_truth.py",
+          "severity": "blocking",
+          "unblock_action": "umgebungsvariable"
+        },
+        {
+          "id": "BLOCKER-TI-002",
+          "gate": "m5a_orphan_detector_gate",
+          "status": "BLOCKED",
+          "cause": "TEST_DATABASE_URL nicht gesetzt",
+          "detail": "collected=0, errors=1. Identische Ursache wie BLOCKER-TI-001.",
+          "fix": "Identisch mit BLOCKER-TI-001 — gleicher Fix löst beide",
+          "severity": "blocking",
+          "unblock_action": "umgebungsvariable"
+        }
+      ]
+    },
+    "Report_Integrity": {
+      "classification": "echter_release_blocker",
+      "description": "Cascade aus fehlenden DB-Testergebnissen — report_integrity_v2 kann Konsistenz nicht bestätigen",
+      "blockers": [
+        {
+          "id": "BLOCKER-RI-001",
+          "gate": "report_integrity_v2",
+          "status": "BLOCKED",
+          "cause": "Cascade aus BLOCKER-TI-001 + BLOCKER-TI-002",
+          "detail": "20 Blocker. required_reports_valid=FAIL: m5a_source_status_integrity_gate + m5a_orphan_detector_gate BLOCKED. Zusätzlich m5a_data_quality_gate als Cascade-Blocker enthalten.",
+          "fix": "Wird automatisch PASS wenn BLOCKER-TI-001/002 behoben und report_integrity_v2 neu generiert",
+          "severity": "blocking",
+          "unblock_action": "regenerate_after_ti_fix"
+        }
+      ]
+    },
+    "Backend": {
+      "classification": "echter_release_blocker",
+      "description": "M5a Gates durch DB-Konnektivität blockiert — Cascade aus Test Infra",
+      "blockers": [
+        {
+          "id": "BLOCKER-BE-001",
+          "gate": "m5a_data_quality_gate",
+          "status": "BLOCKED",
+          "cause": "Cascade: report_integrity_v2 BLOCKED, source_status_integrity BLOCKED, orphan_detector BLOCKED",
+          "detail": "5 child-gate blockers im parent_gate_validator. 9/9 eigene Tests PASS (local, ohne DB). DB-abhängige Children blockieren Parent.",
+          "fix": "Wird automatisch PASS wenn BLOCKER-TI-001/002 + BLOCKER-RI-001 behoben",
+          "severity": "blocking",
+          "unblock_action": "cascade_auto_resolve"
+        }
+      ],
+      "pass_items": [
+        {
+          "gate": "backend_local_gate",
+          "status": "PASS",
+          "detail": "11 Tests PASS, 0 Skips. Marker local_gate vollständig und funktionsfähig."
+        }
+      ]
+    },
+    "Drift": {
+      "classification": "mixed",
+      "description": "Zwei unabhängige Blocker (echter RC-Blocker via AHG-02 + SG-03), drei Warnungen",
+      "blockers": [
+        {
+          "id": "BLOCKER-DR-001",
+          "gate": "m5b_alpha_hardening_gate (AHG-BLOCKER-02)",
+          "status": "BLOCKED",
+          "cause": "drift_report_integrity PARTIAL — drift_report.json + drift_summary.json fehlen",
+          "detail": "Kein Drift CLI-Run ausgeführt. drift_report.json und drift_summary.json wurden nie erzeugt. Unabhängig von TEST_DATABASE_URL.",
+          "fix": "Einmaligen Drift CLI-Run ausführen: python -m drift.cli run → erzeugt drift_report.json + drift_summary.json",
+          "severity": "blocking",
+          "independent_of_db": true,
+          "unblock_action": "drift_cli_run"
+        },
+        {
+          "id": "BLOCKER-DR-002",
+          "gate": "m5c_start_gate (SG-03)",
+          "status": "BLOCKED",
+          "cause": "Identisch mit BLOCKER-DR-001",
+          "detail": "drift_report_integrity PARTIAL → SG-03 FAIL. Gleicher Fix wie BLOCKER-DR-001.",
+          "fix": "Identisch mit BLOCKER-DR-001",
+          "severity": "blocking",
+          "independent_of_db": true,
+          "unblock_action": "drift_cli_run"
+        }
+      ],
+      "warnings": [
+        {
+          "id": "WARN-DR-001",
+          "gate": "drift_dashboard_truth_report",
+          "status": "INVALID",
+          "classification": "warning_only",
+          "cause": "drift_dashboard_truth_report.json truncated (JSON_PARSE_ERROR bei char 2750)",
+          "detail": "Datei endet mitten in einem Array ohne schließende Klammern. War zuvor PASS (23/23). Optionales Gate → kein RC-Blocker.",
+          "fix": "drift_dashboard_truth_report.json neu generieren (erfordert laufenden Frontend-Test-Run)",
+          "severity": "warning"
+        },
+        {
+          "id": "WARN-DR-002",
+          "gate": "drift_v2_component_contract",
+          "status": "PARTIAL_FAIL",
+          "classification": "warning_only",
+          "cause": "3 testid-GAPs in DriftDashboard.jsx: drift-run-summary, drift-severity-breakdown, drift-type-breakdown",
+          "detail": "Bekannte und dokumentierte GAPs in docs/drift_v2_component_contract.md. Tests liefen, Assertions schlugen bei 3 testid-Selektoren fehl. Optionales Gate → kein RC-Blocker.",
+          "fix": "3 data-testid-Attribute in DriftDashboard.jsx ergänzen und zugehörige Tests anpassen",
+          "severity": "warning"
+        }
+      ],
+      "pass_items": [
+        {
+          "gate": "drift_v2_import_audit",
+          "status": "PASS",
+          "detail": "0 aktive Imports aus features/drift (alt). Vollständige Migration auf drift_v2."
+        },
+        {
+          "gate": "drift_route_recovery",
+          "status": "PASS",
+          "detail": "Route /drift → DriftPage → drift_v2/DriftDashboard korrekt verdrahtet."
+        },
+        {
+          "gate": "frontend_vitest_gate",
+          "status": "PASS",
+          "detail": "29/29 UI Truth Tests PASS. 8/8 Checks PASS."
+        }
+      ]
+    },
+    "Frontend": {
+      "classification": "kein_blocker",
+      "description": "Alle Frontend-Gates PASS",
+      "pass_items": [
+        {
+          "gate": "frontend_vitest_gate",
+          "status": "PASS",
+          "detail": "29/29 PASS"
+        },
+        {
+          "gate": "drift_v2_import_audit",
+          "status": "PASS",
+          "detail": "0 alte Imports"
+        },
+        {
+          "gate": "drift_route_recovery",
+          "status": "PASS",
+          "detail": "Route korrekt verdrahtet"
+        },
+        {
+          "gate": "permission_blocker",
+          "status": "NON_BLOCKING",
+          "detail": "Regel 6: ACL auf features/drift (alt) betrifft keinen aktiven Pfad. Aktiver Pfad: features/drift_v2."
+        }
+      ]
+    },
+    "Documentation": {
+      "classification": "kein_blocker",
+      "description": "Alle Dokumentations-Gates PASS",
+      "pass_items": [
+        {
+          "gate": "documentation_truth_lint",
+          "status": "PASS",
+          "detail": "19/19 Checks PASS. DTL-01 bis DTL-19 vollständig."
+        },
+        {
+          "gate": "known_limitations",
+          "status": "PASS",
+          "detail": "0 BLOCKING_CORE Limitations. 6 Limitierungen: 3 high, 3 low — alle non-blocking."
+        }
+      ]
+    },
+    "External_Env": {
+      "classification": "external_only",
+      "description": "External Env Gate bewusst NOT_RUN — blockiert RC-Entscheidung nicht",
+      "items": [
+        {
+          "id": "EXT-001",
+          "gate": "external_env_gate",
+          "status": "NOT_RUN",
+          "classification": "external_only",
+          "detail": "72 Tests in 6 Dateien (Marker: legacy_live_http + external_env_only). Benötigen laufenden Live-Server. NOT_RUN ist erlaubter RC-Status.",
+          "blocks_local_final_gate": false,
+          "blocks_release_candidate": false,
+          "test_files": [
+            "tests/test_gui_backend_endpoints.py",
+            "tests/test_gui_contracts.py",
+            "tests/test_gui_secret_masking.py",
+            "tests/test_secret_masking_api.py",
+            "tests/test_settings_endpoints.py",
+            "tests/test_settings_patch.py"
+          ]
+        }
+      ]
+    }
+  },
+  "blocker_classification_summary": {
+    "echter_release_blocker": {
+      "count": 5,
+      "ids": ["BLOCKER-TI-001", "BLOCKER-TI-002", "BLOCKER-RI-001", "BLOCKER-BE-001", "BLOCKER-DR-001"],
+      "distinct_root_causes": 2,
+      "root_cause_1": "TEST_DATABASE_URL nicht gesetzt (löst BLOCKER-TI-001, TI-002, RI-001, BE-001)",
+      "root_cause_2": "Drift CLI-Run nie ausgeführt (löst BLOCKER-DR-001)"
+    },
+    "warning_only": {
+      "count": 2,
+      "ids": ["WARN-DR-001", "WARN-DR-002"],
+      "note": "Blockieren RC nicht. Sollten vor Release bereinigt werden."
+    },
+    "external_only": {
+      "count": 1,
+      "ids": ["EXT-001"],
+      "note": "NOT_RUN ist erlaubt. Kein Handlungsbedarf für RC-Entscheidung."
+    },
+    "legacy_non_blocking": {
+      "count": 1,
+      "gate": "permission_blocker",
+      "note": "Regel 6: NON_BLOCKING. ACL betrifft ausschließlich inaktiven Pfad."
+    },
+    "future_phase": {
+      "count": 1,
+      "gate": "m5c_start_gate (SG-05)",
+      "detail": "Cleanup Governance DRAFT statt RATIFIED. Erst relevant wenn M5b Beta PASS und M5c aktiv.",
+      "note": "SG-05 ist zwar formaler Blocker in m5c_start_gate, aber M5c Start ist per Invariante NO_GO. Kein sofortiger Handlungsbedarf."
+    }
+  },
+  "prioritized_fix_list": [
+    {
+      "priority": 1,
+      "id": "FIX-001",
+      "classification": "kritisch",
+      "title": "TEST_DATABASE_URL setzen",
+      "resolves": ["BLOCKER-TI-001", "BLOCKER-TI-002"],
+      "cascade_resolves": ["BLOCKER-RI-001", "BLOCKER-BE-001", "AHG-BLOCKER-01"],
+      "action": "TEST_DATABASE_URL=postgresql+psycopg://user:password@host:5432/dbname in .env oder Umgebung setzen",
+      "follow_up": [
+        "pytest tests/api -m local_gate ausführen",
+        "python scripts/generate_report_integrity_v2.py ausführen",
+        "python scripts/local_final_gate_validator_v2.py ausführen"
+      ],
+      "expected_result": "report_integrity_v2 PASS, m5b_alpha_hardening AHG-BLOCKER-01 aufgelöst, Kaskade bis local_final_gate potenziell auflösbar",
+      "effort": "niedrig — Konfiguration, kein Code",
+      "risk": "kein Produktionsrisiko — nur TEST_DATABASE_URL, nicht DATABASE_URL"
+    },
+    {
+      "priority": 2,
+      "id": "FIX-002",
+      "classification": "kritisch",
+      "title": "Drift CLI einmalig ausführen",
+      "resolves": ["BLOCKER-DR-001", "BLOCKER-DR-002"],
+      "cascade_resolves": ["AHG-BLOCKER-02", "SG-03"],
+      "action": "Drift Detection CLI einmalig lokal ausführen um drift_report.json und drift_summary.json zu erzeugen",
+      "follow_up": [
+        "Prüfen: reports/current/drift_report.json existiert",
+        "Prüfen: reports/current/drift_summary.json existiert",
+        "drift_report_integrity neu generieren",
+        "m5b_alpha_hardening_gate neu auswerten"
+      ],
+      "expected_result": "drift_report_integrity PASS, AHG-BLOCKER-02 aufgelöst, SG-03 erfüllt",
+      "effort": "niedrig — einmaliger CLI-Run, kein Code",
+      "risk": "Drift Detection ist Read-Only (PROHIBIT-02, PROHIBIT-06 aktiv). Kein Mutationsrisiko.",
+      "note": "Unabhängig von FIX-001. Kann parallel ausgeführt werden."
+    },
+    {
+      "priority": 3,
+      "id": "FIX-003",
+      "classification": "mittel",
+      "title": "Gates nach FIX-001 + FIX-002 neu generieren und validieren",
+      "depends_on": ["FIX-001", "FIX-002"],
+      "action": "Vollständiger Gate-Lauf nach Behebung beider Root Causes",
+      "commands": [
+        "pytest tests/api -m local_gate",
+        "python scripts/generate_report_integrity_v2.py",
+        "python scripts/local_final_gate_validator_v2.py"
+      ],
+      "expected_result": "local_final_gate PASS, release_candidate_decision RELEASE_CANDIDATE",
+      "effort": "niedrig — Ausführung bestehender Skripte",
+      "risk": "keiner"
+    },
+    {
+      "priority": 4,
+      "id": "FIX-004",
+      "classification": "niedrig",
+      "title": "drift_dashboard_truth_report.json reparieren (truncated JSON)",
+      "resolves": ["WARN-DR-001"],
+      "action": "Frontend-Test-Run ausführen der drift_dashboard_truth_report.json neu schreibt. Alternativ: truncated File manuell vervollständigen.",
+      "expected_result": "Optional Gate von WARNING auf PASS. Kein Einfluss auf RC-Entscheidung.",
+      "effort": "niedrig",
+      "risk": "keiner",
+      "note": "Optionales Gate. Kein RC-Blocker. Kann nach RC-Entscheidung behoben werden."
+    },
+    {
+      "priority": 5,
+      "id": "FIX-005",
+      "classification": "niedrig",
+      "title": "3 testid-GAPs in DriftDashboard.jsx ergänzen",
+      "resolves": ["WARN-DR-002"],
+      "action": "data-testid='drift-run-summary', data-testid='drift-severity-breakdown', data-testid='drift-type-breakdown' in DriftDashboard.jsx einfügen und zugehörige Tests aktualisieren",
+      "expected_result": "drift_v2_component_contract von PARTIAL_FAIL auf PASS. Optional Gate WARNING entfällt.",
+      "effort": "niedrig — 3 Attribut-Ergänzungen",
+      "risk": "keiner — reine Attribut-Ergänzung, kein Logik-Change",
+      "note": "Optionales Gate. Kein RC-Blocker. Dokumentiert in docs/drift_v2_component_contract.md."
+    },
+    {
+      "priority": 6,
+      "id": "FIX-006",
+      "classification": "future_phase",
+      "title": "Cleanup Governance Boundary ratifizieren (SG-05)",
+      "resolves": ["m5c_start_gate SG-05"],
+      "action": "Drift Governance von DRAFT auf RATIFIED bringen — erfordert PO-Freigabe und vollständige Boundary-Dokumentation",
+      "expected_result": "SG-05 PASS",
+      "effort": "hoch — Governance-Prozess",
+      "risk": "keiner für RC. Erst relevant nach M5b Beta PASS.",
+      "note": "FUTURE_PHASE. M5c Start Gate ist per Invariante NO_GO. Kein Handlungsbedarf vor RC."
+    }
+  ],
+  "minimal_unblock_path": {
+    "description": "Minimaler Pfad zur RELEASE_CANDIDATE-Entscheidung",
+    "steps": [
+      "1. TEST_DATABASE_URL konfigurieren (FIX-001)",
+      "2. Drift CLI einmalig ausführen (FIX-002)",
+      "3. pytest tests/api -m local_gate",
+      "4. python scripts/generate_report_integrity_v2.py",
+      "5. python scripts/local_final_gate_validator_v2.py",
+      "6. Erwartetes Ergebnis: local_final_gate PASS, release_candidate_decision RELEASE_CANDIDATE"
+    ],
+    "prerequisite_check": "TEST_DATABASE_URL muss auf eine PostgreSQL-Instanz zeigen, auf die aus der lokalen Entwicklungsumgebung Netzwerkzugriff besteht",
+    "known_constraint": "README.md dokumentiert: Verbindungsversuch gegen 85.215.131.200:5432 ist aus dieser Umgebung per Connection-Timeout fehlgeschlagen. Netzwerkzugriff muss vor dem Lauf sichergestellt werden."
+  }
+}

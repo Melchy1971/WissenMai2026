@@ -38,6 +38,10 @@ Der aktuelle Gate-Status wird nicht manuell in dieser Datei gepflegt. Verbindlic
 
 M3a, M4 und M5 sind getrennte Gates: M3a wird ueber die Frontend-Full-Suite bewertet, M4 ueber die aktuellen M4-Split-Reports plus `reports/current/m4_truth_report.json`, und M5 ueber das M5-Start-Gate aus `reports/current/masterplan_status.json`.
 
+**Stand 2026-06-15:** Release Candidate Decision = **BLOCKED** (`reports/current/release_candidate_decision.json`). Root Cause: `TEST_DATABASE_URL` nicht gesetzt. Vollstaendige Dokumentation: `docs/release-candidate.md`.
+
+Drift Detection (`/drift`) ist implementiert und erreichbar (`drift_v2/DriftDashboard`, UI Truth 29/29 PASS). Formale Freigabe blockiert durch Gate-Kaskade. Cleanup/Repair: NO_GO (PROHIBIT-02, PROHIBIT-06).
+
 ## Backend-Setup & Bootstrap (Stand 2026-05-26)
 
 ### Bootstrap-Reihenfolge (empfohlen)

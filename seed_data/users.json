@@ -1,0 +1,29 @@
+{
+  "_comment": "Demo-Benutzer. Passwoerter sind Platzhalter — beim Laden wird SEED_ADMIN_PASSWORD aus .env verwendet.",
+  "users": [
+    {
+      "id": "10000000-0000-0000-0000-000000000001",
+      "login": "admin@demo.local",
+      "display_name": "Demo Admin",
+      "role": "admin",
+      "workspace_id": "00000000-0000-0000-0000-000000000001",
+      "password_env": "SEED_ADMIN_PASSWORD"
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000002",
+      "login": "editor@demo.local",
+      "display_name": "Demo Editor",
+      "role": "member",
+      "workspace_id": "00000000-0000-0000-0000-000000000001",
+      "password_env": "SEED_MEMBER_PASSWORD"
+    },
+    {
+      "id": "10000000-0000-0000-0000-000000000003",
+      "login": "viewer@demo.local",
+      "display_name": "Demo Viewer",
+      "role": "viewer",
+      "workspace_id": "00000000-0000-0000-0000-000000000001",
+      "password_env": "SEED_VIEWER_PASSWORD"
+    }
+  ]
+}

@@ -1,0 +1,211 @@
+{
+  "report_schema_version": 1,
+  "report_name": "document_preview_report",
+  "report_type": "feature_assessment",
+  "generated_at": "2026-06-15T20:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "scope": "Dokumentenvorschau — Vorschau, Metadaten, Themenbezug, Tags, Quellen",
+  "verdict": "TEILWEISE_IMPLEMENTIERT",
+  "frontend_page": "frontend/src/pages/DocumentDetailPage.jsx",
+  "backend_endpoint": "GET /api/v1/documents/:id",
+
+  "features": [
+    {
+      "feature_id": "DP-01",
+      "name": "Dokumentvorschau (Content-Rendering)",
+      "status": "TEILWEISE",
+      "implemented": [
+        "GET /documents/:id → DocumentDetail mit chunk_summary",
+        "DocumentVersion.normalized_markdown in DB gespeichert",
+        "GET /documents/:id/chunks → DocumentChunkPreview mit content, heading_path, anchor",
+        "chunk_summary: chunk_count, total_chars, first_chunk_id, last_chunk_id"
+      ],
+      "not_implemented": [
+        "Kein direkter Endpunkt GET /documents/:id/content (Volltext-Abruf in einem Request)",
+        "Chunk-Pagination für große Dokumente nicht im API-Schema sichtbar",
+        "Keine Rendering-Entscheidung (Markdown vs. Plain-Text) im Backend"
+      ],
+      "user_visible_fields": [
+        "Dokumenttitel",
+        "Textvorschau (aus Chunks: content + heading_path)",
+        "Quellenabschnitt (anchor: page, paragraph)"
+      ],
+      "excluded_fields": ["chunk_id", "document_version_id", "content_hash", "token_estimate"]
+    },
+    {
+      "feature_id": "DP-02",
+      "name": "Metadaten",
+      "status": "VOLLSTÄNDIG (Backend)",
+      "implemented": [
+        "title, source_type, mime_type",
+        "import_status, lifecycle_status",
+        "created_at, updated_at",
+        "archived_at, deleted_at (wenn gesetzt)",
+        "version_count, chunk_count",
+        "parser_metadata: parser_version, ocr_used, ki_provider, ki_model",
+        "latest_version: version_number, created_at"
+      ],
+      "user_visible_fields": [
+        "Titel",
+        "Quellentyp (PDF, DOCX, TXT...)",
+        "Importstatus",
+        "Lifecycle-Status (aktiv, archiviert)",
+        "Importdatum, letztes Update",
+        "Versionsanzahl",
+        "OCR verwendet: ja/nein",
+        "Verarbeitungsmodell (wenn vorhanden)"
+      ],
+      "excluded_fields": [
+        "id (interne ID — nicht anzeigen)",
+        "workspace_id",
+        "owner_user_id",
+        "content_hash",
+        "latest_version_id"
+      ],
+      "gaps": [
+        "Frontend-Rendering nicht per Static Analysis verifizierbar",
+        "owner_user_id nicht zu Displayname aufgelöst"
+      ]
+    },
+    {
+      "feature_id": "DP-03",
+      "name": "Themenbezug (Topics)",
+      "status": "TEILWEISE",
+      "implemented": [
+        "AnalysisResult.suggested_topics (JSONB-Array) in DB",
+        "GET /analysis/jobs/:id/result liefert suggested_topics",
+        "GET /dashboard/topics aggregiert Themen workspace-weit"
+      ],
+      "not_implemented": [
+        "Kein direkter Endpunkt GET /documents/:id/topics",
+        "Kein Join document_id → analysis_job_source_documents → analysis_jobs → analysis_results.suggested_topics im Document-Detail-Endpunkt",
+        "categories-Tabelle existiert in DB, aber keine ORM-Model und keine API-Binding"
+      ],
+      "user_visible_fields": [
+        "Themennamen aus Analyseergebnissen",
+        "Anzahl der Analysen die dieses Dokument referenzieren"
+      ],
+      "excluded_fields": ["job_id", "result_id"],
+      "gaps": [
+        "Themenbezug muss per separatem Analyse-API-Aufruf angereichert werden (kein zusammengeführter Endpunkt)",
+        "Categories-Tabelle nicht via API zugänglich"
+      ]
+    },
+    {
+      "feature_id": "DP-04",
+      "name": "Tags",
+      "status": "VORBEREITET",
+      "implemented": [
+        "DB: tags, document_tags mit source (manual|ki|import) und confidence",
+        "AnalysisResult.suggested_tags (JSONB) als Analyse-Output"
+      ],
+      "not_implemented": [
+        "Kein ORM-Model für tags/document_tags",
+        "Kein GET /documents/:id/tags Endpunkt",
+        "DocumentDetail-Schema enthält kein tags-Feld",
+        "Manuelles Tagging-API fehlt (POST /documents/:id/tags)"
+      ],
+      "user_visible_fields": [
+        "Tag-Name",
+        "Quelle: manuell / KI-Vorschlag / Import",
+        "Konfidenz (bei KI-Tags)"
+      ],
+      "excluded_fields": ["tag_id", "document_id FK"],
+      "gaps": [
+        "Tags sind in DB-Schema vorbereitet, aber vollständig aus API und Frontend ausgeschlossen",
+        "suggested_tags aus Analyse sind nicht mit document_tags verknüpft — kein Übernahme-Flow"
+      ]
+    },
+    {
+      "feature_id": "DP-05",
+      "name": "Quellen (Zitierungsherkunft)",
+      "status": "TEILWEISE",
+      "implemented": [
+        "ChatCitation: chunk_id, document_id, document_title, quote_preview, source_anchor, source_status",
+        "DocumentChunkPreview: anchor (type, page, paragraph, char_start, char_end)",
+        "source_anchor in ChatCitation als Navigationsanker"
+      ],
+      "not_implemented": [
+        "Kein GET /documents/:id/citations-Endpunkt (welche Chat-Nachrichten zitieren dieses Dokument)",
+        "source_status in ChatCitation kann 'missing' werden — kein Frontend-Hinweis sichtbar",
+        "Umgekehrte Verlinkung: Dokument → welche Analysen nutzen es als Quelle (kein Endpunkt)"
+      ],
+      "user_visible_fields": [
+        "Quellenabschnitt: Seite oder Absatz",
+        "Direktzitat-Vorschau (quote_preview)",
+        "Quellentyp (PDF-Seite, DOCX-Absatz, Textposition)"
+      ],
+      "excluded_fields": [
+        "chunk_id",
+        "message_id",
+        "document_id (intern)"
+      ],
+      "gaps": [
+        "Rückwärts-Verlinkung Dokument→Chat-Zitate fehlt",
+        "Rückwärts-Verlinkung Dokument→Analyse-Jobs fehlt"
+      ]
+    }
+  ],
+
+  "document_detail_api_assessment": {
+    "endpoint": "GET /api/v1/documents/:id",
+    "response_schema": "DocumentDetail",
+    "completeness": "TEILWEISE",
+    "present_for_preview": [
+      "title, source_type, mime_type",
+      "import_status, lifecycle_status",
+      "created_at, updated_at",
+      "parser_metadata (ocr_used, ki_provider, ki_model)",
+      "chunk_summary (count, total_chars)",
+      "latest_version (version_number, created_at)"
+    ],
+    "missing_for_preview": [
+      "tags (kein Feld im Schema)",
+      "topics/categories (kein Feld im Schema)",
+      "citations_count (kein Feld)",
+      "analysis_jobs_count (kein Feld)"
+    ],
+    "excluded_from_preview": [
+      "id → nicht anzeigen",
+      "workspace_id → nicht anzeigen",
+      "owner_user_id → nicht anzeigen (durch Displayname ersetzen)",
+      "content_hash → nicht anzeigen",
+      "latest_version_id → nicht anzeigen"
+    ]
+  },
+
+  "statistics": {
+    "features_total": 5,
+    "vollständig": 0,
+    "teilweise": 3,
+    "vorbereitet": 1,
+    "nicht_begonnen": 1
+  },
+
+  "required_actions": [
+    {
+      "action_id": "DPR-01",
+      "priority": "P1",
+      "action": "Tags in DocumentDetail aufnehmen",
+      "details": "ORM-Model für tags/document_tags erstellen, GET /documents/:id um tags-Feld erweitern"
+    },
+    {
+      "action_id": "DPR-02",
+      "priority": "P1",
+      "action": "Themenbezug in DocumentDetail aufnehmen",
+      "details": "Join analysis_job_source_documents → analysis_results.suggested_topics, Feld topics: list[str] in DocumentDetail"
+    },
+    {
+      "action_id": "DPR-03",
+      "priority": "P2",
+      "action": "GET /documents/:id/content Volltext-Endpunkt",
+      "details": "Liefert normalized_markdown der aktuellen Version ohne Chunk-Pagination-Overhead"
+    },
+    {
+      "action_id": "DPR-04",
+      "priority": "P2",
+      "action": "Rückwärts-Verlinkung Dokument→Analysen",
+      "details": "GET /documents/:id/analysis-jobs — welche Jobs nutzen dieses Dokument als Quelle"
+    }
+  ]
+}

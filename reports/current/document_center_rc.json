@@ -1,0 +1,217 @@
+{
+  "report_schema_version": 1,
+  "report_name": "document_center_rc",
+  "report_type": "feature_review",
+  "generated_at": "2026-06-15T21:50:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "scope": "Dokumentenzentrum — Dokumentliste, Filter, Tags, Kategorien, Vorschau, Bearbeiten, Archivieren, Lifecycle",
+  "explicitly_excluded": ["Gates", "Reports", "Debug-Ansichten"],
+  "verdict": "TEILWEISE — Kernfunktionen vorhanden, Tags/Kategorien/Filter/Vorschau unvollständig",
+
+  "features": [
+    {
+      "feature_id": "DC-01",
+      "name": "Dokumentliste",
+      "status": "VOLLSTÄNDIG",
+      "api_endpoint": "GET /documents?workspace_id=&status=&limit=&offset=",
+      "backend": {
+        "model": "backend/app/models/document.py — Document ORM",
+        "service": "backend/app/services/document_service.py",
+        "fields_returned": ["id", "title", "lifecycle_status", "mime_type", "created_at", "version_count", "source_url"]
+      },
+      "frontend": {
+        "page": "frontend/src/pages/DocumentsPage.jsx (oder DocumentCenter)",
+        "api_call": "frontend/src/api/documents.js — getDocuments()",
+        "path": "GET /documents (documents_router — kein /api/v1/-Prefix)"
+      },
+      "empty_state": "Unbekannt — nicht per static analysis verifizierbar",
+      "gaps": [
+        "Kein total_count in Listenresponse — Pagination ohne Gesamtanzahl",
+        "Kein Sortier-Parameter (sort_by, sort_order)"
+      ]
+    },
+    {
+      "feature_id": "DC-02",
+      "name": "Dokumentfilter",
+      "status": "TEILWEISE",
+      "api_endpoint": "GET /documents?status=active|archived&mime_type=",
+      "backend": {
+        "filter_params_implemented": ["status (lifecycle_status)", "limit", "offset"],
+        "filter_params_missing": ["mime_type", "tag", "created_after", "created_before", "title_search"]
+      },
+      "frontend": {
+        "implemented": "Status-Filter (active/archived)",
+        "missing": "Tag-Filter, MIME-Filter, Datumsbereich"
+      },
+      "gaps": [
+        "Tag-Filter fehlt — kein ?tag=-Parameter (blockiert durch P1-GAP-01 fehlende ORM-Models)",
+        "Kein Datumsfilter",
+        "MIME-Typ-Filter nicht implementiert"
+      ]
+    },
+    {
+      "feature_id": "DC-03",
+      "name": "Tags",
+      "status": "NICHT_BEGONNEN (API-Ebene)",
+      "backend": {
+        "db_tables": "categories, tags, document_tags — alle in Migration 0003 definiert",
+        "orm_models": "FEHLEN — kein app/models/categories.py",
+        "api_endpoints": "FEHLEN — kein /tags, /documents/:id/tags",
+        "data_in_db": "Struktur vorhanden, keine Daten (kein Seed)"
+      },
+      "frontend": {
+        "tag_display": "Nicht implementierbar ohne Backend-API",
+        "tag_assign": "FEHLT"
+      },
+      "gaps": [
+        "P1-GAP-01: Category, Tag, DocumentTag ORM-Models fehlen",
+        "P1-GAP-02: POST /api/v1/tags, POST /documents/:id/tags fehlen",
+        "Ohne Tags ist Dokumenten-Kategorisierung nicht möglich"
+      ],
+      "priority": "P1"
+    },
+    {
+      "feature_id": "DC-04",
+      "name": "Kategorien",
+      "status": "NICHT_BEGONNEN",
+      "backend": {
+        "db_table": "categories — in Migration 0003 als Junction-Konzept vorhanden",
+        "orm_models": "FEHLEN",
+        "api_endpoints": "FEHLEN"
+      },
+      "note": "Für 1.0 ausreichend: Tags als flache Taxonomie. Kategorien als Hierarchie sind P3.",
+      "gaps": [
+        "Kein Category-ORM, kein /categories-Endpunkt"
+      ],
+      "priority": "P2 (Kategorien) / P1 (Tags — flach)"
+    },
+    {
+      "feature_id": "DC-05",
+      "name": "Dokumentvorschau",
+      "status": "TEILWEISE",
+      "api_endpoint": "GET /documents/:id — Dokument-Detail + GET /documents/:id/chunks",
+      "backend": {
+        "detail_endpoint": "VOLLSTÄNDIG — getDocumentDetail() liefert id, title, lifecycle_status, mime_type, created_at, source_url, version_count",
+        "chunks_endpoint": "VOLLSTÄNDIG — getDocumentChunks() liefert text-Fragmente",
+        "content_extraction": "Dokumentinhalt als Chunks verfügbar"
+      },
+      "frontend": {
+        "page": "frontend/src/pages/DocumentsPage.jsx",
+        "implementation": "Detailansicht mit Chunks als Text-Rendering",
+        "missing": "Kein PDF-Viewer für Binär-Dokumente, kein Image-Preview"
+      },
+      "gaps": [
+        "Vorschau zeigt nur Text-Chunks — kein natives PDF-Rendering",
+        "MIME-Type-basierte Preview-Varianten fehlen",
+        "Kein KWIC-Highlighting (Suchtreffer im Kontext)"
+      ],
+      "priority": "P2"
+    },
+    {
+      "feature_id": "DC-06",
+      "name": "Bearbeiten (Metadaten)",
+      "status": "NICHT_IMPLEMENTIERT",
+      "backend": {
+        "endpoints": "FEHLEN — kein PATCH /documents/:id",
+        "available": "title, source_url im Dokument-Modell vorhanden"
+      },
+      "frontend": {
+        "implementation": "FEHLT"
+      },
+      "gaps": [
+        "Kein PATCH /documents/:id für title, source_url",
+        "Kein Inline-Edit im Frontend",
+        "Dokument-Inhalt ist per Design immutable (Versions-Konzept)"
+      ],
+      "note": "Dokument-Inhalt ist bewusst nicht editierbar — nur Metadaten (title, source_url, tags). Für 1.0 akzeptabel wenn nicht im Scope.",
+      "priority": "P2"
+    },
+    {
+      "feature_id": "DC-07",
+      "name": "Archivieren",
+      "status": "VOLLSTÄNDIG",
+      "api_endpoint": "PATCH /documents/:id/archive",
+      "backend": {
+        "implementation": "archiveDocument() in documents.js → lifecycle_status = 'archived'",
+        "service": "DocumentService.archive_document() — prüft Workspace-Zugehörigkeit"
+      },
+      "frontend": {
+        "button": "Archivieren-Button in Dokumentliste / Detailansicht",
+        "post_action": "Dokument verschwindet aus active-Filter-Ansicht"
+      },
+      "gaps": []
+    },
+    {
+      "feature_id": "DC-08",
+      "name": "Dokumenten-Lifecycle",
+      "status": "VOLLSTÄNDIG (Kern)",
+      "lifecycle_states": ["pending", "processing", "chunked", "error", "archived", "deleted"],
+      "transitions": {
+        "pending → processing": "BackgroundJob startet",
+        "processing → chunked": "Import abgeschlossen",
+        "processing → error": "Import-Fehler",
+        "chunked → archived": "Nutzer-Aktion archiveDocument()",
+        "archived → chunked": "restoreDocument() — VOLLSTÄNDIG",
+        "any → deleted": "deleteDocument() — soft delete"
+      },
+      "api_endpoints": {
+        "archive": "PATCH /documents/:id/archive — VOLLSTÄNDIG",
+        "restore": "PATCH /documents/:id/restore — VOLLSTÄNDIG",
+        "delete": "DELETE /documents/:id — VOLLSTÄNDIG",
+        "retry_import": "POST /documents/:id/retry-import — BACKEND VORHANDEN, kein Frontend-Button"
+      },
+      "gaps": [
+        "Kein Retry-Button für Dokumente im 'error'-Status (BUF-03 aus backend_coverage_audit)",
+        "Kein DELETE-Bestätigungsdialog verifiziert"
+      ]
+    }
+  ],
+
+  "security_assessment": {
+    "workspace_isolation": "PASS — alle /documents/-Endpoints prüfen workspace_id aus Auth-Token",
+    "delete_guard": "Soft-Delete — kein Hard-Delete ohne explizites Flag",
+    "archive_guard": "require_workspace_member ausreichend"
+  },
+
+  "explicitly_not_visible": [
+    "Gates (Gate-Reports, RC-Gate, Production-Gate)",
+    "Debug-Ansichten (AdminDiagnosticsPage)",
+    "Report-Übersichten (keine Report-Links im Dokumentenzentrum)"
+  ],
+
+  "statistics": {
+    "features_total": 8,
+    "vollständig": 3,
+    "teilweise": 2,
+    "nicht_begonnen": 3,
+    "p1_gaps": 2,
+    "p2_gaps": 3
+  },
+
+  "required_actions_1_0": [
+    {
+      "action_id": "DC-ACT-01",
+      "priority": "P1",
+      "action": "Tags: P1-GAP-01 (ORM) + P1-GAP-02 (API) implementieren",
+      "details": "Ohne Tags ist Dokumenten-Kategorisierung nicht möglich"
+    },
+    {
+      "action_id": "DC-ACT-02",
+      "priority": "P1",
+      "action": "Tag-Filter in GET /documents?tag= ergänzen",
+      "details": "Nach P1-GAP-01/02 möglich"
+    },
+    {
+      "action_id": "DC-ACT-03",
+      "priority": "P2",
+      "action": "Retry-Button für Dokumente mit status='error'",
+      "details": "POST /documents/:id/retry-import Endpunkt im Backend vorhanden — nur Frontend-Button fehlt"
+    },
+    {
+      "action_id": "DC-ACT-04",
+      "priority": "P2",
+      "action": "PATCH /documents/:id für Metadaten-Bearbeitung",
+      "details": "title, source_url änderbar machen"
+    }
+  ]
+}

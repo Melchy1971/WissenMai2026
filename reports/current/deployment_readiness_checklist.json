@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "report_id": "deployment_readiness_checklist",
+  "generated": "2026-06-15",
+  "evaluation_method": "static_code_analysis",
+  "note": "Kein Live-Backend verfuegbar. Alle Checks per statischer Analyse von Quellcode, Skripten und Konfigurationsdateien.",
+  "verdict": "BLOCKED",
+  "checks": [
+    {
+      "id": "DRC-01",
+      "name": "ENV Variablen vollstaendig",
+      "status": "BLOCKED",
+      "evidence": [
+        ".env.example vorhanden und referenziert in docs/install.md",
+        "Pflichtfelder dokumentiert: DATABASE_URL, APP_ENV, DEFAULT_WORKSPACE_ID, DEFAULT_USER_ID, SEED_ADMIN_LOGIN, SEED_ADMIN_PASSWORD",
+        "BLOCKER: TEST_DATABASE_URL fehlt in laufender Umgebung (RC-PREREQ-01)"
+      ],
+      "required_action": "TEST_DATABASE_URL setzen. Alle anderen Variablen per .env.example-Vorlage pruefen.",
+      "severity": "blocking"
+    },
+    {
+      "id": "DRC-02",
+      "name": "DATABASE_URL gesetzt und erreichbar",
+      "status": "UNKNOWN",
+      "evidence": [
+        "dev_bootstrap.ps1 prueft DATABASE_URL explizit und bricht mit Exit 2 ab wenn nicht gesetzt",
+        "dev-backend.ps1 setzt Fallback auf lokale Dev-DB (127.0.0.1:5433)",
+        "Produktions-DB-Erreichbarkeit nicht pruefbar ohne Live-System",
+        "Bekannt: 85.215.131.200:5432 per Connection-Timeout nicht erreichbar aus lokaler Env"
+      ],
+      "required_action": "DATABASE_URL gegen Ziel-DB pruefen: psycopg connect_timeout=5 Test ausfuehren.",
+      "severity": "blocking_if_unset"
+    },
+    {
+      "id": "DRC-03",
+      "name": "TEST_DATABASE_URL gesetzt",
+      "status": "BLOCKED",
+      "evidence": [
+        "TEST_DATABASE_URL nicht in .env gesetzt (Root Cause RCB-001)",
+        "Gate-Tests: pytest collected=0, errors=1 fuer postgres_truth Tests",
+        "report_integrity_v2: BLOCKED (20 Blocker) durch fehlende TEST_DATABASE_URL"
+      ],
+      "required_action": "TEST_DATABASE_URL=postgresql+psycopg://user:pw@host:5432/dbname setzen.",
+      "severity": "blocking"
+    },
+    {
+      "id": "DRC-04",
+      "name": "Alembic Head: Schema aktuell",
+      "status": "PASS",
+      "evidence": [
+        "dev_bootstrap.ps1 Schritt 3: alembic upgrade head mit Exit-Code-Pruefung",
+        "dev-backend.ps1 nutzt bootstrap_local_backend.py (enthaelt Alembic-Aufruf)",
+        "Alembic-Konfiguration: backend/alembic.ini vorhanden",
+        "Migrations-Verzeichnis: backend/alembic/versions/ vorhanden"
+      ],
+      "required_action": "Vor jedem Deployment: alembic upgrade head ausfuehren und Exit-Code pruefen.",
+      "severity": "non_blocking"
+    },
+    {
+      "id": "DRC-05",
+      "name": "Seed/Auth: Admin-User anlegen und pruefen",
+      "status": "PASS",
+      "evidence": [
+        "dev_bootstrap.ps1 Schritt 4: seed_auth.py mit Exit-Code-Pruefung",
+        "dev_bootstrap.ps1 Schritt 5: check_auth_bootstrap.py --no-start-api (Auth-Guard ohne API-Start)",
+        "SEED_ADMIN_LOGIN und SEED_ADMIN_PASSWORD aus .env gelesen",
+        "Credentials werden im Report-Output maskiert (*-Ausgabe)"
+      ],
+      "required_action": "Seed einmalig ausfuehren. check_auth_bootstrap.py --no-start-api nach Seed als Verifikation.",
+      "severity": "non_blocking"
+    },
+    {
+      "id": "DRC-06",
+      "name": "Backup erzeugbar",
+      "status": "UNKNOWN",
+      "evidence": [
+        "Kein run_backup.ps1 vorhanden (muss erstellt werden, Task #23)",
+        "pg_dump-Aufruf nicht dokumentiert in bestehenden Scripts",
+        "backup-Dokumentation fehlt in docs/start.md und docs/install.md"
+      ],
+      "required_action": "run_backup.ps1 erstellen: pg_dump gegen DATABASE_URL, Ausgabe in backups/YYYY-MM-DD.dump, Exit-Code-Pruefung.",
+      "severity": "high"
+    },
+    {
+      "id": "DRC-07",
+      "name": "Restore in leere DB verifizierbar",
+      "status": "UNKNOWN",
+      "evidence": [
+        "Kein run_restore_test.ps1 vorhanden (muss erstellt werden, Task #23)",
+        "Restore-Prozedur nicht dokumentiert",
+        "Alembic-Head-Status nach Restore nicht automatisch geprueft"
+      ],
+      "required_action": "run_restore_test.ps1 erstellen: pg_restore -> alembic current == head -> Login-Test -> Exit-Code.",
+      "severity": "high"
+    },
+    {
+      "id": "DRC-08",
+      "name": "Static Build: Frontend build artefakt",
+      "status": "PASS",
+      "evidence": [
+        "frontend/package.json: 'build' Script vorhanden (npm run build)",
+        "vite.config.js: build-Konfiguration vorhanden",
+        "dist/-Verzeichnis nach Build erwartet",
+        "OXC-Parser-Kompatibilitaet: ASCII-only Strings in Vitest-Dateien sichergestellt"
+      ],
+      "required_action": "npm run build ausfuehren und dist/ pruefen. Build-Ausgabe auf Fehler pruefen.",
+      "severity": "non_blocking"
+    },
+    {
+      "id": "DRC-09",
+      "name": "API Health: /health erreichbar",
+      "status": "UNKNOWN",
+      "evidence": [
+        "dev_bootstrap.ps1 Schritt 6: Invoke-WebRequest /health mit Timeout=5",
+        "Fallback: WARN wenn Backend nicht erreichbar (kein harter Exit)",
+        "health-Endpoint in FastAPI definiert (aus dev_bootstrap.ps1 ersichtlich)",
+        "Produktions-Health-Pruefung: nicht ohne Live-System pruefbar"
+      ],
+      "required_action": "Nach Backend-Start: GET /health pruefen. HTTP 200 und response body validieren.",
+      "severity": "blocking_if_failing"
+    },
+    {
+      "id": "DRC-10",
+      "name": "Frontend Routing: SPA-Fallback konfiguriert",
+      "status": "UNKNOWN",
+      "evidence": [
+        "Vite-Dev-Server: SPA-Fallback automatisch aktiv",
+        "Produktions-Deployment: Reverse-Proxy-Konfiguration fuer SPA-Fallback nicht dokumentiert",
+        "Kein nginx.conf oder Apache-Konfiguration im Repository gefunden"
+      ],
+      "required_action": "Reverse-Proxy-Konfiguration dokumentieren: try_files $uri $uri/ /index.html fuer nginx.",
+      "severity": "high"
+    },
+    {
+      "id": "DRC-11",
+      "name": "Reverse Proxy: Konfiguriert und funktional",
+      "status": "UNKNOWN",
+      "evidence": [
+        "Keine Reverse-Proxy-Konfiguration im Repository",
+        "Externes Test-Ergebnis fehlt (external_env_gate NOT_RUN)",
+        "Infrastruktur-Check IC-03 aus external_env_testplan.json noch ausstehend"
+      ],
+      "required_action": "nginx-Konfiguration erstellen und in docs/deployment-readiness.md dokumentieren. IC-03 aus External Env Tests bestehen.",
+      "severity": "high"
+    },
+    {
+      "id": "DRC-12",
+      "name": "SSL/HTTPS: Gueltiges Zertifikat",
+      "status": "UNKNOWN",
+      "evidence": [
+        "Lokale Entwicklung ohne HTTPS (HTTP auf localhost:8000/5173)",
+        "Keine SSL-Konfiguration im Repository",
+        "IC-02 aus external_env_testplan.json noch ausstehend"
+      ],
+      "required_action": "SSL-Zertifikat bereitstellen (Let's Encrypt oder intern). HTTPS in Reverse-Proxy konfigurieren. IC-02 bestehen.",
+      "severity": "high"
+    },
+    {
+      "id": "DRC-13",
+      "name": "CORS: Konfiguriert fuer Frontend-Origin",
+      "status": "UNKNOWN",
+      "evidence": [
+        "FastAPI-CORS-Middleware: nicht in statischem Scan verifizierbar ohne Live-Backend",
+        "IC-01 aus external_env_testplan.json noch ausstehend",
+        "TG-02 (GUI Contracts) prueft Workspace-Isolation implizit"
+      ],
+      "required_action": "FastAPI CORSMiddleware: allow_origins mit Frontend-Domain konfigurieren. IC-01 aus External Env Tests bestehen.",
+      "severity": "high"
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "pass": 3,
+    "blocked": 2,
+    "unknown": 8,
+    "blocking_issues": ["DRC-01 (TEST_DATABASE_URL)", "DRC-03 (TEST_DATABASE_URL)"],
+    "high_issues": ["DRC-06 (Backup)", "DRC-07 (Restore)", "DRC-10 (SPA-Fallback)", "DRC-11 (Reverse Proxy)", "DRC-12 (SSL)", "DRC-13 (CORS)"],
+    "unknown_require_live_system": ["DRC-02", "DRC-09", "DRC-10", "DRC-11", "DRC-12", "DRC-13"]
+  },
+  "verdict_reason": "2 BLOCKED (TEST_DATABASE_URL), 6 HIGH ohne Live-System-Verifikation, 3 UNKNOWN ohne Live-System. Deployment-Readiness kann erst nach RC-Stabilisierung und External Env Tests bewertet werden.",
+  "next_steps": [
+    "RC-PREREQ-01: TEST_DATABASE_URL setzen (behebt DRC-01, DRC-03)",
+    "Scripts erstellen: run_backup.ps1, run_restore_test.ps1 (behebt DRC-06, DRC-07)",
+    "Reverse-Proxy-Konfiguration dokumentieren (DRC-10, DRC-11)",
+    "External Env Tests durchfuehren (behebt DRC-09, DRC-12, DRC-13 per IC-Tests)"
+  ]
+}

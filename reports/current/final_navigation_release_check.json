@@ -1,0 +1,182 @@
+{
+  "schema_version": "1",
+  "report_id": "final_navigation_release_check",
+  "generated": "2026-06-15T09:45:00Z",
+  "verdict": "BLOCKED",
+  "inputs": {
+    "masterplan_nav": "docs/final_navigation.md",
+    "appshell": "frontend/src/app/AppShell.jsx",
+    "routes": "frontend/src/app/routes.jsx",
+    "prohibit_rules": ["PROHIBIT-02", "PROHIBIT-06"]
+  },
+  "masterplan_nav_items": [
+    { "label": "Dashboard", "route": "/dashboard" },
+    { "label": "Suche", "route": "/chat" },
+    { "label": "Dokumente", "route": "/documents" },
+    { "label": "Datenanalyse", "route": "/rag" },
+    { "label": "Data Quality", "route": "/data-quality" },
+    { "label": "Einstellungen", "route": "/settings" }
+  ],
+  "actual_nav_items": [
+    { "label": "Dashboard", "route": "/dashboard" },
+    { "label": "Dokumente", "route": "/documents" },
+    { "label": "Themen", "route": "/topics" },
+    { "label": "Import", "route": "/import" },
+    { "label": "Suche", "route": "/search" },
+    { "label": "Datenanalyse", "route": "/rag" },
+    { "label": "Drift", "route": "/drift" },
+    { "label": "Einstellungen", "route": "/settings" }
+  ],
+  "rules": [
+    {
+      "id": "R1",
+      "rule": "Alle Masterplan-konformen Menupunkte sind vorhanden",
+      "result": "BLOCKED",
+      "findings": [
+        {
+          "severity": "BLOCKING",
+          "item": "Suche",
+          "expected_route": "/chat",
+          "actual_route": "/search",
+          "detail": "NAV_ITEMS zeigt auf /search. Masterplan fordert /chat (ChatPage)."
+        },
+        {
+          "severity": "BLOCKING",
+          "item": "Data Quality",
+          "expected_route": "/data-quality",
+          "actual_route": "MISSING",
+          "detail": "/data-quality ist in routes.jsx vorhanden (DataQualityPage), aber nicht in AppShell NAV_ITEMS."
+        }
+      ]
+    },
+    {
+      "id": "R2",
+      "rule": "Keine Debug/Gate/Test/Cleanup-Menues in NAV",
+      "result": "PASS",
+      "findings": [
+        {
+          "severity": "INFO",
+          "detail": "DashboardPage zeigt governance_gate/security_gate/gui_gate als Status-Felder via /api/v1/status — keine Menupunkte, kein eigener Nav-Eintrag. Regel nicht verletzt."
+        }
+      ]
+    },
+    {
+      "id": "R3",
+      "rule": "Drift Detection read-only (PROHIBIT-02)",
+      "result": "PASS",
+      "findings": [
+        {
+          "detail": "driftApi.js: nur GET-Methoden. DriftDashboard.jsx: keine Mutations-Handler. DriftV2RegressionGuard 6/6 PASS."
+        }
+      ]
+    },
+    {
+      "id": "R4",
+      "rule": "Data Quality read-only",
+      "result": "PASS",
+      "findings": [
+        {
+          "detail": "dataQuality.js: nur GET-Methoden (getDataQualitySummary, listDataQualityRuns, getDataQualityRun, listDataQualityFindings). Keine Mutations-Operationen."
+        }
+      ]
+    },
+    {
+      "id": "R5",
+      "rule": "Datenanalyse (/rag) nur wenn Backend-Endpunkte vorhanden",
+      "result": "PASS",
+      "findings": [
+        {
+          "detail": "RAGCenterPage ruft /api/v1/rag/documents und /api/v1/rag/retrieve auf. Backend-Anbindung vorhanden."
+        },
+        {
+          "severity": "WARNING",
+          "detail": "RAGCenterPage enthaelt POST /api/v1/rag/documents/{id}/reindex. Dies ist keine read-only Operation — aber PROHIBIT-02/06 gilt nur fuer Drift und Data Quality, nicht fuer RAG."
+        }
+      ]
+    },
+    {
+      "id": "R6",
+      "rule": "Dashboard nur wenn Backend-Endpunkte vorhanden",
+      "result": "PASS",
+      "findings": [
+        {
+          "detail": "DashboardPage ruft /api/v1/status auf. Backend-Anbindung vorhanden."
+        }
+      ]
+    },
+    {
+      "id": "R7",
+      "rule": "Keine nicht-Masterplan-Menupunkte in NAV",
+      "result": "BLOCKED",
+      "findings": [
+        {
+          "severity": "BLOCKING",
+          "item": "Themen",
+          "route": "/topics",
+          "detail": "/topics ist in AppShell NAV_ITEMS, aber nicht im Masterplan final_navigation.md."
+        },
+        {
+          "severity": "BLOCKING",
+          "item": "Import",
+          "route": "/import",
+          "detail": "/import ist in AppShell NAV_ITEMS, aber nicht im Masterplan final_navigation.md."
+        }
+      ]
+    },
+    {
+      "id": "R8",
+      "rule": "Keine verbotenen Routen per direktem URL erreichbar (ausser auth-protected)",
+      "result": "BLOCKED",
+      "findings": [
+        {
+          "severity": "BLOCKING",
+          "routes": ["/tools", "/memory", "/tasks", "/projects", "/agents", "/collaboration", "/governance"],
+          "detail": "Routes in routes.jsx, nicht in Masterplan, nur mit ProtectedRoute (Login-Check) geschuetzt. Keine Rollentrennung."
+        },
+        {
+          "severity": "BLOCKING",
+          "route": "/admin/diagnostics",
+          "detail": "AdminDiagnosticsPage traegt isAdmin()-Check im Komponenten-Body, aber kein Admin-Gate auf Router-Ebene. Jeder angemeldete User kann die Route aufrufen. Nur clientseitiger Schutz."
+        }
+      ]
+    }
+  ],
+  "blocking_findings_summary": [
+    "R1: Suche zeigt auf /search statt /chat (Masterplan-Abweichung)",
+    "R1: Data Quality (/data-quality) fehlt in AppShell NAV_ITEMS",
+    "R7: /topics in NAV, kein Masterplan-Eintrag",
+    "R7: /import in NAV, kein Masterplan-Eintrag",
+    "R8: 7 verbotene Routen per URL erreichbar (kein Masterplan, nur Login-Schutz)",
+    "R8: /admin/diagnostics ohne Router-seitigen Admin-Guard"
+  ],
+  "pass_count": 4,
+  "blocked_count": 3,
+  "warning_count": 1,
+  "required_fixes": [
+    {
+      "fix_id": "NAV-FIX-01",
+      "priority": 1,
+      "action": "AppShell NAV_ITEMS: /search durch /chat ersetzen (oder Masterplan anpassen falls /search intentional)"
+    },
+    {
+      "fix_id": "NAV-FIX-02",
+      "priority": 1,
+      "action": "AppShell NAV_ITEMS: /data-quality hinzufuegen (Data Quality ist Masterplan-konform)"
+    },
+    {
+      "fix_id": "NAV-FIX-03",
+      "priority": 2,
+      "action": "AppShell NAV_ITEMS: /topics und /import entfernen (nicht im Masterplan) oder Masterplan aktualisieren"
+    },
+    {
+      "fix_id": "NAV-FIX-04",
+      "priority": 2,
+      "action": "routes.jsx: /tools /memory /tasks /projects /agents /collaboration /governance entweder entfernen oder hinter Admin-Guard legen"
+    },
+    {
+      "fix_id": "NAV-FIX-05",
+      "priority": 3,
+      "action": "routes.jsx: /admin/diagnostics mit Router-seitigem isAdmin-Guard absichern (nicht nur komponentenseitig)"
+    }
+  ]
+}

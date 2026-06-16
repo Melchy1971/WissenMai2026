@@ -1,0 +1,135 @@
+{
+  "report_schema_version": 1,
+  "report_name": "analysis_ux_ready",
+  "report_type": "feature_readiness",
+  "generated_at": "2026-06-15T23:46:00.000000+00:00",
+  "evaluation_method": "static_code_analysis — analysis_e2e_product_ready.json, product_e2e_truth_suite.json S06/S07, backend/app/api/analysis.py (bekannt), AGAP-Befundlage",
+  "verdict": "NICHT_PRODUKTIONSREIF — Backend-API für Analyse vollständig, AnalysisPage.jsx (AGAP-07) fehlt; 7-Schritt-UX-Workflow nicht im Frontend erreichbar",
+
+  "workflow_7_schritte": {
+    "schritt_1_dokument_waehlen": {
+      "step_id": "AW-01",
+      "name": "Dokument wählen",
+      "status": "BACKEND_VORHANDEN — KEIN_FRONTEND",
+      "backend": "POST /api/v1/analysis/jobs erwartet {document_id, analysis_type}. document_id muss Client übergeben.",
+      "frontend": "AGAP-07: AnalysisPage.jsx nicht implementiert. Kein Dokument-Auswahl-Dialog, kein Analyse-Typ-Selector.",
+      "ux_gap": "Nutzer kann kein Dokument für Analyse auswählen ohne direkten API-Call."
+    },
+    "schritt_2_analyse_starten": {
+      "step_id": "AW-02",
+      "name": "Analyse starten",
+      "status": "BACKEND_VORHANDEN — KEIN_FRONTEND",
+      "backend": "POST /api/v1/analysis/jobs → {job_id, status: 'queued'}. Ollama-LLM gebunden.",
+      "frontend": "Kein 'Analyse starten'-Button implementiert.",
+      "ux_gap": "Kein Einstiegspunkt für Nutzer."
+    },
+    "schritt_3_fortschritt_anzeigen": {
+      "step_id": "AW-03",
+      "name": "Fortschritt anzeigen",
+      "status": "BACKEND_VORHANDEN — KEIN_FRONTEND",
+      "backend": "GET /api/v1/analysis/jobs/:id → {status: 'queued'|'running'|'completed'|'failed', progress_message}. Polling möglich.",
+      "frontend": "Kein Polling-Hook, keine Fortschrittsanzeige, kein Spinner implementiert.",
+      "ux_gap": "Nutzer sieht keinen Analyse-Status ohne direkten API-Call."
+    },
+    "schritt_4_vergleich_anzeigen": {
+      "step_id": "AW-04",
+      "name": "Ergebnis / Vergleich anzeigen",
+      "status": "BACKEND_VORHANDEN — KEIN_FRONTEND",
+      "backend": "GET /api/v1/analysis/jobs/:id bei status='completed' liefert Ergebnis-Payload (summary, topics, tags, extracted data).",
+      "frontend": "Keine Ergebnis-Darstellungskomponente implementiert.",
+      "ux_gap": "Analyseergebnis nicht sichtbar ohne direkten API-Call."
+    },
+    "schritt_5_vorschlaege_anzeigen": {
+      "step_id": "AW-05",
+      "name": "Vorschläge anzeigen",
+      "status": "UNKLAR — KEIN_FRONTEND",
+      "backend": "Ob 'Vorschläge' als eigenes Feld im Analyse-Ergebnis existieren, ist aus Static Analysis nicht eindeutig. KI-Output enthält summary + extrahierte Topics/Tags.",
+      "frontend": "Keine Vorschläge-UI implementiert.",
+      "ux_gap": "Schritt konzeptionell nicht klar definiert — vor Implementation klären was 'Vorschläge' im Kontext der Ruflo-Analyse bedeutet."
+    },
+    "schritt_6_freigabe": {
+      "step_id": "AW-06",
+      "name": "Freigabe (Approval)",
+      "status": "BACKEND_VORHANDEN — KEIN_FRONTEND",
+      "backend": "POST /api/v1/analysis/jobs/:id/approve {decision: 'approved'|'rejected'} → nur workspace_admin. Status wechselt zu 'approved'.",
+      "frontend": "AGAP-07: Kein ApproveButton implementiert. Freigabe nur direkt per API möglich.",
+      "ux_gap": "Kein Approval-Workflow in der UI. Rolle workspace_admin hat keinen dedizierten Approve-Screen."
+    },
+    "schritt_7_uebernahme": {
+      "step_id": "AW-07",
+      "name": "Übernahme (Daten in Workspace übernehmen)",
+      "status": "NICHT_IMPLEMENTIERT",
+      "backend": "Unklar ob 'Übernahme' nach Approval automatisch oder via separaten Endpunkt erfolgt. Kein POST /api/v1/analysis/jobs/:id/apply oder äquivalent verifiziert.",
+      "frontend": "Kein 'Übernehmen'-Button oder -Flow implementiert.",
+      "ux_gap": "Schritt 7 unklar definiert — muss vor Implementation mit PO abgestimmt werden."
+    }
+  },
+
+  "zusatz_features": {
+    "verlauf_historie": {
+      "status": "TEILWEISE",
+      "backend": "GET /api/v1/analysis/jobs → Liste aller Jobs des Workspace. Status, created_at, job_type abrufbar.",
+      "frontend": "Kein Verlaufs-Screen implementiert. AnalysisPage.jsx fehlt.",
+      "finding": "Backend-Basis für Verlauf vorhanden, Frontend-Darstellung fehlt."
+    },
+    "wiederholung_retry": {
+      "status": "UNKLAR",
+      "backend": "Kein POST /api/v1/analysis/jobs/:id/retry explizit verifiziert. Workaround: Neuen Job mit gleichem document_id starten.",
+      "frontend": "Kein Retry-Button implementiert.",
+      "finding": "Ob expliziter Retry-Endpunkt existiert oder neu gestartet werden muss, aus Static Analysis nicht eindeutig."
+    },
+    "abbrechen_cancel": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "blocker": "AGAP-02: POST /api/v1/analysis/jobs/:id/cancel fehlt. Migration für 'cancelled'-Status in analysis_jobs-Tabelle fehlt (Hinweis: background_jobs hat 'cancelled', aber analysis_jobs ist separates Table mit eigenem Constraint).",
+      "frontend": "Kein Cancel-Button implementiert."
+    },
+    "fehlerzustaende": {
+      "status": "BACKEND_VORHANDEN — KEIN_FRONTEND",
+      "backend": "job.status = 'failed' + progress_message für Fehlerbeschreibung vorhanden.",
+      "frontend": "Kein Fehler-Zustand in Analyse-UI darstellbar (AnalysisPage.jsx fehlt). Nutzer sieht keinen Fehlerhinweis bei fehlgeschlagener Analyse.",
+      "finding": "Fehlerzustände sind im Backend modelliert, aber ohne Frontend-Darstellung wirkungslos."
+    }
+  },
+
+  "blockers": [
+    {
+      "blocker_id": "AU-B01",
+      "severity": "KRITISCH",
+      "description": "AGAP-07: AnalysisPage.jsx vollständig fehlend — kein Frontend-Einstiegspunkt für den gesamten 7-Schritt-Workflow",
+      "sprint_tasks": ["T25", "T26", "T27"]
+    },
+    {
+      "blocker_id": "AU-B02",
+      "severity": "HOCH",
+      "description": "AGAP-02: Cancel-Endpunkt fehlt — laufende Analysen nicht abzubrechen",
+      "sprint_tasks": ["T05", "T06", "T07"]
+    },
+    {
+      "blocker_id": "AU-B03",
+      "severity": "MITTEL",
+      "description": "Schritt 5 (Vorschläge) und Schritt 7 (Übernahme) konzeptionell unklar — PO-Klärung vor Implementation nötig",
+      "action": "Anforderungsklärung mit PO vor Sprint-Start"
+    }
+  ],
+
+  "security": {
+    "approval_only_admin": "PASS (Backend) — POST /approve prüft workspace_admin-Rolle",
+    "PROHIBIT_08": "EINGEHALTEN — keine automatische M5c-Ausführung ohne PO-Approval. Approval-Schritt im Workflow explizit manuell.",
+    "drift_readonly": "EINGEHALTEN — keine Repair-/Cleanup-Trigger in Analyse-Workflow",
+    "PROHIBIT_02": "EINGEHALTEN",
+    "PROHIBIT_06": "EINGEHALTEN"
+  },
+
+  "statistics": {
+    "workflow_schritte_total": 7,
+    "backend_vorhanden_kein_frontend": 5,
+    "nicht_implementiert": 1,
+    "unklar": 1,
+    "zusatz_features_total": 4,
+    "vollstaendig": 0,
+    "teilweise": 1,
+    "nicht_implementiert_zusatz": 2,
+    "unklar_zusatz": 1,
+    "overall_verdict": "NICHT_PRODUKTIONSREIF — 0/7 Workflow-Schritte als UX erreichbar; AnalysisPage.jsx ist kritischer Blocker"
+  }
+}

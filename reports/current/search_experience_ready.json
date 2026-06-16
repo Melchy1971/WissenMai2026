@@ -1,0 +1,133 @@
+{
+  "report_schema_version": 1,
+  "report_name": "search_experience_ready",
+  "report_type": "feature_readiness",
+  "generated_at": "2026-06-15T23:42:00.000000+00:00",
+  "evaluation_method": "static_code_analysis — useSearch.js, api/search.js, backend/api/search.py (bekannt aus vorherigen Reports), product_e2e_truth_suite.json S04",
+  "verdict": "TEILWEISE — Volltextsuche auf Chunk-Ebene funktionsfähig; Tag-Suche, Themen-Suche und Dokument-Suche nicht implementiert; Navigation zur Suchseite potenziell gebrochen (RCB-001)",
+
+  "sucharten": {
+    "volltext_chunks": {
+      "status": "VOLLSTÄNDIG (mit Einschränkungen)",
+      "implementation": "GET /api/v1/search/chunks?q=&limit=20&offset=0 — PostgreSQL Full-Text-Search auf chunks.search_vector (TSVECTOR)",
+      "debounce": "300ms in useSearch.js vor API-Call",
+      "limit": "20 Ergebnisse pro Seite, Pagination via offset möglich",
+      "einschraenkungen": [
+        "simple-Konfiguration statt german — kein deutsches Stemming (suche nach 'Vertrag' findet nicht 'Verträge')",
+        "Kein total_count im Response",
+        "Kein KWIC-Highlighting (Suchtreffer im Kontext hervorgehoben)"
+      ]
+    },
+    "tag_suche": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "finding": "Kein ?tag=-Parameter in GET /api/v1/search/chunks. Tags-Backend (P1-GAP-01/02) fehlt. Suche nach Tags nicht möglich.",
+      "fix": "Nach P1-GAP-01/02 Implementierung: ?tags[]=tag1&tags[]=tag2 Parameter ergänzen"
+    },
+    "themen_suche": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "finding": "Kein Suche-innerhalb-Themen Endpunkt. Topics-Backend fehlt vollständig.",
+      "fix": "Nach Topics-Backend: GET /api/v1/search/topics?q= oder Filter auf GET /api/v1/topics?name="
+    },
+    "dokument_suche": {
+      "status": "NICHT_IMPLEMENTIERT (als dedizierter Typ)",
+      "finding": "GET /documents?lifecycle_status= unterstützt keinen Textfilter. Dokumentliste hat nur lokale Titelsuche. Es gibt keine dokumentzentrierte Suche, die volltext-relevant filtern und Ergebnisse nach Dokumenten gruppieren würde.",
+      "actual": "Suchergebnisse sind Chunks — sie verweisen auf document_title, aber die Suche ist nicht dokumentzentriert sortiert",
+      "fix": "Ergebnisse nach Dokument gruppieren, document_title als primären Anker anzeigen"
+    }
+  },
+
+  "anzeige": {
+    "relevanz": {
+      "status": "VOLLSTÄNDIG",
+      "implementation": "useSearch.js: mapRelevanceClass(rank) → { label, tone, bars }. rank >= 0.7: 'Sehr relevant' (3 Balken), rank >= 0.3: 'Relevant' (2 Balken), < 0.3: 'Möglicherweise relevant' (1 Balken).",
+      "not_shown": "Roher Relevanz-Score (rank als float) wird nicht im UI angezeigt — nur visuelle Abstufung. Anforderung 'keine technischen Scores' eingehalten."
+    },
+    "vorschau": {
+      "status": "VOLLSTÄNDIG",
+      "implementation": "Suchergebnisse enthalten text_preview aus chunk-Response. Dokument-Titel aus document_title-Feld des Results.",
+      "finding": "Kein KWIC-Highlighting des Suchbegriffs im Vorschautext."
+    },
+    "themenbezug": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "finding": "Suchergebnisse (Chunks) haben keinen topics[]-Bezug im API-Response. Themenzugehörigkeit eines Suchergebnisses nicht anzeigbar.",
+      "fix": "Topics-Backend implementieren, dann chunk-Response um related_topics erweitern"
+    },
+    "quellen": {
+      "status": "TEILWEISE",
+      "implementation": "source_anchor (type, page, paragraph) aus ChunkPreviewList verfügbar. Dokument-Titel als Quellenreferenz angezeigt.",
+      "not_implemented": "Keine direkte Verlinkung zum Quelldokument aus dem Suchergebnis heraus verifiziert."
+    },
+    "technische_scores": {
+      "status": "EINGEHALTEN",
+      "finding": "rank-Float wird nicht im UI angezeigt. Keine internen Chunk-IDs oder Vektor-Scores sichtbar.",
+      "compliance": "Anforderung 'keine technischen Scores, keine internen IDs' erfüllt"
+    },
+    "interne_ids": {
+      "status": "PRÜFEN",
+      "finding": "chunk_id ist im mapSearchResult-Schema vorhanden — ob es im UI sichtbar ist, hängt von der Search-Ergebnis-Komponente ab. Aus dem verfügbaren Code-Read nicht eindeutig verifizierbar.",
+      "action_required": "SearchResult-Komponente prüfen, dass chunk_id und document_id nicht sichtbar dargestellt werden"
+    }
+  },
+
+  "navigation": {
+    "suchseite_erreichbar": {
+      "status": "CONDITIONAL",
+      "finding": "RCB-001 (aus E2E Truth Suite S04): NAV-Link auf /search oder /chat — je nach NAV_ITEMS-Konfiguration ist die Suchseite möglicherweise nicht direkt erreichbar. Nicht aus Static Analysis aufgelöst.",
+      "condition": "RCB-001 muss gelöst sein: NAV-Link muss auf /search zeigen"
+    }
+  },
+
+  "open_findings": [
+    {
+      "finding_id": "SR-F01",
+      "severity": "MITTEL",
+      "description": "Kein KWIC-Highlighting — Suchbegriff im Vorschautext nicht hervorgehoben",
+      "fix": "Suchbegriff in text_preview mit <mark>-Tags oder CSS-Class highlighten",
+      "priority": "P2"
+    },
+    {
+      "finding_id": "SR-F02",
+      "severity": "MITTEL",
+      "description": "Kein deutsches FTS-Stemming — Suche nach 'Vertrag' findet nicht 'Verträge'",
+      "fix": "PostgreSQL full-text search config von 'simple' auf 'german' ändern (Migration nötig)",
+      "priority": "P2"
+    },
+    {
+      "finding_id": "SR-F03",
+      "severity": "MITTEL",
+      "description": "Tag-Suche und Themen-Suche fehlen vollständig",
+      "fix": "Abhängig von P1-GAP-01/02 (Tags) und Topics-Backend",
+      "priority": "P1 (nach Backend-Voraussetzungen)"
+    },
+    {
+      "finding_id": "SR-F04",
+      "severity": "NIEDRIG",
+      "description": "Kein total_count — Nutzer weiß nicht, wie viele Treffer es insgesamt gibt",
+      "fix": "count in API-Response ergänzen",
+      "priority": "P2"
+    },
+    {
+      "finding_id": "SR-F05",
+      "severity": "NIEDRIG",
+      "description": "RCB-001: Suchseiten-Navigation ggf. gebrochen",
+      "fix": "NAV_ITEMS auf /search prüfen und sicherstellen",
+      "priority": "P1 (vor 1.0)"
+    }
+  ],
+
+  "security": {
+    "workspace_isolation": "PASS — GET /api/v1/search/chunks filtert per workspace_id aus Auth-Token",
+    "no_cross_workspace_leakage": "PASS — Chunk-Inhalte anderer Workspaces nicht abrufbar"
+  },
+
+  "statistics": {
+    "sucharten_total": 4,
+    "vollstaendig": 1,
+    "teilweise": 0,
+    "nicht_implementiert": 3,
+    "anzeige_bereiche_vollstaendig": 2,
+    "anzeige_bereiche_teilweise": 1,
+    "anzeige_bereiche_nicht_implementiert": 2,
+    "overall_verdict": "TEILWEISE — Chunk-Volltext funktioniert, alle weiteren Suchtypen fehlen"
+  }
+}

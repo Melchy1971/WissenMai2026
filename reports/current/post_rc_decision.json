@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "generated": "2026-06-15",
+  "task": 19,
+  "title": "Post-RC Phase Decision",
+  "rc_gate_status": "BLOCKED",
+  "rc_gate_conditions_met": 2,
+  "rc_gate_conditions_total": 7,
+  "rule": "Keine M5c-Implementierung vor RC-Stabilisierung und externer Testentscheidung",
+  "decision": "PHASE_0_RC_STABILIZATION_REQUIRED",
+  "options": [
+    {
+      "id": "OPT-1",
+      "name": "RC-Stabilisierung",
+      "phase": 0,
+      "status": "ACTIVE",
+      "prerequisite": null,
+      "blocked_by": null,
+      "description": "Alle 3 RC-PREREQ-Blocker beheben und RC Gate re-run bis RELEASE_CANDIDATE",
+      "prereqs_to_fix": ["RC-PREREQ-01", "RC-PREREQ-02", "RC-PREREQ-03"],
+      "expected_gate_result_after": "RELEASE_CANDIDATE (7/7)"
+    },
+    {
+      "id": "OPT-2",
+      "name": "Externe Umgebungstests",
+      "phase": 1,
+      "status": "BLOCKED",
+      "prerequisite": "OPT-1",
+      "blocked_by": "RC-Stabilisierung nicht abgeschlossen",
+      "description": "72 Tests (external_env_gate) gegen laufendes Backend ausfuehren",
+      "expected_gate_result_after": "external_env_gate PASS (NOT_RUN -> PASS)"
+    },
+    {
+      "id": "OPT-3",
+      "name": "Installer / Deployment",
+      "phase": 2,
+      "status": "BLOCKED",
+      "prerequisite": "OPT-2",
+      "blocked_by": "Externe Tests ausstehend",
+      "description": "Reproduzierbares Deployment-Paket, install.md / start.md gegen frische Installation verifizieren"
+    },
+    {
+      "id": "OPT-4",
+      "name": "M5c Cleanup Dry-Run Planung",
+      "phase": 3,
+      "status": "NO_GO",
+      "prerequisite": "OPT-1 + externe Testentscheidung + m5c_start_gate PASS + PO-Sign-off",
+      "blocked_by": "RC nicht stabil, m5c_start_gate BLOCKED, kein PO-Sign-off",
+      "description": "Nur Planung und Dry-Run-Vorbereitung. Keine Implementierung vor GO.",
+      "go_conditions": [
+        "m5c_start_gate PASS",
+        "cleanup_governance_boundary.json PO-Sign-off",
+        "RC-Stabilisierung abgeschlossen",
+        "Externe Testentscheidung getroffen"
+      ],
+      "prohibitions_active": ["PROHIBIT-02", "PROHIBIT-06", "PROHIBIT-08"]
+    },
+    {
+      "id": "OPT-5",
+      "name": "Nutzerfeedback",
+      "phase": "parallel_to_OPT-1",
+      "status": "AVAILABLE",
+      "prerequisite": null,
+      "blocked_by": null,
+      "description": "Strukturierte Rueckmeldung zu Enduser-Flows S01-S10, Fokus auf S04 (/search vs /chat) und S08 (/data-quality). Entscheidungsgrundlage fuer RC-PREREQ-02."
+    }
+  ],
+  "recommended_sequence": [
+    "RC-PREREQ-01 (TEST_DATABASE_URL + pytest)",
+    "RC-PREREQ-02 (NAV-Entscheidung PO + AppShell-Korrektur)",
+    "RC-PREREQ-03 (Router-Guard routes.jsx)",
+    "RC Gate re-run -> RELEASE_CANDIDATE",
+    "OPT-5 (Nutzerfeedback, parallel moeglich)",
+    "OPT-2 (Externe Umgebungstests)",
+    "OPT-3 (Installer)",
+    "OPT-4 (M5c Dry-Run Planung, nur nach allen GO-Bedingungen)"
+  ],
+  "m5c_implementation_lock": {
+    "status": "LOCKED",
+    "reason": "RC nicht stabil, m5c_start_gate BLOCKED, keine externen Tests, kein PO-Sign-off",
+    "unlock_conditions": [
+      "RC Gate = RELEASE_CANDIDATE",
+      "Externe Testentscheidung dokumentiert",
+      "m5c_start_gate = PASS",
+      "PO-Sign-off auf cleanup_governance_boundary.json"
+    ]
+  },
+  "source_documents": [
+    "docs/post_rc_plan.md",
+    "reports/current/release_candidate_gate.json",
+    "reports/current/m5c_start_gate.json",
+    "reports/current/cleanup_governance_boundary.json"
+  ]
+}

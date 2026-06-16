@@ -13,6 +13,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/tests/setup.js',
     include: ['src/tests/**/*.{test,spec}.{js,jsx}'],
-    exclude: ['tests/gui_truth/**'],
+    exclude: ['tests/gui_truth/**', 'tests/archive/**'],
   },
 });

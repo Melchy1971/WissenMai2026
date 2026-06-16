@@ -1,0 +1,209 @@
+{
+  "report_schema_version": 1,
+  "report_name": "product_gap_closure_report",
+  "report_type": "gap_closure_plan",
+  "generated_at": "2026-06-15T20:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "input_source": "docs/feature_gap_analysis.md",
+  "scope": "Alle P1-Features — keine zukünftigen Phasen, kein Cleanup, kein Repair",
+  "verdict": "9 P1-Gaps identifiziert — 0 davon geschlossen",
+
+  "constraints": [
+    "PROHIBIT-02: Kein Repair-Button, kein automatischer Repair",
+    "PROHIBIT-06: Kein Cleanup-Button",
+    "PROHIBIT-08: Keine automatische M5c-Ausführung ohne PO-Approval",
+    "M5c-Lock: LOCKED bis m5c_start_gate = PASS und PO-Sign-off",
+    "Drift Detection: Read-Only — keine Schreiboperationen",
+    "Kein LLM-Binding vor PO-Entscheidung zu Modell und Key-Management"
+  ],
+
+  "p1_gaps": [
+    {
+      "gap_id": "P1-GAP-01",
+      "category": "Themen",
+      "source": "feature_gap_analysis.md §5",
+      "title": "Topics ORM-Models fehlen",
+      "current_state": "DB-Tabellen categories, tags, document_tags existieren (migration 0003). Kein ORM-Model in app/models/.",
+      "required": [
+        "app/models/categories.py: Category, Tag, DocumentTag ORM-Models",
+        "Relationships zu Document.workspace_id"
+      ],
+      "effort": "Gering (1-2 Tage)",
+      "prerequisite": "Keins",
+      "blocks": ["P1-GAP-02", "P1-GAP-04 (SQ-04-G01)"],
+      "status": "OFFEN"
+    },
+    {
+      "gap_id": "P1-GAP-02",
+      "category": "Themen",
+      "source": "feature_gap_analysis.md §5",
+      "title": "Topics/Tags CRUD-API fehlt",
+      "current_state": "Keine Endpunkte /topics, /tags, /categories.",
+      "required": [
+        "GET /api/v1/topics — Topic-Liste paginiert, workspace-scoped",
+        "GET /api/v1/topics/:id — Topic-Detail mit zugeordneten Dokumenten",
+        "POST /api/v1/tags — Tag erstellen",
+        "POST /api/v1/documents/:id/tags — Tag einem Dokument zuordnen",
+        "DELETE /api/v1/documents/:id/tags/:tag_id — Tag entfernen"
+      ],
+      "effort": "Mittel (3-5 Tage)",
+      "prerequisite": "P1-GAP-01 (ORM-Models)",
+      "blocks": ["P1-GAP-03", "TopicsPage-Datenbindung", "Export Center Themen-Quelle"],
+      "status": "OFFEN"
+    },
+    {
+      "gap_id": "P1-GAP-03",
+      "category": "Suche",
+      "source": "search_quality_report.json SQ-03-G01",
+      "title": "Themenbasierte Suche fehlt",
+      "current_state": "GET /search/chunks — kein ?topic=-Parameter. Themen-Filter nicht implementiert.",
+      "required": [
+        "Query-Parameter ?topic= in GET /search/chunks",
+        "Join über analysis_job_source_documents → analysis_results.suggested_topics",
+        "Alternativ nach Tags filtern: ?tag="
+      ],
+      "effort": "Mittel (2-3 Tage)",
+      "prerequisite": "P1-GAP-01 (ORM für Tags), P1-GAP-05 (LLM für echte Topics)",
+      "blocks": [],
+      "status": "OFFEN"
+    },
+    {
+      "gap_id": "P1-GAP-04",
+      "category": "Suche",
+      "source": "search_quality_report.json SQ-04-G01",
+      "title": "Tag-basierte Suche fehlt",
+      "current_state": "Tags in DB vorhanden, aber kein Suchfilter.",
+      "required": [
+        "?tag= Query-Parameter in GET /search/chunks",
+        "Filter auf document_tags.name via Join"
+      ],
+      "effort": "Gering (1 Tag)",
+      "prerequisite": "P1-GAP-01 (ORM-Models für Tags)",
+      "blocks": [],
+      "status": "OFFEN"
+    },
+    {
+      "gap_id": "P1-GAP-05",
+      "category": "Datenanalyse",
+      "source": "analysis_production_gap_report.json AGAP-01",
+      "title": "Echtes LLM-Binding fehlt — Stub-Engine aktiv",
+      "current_state": "DeterministicAnalysisStubEngine liefert synthetische Ergebnisse. UnconfiguredLlmProvider im Chat wirft RuntimeError.",
+      "required": [
+        "PO-Entscheidung: welches LLM-Modell, welcher Provider, Key-Management-Strategie",
+        "LLM-Provider-Implementierung (AnalysisProvider Interface)",
+        "API-Key-Konfiguration in .env (nicht committen)",
+        "Integration in AnalysisService und RagChatService"
+      ],
+      "effort": "Hoch (1-2 Wochen inkl. Evaluation)",
+      "prerequisite": "PO-Entscheidung zu Modell/Provider",
+      "blocks": ["P1-GAP-03 (echte Topics für Suche)", "Analyseergebnis-Qualität generell"],
+      "status": "OFFEN",
+      "note": "Kein Implementierungsstart ohne PO-Entscheidung"
+    },
+    {
+      "gap_id": "P1-GAP-06",
+      "category": "Datenanalyse",
+      "source": "analysis_production_gap_report.json AGAP-02",
+      "title": "Job-Abbruch (Cancel) fehlt",
+      "current_state": "Status 'cancelled' nicht im ANALYSIS_JOB_STATUS_VALUES. Kein Cancel-Endpunkt.",
+      "required": [
+        "Migration: 'cancelled' zu ANALYSIS_JOB_STATUS_VALUES + CheckConstraint hinzufügen",
+        "POST /analysis/jobs/:id/cancel Endpunkt",
+        "AnalysisJobService.cancel_job() Methode",
+        "Status-Transition: running/pending → cancelled"
+      ],
+      "effort": "Gering (1 Tag + Migration)",
+      "prerequisite": "Keins",
+      "blocks": [],
+      "status": "OFFEN"
+    },
+    {
+      "gap_id": "P1-GAP-07",
+      "category": "Data Quality",
+      "source": "feature_gap_analysis.md §10",
+      "title": "Data Quality Trigger fehlt — POST /data-quality/runs",
+      "current_state": "Read-only API. Runs können nicht manuell gestartet werden. Kein Scheduler.",
+      "required": [
+        "POST /api/v1/data-quality/runs — require_workspace_admin",
+        "DataQualityRunService.trigger_run() — erstellt Run, startet als BackgroundJob oder synchron",
+        "Background-Job-Typ: 'data_quality_run' in BackgroundJob.job_type CheckConstraint ergänzen"
+      ],
+      "effort": "Mittel (2-3 Tage)",
+      "prerequisite": "Keins",
+      "blocks": [],
+      "status": "OFFEN"
+    },
+    {
+      "gap_id": "P1-GAP-08",
+      "category": "API / Monitoring",
+      "source": "feature_gap_analysis.md §13, user_management_review.json UM-ACT-04",
+      "title": "auth_failure_counter fehlt",
+      "current_state": "Login-Fehler werden nicht gezählt. Kein Rate-Limiting. observability_report: auth_failure_counter missing.",
+      "required": [
+        "Counter-Inkrement bei AuthenticationError in POST /auth/login",
+        "Metrik: auth_failures_total{workspace_id} oder {login}",
+        "Konfigurierbare Schwelle für Account-Lockout (optional)"
+      ],
+      "effort": "Gering (1 Tag)",
+      "prerequisite": "Keins",
+      "blocks": [],
+      "status": "OFFEN"
+    },
+    {
+      "gap_id": "P1-GAP-09",
+      "category": "API / Monitoring",
+      "source": "feature_gap_analysis.md §13, observability_report",
+      "title": "request_access_log fehlt",
+      "current_state": "Kein vollständiges Request-Access-Log. Einzelne Endpunkte haben log_event, aber kein middleware-level Access-Log.",
+      "required": [
+        "FastAPI-Middleware: Request-Access-Log für alle /api/v1/-Routen",
+        "Felder: timestamp, method, path, status_code, workspace_id (aus Auth), duration_ms",
+        "Kein Logging von Request-Bodies (Datenschutz)"
+      ],
+      "effort": "Gering (1 Tag)",
+      "prerequisite": "Keins",
+      "blocks": [],
+      "status": "OFFEN"
+    }
+  ],
+
+  "implementation_sequence": [
+    {
+      "phase": "Phase A — Infrastruktur (kein LLM)",
+      "duration": "~1 Woche",
+      "items": ["P1-GAP-01", "P1-GAP-06", "P1-GAP-07", "P1-GAP-08", "P1-GAP-09"]
+    },
+    {
+      "phase": "Phase B — Topics + Suche",
+      "duration": "~1,5 Wochen",
+      "items": ["P1-GAP-02", "P1-GAP-04"],
+      "prerequisite": "Phase A abgeschlossen"
+    },
+    {
+      "phase": "Phase C — LLM + Themensuche",
+      "duration": "~2 Wochen",
+      "items": ["P1-GAP-05", "P1-GAP-03"],
+      "prerequisite": "PO-Entscheidung LLM + Phase B"
+    }
+  ],
+
+  "explicitly_excluded": [
+    "M5c Cleanup (PROHIBIT-06)",
+    "M5d Repair Governance (Post-1.0)",
+    "Drift-Trigger (Read-Only-Invariante)",
+    "Governance Automation (Phase 3 Post-1.0 Roadmap)",
+    "Export Center (P2)",
+    "Semantic Search (P3)",
+    "Multi-User Ausbau (Post-1.0 Phase 5)"
+  ],
+
+  "statistics": {
+    "p1_gaps_total": 9,
+    "gaps_closed": 0,
+    "gaps_open": 9,
+    "estimated_total_effort_days": 14,
+    "items_requiring_po_decision": 1,
+    "items_requiring_migration": 1,
+    "items_no_prerequisite": 5
+  }
+}

@@ -1,0 +1,212 @@
+{
+  "report_schema_version": 1,
+  "report_name": "product_release_readiness",
+  "report_type": "release_readiness_assessment",
+  "generated_at": "2026-06-15T22:10:00.000000+00:00",
+  "evaluation_method": "static_code_analysis + gap_report_synthesis",
+  "inputs": [
+    "analysis_e2e_completion.json",
+    "dashboard_e2e_completion.json",
+    "document_center_rc.json",
+    "topic_center_rc.json",
+    "export_center_mvp.json",
+    "product_e2e_truth_suite.json",
+    "product_maturity_report.json",
+    "release_candidate_gate.json",
+    "final_gate_report.json"
+  ],
+  "verdict": "NOT_READY",
+  "overall_score": 34,
+
+  "dimensions": [
+    {
+      "dimension_id": "DIM-01",
+      "name": "Fachliche Reife",
+      "score": 32,
+      "max": 100,
+      "verdict": "UNZUREICHEND",
+      "rationale": "Von 8 geforderten Szenarien im E2E-Truth-Suite: 2 PASS, 3 CONDITIONAL_PASS, 2 FAIL, 1 N/A. Kernfunktionen Topics (S04) und Export (S07) nicht implementiert. Analyse-Flow nur via API, kein Frontend. Tags/Kategorien komplett fehlend. Data Quality nicht triggerbar.",
+      "evidence": {
+        "e2e_suite_pass": 2,
+        "e2e_suite_conditional": 3,
+        "e2e_suite_fail": 2,
+        "critical_missing": [
+          "Topics-Backend komplett fehlend (P1-GAP-01/02)",
+          "Export Center nicht implementiert (P2)",
+          "AnalysisPage.jsx fehlt (AGAP-07)",
+          "Tags/Kategorien: ORM + API fehlen",
+          "Data Quality Trigger fehlt (P1-GAP-07)"
+        ],
+        "functional_positives": [
+          "Dokumenten-Import vollständig",
+          "Volltextsuche funktioniert",
+          "Drift Detection Read-Only vollständig",
+          "Approval-Flow strukturell korrekt",
+          "Login/Logout vollständig"
+        ]
+      }
+    },
+    {
+      "dimension_id": "DIM-02",
+      "name": "Technische Reife",
+      "score": 52,
+      "max": 100,
+      "verdict": "TEILWEISE",
+      "rationale": "Backend-Infrastruktur solide (PostgreSQL, Migrationen, Workspace-Isolation). TEST_DATABASE_URL fehlt → Testpipeline nicht ausführbar → Gate-Kaskade BLOCKED. LLM nicht konfiguriert. AuditRecorder nicht injiziert. Topics-ORM fehlt. RAG-GUI nutzt in-memory Store statt PostgreSQL.",
+      "evidence": {
+        "strengths": [
+          "20 DB-Migrationen korrekt",
+          "Workspace-Isolation durchgängig (alle Queries workspace-scoped)",
+          "Auth: Token-Revocation in DB",
+          "API-Vertragskonformität: 51 von 71 Endpunkten korrekt",
+          "Drift Detection: Read-Only korrekt modelliert"
+        ],
+        "weaknesses": [
+          "TEST_DATABASE_URL nicht gesetzt — Testpipeline tot",
+          "LLM: UnconfiguredLlmProvider / DeterministicStubEngine",
+          "AuditRecorder in AnalysisService null",
+          "RAG-GUI: in-memory Datenspeicher — Datenverlust bei Neustart",
+          "analysis_jobs.status: 'cancelled' fehlt in CheckConstraint",
+          "5 Contract-Mismatches (CM-01..05) in backend_coverage_audit.json",
+          "Frontend Build: MISSING in release_manifest",
+          "auth_failure_counter nicht implementiert"
+        ]
+      }
+    },
+    {
+      "dimension_id": "DIM-03",
+      "name": "UX-Reife",
+      "score": 28,
+      "max": 100,
+      "verdict": "UNZUREICHEND",
+      "rationale": "Grundlegende User Flows funktionieren (Login, Import, Archivieren). Aber: Themenzentrum nicht nutzbar, Analyse nur via API, kein Export, Navigation-Abweichungen (RCB-001/002). Kein Frontend Error Boundary. Empty/Error/Loading States nicht per Test verifiziert. Kein Passwort-Ändern, kein Benutzer-Einladen.",
+      "evidence": {
+        "working_flows": [
+          "Login + Logout",
+          "Dokument importieren + anzeigen",
+          "Dokument archivieren + wiederherstellen",
+          "Volltext-Suche (eingeschränkt)",
+          "Dashboard-Überblick (5/6 Widgets)"
+        ],
+        "broken_or_missing": [
+          "Themenzentrum: 404 auf allen /topics-Aufrufen",
+          "Analyse-Page fehlt (AGAP-07)",
+          "Export nicht implementiert",
+          "Navigation: RCB-001 (/search vs /chat), RCB-002 (NAV_ITEMS)",
+          "Kein Error Boundary im Frontend",
+          "Empty/Error/Loading States nicht verifiziert",
+          "Passwort ändern nicht möglich",
+          "Benutzer einladen nicht möglich"
+        ],
+        "rcb_blockers": ["RCB-001", "RCB-002", "RCB-003"]
+      }
+    },
+    {
+      "dimension_id": "DIM-04",
+      "name": "Betriebsreife",
+      "score": 22,
+      "max": 100,
+      "verdict": "NICHT_BEREIT",
+      "rationale": "RC Gate BLOCKED (5/7 Conditions nicht erfüllt). Final Gate BLOCKED (4 Blockers). Frontend Build fehlt in release_manifest. TEST_DATABASE_URL → Testpipeline tot. Kein request_access_log. Deployment-Blueprint vorhanden aber nicht ausführbar solange Gates BLOCKED.",
+      "evidence": {
+        "gate_status": {
+          "final_gate_report": "BLOCKED — 4 Blocker (report_integrity_v2, m5b gates, m5c_start)",
+          "release_candidate_gate": "BLOCKED — 5/7 Conditions nicht erfüllt"
+        },
+        "positives": [
+          "VPS-Deployment-Blueprint vollständig",
+          "8 Incident-Runbooks vorhanden",
+          "PROHIBIT-02/06/08 eingehalten",
+          "Cleanup-Governance-Boundary: DRAFT (kein M5c gestartet)",
+          "Backup/Restore: getestet"
+        ],
+        "negatives": [
+          "TEST_DATABASE_URL fehlt → Keine automatisierten Tests möglich",
+          "Frontend Build MISSING",
+          "Monitoring: 9/14 (5 fehlend)",
+          "request_access_log nicht implementiert",
+          "auth_failure_counter nicht implementiert",
+          "Seed Package: 4/9 Dateien",
+          "Enduser Acceptance: BLOCKED (RCB-001/002)"
+        ]
+      }
+    }
+  ],
+
+  "score_calculation": {
+    "fachliche_reife": { "score": 32, "weight": 0.35 },
+    "technische_reife": { "score": 52, "weight": 0.30 },
+    "ux_reife": { "score": 28, "weight": 0.20 },
+    "betriebsreife": { "score": 22, "weight": 0.15 },
+    "weighted_total": 34.9,
+    "rounded": 34
+  },
+
+  "release_blockers": [
+    {
+      "blocker_id": "RB-01",
+      "severity": "CRITICAL",
+      "title": "TEST_DATABASE_URL nicht gesetzt",
+      "impact": "Gesamte Testpipeline nicht ausführbar. Gate-Kaskade BLOCKED.",
+      "fix": "TEST_DATABASE_URL in CI/CD-Umgebung setzen"
+    },
+    {
+      "blocker_id": "RB-02",
+      "severity": "CRITICAL",
+      "title": "Topics-Backend fehlt",
+      "impact": "S04 im Truth-Suite FAIL. Themenzentrum nicht nutzbar.",
+      "fix": "P1-GAP-01 (ORM) + P1-GAP-02 (API) implementieren"
+    },
+    {
+      "blocker_id": "RB-03",
+      "severity": "HIGH",
+      "title": "Export Center fehlt",
+      "impact": "S07 FAIL — kein Daten-Export möglich",
+      "fix": "Export-Service MVP: JSON + Markdown implementieren"
+    },
+    {
+      "blocker_id": "RB-04",
+      "severity": "HIGH",
+      "title": "Navigation-Abweichungen RCB-001/002",
+      "impact": "Enduser Acceptance BLOCKED — S03 (Suche) möglicherweise nicht per NAV erreichbar",
+      "fix": "NAV_ITEMS mit Masterplan synchronisieren"
+    },
+    {
+      "blocker_id": "RB-05",
+      "severity": "HIGH",
+      "title": "RCB-003: AdminDiagnosticsPage ohne Router-Guard",
+      "impact": "Security-Gate BLOCKED — jeder eingeloggte Nutzer kann /admin/diagnostics öffnen",
+      "fix": "AdminRoute-Wrapper für /admin/diagnostics"
+    },
+    {
+      "blocker_id": "RB-06",
+      "severity": "HIGH",
+      "title": "AnalysisPage.jsx fehlt",
+      "impact": "S05/S06 nur via API — kein Frontend-Zugang zur Analyse-Funktion",
+      "fix": "AGAP-07: AnalysisPage.jsx implementieren"
+    },
+    {
+      "blocker_id": "RB-07",
+      "severity": "MEDIUM",
+      "title": "LLM nicht konfiguriert",
+      "impact": "Analyse liefert nur Stub-Ergebnisse. Chat nicht nutzbar.",
+      "fix": "PO-Entscheidung LLM-Provider + API-Key-Bereitstellung"
+    }
+  ],
+
+  "required_score_for_1_0": 70,
+  "current_score": 34,
+  "gap_to_1_0": 36,
+  "estimated_effort_to_1_0": "6-8 Wochen (nach TEST_DATABASE_URL-Fix)",
+
+  "statistics": {
+    "release_blockers_critical": 2,
+    "release_blockers_high": 4,
+    "release_blockers_medium": 1,
+    "e2e_scenarios_pass": 2,
+    "e2e_scenarios_fail": 2,
+    "e2e_scenarios_conditional": 3,
+    "p1_gaps_open": 9,
+    "overall_score": 34
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "report_schema_version": 1,
+  "report_name": "document_preview_ready",
+  "report_type": "feature_readiness",
+  "generated_at": "2026-06-15T23:35:00.000000+00:00",
+  "evaluation_method": "static_code_analysis — DocumentDetailPage.jsx, DocumentPreviewPanel.jsx, ChunkPreviewList, api/documents.js, backend/schemas/documents.py",
+  "verdict": "TEILWEISE — Text-Chunk-Vorschau vorhanden; kein MIME-spezifisches Rendering; kein Lazy Loading; große Dokumente unvollständig dargestellt",
+
+  "vorschau_typen": {
+    "PDF": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "actual": "PDF-Dateien werden in Chunks zerlegt (pdf_page-Anker verfügbar: Seiten-Nr., char_start, char_end). Chunks werden als Text gerendert. Kein nativer PDF-Viewer.",
+      "finding": "Ein importiertes PDF ist als Text-Extraktion lesbar (sofern Parser erfolgreich), aber das Original-PDF-Layout (Tabellen, Bilder, Formatierung) ist nicht sichtbar.",
+      "fix": "PDF.js oder iframe-basierter Viewer für MIME-Type application/pdf"
+    },
+    "Markdown": {
+      "status": "TEILWEISE",
+      "actual": "Markdown-Dateien werden als text-Chunks mit type='text' gespeichert. Chunk-Text kann Markdown-Syntax enthalten. Kein Markdown-Renderer — rohes Markdown als Plaintext angezeigt.",
+      "finding": "Lesbar, aber unformatiert. Überschriften, Listen und Code-Blöcke werden nicht gerendert.",
+      "fix": "react-markdown oder äquivalente Bibliothek für MIME-Type text/markdown"
+    },
+    "TXT": {
+      "status": "VOLLSTÄNDIG",
+      "actual": "Text-Chunks werden als Plaintext angezeigt. text/plain-Dokumente verlieren keine relevante Formatierung.",
+      "finding": "Ausreichend für 1.0."
+    },
+    "DOCX": {
+      "status": "TEILWEISE",
+      "actual": "DOCX-Dateien werden via Parser in Chunks mit Anker-Typ docx_paragraph zerlegt. Chunk-Text enthält extrahierten Absatztext. Absatz-Nummern (anchor.paragraph) via formatSourceAnchor() anzeigbar.",
+      "finding": "Inhalt lesbar, Formatierung (Tabellen, Überschriften-Hierarchie, Bilder) verloren. Kein Original-Dokument-Rendering.",
+      "fix": "Für 1.0 akzeptabel wenn als 'Textauszug' kommuniziert, nicht als Vollvorschau"
+    }
+  },
+
+  "anzeige_inhalt": {
+    "chunk_text": {
+      "status": "VOLLSTÄNDIG",
+      "implementation": "DocumentDetailPage.jsx lädt getDocumentChunks(id, {limit: 5}). ChunkPreviewList rendert Chunk-Text mit Positions- und Anker-Information.",
+      "fields_shown": ["position", "text_preview", "source_anchor (type, page, paragraph, char_start, char_end)"]
+    },
+    "zusammenfassung": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "actual": "Kein Zusammenfassungs-Feld aus dem Backend abrufbar. DocumentDetail-Schema enthält kein summary-Feld.",
+      "finding": "KI-generierte Zusammenfassung ist nicht Teil des Dokumentenmodells. Themen-Zusammenfassungen existieren konzeptionell, aber Topics-Backend fehlt.",
+      "fix": "Entweder KI-Zusammenfassung als eigenes Feld in DocumentVersion speichern oder über Analysis-API erzeugen"
+    },
+    "themen": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "actual": "Themen-Platzhalter in DocumentPreviewPanel.jsx: 'Themen — folgt in nächster Phase'",
+      "blocker": "Topics-Backend fehlt vollständig (P1-GAP-01/02)"
+    },
+    "tags": {
+      "status": "NICHT_VERFÜGBAR",
+      "actual": "DocumentPreviewPanel.jsx: {item.tags?.length > 0 && ...} — conditional render, immer leer weil Tags-API fehlt",
+      "blocker": "P1-GAP-01/02"
+    },
+    "quellen_anker": {
+      "status": "VOLLSTÄNDIG",
+      "implementation": "DocumentChunkSourceAnchor mit type ∈ {text, pdf_page, docx_paragraph, legacy_unknown}. Seite, Absatz, Zeichenpositionen werden via formatSourceAnchor() formatiert angezeigt.",
+      "finding": "Quellenposition für jeden Chunk nachvollziehbar."
+    }
+  },
+
+  "performance": {
+    "lazy_loading": {
+      "status": "NICHT_IMPLEMENTIERT",
+      "actual": "DocumentDetailPage.jsx lädt statisch getDocumentChunks(id, {limit: 5}). Keine 'weitere Chunks laden'-Funktion implementiert.",
+      "backend_capability": "GET /documents/:id/chunks unterstützt limit bis 500 und offset — Pagination serverseitig möglich",
+      "finding": "Frontend nutzt nur 5 Chunks unabhängig von Dokumentgröße. Kein Infinite-Scroll, kein 'mehr laden'."
+    },
+    "grosse_dokumente": {
+      "status": "NICHT_AUSREICHEND",
+      "actual": "Ein großes Dokument (z.B. 300-seitiges PDF → ~600+ Chunks) wird mit exakt 5 Chunks angezeigt. Nutzer sieht weniger als 1% des Inhalts.",
+      "backend_capability": "chunk_count in DocumentListItem vorhanden — Anzahl bekannt. GET /documents/:id/chunks mit offset erreichbar.",
+      "finding": "Für Dokumente mit > 10 Chunks ist die Vorschau nicht repräsentativ. Vollständige Inhaltssicht nicht erreichbar ohne Lazy Loading.",
+      "fix": "Implementierung: 'Weitere Chunks laden' Button oder Infinite-Scroll mit GET /documents/:id/chunks?limit=20&offset={n}"
+    },
+    "ladezeiten": {
+      "status": "NICHT_MESSBAR (static analysis)",
+      "note": "DocumentDetailPage führt parallele Fetches durch: getDocumentDetail + getDocumentVersions + getDocumentChunks. Kein Loading-Skeleton für Chunks-Bereich verifiziert."
+    }
+  },
+
+  "security": {
+    "workspace_isolation": "PASS — alle Chunk-Endpunkte prüfen workspace_id aus Auth-Token",
+    "content_exposure": "Chunks enthalten extrahierten Dokumentinhalt — korrekte Workspace-Isolation sichert, dass nur Workspace-Mitglieder Inhalte sehen"
+  },
+
+  "open_findings": [
+    {
+      "finding_id": "PV-F01",
+      "severity": "HOCH",
+      "description": "Lazy Loading fehlt — große Dokumente nicht vollständig durchsuchbar/lesbar via UI",
+      "fix": "Pagination mit 'weitere Chunks laden' implementieren",
+      "priority": "P2"
+    },
+    {
+      "finding_id": "PV-F02",
+      "severity": "MITTEL",
+      "description": "Kein MIME-spezifisches Rendering — PDF, DOCX, Markdown als Rohtext",
+      "fix": "MIME-Type-Switch: PDF-Viewer für application/pdf, Markdown-Renderer für text/markdown",
+      "priority": "P2"
+    },
+    {
+      "finding_id": "PV-F03",
+      "severity": "MITTEL",
+      "description": "Keine KI-Zusammenfassung auf Dokumentebene verfügbar",
+      "fix": "summary-Feld in DocumentVersion oder als eigener Analyse-Typ",
+      "priority": "P2"
+    },
+    {
+      "finding_id": "PV-F04",
+      "severity": "NIEDRIG",
+      "description": "Kein KWIC-Highlighting — Suchtreffer im Dokumentkontext nicht hervorgehoben",
+      "fix": "Suchtrefferpositionen aus search/chunks-Response mit Chunk-Anzeige verknüpfen",
+      "priority": "P3"
+    }
+  ],
+
+  "statistics": {
+    "vorschau_typen_vollstaendig": 1,
+    "vorschau_typen_teilweise": 2,
+    "vorschau_typen_nicht_implementiert": 1,
+    "anzeige_bereiche_vollstaendig": 2,
+    "anzeige_bereiche_nicht_implementiert": 3,
+    "lazy_loading": "NICHT_IMPLEMENTIERT",
+    "overall_verdict": "TEILWEISE — für einfache TXT-Dokumente ausreichend, für PDF/DOCX/große Dokumente unzureichend"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "report_id": "production_gate",
+  "generated": "2026-06-15",
+  "evaluation_method": "static_code_analysis",
+  "inputs": {
+    "production_readiness_assessment": "reports/current/production_readiness_assessment.json",
+    "observability_report": "reports/current/observability_report.json",
+    "deployment_blueprint": "docs/vps-deployment-blueprint.md",
+    "runbooks": "docs/runbooks/ (14 Dateien)",
+    "release_manifest": "reports/current/release_manifest.json"
+  },
+  "conditions": [
+    {
+      "id": "PGC-01",
+      "name": "Production Readiness PASS",
+      "status": "BLOCKED",
+      "detail": "production_readiness_assessment.json verdict=BLOCKED. BLOCKED: PRA-04 (Backup/Restore nie ausgefuehrt), PRA-08 (Performance kein Live-Messwert), PRA-10 (report_integrity_v2 BLOCKED). PARTIAL_PASS: PRA-03 (Datenpruefung), PRA-06 (Logging), PRA-07 (Error Handling), PRA-09 (Frontend), PRA-10 (API). PASS: PRA-01 (Auth), PRA-02 (Workspace), PRA-05 (Alembic).",
+      "required": "PASS",
+      "actual": "BLOCKED"
+    },
+    {
+      "id": "PGC-02",
+      "name": "Monitoring vorhanden",
+      "status": "PARTIAL_PASS",
+      "detail": "observability_report.json verdict=PARTIAL_PASS. 9/14 Checks PASS. 5 fehlende Komponenten: RequestLogMiddleware, auth_failure Counter, analysis_metrics.py, ErrorBoundary (FE), RouteErrorPage (FE). Strukturiertes Logging, Credential-Redaction, Drift-Metriken, Import-Metriken aktiv.",
+      "required": "PASS",
+      "actual": "PARTIAL_PASS"
+    },
+    {
+      "id": "PGC-03",
+      "name": "Runbooks vorhanden (8 Szenarien)",
+      "status": "PASS",
+      "detail": "14 Runbook-Dateien in docs/runbooks/. Alle 8 geforderten Szenarien abgedeckt: DB nicht erreichbar, Frontend, Backend, Migration, Login, Import, Analyse, Drift. Plus 6 vorhandene Governance-Runbooks.",
+      "required": "PASS",
+      "actual": "PASS"
+    },
+    {
+      "id": "PGC-04",
+      "name": "Deployment Blueprint vollstaendig",
+      "status": "PASS",
+      "detail": "docs/vps-deployment-blueprint.md vorhanden. Abdeckung: PostgreSQL 18, Backend (systemd), Frontend (nginx static), Reverse Proxy, SSL (Let's Encrypt), Backup (pg_dump + Cron), Logging (journald). ENV-Pruefung, Firewall, Health Checks, Restart-Strategie, Abnahmekriterien dokumentiert.",
+      "required": "PASS",
+      "actual": "PASS"
+    },
+    {
+      "id": "PGC-05",
+      "name": "Release Packaging vollstaendig",
+      "status": "PARTIAL_PASS",
+      "detail": "release_manifest.json vorhanden. Git-Commit, Version, Build-Datum, Migrationsstatus, bekannte Einschraenkungen enthalten. LUECKE: seed_package PARTIAL (documents.json, load_seed_demo.py fehlen). LUECKE: frontend_dist nicht gebaut (npm run build ausstehend).",
+      "required": "PASS",
+      "actual": "PARTIAL"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "pass": 2,
+    "partial_pass": 2,
+    "blocked": 1
+  },
+  "verdict": "BLOCKED",
+  "verdict_reason": "PGC-01 BLOCKED: Production Readiness BLOCKED (Backup/Restore + Performance ohne Live-Messung, report_integrity_v2 blockiert durch TEST_DATABASE_URL). PGC-02 PARTIAL_PASS: 5 Monitoring-Komponenten fehlen. PGC-05 PARTIAL_PASS: Seed-Paket und Frontend-Build unvollstaendig. Gate-Kaskade: Production Gate PASS erfordert RC Gate = RELEASE_CANDIDATE als Vorbedingung.",
+  "blockers": [
+    {
+      "id": "PGB-01",
+      "source": "PGC-01",
+      "text": "TEST_DATABASE_URL setzen -> report_integrity_v2 re-runnen -> RC Gate re-run -> RELEASE_CANDIDATE"
+    },
+    {
+      "id": "PGB-02",
+      "source": "PGC-01",
+      "text": "Backup/Restore Live-Lauf (run_backup.ps1 + run_restore_test.ps1) nach RELEASE_CANDIDATE"
+    },
+    {
+      "id": "PGB-03",
+      "source": "PGC-01",
+      "text": "Performance Smoke Live-Lauf nach RELEASE_CANDIDATE"
+    },
+    {
+      "id": "PGB-04",
+      "source": "PGC-02",
+      "text": "RequestLogMiddleware + auth_failure Counter + analysis_metrics.py implementieren"
+    },
+    {
+      "id": "PGB-05",
+      "source": "PGC-02",
+      "text": "Frontend: ErrorBoundary + RouteErrorPage + api_failure Logger"
+    },
+    {
+      "id": "PGB-06",
+      "source": "PGC-05",
+      "text": "seed_data/documents.json + scripts/load_seed_demo.py erstellen; npm run build ausfuehren"
+    }
+  ],
+  "pass_conditions_summary": {
+    "PGC-01_production_readiness": "BLOCKED",
+    "PGC-02_monitoring": "PARTIAL_PASS",
+    "PGC-03_runbooks": "PASS",
+    "PGC-04_deployment_blueprint": "PASS",
+    "PGC-05_release_packaging": "PARTIAL_PASS"
+  },
+  "unblocking_path": [
+    "1. RC Gate = RELEASE_CANDIDATE (PGB-01: TEST_DATABASE_URL + NAV + Router-Guard + Gate re-run)",
+    "2. Backup/Restore Live-Lauf (PGB-02)",
+    "3. Performance Smoke Live-Lauf (PGB-03)",
+    "4. Monitoring-Luecken schliessen (PGB-04, PGB-05)",
+    "5. Seed-Paket vervollstaendigen (PGB-06)",
+    "6. Production Gate re-run -> erwartetes Ergebnis: PASS"
+  ],
+  "m5c_implementation_lock": "LOCKED",
+  "rc_gate_dependency": "Production Gate PASS setzt RC Gate = RELEASE_CANDIDATE voraus"
+}

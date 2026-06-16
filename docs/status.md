@@ -43,3 +43,34 @@ Es gibt keine globale 100%- oder Vollstaendigkeits-Aussage in dieser Datei. Fort
 ## Documentation Truth Lint
 
 Aktueller Nachweis: `reports/current/documentation_truth_lint.json`.
+
+## Release Candidate Decision (Stand 2026-06-15)
+
+Entscheidung: **BLOCKED** — Quelle: `reports/current/release_candidate_decision.json`
+
+RC-Kriterien:
+
+| Kriterium | Erforderlich | Status |
+|---|---|---|
+| `local_final_gate` PASS | Ja | NICHT ERFÜLLT — BLOCKED (4 required gates) |
+| Keine `BLOCKING_CORE` Limitations | Ja | Erfüllt — 0 BLOCKING_CORE |
+| `documentation_truth_lint` PASS | Ja | Erfüllt — 19/19 |
+| `report_integrity_v2` PASS | Ja | NICHT ERFÜLLT — BLOCKED (20 Blocker) |
+| `external_env_gate` NOT_RUN erlaubt | Nein | Erfüllt — NOT_RUN |
+
+Root Cause: `TEST_DATABASE_URL` nicht gesetzt → m5a DB-Gates collected=0 → report_integrity_v2 BLOCKED → cascade.
+
+## Local Final Gate Validator v2 (Stand 2026-06-15)
+
+Validator: `scripts/local_final_gate_validator_v2.py`
+Dependency Graph: `local_final_gate_dependency_graph.json`
+Output: `reports/current/final_gate_report.json` — verdict=**BLOCKED**
+
+Externe Tests: `reports/current/external_env_gate.json` — status=NOT_RUN (72 Tests). Blockiert local_final_gate nicht.
+
+## Drift v2 (Stand 2026-06-15)
+
+Route `/drift` → `DriftPage` → `drift_v2/DriftDashboard` — aktiv.
+Nachweis: `reports/current/drift_v2_ui_truth_report.json` PASS (29/29), `reports/current/drift_v2_import_audit.json` PASS (0 alte Imports).
+Formale Freigabe: ausstehend (m5b_production_readiness_gate BLOCKED durch gate cascade).
+Cleanup/Repair: NO_GO — PROHIBIT-02, PROHIBIT-06 aktiv.
