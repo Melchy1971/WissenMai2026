@@ -1,0 +1,173 @@
+{
+  "report_schema_version": 1,
+  "report_name": "analysis_sprint_gate",
+  "report_type": "sprint_gate",
+  "generated_at": "2026-06-16T00:00:00.000000+00:00",
+  "sprint": "PRI-2",
+  "sprint_name": "Analysis Feature",
+
+  "tasks": [
+    {
+      "task_id": "#74",
+      "name": "Analysis Data Model — Migration 0023, Model, Schemas, Repository, Seed",
+      "status": "completed",
+      "deliverables": [
+        "backend/app/models/analysis.py (AnalysisJob, AnalysisResult, AnalysisSuggestion)",
+        "backend/alembic/versions/0023_analysis_tables.py",
+        "backend/app/schemas/analysis.py",
+        "backend/app/repositories/analysis.py",
+        "backend/tests/fixtures/analysis_seed.py"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "task_id": "#75",
+      "name": "AnalysisService produktiv implementieren — alle 10 Funktionen + Tests",
+      "status": "completed",
+      "deliverables": [
+        "backend/app/services/analysis/service.py",
+        "backend/app/services/analysis/job_service.py",
+        "backend/app/services/analysis/result_service.py",
+        "backend/tests/test_analysis_service.py (26 Tests)"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "task_id": "#76",
+      "name": "KI-Provider-Interface — Ollama/OpenAI/Gemini + Tests",
+      "status": "completed",
+      "deliverables": [
+        "backend/app/services/analysis/providers/",
+        "backend/tests/test_analysis_providers.py"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "task_id": "#77",
+      "name": "REST API für Analyse-Jobs — 10 Endpoints, Contract Tests",
+      "status": "completed",
+      "deliverables": [
+        "backend/app/api/v1/analysis.py (10 Endpoints)",
+        "backend/tests/test_analysis_api_contract.py"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "task_id": "#78",
+      "name": "AnalysisPage implementieren — Header, Jobliste, Jobdetails, Ergebnisbereich",
+      "status": "completed",
+      "deliverables": [
+        "frontend/src/pages/AnalysisPage.jsx",
+        "frontend/src/features/analysis/AnalysisJobList.jsx",
+        "frontend/src/features/analysis/AnalysisJobDetail.jsx",
+        "frontend/src/features/analysis/AnalysisResultPanel.jsx",
+        "frontend/src/features/analysis/useAnalysis.js",
+        "frontend/src/api/analysis.js"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "task_id": "#79",
+      "name": "NewAnalysisJobDialog — 5-Step-Wizard mit Validierung",
+      "status": "completed",
+      "deliverables": [
+        "frontend/src/features/analysis/NewAnalysisJobDialog.jsx"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "task_id": "#80",
+      "name": "Approval-Sicherheitsregeln — 8 Regeln, Confirm-Dialog, Audit Log, Import-Guards",
+      "status": "completed",
+      "deliverables": [
+        "backend/app/services/analysis/approval_policy.py (8 Regeln, ApprovalContext)",
+        "frontend/src/features/analysis/AnalysisResultPanel.jsx (btn-import Guard)",
+        "Alle PROHIBIT-02/06/08 enforced"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "task_id": "#81",
+      "name": "Kontrollierter Import genehmigter Analyse-Ergebnisse — Topic/Document-Import + Tests",
+      "status": "completed",
+      "deliverables": [
+        "backend/app/services/analysis/import_service.py (AnalysisResultImportService, ~315 Zeilen)",
+        "backend/app/schemas/analysis.py (ImportAnalysisResultResponse)",
+        "backend/app/api/v1/analysis.py (POST /results/{result_id}/import)",
+        "backend/tests/test_analysis_import_service.py (26 Tests)",
+        "frontend/src/api/analysis.js (importAnalysisResult)",
+        "frontend/src/features/analysis/useAnalysis.js (handleImport)",
+        "frontend/src/features/analysis/AnalysisResultPanel.jsx (btn-import, Guard)",
+        "frontend/src/features/analysis/AnalysisJobDetail.jsx (onImport prop)",
+        "frontend/src/pages/AnalysisPage.jsx (onImport={analysis.handleImport})"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "task_id": "#82",
+      "name": "Gold-Path-Tests Analysebereich — 11 Schritte, 4 Test-Layer, 3 Reports",
+      "status": "completed",
+      "deliverables": [
+        "backend/tests/integration/test_analysis_gold_path.py (Layer 1 + 4, 15 Tests)",
+        "backend/tests/test_analysis_api_gold_path.py (Layer 2 + 3, 18 Tests)",
+        "reports/current/analysis_gold_path.json",
+        "reports/current/analysis_sprint_gate.json",
+        "reports/current/product_gold_path.json (GP-04/05/06 auf PASS aktualisiert)"
+      ],
+      "verdict": "PASS"
+    }
+  ],
+
+  "test_coverage": {
+    "unit_fast_tests_added_this_sprint": 95,
+    "test_files": [
+      "backend/tests/test_analysis_service.py",
+      "backend/tests/test_analysis_api_contract.py",
+      "backend/tests/test_analysis_import_service.py",
+      "backend/tests/integration/test_analysis_gold_path.py",
+      "backend/tests/test_analysis_api_gold_path.py"
+    ],
+    "layers_covered": {
+      "service_e2e": true,
+      "api_contract": true,
+      "security_gate": true,
+      "kb_verification": true
+    }
+  },
+
+  "security_gate": {
+    "PROHIBIT-02": "PASS — kein RepairButton in DriftDashboard oder anderen Komponenten",
+    "PROHIBIT-06": "PASS — kein CleanupButton in DriftDashboard oder anderen Komponenten",
+    "PROHIBIT-08": "PASS — kein automatischer Import ohne approved-Status (409 bei Verletzung) + Member-Sperre (403)",
+    "m5c_status": "NO_GO — m5c_start_gate nicht PASS, PO-Sign-off nicht erteilt",
+    "drift_readonly": "PASS — Drift Detection ist Read-Only; kein Schreiben/Reparieren/Bereinigen",
+    "no_credential_logging": "PASS — keine Credentials/Tokens/Dokumentinhalte geloggt"
+  },
+
+  "metriken": {
+    "tasks_total": 9,
+    "tasks_completed": 9,
+    "tasks_failed": 0,
+    "sprint_verdict": "PASS",
+    "gold_path_verdict": "PASS",
+    "product_gold_path_fortschritt": "7/8 Schritte (GP-07 Export Center offen)"
+  },
+
+  "offene_punkte": [
+    {
+      "id": "OP-01",
+      "thema": "Export Center (GP-07)",
+      "beschreibung": "POST /api/v1/export + ExportButton + JSON/Markdown-Download nicht implementiert. GP-07 bleibt FAIL.",
+      "sprint_zuordnung": "PRI-3 oder separater Feature-Sprint"
+    },
+    {
+      "id": "OP-02",
+      "thema": "KI-Provider Live-Integration",
+      "beschreibung": "Ollama/OpenAI/Gemini nur via Interface gemockt. Echter Provider-Aufruf in GP-A05 simuliert.",
+      "sprint_zuordnung": "PRI-3 (Provider-Konfiguration)"
+    }
+  ],
+
+  "overall_verdict": "PASS",
+  "overall_rationale": "9/9 PRI-2-Tasks completed. Gold-Path-Tests 11/11 PASS. Alle Security-Constraints eingehalten. Sprint-Gate grün."
+}

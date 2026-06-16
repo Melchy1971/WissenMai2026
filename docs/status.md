@@ -68,6 +68,27 @@ Output: `reports/current/final_gate_report.json` — verdict=**BLOCKED**
 
 Externe Tests: `reports/current/external_env_gate.json` — status=NOT_RUN (72 Tests). Blockiert local_final_gate nicht.
 
+## PRI-2 Abschluss — Analysebereich (Stand 2026-06-16)
+
+Sprint PRI-2 "Analysis Feature" abgeschlossen. 9/9 Tasks (#74–#82) completed. Sprint-Gate PASS.
+
+| Kennzahl | Wert |
+|---|---|
+| Tasks abgeschlossen | 9/9 |
+| Unit-Fast-Tests hinzugefügt | 95 |
+| Gold-Path GP-A01–GP-A11 | 11/11 PASS |
+| Product Gold Path | 7/8 PASS (GP-07 Export offen) |
+| Product Maturity Score | 69 (v2: 52, Delta +17) |
+| Schwellwert für 1.0-Release | 85 |
+
+Datenanalyse ist vollständig implementiert: Data Model (Migration 0023), AnalysisService, KI-Provider-Interface, 10 REST-Endpoints, AnalysisPage.jsx, NewAnalysisJobDialog (5-Step-Wizard), Approval-Policy (8 Regeln), KB-Import-Service (Tags, Topics, DocumentTags, idempotent).
+
+Security-Constraints eingehalten: PROHIBIT-02 (kein RepairButton), PROHIBIT-06 (kein CleanupButton), PROHIBIT-08 (Import nur nach approved + confirm=True + admin-Rolle).
+
+Quellen: `reports/current/analysis_sprint_gate.json`, `reports/current/analysis_gold_path.json`, `reports/current/product_gold_path.json`, `reports/current/product_maturity_v3.json`.
+
+Nächster Sprint PRI-3: Export Center (GP-07), Release-Gate entsperren (TEST_DATABASE_URL), Suche KWIC.
+
 ## Drift v2 (Stand 2026-06-15)
 
 Route `/drift` → `DriftPage` → `drift_v2/DriftDashboard` — aktiv.

@@ -10,15 +10,27 @@ from sqlalchemy.types import JSON
 from .documents import Base
 
 
+# Preferred status set (v2). Legacy values "pending" / "approved" remain valid
+# for backward compatibility with existing rows and stub engine.
 ANALYSIS_JOB_STATUS_VALUES = (
-    "pending",
+    "queued",
     "running",
     "completed",
     "failed",
+    "cancelled",
+    # legacy
+    "pending",
     "approved",
 )
 
-ANALYSIS_SUGGESTION_STATUS_VALUES = ANALYSIS_JOB_STATUS_VALUES
+ANALYSIS_JOB_SOURCE_TYPE_VALUES = ("DOCUMENTS", "TOPIC", "SEARCH_RESULT")
+
+ANALYSIS_RESULT_STATUS_VALUES = ("draft", "review", "approved", "rejected")
+
+ANALYSIS_SUGGESTION_STATUS_VALUES = (
+    "pending", "running", "completed", "failed", "approved",
+)
+
 JSON_TYPE = JSON().with_variant(JSONB(), "postgresql")
 
 
@@ -68,29 +80,39 @@ class AnalysisJob(Base):
     __tablename__ = "analysis_jobs"
     __table_args__ = (
         CheckConstraint(
-            "status IN ('pending','running','completed','failed','approved')",
+            "status IN ('queued','running','completed','failed','cancelled','pending','approved')",
             name="ck_analysis_jobs_status",
+        ),
+        CheckConstraint(
+            "source_type IS NULL OR source_type IN ('DOCUMENTS','TOPIC','SEARCH_RESULT')",
+            name="ck_analysis_jobs_source_type",
         ),
         CheckConstraint("length(trim(analysis_type)) > 0", name="ck_analysis_jobs_analysis_type_not_blank"),
         CheckConstraint("length(trim(prompt)) > 0", name="ck_analysis_jobs_prompt_not_blank"),
         Index("ix_analysis_jobs_workspace_id", "workspace_id"),
         Index("ix_analysis_jobs_status", "status"),
         Index("ix_analysis_jobs_created_at", "created_at"),
+        Index("ix_analysis_jobs_source_type", "source_type"),
     )
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    workspace_id: Mapped[str] = mapped_column(
+    workspace_id: Mapped[str | None] = mapped_column(
         String,
         ForeignKey("workspaces.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
     )
-    status: Mapped[str] = mapped_column(String(16), nullable=False, default="pending")
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="queued")
     analysis_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    source_ids: Mapped[list | None] = mapped_column(JSON_TYPE, nullable=True)
     prompt: Mapped[str] = mapped_column(Text, nullable=False)
-    created_by: Mapped[str] = mapped_column(
+    provider: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    model: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    result_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_by: Mapped[str | None] = mapped_column(
         String,
         ForeignKey("users.id", ondelete="RESTRICT"),
-        nullable=False,
+        nullable=True,
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -102,17 +124,17 @@ class AnalysisJob(Base):
         cascade="all, delete-orphan",
         order_by=AnalysisJobSourceDocument.position,
     )
-    result: Mapped[AnalysisResult | None] = relationship(
+    result: Mapped["AnalysisResult | None"] = relationship(
         back_populates="job",
         cascade="all, delete-orphan",
         uselist=False,
     )
-    comparison: Mapped[AnalysisComparison | None] = relationship(
+    comparison: Mapped["AnalysisComparison | None"] = relationship(
         back_populates="job",
         cascade="all, delete-orphan",
         uselist=False,
     )
-    suggestions: Mapped[list[AnalysisSuggestion]] = relationship(
+    suggestions: Mapped[list["AnalysisSuggestion"]] = relationship(
         back_populates="job",
         cascade="all, delete-orphan",
         order_by="AnalysisSuggestion.id",
@@ -134,7 +156,17 @@ class AnalysisResult(Base):
     __tablename__ = "analysis_results"
     __table_args__ = (
         CheckConstraint("confidence >= 0 AND confidence <= 1", name="ck_analysis_results_confidence_range"),
+        CheckConstraint(
+            "status IN ('draft','review','approved','rejected')",
+            name="ck_analysis_results_status",
+        ),
+        CheckConstraint(
+            "(status = 'approved' AND approved_by IS NOT NULL AND approved_at IS NOT NULL) "
+            "OR (status != 'approved' AND approved_by IS NULL AND approved_at IS NULL)",
+            name="ck_analysis_results_approval_metadata",
+        ),
         Index("ix_analysis_results_created_at", "created_at"),
+        Index("ix_analysis_results_status", "status"),
     )
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
@@ -148,8 +180,19 @@ class AnalysisResult(Base):
     key_points: Mapped[list] = mapped_column(JSON_TYPE, nullable=False, default=list)
     suggested_tags: Mapped[list] = mapped_column(JSON_TYPE, nullable=False, default=list)
     suggested_topics: Mapped[list] = mapped_column(JSON_TYPE, nullable=False, default=list)
-    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    title: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    content_markdown: Mapped[str | None] = mapped_column(Text, nullable=True)
+    sources: Mapped[list | None] = mapped_column(JSON_TYPE, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="draft")
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    approved_by: Mapped[str | None] = mapped_column(
+        String,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     job: Mapped[AnalysisJob] = relationship(back_populates="result")
 

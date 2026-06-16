@@ -1,46 +1,65 @@
-# API Contract — Datenanalyse (Task #11)
+# API Contract — Datenanalyse
 
-**Version:** 1.0.0  
-**Basis-URL:** `/api/v1`  
-**Auth:** Bearer-Token (JWT), Header `Authorization: Bearer <token>`  
+**Version:** 2.0.0 (aktualisiert 2026-06-16 nach PRI-2, Tasks #74–#82)
+**Basis-URL:** `/api/v1`
+**Auth:** Bearer-Token (JWT), Header `Authorization: Bearer <token>`
 **Scope:** Alle Endpunkte sind workspace-scoped. Die `workspace_id` wird aus dem Auth-Kontext extrahiert — kein Query-Parameter.
 
 ---
 
 ## Statusmodell
 
+### AnalysisJob
+
 ```
-pending → running → completed → approved
-                 ↘           ↘ rejected
-                   failed
+queued → pending → running → completed
+                           ↘ failed
+                           ↘ cancelled
 ```
 
-| Status    | Bedeutung |
-|-----------|-----------|
-| `pending` | Job angelegt, Verarbeitung nicht gestartet |
-| `running` | Vergleich oder Zusammenfassung aktiv |
-| `completed` | Verarbeitung abgeschlossen, Freigabe ausstehend |
-| `failed`  | Verarbeitung fehlgeschlagen (`error_code` gesetzt) |
-| `approved` | Ergebnis freigegeben, Vorschläge können übernommen werden |
-| `rejected` | Ergebnis abgelehnt (`rejection_reason` gesetzt) |
+| Status      | Bedeutung |
+|-------------|-----------|
+| `queued`    | Job angelegt, in Warteschlange |
+| `pending`   | Verarbeitung vorbereitet |
+| `running`   | KI-Provider aktiv |
+| `completed` | Verarbeitung abgeschlossen, AnalysisResult angelegt |
+| `failed`    | Fehler (`error_code`, `error_message` gesetzt) |
+| `cancelled` | Manuell abgebrochen |
 
-**Invariante:** Kein Vorschlag aus `AnalysisResult.suggestions` wird ohne explizite Freigabe (`status = approved`) übernommen. Der Endpunkt `/approve` erzwingt diese Regel serverseitig.
+### AnalysisResult
+
+```
+draft → review → approved
+              ↘ rejected
+```
+
+| Status     | Bedeutung |
+|------------|-----------|
+| `draft`    | Angelegt nach Job-Abschluss, noch nicht eingereicht |
+| `review`   | Zur Prüfung eingereicht |
+| `approved` | Vom Workspace-Admin freigegeben (`approved_by`, `approved_at` gesetzt) |
+| `rejected` | Abgelehnt (`rejection_reason` gesetzt) |
+
+**Invariante:** KB-Import (`/import`) ist nur zulässig bei `result.status = 'approved'`. Jeder andere Status → HTTP 409. (PROHIBIT-08)
 
 ---
 
 ## Rollenmatrix
 
-| Aktion | `viewer` | `editor` | `admin` |
-|--------|----------|----------|---------|
-| Job-Liste lesen | ✓ | ✓ | ✓ |
-| Job-Detail lesen | ✓ | ✓ | ✓ |
-| Job anlegen | — | ✓ | ✓ |
-| Vergleich starten | — | ✓ | ✓ |
-| Zusammenfassung starten | — | ✓ | ✓ |
-| Ergebnis lesen | ✓ | ✓ | ✓ |
-| Freigabe erteilen / ablehnen | — | — | ✓ |
+| Aktion | `member` | `admin` |
+|--------|----------|---------|
+| Job-Liste lesen | ✓ | ✓ |
+| Job-Detail lesen | ✓ | ✓ |
+| Job anlegen | ✓ | ✓ |
+| Job abbrechen | ✓ | ✓ |
+| Job wiederholen | ✓ | ✓ |
+| Ergebnis lesen | ✓ | ✓ |
+| Zur Prüfung einreichen | ✓ | ✓ |
+| Freigeben (`/approve`) | — | ✓ |
+| Ablehnen (`/reject`) | — | ✓ |
+| In KB importieren (`/import`) | — | ✓ |
 
-Rollen werden über `require_workspace_member(role=...)` in der Auth-Dependency geprüft.
+Rollen werden über `require_workspace_member` / `require_workspace_admin` in der FastAPI-Dependency geprüft. Member auf Admin-Endpunkten → HTTP 403.
 
 ---
 
@@ -282,9 +301,170 @@ Voraussetzung: Status `completed`.
 
 ---
 
+### GET /api/v1/analysis/results/{result_id}
+
+Gibt ein AnalysisResult direkt über seine eigene ID zurück.
+
+**Mindestrolle:** `member`
+
+**Response 200** — `AnalysisResultDetail`
+
+```json
+{
+  "id": "result-uuid",
+  "job_id": "job-uuid",
+  "status": "draft",
+  "summary": "...",
+  "key_points": ["..."],
+  "suggested_tags": ["tag-a", "tag-b"],
+  "suggested_topics": ["Telekom-Systeme"],
+  "confidence": 0.87,
+  "approved_by": null,
+  "approved_at": null,
+  "rejection_reason": null,
+  "created_at": "2026-06-16T10:00:00Z"
+}
+```
+
+---
+
+### POST /api/v1/analysis/results/{result_id}/review
+
+Reicht ein Ergebnis zur Prüfung ein. Statusübergang: `draft → review`.
+
+**Mindestrolle:** `member`
+
+**Request Body:** leer oder `{}`
+
+**Response 200** — `AnalysisResultDetail` mit `status: "review"`
+
+**Fehler**
+
+| Code | HTTP | Bedeutung |
+|------|------|-----------|
+| `UNAUTHORIZED` | 401 | — |
+| `FORBIDDEN` | 403 | Nicht im Workspace |
+| `RESULT_NOT_FOUND` | 404 | — |
+| `INVALID_STATUS_TRANSITION` | 409 | Status ≠ `draft` |
+
+---
+
+### POST /api/v1/analysis/results/{result_id}/approve
+
+Genehmigt ein Ergebnis. Statusübergang: `review → approved`.
+
+**Mindestrolle:** `admin`
+
+**Sicherheit:** `confirm: true` ist Pflichtfeld (PROHIBIT-08). 8-Regel-`AnalysisApprovalPolicy` wird serverseitig ausgeführt.
+
+**Request Body**
+
+```json
+{
+  "confirm": true,
+  "reviewer_note": null
+}
+```
+
+| Feld | Pflicht | Beschreibung |
+|------|---------|--------------|
+| `confirm` | Ja | Muss `true` sein — sonst 400 |
+| `reviewer_note` | Nein | Optionale Notiz |
+
+**Response 200** — `AnalysisResultDetail` mit `status: "approved"`, `approved_by`, `approved_at` gesetzt
+
+**Fehler**
+
+| Code | HTTP | Bedeutung |
+|------|------|-----------|
+| `UNAUTHORIZED` | 401 | — |
+| `FORBIDDEN` | 403 | Rolle < `admin` oder Member |
+| `RESULT_NOT_FOUND` | 404 | — |
+| `CONFIRM_REQUIRED` | 400 | `confirm` fehlt oder ist `false` |
+| `INVALID_STATUS_TRANSITION` | 409 | Status ≠ `review` |
+
+---
+
+### POST /api/v1/analysis/results/{result_id}/reject
+
+Lehnt ein Ergebnis ab. Statusübergang: `review → rejected`.
+
+**Mindestrolle:** `admin`
+
+**Request Body**
+
+```json
+{
+  "reason": "Inhalt unvollständig — bitte erneut einreichen."
+}
+```
+
+| Feld | Pflicht | Beschreibung |
+|------|---------|--------------|
+| `reason` | Ja | Pflichtfeld, min. 1 Zeichen |
+
+**Response 200** — `AnalysisResultDetail` mit `status: "rejected"`
+
+**Fehler**
+
+| Code | HTTP | Bedeutung |
+|------|------|-----------|
+| `UNAUTHORIZED` | 401 | — |
+| `FORBIDDEN` | 403 | Rolle < `admin` |
+| `RESULT_NOT_FOUND` | 404 | — |
+| `INVALID_STATUS_TRANSITION` | 409 | Status ≠ `review` |
+
+---
+
+### POST /api/v1/analysis/results/{result_id}/import
+
+Importiert ein genehmigtes Ergebnis in die Wissensbasis.
+
+**Mindestrolle:** `admin`
+
+**Status-Guard:** `result.status` muss `approved` sein. Jeder andere Status → HTTP 409. (PROHIBIT-08)
+
+**Idempotent:** Wiederholter Import erzeugt keine Duplikate (created=0, found=N).
+
+**KB-Effekte:**
+- `tags` — find-or-create auf Namen-Basis
+- `document_tags` — upsert (source='ki') pro Quelldokument
+- `topics` — slug-basiertes find-or-create; Status immer `'draft'` (kein Auto-Approve, PROHIBIT-08)
+- `topic_documents` — Verknüpfung Topic ↔ Quelldokument
+- `topic_tags` — Verknüpfung Topic ↔ Tag
+
+**Request Body:** leer oder `{}`
+
+**Response 200**
+
+```json
+{
+  "result_id": "result-uuid",
+  "tags_created": 2,
+  "tags_found": 0,
+  "document_tags_applied": 4,
+  "topics_created": 1,
+  "topics_found": 0,
+  "topic_docs_attached": 2,
+  "topic_tags_applied": 2,
+  "source_document_count": 2
+}
+```
+
+**Fehler**
+
+| Code | HTTP | Bedeutung |
+|------|------|-----------|
+| `UNAUTHORIZED` | 401 | — |
+| `FORBIDDEN` | 403 | Rolle < `admin` |
+| `RESULT_NOT_FOUND` | 404 | — |
+| `RESULT_NOT_APPROVED` | 409 | `status ≠ approved` — Import verweigert |
+
+---
+
 ### GET /api/v1/analysis/jobs/{job_id}/result
 
-Gibt das vollständige Analyseergebnis zurück.  
+Gibt das vollständige Analyseergebnis zurück.
 Voraussetzung: Status `completed` oder `approved`.
 
 **Response 200** — `AnalysisResult`
@@ -388,4 +568,4 @@ Empfohlenes Poll-Intervall: 1s (erste 10s), danach 5s.
 
 ---
 
-*Letzte Aktualisierung: 2026-06-12*
+*Letzte Aktualisierung: 2026-06-16 — v2.0.0 nach PRI-2 (Tasks #74–#82): Statusmodell für AnalysisResult ergänzt, Rollenmatrix aktualisiert (member/admin), Endpunkte /review, /approve, /reject, /import hinzugefügt.*

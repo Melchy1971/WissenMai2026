@@ -304,3 +304,33 @@ class TopicMergeProviderError(ApiError):
     status_code = 502
     code = "TOPIC_MERGE_PROVIDER_ERROR"
     message = "Topic merge provider returned an error"
+
+
+class AnalysisResultNotFoundApiError(ApiError):
+    status_code = 404
+    code = "ANALYSIS_RESULT_NOT_FOUND"
+    message = "Analysis result not found"
+
+
+class AnalysisRetryLimitExceededApiError(ApiError):
+    status_code = 409
+    code = "ANALYSIS_RETRY_LIMIT_EXCEEDED"
+    message = "Maximum retry limit for this analysis job has been reached"
+
+
+class AnalysisSourceRequiredApiError(ApiError):
+    status_code = 422
+    code = "ANALYSIS_SOURCE_REQUIRED"
+    message = "At least one source is required to create an analysis job"
+
+
+class AnalysisConfirmRequiredApiError(ApiError):
+    status_code = 422
+    code = "ANALYSIS_CONFIRM_REQUIRED"
+    message = "Explicit confirm=true is required to approve an analysis result"
+
+
+class AnalysisResultInvalidStateApiError(ApiError):
+    status_code = 409
+    code = "ANALYSIS_RESULT_INVALID_STATE"
+    message = "Analysis result is not in the required state for this operation"

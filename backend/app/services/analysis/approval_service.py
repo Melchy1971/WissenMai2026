@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Protocol
@@ -14,8 +15,14 @@ from app.core.errors import (
 )
 from app.models.analysis import AnalysisJob
 
+_log = logging.getLogger(__name__)
 
 ANALYSIS_JOB_APPROVED_AUDIT_EVENT = "ANALYSIS_JOB_APPROVED"
+ANALYSIS_RESULT_MARKED_FOR_REVIEW_AUDIT_EVENT = "ANALYSIS_RESULT_MARKED_FOR_REVIEW"
+ANALYSIS_RESULT_APPROVED_AUDIT_EVENT = "ANALYSIS_RESULT_APPROVED"
+ANALYSIS_RESULT_REJECTED_AUDIT_EVENT = "ANALYSIS_RESULT_REJECTED"
+ANALYSIS_JOB_CANCELLED_AUDIT_EVENT = "ANALYSIS_JOB_CANCELLED"
+ANALYSIS_JOB_RETRIED_AUDIT_EVENT = "ANALYSIS_JOB_RETRIED"
 
 
 @dataclass(frozen=True)
@@ -37,16 +44,55 @@ class AnalysisApprovalAuditEvent:
         }
 
 
+@dataclass(frozen=True)
+class AnalysisResultAuditEvent:
+    action: str
+    actor: str
+    workspace_id: str
+    job_id: str
+    result_id: str
+    occurred_at: datetime
+    extra: dict[str, object]
+
+    @property
+    def details(self) -> dict[str, object]:
+        return {
+            "workspace_id": self.workspace_id,
+            "job_id": self.job_id,
+            "result_id": self.result_id,
+            "occurred_at": self.occurred_at.isoformat(),
+            **self.extra,
+        }
+
+
 class AnalysisApprovalAuditRecorder(Protocol):
     def record(self, event: AnalysisApprovalAuditEvent) -> None:
+        ...
+
+    def record_result_event(self, event: AnalysisResultAuditEvent) -> None:
         ...
 
 
 class InMemoryAnalysisApprovalAuditRecorder:
     def record(self, event: AnalysisApprovalAuditEvent) -> None:
-        from app.api.v1.approvals import _log_audit
+        _log.info(
+            "audit event",
+            extra={
+                "audit_action": event.action,
+                "audit_actor": event.actor,
+                "audit_details": event.details,
+            },
+        )
 
-        _log_audit(event.action, event.actor, event.job_id, event.details)
+    def record_result_event(self, event: AnalysisResultAuditEvent) -> None:
+        _log.info(
+            "audit event",
+            extra={
+                "audit_action": event.action,
+                "audit_actor": event.actor,
+                "audit_details": event.details,
+            },
+        )
 
 
 class AnalysisApprovalService:

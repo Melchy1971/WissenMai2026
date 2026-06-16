@@ -23,6 +23,7 @@ import { CollaborationPage } from '../pages/CollaborationPage.jsx';
 import { GovernancePage } from '../pages/GovernancePage.jsx';
 import { SimpleListPage } from '../pages/SimpleListPage.jsx';
 import { AdminDiagnosticsPage } from '../pages/AdminDiagnosticsPage.jsx';
+import { AnalysisPage } from '../pages/AnalysisPage.jsx';
 
 import { mapError } from '../view-models/mappers.js';
 
@@ -99,6 +100,7 @@ export function AppRoutes() {
         <Route path="/agents" element={<AgentsPage />} />
         <Route path="/collaboration" element={<CollaborationPage />} />
         <Route path="/governance" element={<GovernancePage />} />
+        <Route path="/analysis" element={<AnalysisPage />} />
         <Route path="/admin/diagnostics" element={<AdminDiagnosticsPage />} />
       </Route>
     </Routes>

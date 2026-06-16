@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Ruflo Analysis API
-  version: 2.0.0
+  version: 3.0.0
   description: Workspace-scoped analysis API. All endpoints require auth and workspace membership.
 servers:
   - url: /api/v1
@@ -189,6 +189,154 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /analysis/results/{result_id}:
+    get:
+      tags: [analysis]
+      summary: Get analysis result by result ID
+      operationId: getAnalysisResultById
+      parameters:
+        - $ref: '#/components/parameters/ResultId'
+      responses:
+        '200':
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResultDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /analysis/results/{result_id}/review:
+    post:
+      tags: [analysis]
+      summary: Mark result for review (draft → review)
+      operationId: markAnalysisResultForReview
+      description: Submits a draft result for admin review. Requires workspace membership.
+      parameters:
+        - $ref: '#/components/parameters/ResultId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+      responses:
+        '200':
+          description: Result in review status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResultDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /analysis/results/{result_id}/approve:
+    post:
+      tags: [analysis]
+      summary: Approve analysis result (review → approved)
+      operationId: approveAnalysisResult
+      description: |
+        Requires workspace_admin role. `confirm: true` is mandatory (PROHIBIT-08).
+        8-rule AnalysisApprovalPolicy is enforced server-side.
+        Sets `approved_by` and `approved_at`.
+      parameters:
+        - $ref: '#/components/parameters/ResultId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveAnalysisResultRequest'
+      responses:
+        '200':
+          description: Approved result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResultDetail'
+        '400':
+          description: confirm is false or missing
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /analysis/results/{result_id}/reject:
+    post:
+      tags: [analysis]
+      summary: Reject analysis result (review → rejected)
+      operationId: rejectAnalysisResult
+      description: Requires workspace_admin role. `reason` is mandatory.
+      parameters:
+        - $ref: '#/components/parameters/ResultId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectAnalysisResultRequest'
+      responses:
+        '200':
+          description: Rejected result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResultDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /analysis/results/{result_id}/import:
+    post:
+      tags: [analysis]
+      summary: Import approved analysis result into knowledge base
+      operationId: importAnalysisResult
+      description: |
+        Requires workspace_admin role and `result.status = 'approved'` (HTTP 409 otherwise).
+        Idempotent: repeated calls produce created=0, found=N — no duplicates.
+        KB effects: tags (find-or-create), document_tags (upsert, source='ki'),
+        topics (slug-based find-or-create, status='draft'), topic_documents, topic_tags.
+        PROHIBIT-08: topics are always created with status='draft', never auto-approved.
+      parameters:
+        - $ref: '#/components/parameters/ResultId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+      responses:
+        '200':
+          description: Import statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportAnalysisResultResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Result is not in approved status
 components:
   securitySchemes:
     bearerAuth:
@@ -198,6 +346,12 @@ components:
   parameters:
     JobId:
       name: job_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ResultId:
+      name: result_id
       in: path
       required: true
       schema:
@@ -221,17 +375,20 @@ components:
     Unauthorized:
       description: Missing or invalid authentication
     Forbidden:
-      description: Missing workspace permission
+      description: Missing workspace permission or insufficient role
     NotFound:
       description: Resource not found in workspace
     Conflict:
-      description: Invalid status transition
+      description: Invalid status transition or status guard violation
     ValidationError:
       description: Invalid request payload
   schemas:
     AnalysisJobStatus:
       type: string
-      enum: [pending, running, completed, failed, approved]
+      enum: [queued, pending, running, completed, failed, cancelled, approved, rejected]
+    AnalysisResultStatus:
+      type: string
+      enum: [draft, review, approved, rejected]
     AnalysisSuggestionStatus:
       $ref: '#/components/schemas/AnalysisJobStatus'
     ApprovalDecision:
@@ -451,3 +608,112 @@ components:
         decision:
           $ref: '#/components/schemas/ApprovalDecision'
           default: approved
+    AnalysisResultDetail:
+      type: object
+      required: [id, job_id, status, summary, suggested_tags, suggested_topics, key_points, confidence, created_at]
+      properties:
+        id:
+          type: string
+        job_id:
+          type: string
+        status:
+          $ref: '#/components/schemas/AnalysisResultStatus'
+        summary:
+          type: string
+        key_points:
+          type: array
+          items:
+            type: string
+        suggested_tags:
+          type: array
+          items:
+            type: string
+        suggested_topics:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        approved_by:
+          type: string
+          nullable: true
+        approved_at:
+          type: string
+          format: date-time
+          nullable: true
+        rejection_reason:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    ApproveAnalysisResultRequest:
+      type: object
+      required: [confirm]
+      additionalProperties: false
+      properties:
+        confirm:
+          type: boolean
+          description: Must be true. Rejects with 400 if false or missing. (PROHIBIT-08)
+        reviewer_note:
+          type: string
+          nullable: true
+    RejectAnalysisResultRequest:
+      type: object
+      required: [reason]
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          minLength: 1
+    ImportAnalysisResultResponse:
+      type: object
+      required:
+        - result_id
+        - tags_created
+        - tags_found
+        - document_tags_applied
+        - topics_created
+        - topics_found
+        - topic_docs_attached
+        - topic_tags_applied
+        - source_document_count
+      additionalProperties: false
+      properties:
+        result_id:
+          type: string
+          description: UUID des importierten AnalysisResult
+        tags_created:
+          type: integer
+          minimum: 0
+          description: Neu angelegte Tags
+        tags_found:
+          type: integer
+          minimum: 0
+          description: Bereits existierende Tags (unverändert)
+        document_tags_applied:
+          type: integer
+          minimum: 0
+          description: Eingetragene document_tags (source='ki')
+        topics_created:
+          type: integer
+          minimum: 0
+          description: Neu angelegte Topics (status='draft')
+        topics_found:
+          type: integer
+          minimum: 0
+          description: Bereits existierende Topics
+        topic_docs_attached:
+          type: integer
+          minimum: 0
+          description: Verknüpfte topic_documents
+        topic_tags_applied:
+          type: integer
+          minimum: 0
+          description: Verknüpfte topic_tags
+        source_document_count:
+          type: integer
+          minimum: 0
+          description: Anzahl Quelldokumente aus dem AnalysisJob

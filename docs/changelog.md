@@ -1,5 +1,52 @@
 ﻿# Changelog
 
+Stand: 2026-06-16
+
+## 2026-06-16 — PRI-2 Analysebereich vollständig implementiert (Tasks #74–#82)
+
+### Added
+
+- `backend/app/models/analysis.py` — ORM-Modelle `AnalysisJob`, `AnalysisResult`, `AnalysisSuggestion`
+- `backend/alembic/versions/0023_analysis_tables.py` — Migration für analysis_jobs, analysis_results, analysis_suggestions
+- `backend/app/schemas/analysis.py` — Pydantic-Schemas inkl. `ImportAnalysisResultResponse` (9 Felder)
+- `backend/app/repositories/analysis.py` — Repository Layer
+- `backend/app/services/analysis/service.py` — `AnalysisService` (10 Funktionen)
+- `backend/app/services/analysis/approval_policy.py` — `AnalysisApprovalPolicy` (8 Regeln, `ApprovalContext`)
+- `backend/app/services/analysis/import_service.py` — `AnalysisResultImportService` (~315 Zeilen): `_ensure_tags`, `_apply_document_tags`, `_ensure_topics`, `_attach_topic_documents`, `_attach_topic_tags`
+- `backend/app/services/analysis/providers/` — KI-Provider-Interface: Ollama, OpenAI, Gemini, `DeterministicAnalysisStubEngine`
+- `backend/app/api/v1/analysis.py` — 10 REST-Endpoints inkl. `POST /results/{result_id}/review`, `/approve`, `/reject`, `/import`
+- `frontend/src/pages/AnalysisPage.jsx`
+- `frontend/src/features/analysis/AnalysisJobList.jsx`, `AnalysisJobDetail.jsx`, `AnalysisResultPanel.jsx`, `NewAnalysisJobDialog.jsx` (5-Step-Wizard)
+- `frontend/src/features/analysis/useAnalysis.js`, `frontend/src/api/analysis.js`
+- `backend/tests/test_analysis_service.py` (26 Tests)
+- `backend/tests/test_analysis_api_contract.py`
+- `backend/tests/test_analysis_import_service.py` (26 Tests)
+- `backend/tests/integration/test_analysis_gold_path.py` (Layer 1+4, 15 Tests)
+- `backend/tests/test_analysis_api_gold_path.py` (Layer 2+3, 18 Tests)
+- `reports/current/analysis_gold_path.json` — GP-A01–GP-A11: 11/11 PASS
+- `reports/current/analysis_sprint_gate.json` — Sprint-Gate PASS, 9/9 Tasks
+- `reports/current/product_maturity_v3.json` — Score 69 (war 52), Delta +17
+
+### Changed
+
+- `reports/current/product_gold_path.json` — GP-04, GP-05, GP-06 auf PASS; GP-03-Befund als behoben markiert; overall_verdict CONDITIONAL_PASS
+- `reports/current/analysis_e2e_product_ready.json` — v2: 7/8 Schritte PASS, 1 CONDITIONAL_PASS, verdict CONDITIONAL_PASS
+- `docs/data_analysis_workflow.md` — vollständig auf implementierten Workflow aktualisiert
+- `docs/status.md` — PRI-2 Abschluss eingetragen
+- `docs/openapi-analysis.yaml` — Import-Endpoint + Schemas ergänzt
+- `docs/analysis-api-contract.md` — Import-Endpoint, Rollenmatrix, Statusmodell aktualisiert
+
+### Security
+
+- PROHIBIT-02 eingehalten: kein RepairButton
+- PROHIBIT-06 eingehalten: kein CleanupButton
+- PROHIBIT-08 eingehalten: Import nur nach `status='approved'` + `confirm=True` + `actor_role='admin'`; Member → 403; Topics landen in `status='draft'` (kein Auto-Approve)
+
+### Decision
+
+- Product Maturity Score 69 — unter Schwellwert 85. Verbleibende Blocker: Export Center (PRI-3), Release Gate (TEST_DATABASE_URL), Suche KWIC.
+- M5c: NO_GO — unverändert.
+
 Stand: 2026-05-19
 
 ## 2026-05-19 - Frontend Truth Full-Suite Scope finalisiert

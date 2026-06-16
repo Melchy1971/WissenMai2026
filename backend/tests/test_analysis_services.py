@@ -185,3 +185,223 @@ def test_approve_job_is_idempotent_and_never_approves_without_result(
     assert approved.status == "approved"
     assert approved_again.status == "approved"
     assert [item.approved_by for item in approved_again.suggestions] == [DEFAULT_USER_ID]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# v2 service tests (Task #75)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_create_job_requires_at_least_one_source(
+    db_session: Session,
+    document_fixture: dict[str, str],
+) -> None:
+    from app.core.errors import AnalysisSourceRequiredApiError
+    with pytest.raises(AnalysisSourceRequiredApiError):
+        AnalysisJobService(db_session).create_job(
+            workspace_id=DEFAULT_WORKSPACE_ID,
+            user_id=DEFAULT_USER_ID,
+            source_document_ids=[],
+            analysis_type="summary",
+            prompt="Summarize",
+        )
+
+
+def test_cancel_job_transitions_and_blocks_completed(
+    db_session: Session,
+    document_fixture: dict[str, str],
+) -> None:
+    from app.core.errors import AnalysisJobInvalidStateApiError
+    service = AnalysisJobService(db_session)
+    job = _create_service_job(db_session, source_document_ids=[DOCUMENT_ID])
+
+    cancelled = service.cancel_job(workspace_id=DEFAULT_WORKSPACE_ID, user_id=DEFAULT_USER_ID, job_id=job.id)
+    assert cancelled.status == "cancelled"
+    assert cancelled.finished_at is not None
+
+    # Cannot cancel an already-cancelled job.
+    with pytest.raises(AnalysisJobInvalidStateApiError):
+        service.cancel_job(workspace_id=DEFAULT_WORKSPACE_ID, user_id=DEFAULT_USER_ID, job_id=job.id)
+
+
+def test_retry_job_creates_new_queued_job_and_enforces_limit(
+    db_session: Session,
+    document_fixture: dict[str, str],
+) -> None:
+    from app.core.errors import AnalysisRetryLimitExceededApiError
+    service = AnalysisJobService(db_session)
+
+    original = _create_service_job(db_session, source_document_ids=[DOCUMENT_ID])
+    failed = service.fail_job(
+        workspace_id=DEFAULT_WORKSPACE_ID,
+        job_id=original.id,
+        error_code="TIMEOUT",
+        error_message="timed out",
+    )
+
+    retry1 = service.retry_job(workspace_id=DEFAULT_WORKSPACE_ID, user_id=DEFAULT_USER_ID, job_id=failed.id)
+    assert retry1.status == "queued"
+    assert retry1.id != original.id
+    assert retry1.error_code == f"RETRY:{original.id}"
+
+    # Fail retry1, then retry again.
+    service.fail_job(workspace_id=DEFAULT_WORKSPACE_ID, job_id=retry1.id, error_code="TIMEOUT", error_message="t")
+    retry2 = service.retry_job(workspace_id=DEFAULT_WORKSPACE_ID, user_id=DEFAULT_USER_ID, job_id=retry1.id)
+    assert retry2.status == "queued"
+
+    # Third retry must be blocked.
+    service.fail_job(workspace_id=DEFAULT_WORKSPACE_ID, job_id=retry2.id, error_code="TIMEOUT", error_message="t")
+    with pytest.raises(AnalysisRetryLimitExceededApiError):
+        service.retry_job(workspace_id=DEFAULT_WORKSPACE_ID, user_id=DEFAULT_USER_ID, job_id=retry2.id)
+
+
+def test_update_result_allowed_in_draft_and_review_blocked_in_approved(
+    db_session: Session,
+    document_fixture: dict[str, str],
+) -> None:
+    from app.core.errors import AnalysisResultInvalidStateApiError
+    from app.schemas.analysis import UpdateAnalysisResultRequest
+    job = _create_service_job(db_session, source_document_ids=[DOCUMENT_ID])
+    job = AnalysisJobService(db_session).run_job(workspace_id=DEFAULT_WORKSPACE_ID, job_id=job.id)
+    result = job.result
+    assert result is not None
+    result_svc = AnalysisResultService(db_session)
+
+    # Update in draft state.
+    updated = result_svc.update_result(
+        workspace_id=DEFAULT_WORKSPACE_ID,
+        user_id=DEFAULT_USER_ID,
+        result_id=result.id,
+        request=UpdateAnalysisResultRequest(title="Neuer Titel", summary="Neue Zusammenfassung"),
+    )
+    assert updated.title == "Neuer Titel"
+    assert updated.updated_at is not None
+
+    # Approve via legacy flow, then block update.
+    job_svc = AnalysisJobService(db_session)
+    job_svc.approve_job(workspace_id=DEFAULT_WORKSPACE_ID, user_id=DEFAULT_USER_ID, job_id=job.id)
+    db_session.refresh(result)
+    result.status = "approved"
+    db_session.add(result)
+    db_session.commit()
+
+    with pytest.raises(AnalysisResultInvalidStateApiError):
+        result_svc.update_result(
+            workspace_id=DEFAULT_WORKSPACE_ID,
+            user_id=DEFAULT_USER_ID,
+            result_id=result.id,
+            request=UpdateAnalysisResultRequest(title="Blocked"),
+        )
+
+
+def test_mark_for_review_and_approve_reject_state_machine(
+    db_session: Session,
+    document_fixture: dict[str, str],
+) -> None:
+    from app.core.errors import AnalysisConfirmRequiredApiError, AnalysisResultInvalidStateApiError
+    from app.schemas.analysis import ApproveResultRequest, MarkForReviewRequest, RejectResultRequest
+    job = _create_service_job(db_session, source_document_ids=[DOCUMENT_ID])
+    job = AnalysisJobService(db_session).run_job(workspace_id=DEFAULT_WORKSPACE_ID, job_id=job.id)
+    result = job.result
+    assert result is not None
+    result_svc = AnalysisResultService(db_session)
+
+    # Cannot approve from draft.
+    with pytest.raises(AnalysisResultInvalidStateApiError):
+        result_svc.approve_result(
+            workspace_id=DEFAULT_WORKSPACE_ID,
+            user_id=DEFAULT_USER_ID,
+            result_id=result.id,
+            request=ApproveResultRequest(confirm=True),
+        )
+
+    # Mark for review.
+    reviewed = result_svc.mark_for_review(
+        workspace_id=DEFAULT_WORKSPACE_ID,
+        user_id=DEFAULT_USER_ID,
+        result_id=result.id,
+        request=MarkForReviewRequest(),
+    )
+    assert reviewed.status == "review"
+
+    # Cannot re-mark for review.
+    with pytest.raises(AnalysisResultInvalidStateApiError):
+        result_svc.mark_for_review(
+            workspace_id=DEFAULT_WORKSPACE_ID,
+            user_id=DEFAULT_USER_ID,
+            result_id=result.id,
+            request=MarkForReviewRequest(),
+        )
+
+    # Approve requires confirm=True.
+    with pytest.raises(AnalysisConfirmRequiredApiError):
+        result_svc.approve_result(
+            workspace_id=DEFAULT_WORKSPACE_ID,
+            user_id=DEFAULT_USER_ID,
+            result_id=result.id,
+            request=ApproveResultRequest(confirm=False),
+        )
+
+    # Approve with confirm=True.
+    approved = result_svc.approve_result(
+        workspace_id=DEFAULT_WORKSPACE_ID,
+        user_id=DEFAULT_USER_ID,
+        result_id=result.id,
+        request=ApproveResultRequest(confirm=True),
+    )
+    assert approved.status == "approved"
+    assert approved.approved_by == DEFAULT_USER_ID
+    assert approved.approved_at is not None
+
+
+def test_reject_result_from_review_blocked_from_draft(
+    db_session: Session,
+    document_fixture: dict[str, str],
+) -> None:
+    from app.core.errors import AnalysisResultInvalidStateApiError
+    from app.schemas.analysis import MarkForReviewRequest, RejectResultRequest
+    job = _create_service_job(db_session, source_document_ids=[DOCUMENT_ID])
+    job = AnalysisJobService(db_session).run_job(workspace_id=DEFAULT_WORKSPACE_ID, job_id=job.id)
+    result = job.result
+    assert result is not None
+    result_svc = AnalysisResultService(db_session)
+
+    # Cannot reject from draft.
+    with pytest.raises(AnalysisResultInvalidStateApiError):
+        result_svc.reject_result(
+            workspace_id=DEFAULT_WORKSPACE_ID,
+            user_id=DEFAULT_USER_ID,
+            result_id=result.id,
+            request=RejectResultRequest(reason="Zu ungenau"),
+        )
+
+    result_svc.mark_for_review(
+        workspace_id=DEFAULT_WORKSPACE_ID,
+        user_id=DEFAULT_USER_ID,
+        result_id=result.id,
+        request=MarkForReviewRequest(),
+    )
+    rejected = result_svc.reject_result(
+        workspace_id=DEFAULT_WORKSPACE_ID,
+        user_id=DEFAULT_USER_ID,
+        result_id=result.id,
+        request=RejectResultRequest(reason="Zu ungenau"),
+    )
+    assert rejected.status == "rejected"
+
+
+def test_get_result_by_id_is_workspace_scoped(
+    db_session: Session,
+    document_fixture: dict[str, str],
+) -> None:
+    from app.core.errors import AnalysisResultNotFoundApiError
+    job = _create_service_job(db_session, source_document_ids=[DOCUMENT_ID])
+    job = AnalysisJobService(db_session).run_job(workspace_id=DEFAULT_WORKSPACE_ID, job_id=job.id)
+    result = job.result
+    assert result is not None
+    result_svc = AnalysisResultService(db_session)
+
+    fetched = result_svc.get_result_by_id(workspace_id=DEFAULT_WORKSPACE_ID, result_id=result.id)
+    assert fetched.id == result.id
+
+    with pytest.raises(AnalysisResultNotFoundApiError):
+        result_svc.get_result_by_id(workspace_id="wrong-workspace", result_id=result.id)

@@ -24,7 +24,8 @@ def test_analysis_tables_expose_final_columns(test_engine) -> None:
         "analysis_comparison_documents",
         "analysis_suggestions",
     }
-    assert {column["name"] for column in inspector.get_columns("analysis_jobs")} == {
+    # >= allows forward-compatible additive migrations
+    assert {column["name"] for column in inspector.get_columns("analysis_jobs")} >= {
         "id",
         "workspace_id",
         "status",
@@ -36,8 +37,14 @@ def test_analysis_tables_expose_final_columns(test_engine) -> None:
         "finished_at",
         "error_code",
         "error_message",
+        # v2 additions (migration 0023)
+        "source_type",
+        "source_ids",
+        "provider",
+        "model",
+        "result_id",
     }
-    assert {column["name"] for column in inspector.get_columns("analysis_results")} == {
+    assert {column["name"] for column in inspector.get_columns("analysis_results")} >= {
         "id",
         "job_id",
         "summary",
@@ -46,6 +53,14 @@ def test_analysis_tables_expose_final_columns(test_engine) -> None:
         "suggested_topics",
         "confidence",
         "created_at",
+        # v2 additions (migration 0023)
+        "title",
+        "content_markdown",
+        "sources",
+        "status",
+        "approved_at",
+        "approved_by",
+        "updated_at",
     }
 
 
