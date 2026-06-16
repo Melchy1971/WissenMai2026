@@ -262,3 +262,45 @@ class AnalysisRejectionReasonRequiredApiError(ApiError):
     status_code = 422
     code = "ANALYSIS_REJECTION_REASON_REQUIRED"
     message = "Rejection reason is required"
+
+
+class TopicNotFoundApiError(ApiError):
+    status_code = 404
+    code = "TOPIC_NOT_FOUND"
+    message = "Topic not found"
+
+
+class TopicDuplicateSlugApiError(ApiError):
+    status_code = 409
+    code = "TOPIC_DUPLICATE_SLUG"
+    message = "A topic with this slug already exists in the workspace"
+
+
+class TopicInvalidStatusTransitionApiError(ApiError):
+    status_code = 422
+    code = "TOPIC_INVALID_STATUS_TRANSITION"
+    message = "Invalid topic status transition"
+
+
+class TopicDocumentAlreadyAttachedApiError(ApiError):
+    status_code = 409
+    code = "TOPIC_DOCUMENT_ALREADY_ATTACHED"
+    message = "Document is already attached to this topic"
+
+
+class TopicDocumentNotFoundApiError(ApiError):
+    status_code = 404
+    code = "TOPIC_DOCUMENT_NOT_FOUND"
+    message = "Topic document relation not found"
+
+
+class TopicTagAlreadyExistsApiError(ApiError):
+    status_code = 409
+    code = "TOPIC_TAG_ALREADY_EXISTS"
+    message = "Tag is already assigned to this topic"
+
+
+class TopicMergeProviderError(ApiError):
+    status_code = 502
+    code = "TOPIC_MERGE_PROVIDER_ERROR"
+    message = "Topic merge provider returned an error"

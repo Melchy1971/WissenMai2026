@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useViewState } from '../lib/viewState.js';
 import { dashboardApi } from '../api/dashboard.js';
 import { getSystemStatus } from '../api/status.js';
-import { requestJson } from '../api/client.js';
 import { LoadingState } from '../components/status/LoadingState.jsx';
 import { ErrorState } from '../components/status/ErrorState.jsx';
 import { StatusBadge } from '../components/status/StatusBadge.jsx';
+import { TopicsWidgetPanel } from '../features/dashboard/TopicsWidgetPanel.jsx';
 
 const UNKNOWN = 'UNKNOWN';
 
@@ -87,6 +87,42 @@ function CountCard({ testId, label, value }) {
   );
 }
 
+function BlockerList({ blockers }) {
+  if (!blockers || blockers.length === 0) return null;
+  return (
+    <section className="dashboard-section" data-testid="dashboard-blockers">
+      <h2 className="dashboard-section__title">Offene Blocker ({blockers.length})</h2>
+      <ul className="blocker-list">
+        {blockers.map((b) => (
+          <li key={b.id} className={`blocker-list__item blocker-list__item--${(b.severity || 'unknown').toLowerCase()}`}>
+            <span className="blocker-list__severity">{b.severity}</span>
+            <span className="blocker-list__title">{b.title}</span>
+            {b.source && <span className="blocker-list__source">{b.source}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function ActivityList({ items }) {
+  if (!items || items.length === 0) return null;
+  return (
+    <section className="dashboard-section" data-testid="dashboard-activity">
+      <h2 className="dashboard-section__title">Letzte Aktivitäten</h2>
+      <ul className="activity-list">
+        {items.slice(0, 10).map((item) => (
+          <li key={item.id} className="activity-list__item">
+            <span className="activity-list__type badge badge--neutral">{item.item_type}</span>
+            <span className="activity-list__title">{item.title}</span>
+            <span className="activity-list__status">{item.status}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function DashboardPage() {
   const { viewState, setLoading, setSuccess, setError } = useViewState('idle');
   const [statusData, setStatusData] = useState(null);
@@ -107,137 +143,97 @@ export function DashboardPage() {
       const supplementalResults = await Promise.allSettled([
         dashboardApi.getSummary({ signal }),
         dashboardApi.getActivity({ limit: 20 }, { signal }),
-        requestJson('/api/v1/approvals?status=pending&limit=25', { signal }),
-        requestJson('/api/v1/audit?limit=50', { signal }),
-        requestJson('/api/v1/governance/status', { signal }),
-        requestJson('/api/v1/security/status', { signal }),
-        requestJson('/api/v1/rag/documents', { signal }),
-        requestJson('/api/v1/agents/executions?limit=25', { signal }),
-        requestJson('/api/v1/collaboration/runs?limit=25', { signal }),
+        dashboardApi.getQuality({ limit: 5 }, { signal }),
       ]);
-      const [summaryResult, activityResult, approvalsResult, auditResult] = supplementalResults;
-      const auditItems = listFromSettled(auditResult);
-      setStatusData({
-        ...currentStatus,
-        open_approvals_count:
-          approvalsResult.status === 'fulfilled'
-            ? countValue(approvalsResult.value, 'total')
-            : countValue(currentStatus, 'open_approvals_count'),
-        critical_audit_events_count:
-          auditResult.status === 'fulfilled'
-            ? auditItems.filter(isCriticalAuditEvent).length
-            : countValue(currentStatus, 'critical_audit_events_count'),
-      });
-      setSummary(summaryResult.status === 'fulfilled' ? summaryResult.value : null);
-      setActivity(activityResult.status === 'fulfilled' ? activityResult.value?.items ?? [] : []);
-      setBlockers(buildSupplementalBlockers(currentStatus, auditItems));
-    } catch (error) {
-      setError(error);
-      return;
+
+      const [summaryResult, activityResult] = supplementalResults;
+      const summaryData = summaryResult?.status === 'fulfilled' ? summaryResult.value : null;
+      const activityItems = listFromSettled(activityResult);
+
+      const derivedBlockers = buildSupplementalBlockers(currentStatus, []);
+
+      setStatusData(currentStatus);
+      setSummary(summaryData);
+      setActivity(activityItems);
+      setBlockers(derivedBlockers);
+      setSuccess();
+    } catch (err) {
+      if (err?.name !== 'AbortError') setError(err);
     }
-    setSuccess();
   }
 
-  if (viewState.state === 'loading') return <LoadingState label="Dashboard wird geladen..." />;
-  if (viewState.state === 'error') return <ErrorState error={viewState.error} onAction={() => load()} actionLabel="Erneut laden" />;
-
-  const privacyStatus = statusData?.privacy_mode == null
-    ? normalizeStatus(null)
-    : statusData.privacy_mode
-      ? { label: 'ENABLED', tone: 'warning' }
-      : { label: 'DISABLED', tone: 'neutral' };
-  const blockerList = blockers;
+  if (viewState.status === 'loading' || viewState.status === 'idle') {
+    return <LoadingState />;
+  }
+  if (viewState.status === 'error') {
+    return <ErrorState error={viewState.error} onRetry={() => load(new AbortController().signal)} />;
+  }
 
   return (
-    <div className="page" data-testid="dashboard-page">
-      <h1 className="page__title">Dashboard</h1>
+    <div className="page-stack dashboard-page" data-testid="dashboard-page">
+      <header className="dashboard-page__header">
+        <h1 className="page-title">Dashboard</h1>
+      </header>
 
-      <section className="page__section" data-testid="dashboard-critical-blockers">
-        <h2>Kritische Blocker</h2>
-        {blockerList == null ? (
-          <p className="text-muted">Blocker-Status UNKNOWN.</p>
-        ) : blockerList.length === 0 ? (
-          <p className="text-muted">Keine kritischen Blocker gemeldet.</p>
-        ) : (
-          <ul>
-            {blockerList.map((blocker) => (
-              <li key={`${blocker.source}-${blocker.id}`}>
-                <strong>{blocker.severity ?? 'CRITICAL'}</strong>: {blocker.title ?? 'Unbekannter Blocker'}
-                <span className="text-muted"> ({blocker.source ?? 'unknown'})</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="page__section" data-testid="dashboard-privacy-mode">
-        <h2>Privacy Mode</h2>
-        <StatusBadge status={privacyStatus} testId="dashboard-status-privacy_mode" />
-      </section>
-
-      <section className="page__section">
-        <h2>Status</h2>
-        <div className="card-grid" data-testid="dashboard-status-grid">
+      {/* Status grid */}
+      <section className="dashboard-section" data-testid="dashboard-status">
+        <h2 className="dashboard-section__title">Systemstatus</h2>
+        <div className="stat-grid">
           {STATUS_FIELDS.map(([field, label]) => (
             <StatusCard key={field} field={field} label={label} value={statusData?.[field]} />
           ))}
-          <CountCard
-            testId="dashboard-open-approvals"
-            label="Offene Approvals"
-            value={countValue(statusData, 'open_approvals_count')}
-          />
-          <CountCard
-            testId="dashboard-critical-audit-events"
-            label="Kritische Audit Events"
-            value={countValue(statusData, 'critical_audit_events_count')}
-          />
-          <CountCard
-            testId="dashboard-open-blockers"
-            label="Offene Blocker"
-            value={Array.isArray(blockerList) ? blockerList.length : UNKNOWN}
-          />
         </div>
       </section>
 
-      <section className="page__section">
-        <h2>Uebersicht</h2>
-        <div className="card-grid" data-testid="dashboard-summary">
-          <CountCard testId="dashboard-document-count" label="Dokumente" value={countValue(summary, 'document_count')} />
-          <CountCard testId="dashboard-active-documents" label="Aktiv" value={countValue(summary, 'active_document_count')} />
-          <CountCard testId="dashboard-archived-documents" label="Archiviert" value={countValue(summary, 'archived_document_count')} />
-          <CountCard testId="dashboard-new-imports" label="Neue Imports" value={countValue(summary, 'new_imports_count')} />
-          <CountCard testId="dashboard-open-analysis" label="Offene Analysen" value={countValue(summary, 'open_analysis_count')} />
-          <CountCard testId="dashboard-topic-count" label="Themen" value={countValue(summary, 'topic_count')} />
-          <CountCard testId="dashboard-quality-score" label="Quality Score" value={summary?.quality_score ?? UNKNOWN} />
-          <StatusCard field="drift_status" label="Drift" value={summary?.drift_status} />
-        </div>
+      {/* Document counts */}
+      {summary && (
+        <section className="dashboard-section" data-testid="dashboard-counts">
+          <h2 className="dashboard-section__title">Kennzahlen</h2>
+          <div className="stat-grid">
+            <CountCard testId="count-docs" label="Dokumente gesamt" value={countValue(summary, 'document_count')} />
+            <CountCard testId="count-active" label="Aktiv" value={countValue(summary, 'active_document_count')} />
+            <CountCard testId="count-archived" label="Archiviert" value={countValue(summary, 'archived_document_count')} />
+            <CountCard testId="count-imports" label="Neue Imports" value={countValue(summary, 'new_imports_count')} />
+            <CountCard testId="count-analysis" label="Offene Analysen" value={countValue(summary, 'open_analysis_count')} />
+            <CountCard testId="count-topics" label="Themen" value={countValue(summary, 'topic_count')} />
+          </div>
+        </section>
+      )}
+
+      {/* Blockers */}
+      <BlockerList blockers={blockers} />
+
+      {/* Topics widget panel */}
+      <section className="dashboard-section">
+        <TopicsWidgetPanel />
       </section>
 
-      <section className="page__section">
-        <h2>Letzte Aktivitaet</h2>
-        {activity.length === 0 ? (
-          <p className="text-muted">Keine Dashboard-Aktivitaet vorhanden.</p>
-        ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Typ</th>
-                <th>Status</th>
-                <th>Zeitpunkt</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activity.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.item_type ?? UNKNOWN}</td>
-                  <td>{normalizeStatus(item.status).label}</td>
-                  <td>{item.created_at ? new Date(item.created_at).toLocaleString('de-DE') : UNKNOWN}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </section>
+      {/* Activity */}
+      <ActivityList items={activity} />
+
+      <style>{`
+        .dashboard-page { display: flex; flex-direction: column; gap: 0; overflow-y: auto; }
+        .dashboard-page__header { padding: 16px 24px 0; }
+        .dashboard-section { padding: 16px 24px; border-bottom: 1px solid var(--color-border, #e0e0e0); }
+        .dashboard-section:last-child { border-bottom: none; }
+        .dashboard-section__title { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--color-text-secondary, #666); text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .stat-card { background: var(--color-surface, #fff); border: 1px solid var(--color-border, #e0e0e0); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+        .stat-card__label { font-size: 11px; color: var(--color-text-secondary, #888); text-transform: uppercase; letter-spacing: 0.04em; }
+        .stat-card__value { font-size: 22px; font-weight: 700; color: var(--color-text, #1c1c1c); }
+        .blocker-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+        .blocker-list__item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--color-border, #e0e0e0); font-size: 13px; }
+        .blocker-list__item--critical { border-color: #e53935; background: #fff5f5; }
+        .blocker-list__severity { font-size: 10px; font-weight: 700; text-transform: uppercase; background: #e53935; color: #fff; padding: 2px 7px; border-radius: 10px; flex-shrink: 0; }
+        .blocker-list__title { flex: 1; }
+        .blocker-list__source { font-size: 11px; color: var(--color-text-secondary, #888); }
+        .activity-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+        .activity-list__item { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 6px 0; border-bottom: 1px solid var(--color-border, #f0f0f0); }
+        .activity-list__item:last-child { border-bottom: none; }
+        .activity-list__type { flex-shrink: 0; }
+        .activity-list__title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .activity-list__status { font-size: 11px; color: var(--color-text-secondary, #888); flex-shrink: 0; }
+      `}</style>
     </div>
   );
 }

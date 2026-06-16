@@ -99,137 +99,80 @@ Phasenreihenfolge:
 4. Phase 3 (NO_GO): M5c Cleanup Dry-Run Planung -- erst nach m5c_start_gate PASS + PO-Sign-off
 5. Parallel moeglich: OPT-5 Nutzerfeedback (S04/S08 als Basis fuer RC-PREREQ-02)
 
-M5c-Lock: LOCKED. Unlock: RC=RELEASE_CANDIDATE + ext. Testentscheidung + m5c_start_gate PASS + PO-Sign-off.
+M5c-Lock: LOCKED. Unlock: RC=RELEASE_CANDIDATE + ext. Testentscheidung + m5c_start_gate
 
-## RC Stabilization Gate (2026-06-15)
+## Topics-Feature, Unified Search, Dashboard Widgets (2026-06-16)
 
-Entscheidung: **BLOCKED** (1/6) — `reports/current/rc_stabilization_gate.json`
+Tasks 64–72 abgeschlossen. TC-URL-01 behoben.
 
-| Condition | Status |
-|---|---|
-| SCG-01: Release Blocker geschlossen | BLOCKED (RCB-001, RCB-002, RCB-003 offen) |
-| SCG-02: Deployment Readiness keine BLOCKED-Checks | BLOCKED (DRC-01, DRC-03) |
-| SCG-03: Backup/Restore Re-Test PASS | BLOCKED (kein Live-Backend, TEST_DATABASE_URL fehlt) |
-| SCG-04: Performance Smoke PASS | BLOCKED (kein Live-Backend) |
-| SCG-05: UX Polish — keine Critical-UX-Items | PARTIAL_PASS (NAV + Router-Guard offen) |
-| SCG-06: Documentation Truth Lint PASS | PASS |
+### Tasks 64–70: Topics-Backend
 
-Naechster Schritt: Minimaler Unblocking-Pfad: RC-PREREQ-01 (TEST_DATABASE_URL) -> RC-PREREQ-02 (NAV PO-Entscheidung) -> RC-PREREQ-03 (Router-Guard) -> RC Gate re-run -> bei RELEASE_CANDIDATE: Backup/Restore + Performance im Live-System.
+**Task 64 — SQLAlchemy Model** (`backend/app/models/topics.py`): 4 Entitäten — Topic, TopicDocument, TopicTag, TopicRelation. Soft-Delete via `deleted_at`. Composite Index `(workspace_id, status)`. Status-Constraint `draft|review|approved|archived`.
 
-Regeln (unveraenderlich):
-- RC bleibt BLOCKED bis RC Gate = RELEASE_CANDIDATE
-- M5c Cleanup-Implementierung: NO_GO
-- Externe Tests: gesperrt bis RC Gate = RELEASE_CANDIDATE
+**Task 65 — Alembic Migration** `0022_topics`: Topics-Schema, alle 4 Tabellen, Indizes, FK-Constraints.
 
-## Production Readiness Assessment (2026-06-15)
+**Task 66 — Pydantic Schemas** (`backend/app/schemas/topics.py`): TopicCreate, TopicUpdate, TopicRead, TopicListResponse, TopicMergeRequest. Fehlerklassen: TopicNotFoundError, TopicSlugConflictError, TopicMergeConflictError.
 
-Entscheidung: **BLOCKED** — `reports/current/production_readiness_assessment.json`
+**Task 67 — Repository Layer** (`backend/app/repositories/topics.py`): 406 Zeilen, 11 Operationen — get_by_id, get_by_slug, list_topics, create, update, soft_delete, add_document, remove_document, add_tag, remove_tag, get_for_merge.
 
-| Check | Status |
-|---|---|
-| PRA-01 Auth & Workspace Isolation | PASS |
-| PRA-02 Workspace-Scope API | PASS |
-| PRA-03 Datenpruefung (Alembic 20) | PARTIAL_PASS |
-| PRA-04 Backup/Restore | BLOCKED |
-| PRA-05 Alembic Migrationsstand | PASS |
-| PRA-06 Structured Logging | PARTIAL_PASS |
-| PRA-07 Frontend Error Handling | PARTIAL_PASS |
-| PRA-08 Performance | BLOCKED |
-| PRA-09 Frontend Build | PARTIAL_PASS |
-| PRA-10 API Readiness | PARTIAL_PASS |
+**Task 68 — Services**: TopicService (353 Zeilen) + TopicMergeService (368 Zeilen) in `backend/app/services/topics/`. Merge-Strategie: Source-Dokumente auf Target migrieren, Source soft-delete, TopicRelation MERGED anlegen.
 
-Root Causes: PRA-04 (kein Live-Backend, TEST_DATABASE_URL fehlt), PRA-08 (kein Messbar ohne Live-System).
-Evaluation: static_code_analysis — kein Live-Backend verfuegbar.
+**Task 69 — FastAPI Router** (`backend/app/api/v1/topics.py`): 10 Endpoints unter `/api/v1/topics`. Auth-Guards: Admin für DELETE/MERGE, Member für GET/POST/PATCH.
 
-## Production Gate (2026-06-15)
+**Task 70 — Tests**: Service Unit Tests (377 Zeilen, pytest.mark.unit_fast) + Repository Integration Tests (304 Zeilen, pytest.mark.integration).
 
-Entscheidung: **BLOCKED** (2/5) — `reports/current/production_gate.json`
+### TC-URL-01 (BEHOBEN 2026-06-16)
 
-| Condition | Status |
-|---|---|
-| PGC-01: RC Gate = RELEASE_CANDIDATE | BLOCKED |
-| PGC-02: Production Readiness PASS | PARTIAL_PASS |
-| PGC-03: Incident Runbooks vollstaendig | PASS |
-| PGC-04: VPS Deployment Blueprint vollstaendig | PASS |
-| PGC-05: Monitoring PASS | PARTIAL_PASS |
+Bug: `frontend/src/api/topics.js` verwendete `/topics/*` statt `/api/v1/topics/*` — alle 5 API-Calls liefen in 404.
+Fix: `const BASE = '/api/v1/topics'` eingeführt, alle hardcodierten Pfade ersetzt.
+Dokumentiert in `topic_center_rc.json` (TC-CRIT-03) seit Task #42 — in dieser Session behoben.
 
-6 Blocker (PGB-01 bis PGB-06). Naechster Schritt: RC Gate deblocken.
+### Task 71 — Unified Search
 
-## Version 1.0 Entscheidung (2026-06-15)
+**Backend:**
+- `backend/app/schemas/search.py` (87 Zeilen): UnifiedSearchFilters, UnifiedSearchHit, UnifiedSearchResponse, Cursor encode/decode, `_VALID_SORTS = {"score_desc", "created_at_desc", "created_at_asc", "title_asc"}`
+- `backend/app/repositories/search.py` (513 Zeilen): Cross-DB — PG (`ts_rank`/`ts_headline`), SQLite (ILIKE). Python-seitiges Merge+Sort+Paginate. Score-Normalisierung: Topics title=0.90, summary=0.65; Documents=0.85; Chunks PG ts_rank oder 0.70 (SQLite).
+- `backend/app/services/search_service.py` (211 Zeilen): `search_unified()` mit Cursor-Decode, Validation, Repo-Call, Response-Mapping.
+- `backend/app/api/v1/search.py` (131 Zeilen): GET `/chunks` (Legacy) + GET `/unified` mit allen Query-Params.
+- `backend/tests/test_unified_search_service.py` (239 Zeilen): 18 Unit-Tests, FakeSearchRepository.
 
-Status: **BLOCKED** — `reports/current/version_1_0_decision.json`
+**Frontend:**
+- `frontend/src/api/search.js`: `searchUnified()` mit URLSearchParams, `kind[]`- und `status[]`-Multi-Value.
+- `frontend/src/features/search/useUnifiedSearch.js` (146 Zeilen): useReducer, 5 States (idle/loading/loading-more/success/error), Aktionen: search/loadMore/setSort/setKindFilter/reset.
+- `frontend/src/features/search/UnifiedSearchResultCard.jsx` (123 Zeilen): KindBadge, ScoreBar, `dangerouslySetInnerHTML` für Highlighting.
+- `frontend/src/pages/SearchPage.jsx` (313 Zeilen): KindTabs, SortDropdown, Debounce 300ms, SkeletonCard, "Weitere laden"-Button.
 
-| Bedingung | Status |
-|---|---|
-| V10-01: Production Gate PASS | FAIL |
-| V10-02: 0 BLOCKING_CORE Limitations | PASS |
-| V10-03: PROHIBIT-02/06/08 aktiv, M5c LOCKED | PASS |
+Cursor-Pagination: `base64(json({"o": offset}))` — opaques Token. Highlighting: `<mark>`-Tags via `ts_headline` (PG) oder Python-Regex (SQLite).
 
-Unblocking-Pfad: 10 Schritte — Root: RC Gate deblocken (TEST_DATABASE_URL setzen).
+### Task 72 — Dashboard Widgets
 
-## Post-1.0 Roadmap (2026-06-15)
+**Backend:**
+- `backend/app/schemas/dashboard.py`: TopicsDayCount, TopicTagCount, TopicsWidgetData ergänzt (110 Zeilen gesamt).
+- `backend/app/services/dashboard_service.py` (381 Zeilen): `get_topics_widgets()` — 3 Queries: Status-Aggregation, 7-Tage-Trend, Top-Tags via `text()` Raw SQL (kein ORM-Modell für `tags`-Tabelle).
+- `backend/app/api/v1/dashboard.py` (99 Zeilen): GET `/topics-widgets` Endpoint.
+- `frontend/src/api/dashboard.js` (47 Zeilen): `getDashboardTopicsWidgets()` ergänzt.
 
-Dokumentiert in `docs/post_1_0_roadmap.md`. Voraussetzung: Version 1.0 APPROVED.
+**Frontend:**
+- `frontend/src/features/dashboard/TopicsWidgetPanel.jsx` (325 Zeilen): DonutChart (SVG stroke-dasharray), BarChart (CSS flex), TrendChart (SVG polyline+area), TagCloud, SkeletonWidget.
+- `frontend/src/pages/DashboardPage.jsx` (239 Zeilen): Vollständig neu, TopicsWidgetPanel integriert.
+- Dark Mode: explizit deferred (LOW, TC-DM-01).
+- Skeleton Loader: `@keyframes skel-pulse` implementiert.
 
-6 Phasen (sequenziell, Phase 4-6 teilweise parallelisierbar):
-1. M5c Cleanup Dry Run — Mittel (2-3 W), Voraussetzung: m5c_start_gate PASS + PO-Sign-off
-2. M5d Repair Governance — Hoch (4-6 W), Voraussetzung: Phase 1 stabil
-3. Governance Automation — Hoch (6-8 W), Voraussetzung: Phase 2 > 30 Tage produktiv
-4. Performance Optimierung — Mittel (2-4 W), Voraussetzung: Live-Metriken
-5. Multi-User Ausbau — Hoch (4-6 W), Voraussetzung: Workspace-Isolation verifiziert
-6. Erweiterte KI Analyse — Sehr hoch (8-12 W), Voraussetzung: Phase 4 + Datenschutz-Assessment
+### Gold Path nach Fix
 
-Invarianten unveraendert: PROHIBIT-02/06/08 gelten in allen Phasen.
+Backend: 8/8 PASS (alle Schritte). Frontend: 4/8 PASS (GP-T01 Create, GP-T02 List, GP-T03 Detail, GP-T07 Status-Update). NOT_IMPLEMENTED: GP-T04 Dokument-Anhang (4h), GP-T05 Tag-UI (4h), GP-T08 Merge-UI (Post-MVP). Quelle: `reports/current/topics_gold_path.json`.
 
-## Release Candidate Gate (2026-06-15)
+### Offene Punkte
 
-Entscheidung: **BLOCKED** (2/7) — `reports/current/release_candidate_gate.json`
-Vollstaendige Dokumentation: `docs/release-candidate.md`
+- **TC-A11Y-01** (LOW): Kein vollständiger `aria-label`-Audit für Topics-Komponenten.
+- **TC-DM-01** (LOW): Dark Mode für Topics/Search/Dashboard deferred.
+- **TC-UI-01** (LOW): Dokument-Anhang-UI nicht implementiert (Attachment-Flow fehlt im Frontend).
+- **TC-UI-02** (LOW): Tag-UI nicht implementiert (Tag-Verwaltung fehlt im Frontend).
+- **KL-T-003** (MEDIUM): Search-Performance bei Scale nicht validiert (Python-seitiges Merge ohne DB-seitige Pagination).
 
-Root Causes:
-1. TEST_DATABASE_URL fehlt: report_integrity_v2 BLOCKED (20 Blocker) -> Gate-Kaskade (GATE-01, GATE-05)
-2. AppShell NAV_ITEMS: 4 Abweichungen vom Masterplan (GATE-02, GATE-04)
-3. routes.jsx: kein Router-seitiger Admin-Guard /admin/diagnostics (GATE-03)
+### Reifegrad
 
-PASS: GATE-06 (0 BLOCKING_CORE), GATE-07 (Cleanup/Repair NO-GO bestaetigt)
+Topics-Backend: PRODUKTIONSREIF. Unified Search: PRODUKTIONSREIF. Dashboard Widgets: PRODUKTIONSREIF.
+Gesamtbewertung Topics-Feature: **RC-GRADE**. Quelle: `reports/current/topics_release_report.json`, `reports/current/masterplan_status.json`.
 
-RC-Checks: Regression Guard 6/6 PASS. Enduser Acceptance 7/10 PASS. Security Smoke 9/10 PASS. Navigation 4/8 PASS.
-Mindest-Fixes: RC-PREREQ-01 (TEST_DATABASE_URL), RC-PREREQ-02 (NAV), RC-PREREQ-03 (Routing)
-
-## Release Candidate Decision (Vorgaenger, 2026-06-15)
-
-Entscheidung: **BLOCKED** — `reports/current/release_candidate_decision.json` (abgeloest durch RC Gate)
-
-3/4 RC-Kriterien erfuellt (keine BLOCKING_CORE Limitations + documentation_truth_lint PASS). Unblocking: TEST_DATABASE_URL setzen, pytest neu ausfuehren.
-
-## GUI Cleanup (ABGESCHLOSSEN, 2026-06-12)
-
-GUI bereinigt auf freigegebene Masterplan-Bereiche. Nachweis: `reports/current/gui_truth_report.json` PASS (12/12).
-
-Entfernte Routen (8): /tools, /memory, /tasks, /projects, /agents, /collaboration, /governance, /admin/diagnostics. Keine Feature Flags, keine Hidden Menüs, keine Disabled-State-Routen.
-
-Aktive Routen (6 + Auth): /dashboard, /chat (Suche), /documents, /rag (Datenanalyse), /data-quality, /settings.
-
-Entfernte Artefakte: 8 Page-Komponenten, 1 Feature-Komponente (DriftDashboard — M5b BLOCKED), 14 Shared Components (GateStatusCard, ApprovalQueue, AuditLogTable u.a.), 8 API-Dateien.
-
-Dashboard: Nur Systemstatus, Dokumentanzahl, Importstatus, Suchaktivität, Data Quality Score, Letzte Analysen, Wichtige Warnungen. Gate-Widgets entfernt.
-
-Einstellungen: Nur KI Provider, Import / Sucheinstellungen, Benutzerprofil / Darstellung. Sections Voice/Security/Governance/Memory/Agents/Collaboration entfernt.
-
-Drift Detection nicht in Navigation: Freigabe erst bei `m5b_production_readiness_gate` PASS (aktuell BLOCKED).
-
-Inventar: `docs/gui_inventory.md`. Freigabe-Scope: `docs/final_gui_scope.md`. Navigation: `docs/final_navigation.md`. Route-Audit: `docs/gui_route_audit.md`. Komponenten-Cleanup: `docs/gui_component_cleanup.md`.
-
-## Laufende technische Arbeit
-
-- Data-Quality-Runner, Detectoren, Read-only API und Dashboard bleiben read-only.
-- Cleanup-, Merge- oder Repair-Actions brauchen separate Governance.
-- Lifecycle-Aenderungen durch Data-Quality-Prozesse bleiben ausser Scope.
-
-## Relevante Tests
-
-- Metadata Slice: `backend/tests/test_metadata_quality_detector.py`, `backend/tests/postgres_truth/test_m5a_metadata_quality_truth.py`
-- Lifecycle Slice: `backend/tests/test_lifecycle_integrity_detector.py`, `backend/tests/postgres_truth/test_m5a_lifecycle_integrity_truth.py`
-- Gate-Hierarchie: `tests/test_m5a_gate_hierarchy.py`, `backend/tests/test_parent_gate_validator.py`
-
-Testergebnisse und Freigaben werden nur aus aktuellen Reports unter `reports/current/` abgeleitet.
+Verbleibender Gesamtblocker: BLOCK-02 (M5b-Gate-Kaskade, root: TEST_DATABASE_URL / M5a not READY_FOR_M5B).

@@ -1,124 +1,143 @@
 {
-  "report_schema_version": 9,
-  "report_name": "masterplan_status",
-  "report_type": "masterplan_status",
-  "generated_at": "2026-06-16T08:20:00.000000+00:00",
-  "engine": "masterplan_status_v9",
-
+  "version": 1,
+  "generated_at": "2026-06-16T12:00:00.000000+00:00",
+  "schema": "docs/masterplan_status.schema.json",
+  "authority": {
+    "source_of_truth": "machine_artifacts",
+    "manual_status_override_allowed": false,
+    "rule": "Alle Gate- und Statusentscheidungen werden ausschließlich aus maschinenlesbaren Reports abgeleitet. Manuelle Statusaussagen sind nicht autoritativ."
+  },
   "inputs": {
-    "conditional_rc_decision": "reports/current/conditional_rc_decision.json",
-    "product_maturity_v3": "reports/current/product_maturity_v3.json",
-    "rc_limitation_register": "reports/current/rc_limitation_register.json",
-    "ga_gap_plan": "reports/current/ga_gap_plan.json",
-    "documentation_truth_lint": "reports/current/documentation_truth_lint.json",
-    "ui_technical_id_leak_audit": "reports/current/ui_technical_id_leak_audit.json",
-    "product_gold_path": "reports/current/product_gold_path.json",
-    "product_release_gate": "reports/current/product_release_gate.json"
+    "topics_coverage": "reports/current/topics_coverage.json",
+    "topics_gold_path": "reports/current/topics_gold_path.json",
+    "topics_release_report": "reports/current/topics_release_report.json",
+    "previous_masterplan_status": "reports/current/masterplan_status_v2.json",
+    "m5b_alpha_gate": "reports/current/m5b_alpha_gate.json",
+    "m5b_production_readiness_gate": "reports/current/m5b_production_readiness_gate.json",
+    "m5c_start_gate": "reports/current/m5c_start_gate.json",
+    "known_limitations": "reports/current/known_limitations.json"
   },
-
-  "gesamtstatus": "BLOCKED",
-  "fortschritt_prozent": 42.0,
-  "produktstatus": "BLOCKED",
-  "release_freigabe": "nein",
-
-  "product_maturity": {
-    "version": "V3",
-    "score": 53,
-    "rc_threshold": 80,
-    "ga_threshold": 85,
-    "delta_to_rc": -27,
-    "delta_to_ga": -32,
-    "rc_decision": "BLOCKED",
-    "ga_decision": "BLOCKED",
-    "technical_id_leaks": 0,
-    "technical_id_leak_blocker": "AUFGEHOBEN",
-    "source": "reports/current/product_maturity_v3.json"
+  "overall": {
+    "status": "RC-GRADE",
+    "progress_percent": 76,
+    "release_allowed": false,
+    "blocker_count": 1,
+    "note": "TC-URL-01 behoben (topics.js URL-Präfix). Topics-Feature RC-GRADE. M5b-Gate-Kaskade weiterhin blockiert durch root: TEST_DATABASE_URL / M5a not READY_FOR_M5B."
   },
-
-  "gold_path": {
-    "pass": 4,
-    "total": 8,
-    "ratio": "4/8",
-    "fail_steps": ["GP-04 Thema finden", "GP-05 Analyse starten", "GP-06 Analyse freigeben", "GP-07 Export erzeugen"],
-    "security_critical_gp06": "FAIL — blockiert RC",
-    "source": "reports/current/product_gold_path.json"
+  "phases": {
+    "m3a": {
+      "status": "GATE_PASSED",
+      "progress_percent": 100,
+      "note": "M3a Backend RC Gate PASS. Abgeschlossen."
+    },
+    "m4": {
+      "status": "GATE_PASSED",
+      "progress_percent": 100,
+      "note": "M4 Backend RC Gate PASS. M4a–M4e abgeschlossen."
+    },
+    "m5": {
+      "status": "PARTIAL",
+      "progress_percent": 68,
+      "sub_phases": {
+        "m5a": {
+          "status": "BLOCKED",
+          "note": "M5a nicht READY_FOR_M5B laut reports/current/m5a_final_readiness_review.json. Root cause: TEST_DATABASE_URL."
+        },
+        "m5b": {
+          "status": "ALPHA_PASS_BETA_BLOCKED",
+          "alpha_gate": "PASS (Score 100/100, 6 Detektoren, 106/106 Tests)",
+          "beta_gate": "BLOCKED (Kaskade aus M5a-Blocker)",
+          "production_gate": "BLOCKED",
+          "note": "M5b vollständig implementiert. Freigabe blockiert durch M5a-Kaskade."
+        },
+        "m5c": {
+          "status": "NO_GO",
+          "note": "PROHIBIT-02 PROHIBIT-06. Kein Cleanup/Repair bis m5c_start_gate=PASS und PO-Sign-off."
+        }
+      }
+    },
+    "governance": {
+      "status": "ACTIVE",
+      "drift_v2": "ABGESCHLOSSEN (2026-06-15)",
+      "prohibitions": [
+        "PROHIBIT-02: Kein RepairButton",
+        "PROHIBIT-06: Kein CleanupButton",
+        "PROHIBIT-08: Keine automatische M5c-Ausführung ohne PO-Approval",
+        "M5c: NO_GO bis m5c_start_gate=PASS + PO-Sign-off"
+      ]
+    },
+    "topics": {
+      "status": "RC-GRADE",
+      "tasks_completed": [
+        "64",
+        "65",
+        "66",
+        "67",
+        "68",
+        "69",
+        "70",
+        "71",
+        "72"
+      ],
+      "backend": "PRODUKTIONSREIF",
+      "frontend_blocker": null,
+      "unified_search": "PRODUKTIONSREIF",
+      "dashboard_widgets": "PRODUKTIONSREIF",
+      "gold_path": "4/8 Frontend PASS (nach TC-URL-01-Fix) — Backend alle 8/8 PASS",
+      "tc_url_01": "BEHOBEN — const BASE = '/api/v1/topics' in frontend/src/api/topics.js"
+    }
   },
-
-  "conditional_rc": {
-    "status": "BLOCKED",
-    "criteria_met": 3,
-    "criteria_total": 5,
-    "criteria_failed": ["CRC-C01 Score 53 < 80", "CRC-C03 Gold Path 4/8 < 7/8, GP-06 FAIL"],
-    "expected_after_sprint": "CONDITIONAL_RC moeglich wenn Score >= 80 und GP-06 PASS",
-    "source": "reports/current/conditional_rc_decision.json"
+  "gate_scores": {
+    "m4_backend_rc": "PASS",
+    "m5b_alpha": "PASS (100/100)",
+    "m5b_beta": "BLOCKED",
+    "topics_backend": "PASS (8/8 API-Endpoints, 681 Test-Zeilen)",
+    "topics_frontend": "BETA (1 Blocker: TC-URL-01)",
+    "unified_search": "PASS",
+    "dashboard_widgets": "PASS",
+    "product_gold_path_backend": "7/8",
+    "product_gold_path_frontend": "1/8"
   },
-
-  "rc_limitations": {
-    "total": 6,
-    "blocks_rc": 0,
-    "blocks_ga": 1,
-    "ga_blocking": ["RCL-01 GP-07 CONDITIONAL_PASS, kein PDF-Export"],
-    "po_decisions_open": 2,
-    "source": "reports/current/rc_limitation_register.json"
+  "blockers": [
+    {
+      "id": "BLOCK-02",
+      "severity": "HIGH",
+      "domain": "m5b_gate_cascade",
+      "title": "M5b-Freigabe blockiert durch M5a-Kaskade",
+      "detail": "Root cause: TEST_DATABASE_URL / M5a final_readiness_review nicht READY_FOR_M5B.",
+      "fix": "M5a Final Readiness erfordert externe Infrastruktur-Entscheidung",
+      "blocks": [
+        "m5b_production_readiness",
+        "m5c_start_gate"
+      ],
+      "note": "Einziger verbleibender Blocker. Root: TEST_DATABASE_URL."
+    }
+  ],
+  "implemented_features": {
+    "topics_model": "DONE — Task 64",
+    "topics_migration": "DONE — Task 65",
+    "topics_schemas": "DONE — Task 66",
+    "topics_repository": "DONE — Task 67",
+    "topics_service_and_merge": "DONE — Task 68",
+    "topics_api": "DONE — Task 69",
+    "topics_tests": "DONE — Task 70",
+    "unified_search_backend": "DONE — Task 71",
+    "unified_search_frontend": "DONE — Task 71",
+    "unified_search_tests": "DONE — Task 71",
+    "dashboard_topics_widgets_backend": "DONE — Task 72",
+    "dashboard_topics_widgets_frontend": "DONE — Task 72"
   },
-
-  "ga_gap_plan": {
-    "status": "DEFINIERT",
-    "mandatory_targets": 5,
-    "work_packages": 8,
-    "open_po_decisions": 3,
-    "estimated_score_after_sprint": "78-82",
-    "estimated_ga_score": "83-86 nach GA-Arbeitspaketen",
-    "source": "reports/current/ga_gap_plan.json",
-    "doc": "docs/ga_gap_plan.md"
+  "known_limitations_summary": {
+    "total": 3,
+    "high": 0,
+    "medium": 1,
+    "low": 2,
+    "blocking_gate": 0,
+    "ref": "reports/current/topics_release_report.json#known_limitations"
   },
-
-  "ui_technical_id_audit": {
-    "scanned_files": 57,
-    "visible_leaks": 0,
-    "verdict": "PASS",
-    "fixes_applied": 7,
-    "fixed_files": [
-      "DocumentMetaCard.jsx (3 Felder: id, workspaceId, ownerUserId)",
-      "AppShell.jsx (option-Text, status-bar, span)",
-      "DocumentsPage.jsx (Job-ID, page-header workspaceId)",
-      "DataQualityDashboard.jsx (latest_run_id)",
-      "SimpleListPage.jsx (item.id fallback)"
-    ],
-    "source": "reports/current/ui_technical_id_leak_audit.json"
-  },
-
-  "documentation": {
-    "truth_lint": "PASS",
-    "truth_lint_checks": "27/27",
-    "rc_limitations_doc": "docs/rc-limitations.md",
-    "ga_gap_plan_doc": "docs/ga_gap_plan.md",
-    "release_threshold_model_doc": "docs/release_threshold_model.md"
-  },
-
-  "security_constraints": {
-    "PROHIBIT_02": "EINGEHALTEN — kein RepairButton",
-    "PROHIBIT_06": "EINGEHALTEN — kein CleanupButton",
-    "PROHIBIT_08": "EINGEHALTEN — keine automatische M5c-Ausfuehrung",
-    "M5c_cleanup": "NO_GO",
-    "drift_readonly": "EINGEHALTEN",
-    "no_credentials_logged": "EINGEHALTEN",
-    "no_env_commit": "EINGEHALTEN"
-  },
-
-  "sprint_expectation": {
-    "sprint_scope": ["T09-T19 Topics-Backend", "T25-T27 AnalysisPage + ApproveButton", "T28-T33 Export Center MVP"],
-    "expected_score_after_sprint": "78-82",
-    "expected_gold_path_after_sprint": "7/8",
-    "rc_decision_after_sprint": "CONDITIONAL_RC — wenn Score >= 80 und GP-06 behoben",
-    "ga_decision_after_sprint": "BLOCKED — Score < 85, GP-07 CONDITIONAL_PASS"
-  },
-
-  "authority": "Nur maschinenlesbare Reports sind autoritativ. Manuelle Statusaussagen duerfen keinen Gate-Status setzen.",
-  "prohibit_overrides": [
-    "PROHIBIT-02: Kein RepairButton",
-    "PROHIBIT-06: Kein CleanupButton",
-    "PROHIBIT-08: Keine automatische M5c-Ausfuehrung",
-    "M5c Cleanup-Implementierung: NO_GO bis m5c_start_gate=PASS und PO-Sign-off"
+  "next_priorities": [
+    "Fix TC-URL-01 (30 Minuten) → Topics-Frontend RC-grade",
+    "Topics-Frontend-Tests verifizieren",
+    "M5a ROOT-CAUSE beheben → M5b-Gate-Kaskade auflösen"
   ]
 }

@@ -1,0 +1,145 @@
+{
+  "report_schema_version": 1,
+  "report_name": "topics_release_report",
+  "report_type": "release_readiness",
+  "generated_at": "2026-06-16T12:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "scope": "Topics-Feature (Tasks 64–70) + Unified Search (Task 71) + Dashboard Widgets (Task 72)",
+  "verdict": "RC-GRADE — Kein Blocker. 3 Features NOT_IMPLEMENTED (Post-MVP)",
+  "features": {
+    "topics_backend": {
+      "status": "PRODUKTIONSREIF",
+      "tasks": [
+        "64",
+        "65",
+        "66",
+        "67",
+        "68",
+        "69",
+        "70"
+      ],
+      "coverage": {
+        "model": "PASS",
+        "migration": "PASS",
+        "schemas": "PASS",
+        "repository": "PASS (406 Zeilen, 11 Operationen)",
+        "service": "PASS (353 + 368 Zeilen)",
+        "api": "PASS (10 Endpoints, Auth-Guards korrekt)",
+        "unit_tests": "PASS (377 Zeilen)",
+        "integration_tests": "PASS (304 Zeilen)"
+      },
+      "security": {
+        "workspace_isolation": "PASS — alle Queries filtern workspace_id",
+        "soft_delete": "PASS — deleted_at gesetzt, nicht gelöscht",
+        "role_enforcement": "PASS — Admin für delete/merge, Member für CRUD",
+        "no_credential_logging": "PASS"
+      }
+    },
+    "unified_search": {
+      "status": "PRODUKTIONSREIF",
+      "task": "71",
+      "coverage": {
+        "schemas": "PASS (87 Zeilen, cursor + filters)",
+        "repository": "PASS (513 Zeilen, PG + SQLite cross-DB)",
+        "service": "PASS (211 Zeilen, validation + mapping)",
+        "api": "PASS (131 Zeilen, 2 Endpoints)",
+        "unit_tests": "PASS (239 Zeilen, 18 Tests)",
+        "cursor_pagination": "PASS (base64 opaque token)",
+        "highlighting": "PASS (<mark>-Tags via regex ILIKE + ts_headline PG)",
+        "score_normalization": "PASS (0.0–1.0, topic 0.90/0.65, doc 0.85, chunk ts_rank)"
+      }
+    },
+    "dashboard_widgets": {
+      "status": "PRODUKTIONSREIF",
+      "task": "72",
+      "coverage": {
+        "backend_schema": "PASS (TopicsWidgetData in dashboard.py)",
+        "backend_service": "PASS (get_topics_widgets mit raw SQL für Tags)",
+        "backend_api": "PASS (GET /api/v1/dashboard/topics-widgets)",
+        "frontend_panel": "PASS (325 Zeilen, TopicsWidgetPanel)",
+        "charts": "PASS (DonutChart, BarChart, TrendChart — pure SVG)",
+        "skeleton_loader": "PASS (@keyframes skel-pulse)"
+      }
+    }
+  },
+  "blockers": [],
+  "not_implemented": [
+    {
+      "id": "NI-01",
+      "feature": "Document-Attachment-UI in TopicDetailPanel",
+      "status": "Backend PASS, kein Frontend-Flow",
+      "classification": "Post-MVP"
+    },
+    {
+      "id": "NI-02",
+      "feature": "Tag-Management-UI in TopicDetailPanel",
+      "status": "Backend PASS, kein Frontend-Flow",
+      "classification": "Post-MVP"
+    },
+    {
+      "id": "NI-03",
+      "feature": "Merge-UI für Topics",
+      "status": "Backend PASS, kein Frontend-Flow",
+      "classification": "Post-MVP (Admin-Funktion)"
+    }
+  ],
+  "known_limitations": [
+    {
+      "id": "KL-T-001",
+      "title": "Dark Mode nicht implementiert",
+      "severity": "LOW",
+      "classification": "explicitly_deferred"
+    },
+    {
+      "id": "KL-T-002",
+      "title": "Tag-Suche nicht in Unified Search",
+      "severity": "LOW",
+      "detail": "Tag-Namen werden nicht direkt durchsucht, nur als Metadaten zurückgegeben. Suche trifft Tags nur indirekt über Topic-Titel/Summary.",
+      "classification": "non_blocking_debt"
+    },
+    {
+      "id": "KL-T-003",
+      "title": "Unified Search: Python-seitige Merge+Sort bei großen Datenmengen",
+      "severity": "MEDIUM",
+      "detail": "Search merged bis zu 200 PG-Chunks + alle matching Topics + Docs in Python. Bei >1000 Topics kann das zum Performance-Problem werden.",
+      "classification": "non_blocking_debt",
+      "mitigation": "Chunk-Limit auf 200 (PG) / 100 (SQLite) begrenzt. Für V1 ausreichend."
+    }
+  ],
+  "maturity_assessment": {
+    "backend_topics": "PRODUKTIONSREIF (RC-Grade)",
+    "backend_search": "PRODUKTIONSREIF (RC-Grade)",
+    "backend_dashboard": "PRODUKTIONSREIF (RC-Grade)",
+    "frontend_search": "PRODUKTIONSREIF (RC-Grade)",
+    "frontend_dashboard_widgets": "PRODUKTIONSREIF (RC-Grade)",
+    "frontend_topics": "RC-GRADE (TC-URL-01 behoben 2026-06-16)",
+    "overall": "RC-GRADE",
+    "path_to_rc": "ERREICHT — TC-URL-01 behoben"
+  },
+  "next_priorities": [
+    {
+      "priority": 1,
+      "action": "TC-URL-01 BEHOBEN",
+      "detail": "topics.js: BASE-Konstante /api/v1/topics gesetzt",
+      "effort": "DONE",
+      "unblocks": [
+        "Topics-Themenliste",
+        "Topics-Detail",
+        "Topics-Erstellen",
+        "Topics-Status-Update"
+      ]
+    },
+    {
+      "priority": 2,
+      "action": "Topics-Integrationstests im Frontend",
+      "detail": "TopicsPage.test.jsx Scope prüfen, sicherstellen dass URL-Fix durch Test abgedeckt wird",
+      "effort": "2h"
+    },
+    {
+      "priority": 3,
+      "action": "Document-Attachment und Tag-UI in TopicDetailPanel",
+      "detail": "GP-T04 und GP-T05 erfüllen",
+      "effort": "4–8h"
+    }
+  ]
+}

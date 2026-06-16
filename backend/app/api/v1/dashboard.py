@@ -18,6 +18,7 @@ from app.schemas.dashboard import (
     DashboardQualityResponse,
     DashboardSummary,
     DashboardTopicsResponse,
+    TopicsWidgetData,
 )
 from app.services.dashboard_service import DashboardSummaryService
 
@@ -88,3 +89,11 @@ def dashboard_topics(
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> DashboardTopicsResponse:
     return service.list_topics(workspace_id=ctx.workspace_id, limit=limit)
+
+
+@router.get("/topics-widgets", response_model=TopicsWidgetData)
+def dashboard_topics_widgets(
+    ctx: Annotated[AuthContext, Depends(require_workspace_member)],
+    service: Annotated[DashboardSummaryService, Depends(get_dashboard_summary_service)],
+) -> TopicsWidgetData:
+    return service.get_topics_widgets(workspace_id=ctx.workspace_id)

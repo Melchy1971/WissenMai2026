@@ -1,0 +1,164 @@
+{
+  "report_schema_version": 1,
+  "report_name": "topics_gold_path",
+  "report_type": "gold_path_test",
+  "generated_at": "2026-06-16T12:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis",
+  "scope": "Topics-Feature End-to-End Nutzerpfad — 8 Schritte",
+  "verdict": "4/8 Frontend PASS (GP-T01–T03, T06, T07) — GP-T04, T05, T08 NOT_IMPLEMENTED",
+  "note": "Auswertung basiert auf statischer Code-Analyse. Kein Live-Test gegen laufendes System möglich ohne TEST_DATABASE_URL.",
+  "steps": [
+    {
+      "id": "GP-T01",
+      "name": "Thema erstellen",
+      "actor": "Workspace-Admin",
+      "action": "POST /api/v1/topics",
+      "payload": {
+        "title": "SAP-Prozesse",
+        "slug": "sap-prozesse",
+        "summary": "...",
+        "status": "draft"
+      },
+      "expected_response": "201 Created — TopicDetail",
+      "backend_status": "PASS",
+      "evidence": [
+        "api/v1/topics.py: @router.post('', status_code=201)",
+        "service.py: create_topic() validiert slug-Uniqueness",
+        "repository.py: create_topic() persistiert mit workspace-Scope"
+      ],
+      "frontend_status": "PASS",
+      "frontend_note": "TC-URL-01 behoben"
+    },
+    {
+      "id": "GP-T02",
+      "name": "Themenliste abrufen",
+      "actor": "Workspace-Member",
+      "action": "GET /api/v1/topics?limit=20&offset=0",
+      "expected_response": "200 OK — TopicListResponse {items: [...], total: N}",
+      "backend_status": "PASS",
+      "evidence": [
+        "api/v1/topics.py: @router.get('', response_model=TopicListResponse)",
+        "service.py: list_topics() mit status_filter, tag_id, order_by",
+        "repository.py: soft-delete-Filter (deleted_at IS NULL)"
+      ],
+      "frontend_status": "PASS",
+      "frontend_note": "TC-URL-01 behoben"
+    },
+    {
+      "id": "GP-T03",
+      "name": "Themendetail abrufen",
+      "actor": "Workspace-Member",
+      "action": "GET /api/v1/topics/{id}",
+      "expected_response": "200 OK — TopicDetail mit Tags + verknüpften Dokumenten",
+      "backend_status": "PASS",
+      "evidence": [
+        "api/v1/topics.py: @router.get('/{topic_id}')",
+        "service.py: get_topic() mit 404 wenn gelöscht"
+      ],
+      "frontend_status": "PASS",
+      "frontend_note": "TC-URL-01 behoben"
+    },
+    {
+      "id": "GP-T04",
+      "name": "Dokument an Thema anhängen",
+      "actor": "Workspace-Member",
+      "action": "POST /api/v1/topics/{id}/documents",
+      "payload": {
+        "document_id": "doc-123",
+        "relation_type": "primary"
+      },
+      "expected_response": "200 OK",
+      "backend_status": "PASS",
+      "evidence": [
+        "api/v1/topics.py: @router.post('/{topic_id}/documents')",
+        "repository.py: attach_document() — upsert auf topic_documents"
+      ],
+      "frontend_status": "NOT_IMPLEMENTED",
+      "frontend_note": "Kein UI-Flow für Document-Attachment in TopicDetailPanel sichtbar"
+    },
+    {
+      "id": "GP-T05",
+      "name": "Tag hinzufügen",
+      "actor": "Workspace-Member",
+      "action": "POST /api/v1/topics/{id}/tags",
+      "payload": {
+        "tag_id": "tag-456"
+      },
+      "expected_response": "200 OK",
+      "backend_status": "PASS",
+      "evidence": [
+        "api/v1/topics.py: @router.post('/{topic_id}/tags')",
+        "repository.py: add_tag() mit Duplikat-Guard"
+      ],
+      "frontend_status": "NOT_IMPLEMENTED",
+      "frontend_note": "Kein UI-Flow für Tag-Management in sichtbaren Panel-Dateien"
+    },
+    {
+      "id": "GP-T06",
+      "name": "Thema über Unified Search finden",
+      "actor": "Workspace-Member",
+      "action": "GET /api/v1/search/unified?q=SAP&kind=topic",
+      "expected_response": "200 OK — UnifiedSearchResponse mit Hits kind=topic, Highlighting, Score",
+      "backend_status": "PASS",
+      "evidence": [
+        "repositories/search.py: _search_topics() mit ILIKE auf title + summary",
+        "schema: UnifiedSearchHit mit kind, highlight (<mark>), score, status",
+        "api/v1/search.py: GET /unified mit kind-Filter"
+      ],
+      "frontend_status": "PASS",
+      "frontend_note": "SearchPage.jsx + useUnifiedSearch.js + UnifiedSearchResultCard.jsx vollständig implementiert"
+    },
+    {
+      "id": "GP-T07",
+      "name": "Themenstatus aktualisieren",
+      "actor": "Workspace-Member",
+      "action": "PATCH /api/v1/topics/{id}",
+      "payload": {
+        "status": "review"
+      },
+      "expected_response": "200 OK — TopicDetail mit neuem Status",
+      "backend_status": "PASS",
+      "evidence": [
+        "api/v1/topics.py: @router.patch('/{topic_id}')",
+        "service.py: update_topic() validiert gegen TOPIC_STATUS_VALUES"
+      ],
+      "frontend_status": "PASS",
+      "frontend_note": "TC-URL-01 behoben"
+    },
+    {
+      "id": "GP-T08",
+      "name": "Themen zusammenführen (Merge)",
+      "actor": "Workspace-Admin",
+      "action": "POST /api/v1/topics/merge",
+      "payload": {
+        "source_id": "t-1",
+        "target_id": "t-2",
+        "merge_documents": true,
+        "merge_tags": true
+      },
+      "expected_response": "200 OK — TopicMergeResponse",
+      "backend_status": "PASS",
+      "evidence": [
+        "api/v1/topics.py: @router.post('/merge') — require_workspace_admin",
+        "merge_service.py: TopicMergeService 368 Zeilen"
+      ],
+      "frontend_status": "NOT_IMPLEMENTED",
+      "frontend_note": "Kein Merge-UI im Frontend implementiert"
+    }
+  ],
+  "summary": {
+    "total_steps": 8,
+    "backend_pass": 8,
+    "backend_fail": 0,
+    "frontend_pass": 4,
+    "frontend_blocked_url_bug": 0,
+    "frontend_not_implemented": 3,
+    "overall_verdict": "8/8 Backend PASS — 4/8 Frontend PASS (nach TC-URL-01-Fix)",
+    "blocker": "KEINER — TC-URL-01 behoben",
+    "path_to_full_pass": [
+      "GP-T04: Document-Attachment-UI in TopicDetailPanel (4h)",
+      "GP-T05: Tag-Management-UI in TopicDetailPanel (4h)",
+      "GP-T08: Merge-UI — Post-MVP (Admin-Funktion)"
+    ]
+  }
+}

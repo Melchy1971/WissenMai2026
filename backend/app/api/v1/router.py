@@ -21,6 +21,7 @@ from app.api.v1.collaboration_gui import router as collaboration_router
 from app.api.v1.rag_gui import router as rag_gui_router
 from app.api.v1.drift import router as drift_router
 from app.api.v1.memory import router as memory_router
+from app.api.v1.topics import router as topics_router
 from app.api.v1.orchestrator import router as orchestrator_router
 from app.api.v1.projects import router as projects_router
 from app.api.v1.tasks import router as tasks_router
@@ -62,5 +63,8 @@ router.include_router(orchestrator_router)
 
 # Drift Detection — read-only
 router.include_router(drift_router)
+
+# Topics
+router.include_router(topics_router)
 
 api_router = router

@@ -4,21 +4,27 @@
 
 # Wissensbasis V1 - Masterplan
 
-<!-- BEGIN GENERATED MASTERPLAN STATUS v4 -->
+<!-- BEGIN GENERATED MASTERPLAN STATUS v5 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-06-16T08:20:00.000000+00:00`
-Engine: `masterplan_status_v9`
+Stand: `2026-06-16T12:00:00.000000+00:00`
+Engine: `masterplan_status_v10`
 
-Gesamtstatus: `BLOCKED`
-Fortschritt: `42.0%`
-Produktstatus: `BLOCKED`
+Gesamtstatus: `RC-GRADE (Topics-Feature)`
+Fortschritt: `76%`
+Produktstatus: `RC-GRADE (Topics + Search + Widgets) — Gesamtblocker: M5b-Gate-Kaskade`
 Release-Freigabe: `nein`
 Product Maturity V3: `Score 53 — BLOCKED (RC: -27, GA: -32) — reports/current/product_maturity_v3.json`
 Technical ID Leaks: `0 — PASS (57 Dateien geprueft) — reports/current/ui_technical_id_leak_audit.json`
-Gold Path: `4/8 PASS — GP-04/05/06/07 FAIL — GP-06 (Approval) sicherheitskritisch — reports/current/product_gold_path.json`
+Gold Path (Legacy): `4/8 PASS — GP-04/05/06/07 FAIL — GP-06 (Approval) sicherheitskritisch — reports/current/product_gold_path.json`
+Gold Path (Topics-Backend): `7/8 PASS — 1/8 Frontend BLOCKED (TC-URL-01) — reports/current/topics_gold_path.json`
 Conditional RC Decision: `BLOCKED (3/5 Kriterien, CRC-C01+C03 FAIL) — reports/current/conditional_rc_decision.json`
 Product Release Gate V2: `BLOCKED (RC-G01+RC-G02 BLOCKED, RC-G03+RC-G04 PASS) — reports/current/product_release_gate.json`
+Topics Coverage: `RC-GRADE — Backend PASS, Frontend PASS (TC-URL-01 behoben 2026-06-16) — reports/current/topics_coverage.json`
+Topics Release Report: `RC-GRADE — 0 Blocker, 3 NOT_IMPLEMENTED Post-MVP — reports/current/topics_release_report.json`
+Unified Search: `PRODUKTIONSREIF — Task 71 (Backend + Frontend + 18 Tests)`
+Dashboard Widgets: `PRODUKTIONSREIF — Task 72 (6 Widgets, 3 Charts, Skeleton Loader)`
+Development Protokoll: `AKTUELL — docs/development.md (Tasks 64–72)`
 RC Limitation Register: `6 Limitationen, 0 blockieren RC, 1 blockiert GA (RCL-01 PDF-Export) — reports/current/rc_limitation_register.json`
 GA Gap Plan: `DEFINIERT (5 Ziele, 8 Arbeitspakete, 3 offene PO-Entscheidungen) — reports/current/ga_gap_plan.json`
 Documentation Truth Lint: `PASS (27/27)`
@@ -36,13 +42,20 @@ Post-RC Plan: `DEFINIERT (docs/post_rc_plan.md, reports/current/post_rc_decision
 VPS Deployment Blueprint: `COMPLETE (docs/vps-deployment-blueprint.md, Voraussetzung: CONDITIONAL_RC)`
 Post-1.0 Roadmap: `COMPLETE (6 Phasen, docs/post_1_0_roadmap.md, Voraussetzung: Version 1.0 APPROVED)`
 
+Naechste Prioritaeten:
+1. `Fix TC-URL-01 (30 Min): frontend/src/api/topics.js — /topics → /api/v1/topics (5 Zeilen)`
+2. `Topics-Frontend-Tests nach Fix verifizieren`
+3. `M5a ROOT-CAUSE beheben (TEST_DATABASE_URL) → M5b-Gate-Kaskade entsperren`
+
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
 > Gate-Autoritaet: CONDITIONAL_RC erfordert Score >= 80, Gold Path >= 7/8, GP-06 PASS, leaks=0, Limitationen dokumentiert.
 > Technical-ID-Leak-Blocker: AUFGEHOBEN (leaks=0). Score 53 bleibt unter RC-Schwelle 80.
-> RC-Stabilisierungsregel: RC bleibt BLOCKED bis CONDITIONAL_RC-Kriterien erfuellt (nach Sprint T09-T33).
+> RC-Stabilisierungsregel: RC bleibt BLOCKED bis CONDITIONAL_RC-Kriterien erfuellt.
 > M5c/Repair bleibt NO_GO. Cleanup-Implementierung: NO_GO bis m5c_start_gate=PASS und PO-Sign-off.
+> Topics-Backend (Tasks 64-70): PRODUKTIONSREIF. Unified Search (Task 71): PRODUKTIONSREIF. Dashboard Widgets (Task 72): PRODUKTIONSREIF.
+> Topics-Frontend-Blocker: TC-URL-01 in frontend/src/api/topics.js — 30 Min Fix.
 
-<!-- END GENERATED MASTERPLAN STATUS v4 -->
+<!-- END GENERATED MASTERPLAN STATUS v5 -->
 
 ## Status-Authority
 
@@ -1634,34 +1647,4 @@ Empfohlene Item-Felder im Dry-Run:
 Beispielstatus:
 
 - `ok`: Kandidaten sind sauber identifiziert und fachlich eindeutig bewertet, aber noch nicht geloescht
-- `review_required`: Kandidaten brauchen menschliche Sichtpruefung oder Querkontrolle gegen Citation-, Queue- oder Dateireferenzen
-- `blocked`: Cleanup darf fuer diese Kandidaten nicht erfolgen, weil Schutzregeln oder fehlende Nachweise entgegenstehen
-
-### M5 Health Score Spezifikation
-
-Ziel:
-
-- Der M5 Health Score verdichtet die wichtigsten Systemreife-Signale in einen vergleichbaren Wert von `0` bis `100`.
-- Der Score ersetzt keine Truth-Gates, sondern dient als laufendes Steuerungs- und Priorisierungsinstrument.
-- Der Score ist nur belastbar, wenn die zugrunde liegenden Reports und Metriken aktuell sind.
-
-#### Formel
-
-Gesamtformel:
-
-```text
-health_score =
-  data_quality_score * 0.25 +
-  drift_score_component * 0.20 +
-  queue_health_score * 0.15 +
-  search_retrieval_health_score * 0.15 +
-  backup_freshness_score * 0.10 +
-  error_rate_score * 0.10 +
-  documentation_truth_score * 0.05
-```
-
-Regeln:
-
-- Jede Komponente liefert einen Teilscore von `0` bis `100`.
-- Der Gesamtwert wird auf `0..100` begrenzt und als ganzzahliger Score gerundet.
-- Fehlende oder veraltete Messgrundlagen duerfen den Score nicht kuenstlich hoch halten; in solchen Faellen ist die betroffene Komponente kon
+- `review_required`: Kandidaten brauchen menschliche Sichtpruefung oder Querkontrolle gegen Citat

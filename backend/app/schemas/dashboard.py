@@ -87,3 +87,24 @@ class DashboardQualityResponse(BaseModel):
 class DashboardTopicsResponse(BaseModel):
     items: list[DashboardTopicItem] = Field(default_factory=list)
     total: int = 0
+
+
+# -- Topics widget data --------------------------------------------------------
+
+class TopicsDayCount(BaseModel):
+    date: str   # ISO date "YYYY-MM-DD"
+    count: int
+
+
+class TopicTagCount(BaseModel):
+    name: str
+    count: int
+
+
+class TopicsWidgetData(BaseModel):
+    total: int = 0
+    by_status: dict[str, int] = Field(default_factory=dict)
+    new_last_7_days: int = 0
+    new_per_day: list[TopicsDayCount] = Field(default_factory=list)
+    unreviewed: int = 0
+    top_tags: list[TopicTagCount] = Field(default_factory=list)

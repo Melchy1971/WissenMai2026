@@ -40,3 +40,7 @@ export const dashboardApi = {
   getQuality: getDashboardQuality,
   getTopics: getDashboardTopics,
 };
+
+export function getDashboardTopicsWidgets(options = {}) {
+  return requestJson(`${BASE}/topics-widgets`, options);
+}

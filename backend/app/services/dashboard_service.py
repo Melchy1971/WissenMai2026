@@ -7,6 +7,7 @@ from app.models.analysis import AnalysisJob, AnalysisResult
 from app.models.data_quality import DataQualityRun
 from app.models.documents import BackgroundJob, Document
 from app.models.drift import DriftRun
+from app.models.topics import Topic, TopicTag
 from app.schemas.dashboard import (
     DashboardActivityItem,
     DashboardActivityResponse,
@@ -19,6 +20,9 @@ from app.schemas.dashboard import (
     DashboardSummary,
     DashboardTopicItem,
     DashboardTopicsResponse,
+    TopicsDayCount,
+    TopicTagCount,
+    TopicsWidgetData,
 )
 
 
@@ -290,3 +294,88 @@ def _safe_import_mime_type(payload: dict | None) -> str | None:
 
 def _safe_import_title(payload: dict | None) -> str:
     return _safe_import_filename(payload) or "Document import"
+
+    # -- Topics widget data ----------------------------------------------------
+
+    def get_topics_widgets(self, *, workspace_id: str) -> TopicsWidgetData:
+        """Aggregate Topics-model stats for dashboard widgets."""
+        from datetime import UTC, datetime, timedelta
+        from sqlalchemy import case, func, literal_column, select, text
+
+        # 1. Total + by_status
+        status_rows = self._session.execute(
+            select(Topic.status, func.count(Topic.id).label("cnt"))
+            .where(Topic.workspace_id == workspace_id, Topic.deleted_at.is_(None))
+            .group_by(Topic.status)
+        ).all()
+
+        by_status: dict[str, int] = {"draft": 0, "review": 0, "approved": 0, "archived": 0}
+        total = 0
+        for status, cnt in status_rows:
+            by_status[status] = int(cnt)
+            total += int(cnt)
+
+        unreviewed = by_status.get("draft", 0) + by_status.get("review", 0)
+
+        # 2. New last 7 days + per-day breakdown
+        cutoff = datetime.now(UTC) - timedelta(days=7)
+        new_rows = self._session.scalars(
+            select(Topic.created_at)
+            .where(
+                Topic.workspace_id == workspace_id,
+                Topic.deleted_at.is_(None),
+                Topic.created_at >= cutoff,
+            )
+        ).all()
+
+        day_counts: dict[str, int] = {}
+        for dt in new_rows:
+            day_key = dt.strftime("%Y-%m-%d")
+            day_counts[day_key] = day_counts.get(day_key, 0) + 1
+
+        # Fill last 7 days including zeros
+        new_per_day: list[TopicsDayCount] = []
+        for i in range(6, -1, -1):
+            d = (datetime.now(UTC) - timedelta(days=i)).strftime("%Y-%m-%d")
+            new_per_day.append(TopicsDayCount(date=d, count=day_counts.get(d, 0)))
+
+        new_last_7_days = sum(day_counts.values())
+
+        # 3. Top tags via JOIN to tags table (no ORM model — use text)
+        bind = self._session.get_bind()
+        dialect = bind.dialect.name if bind else "sqlite"
+
+        if dialect == "postgresql":
+            tag_sql = text("""
+                SELECT t.name, COUNT(tt.topic_id) AS cnt
+                FROM tags t
+                JOIN topic_tags tt ON tt.tag_id = t.id
+                JOIN topics tp ON tp.id = tt.topic_id
+                WHERE tp.workspace_id = :ws AND tp.deleted_at IS NULL
+                GROUP BY t.name
+                ORDER BY cnt DESC
+                LIMIT 10
+            """)
+        else:
+            tag_sql = text("""
+                SELECT t.name, COUNT(tt.topic_id) AS cnt
+                FROM tags t
+                JOIN topic_tags tt ON tt.tag_id = t.id
+                JOIN topics tp ON tp.id = tt.topic_id
+                WHERE tp.workspace_id = :ws AND tp.deleted_at IS NULL
+                GROUP BY t.name
+                ORDER BY cnt DESC
+                LIMIT 10
+            """)
+
+        tag_rows = self._session.execute(tag_sql, {"ws": workspace_id}).all()
+        top_tags = [TopicTagCount(name=str(row[0]), count=int(row[1])) for row in tag_rows]
+
+        return TopicsWidgetData(
+            total=total,
+            by_status=by_status,
+            new_last_7_days=new_last_7_days,
+            new_per_day=new_per_day,
+            unreviewed=unreviewed,
+            top_tags=top_tags,
+        )
