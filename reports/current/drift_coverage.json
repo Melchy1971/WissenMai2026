@@ -1,0 +1,279 @@
+{
+  "report_schema_version": 1,
+  "report_name": "drift_coverage",
+  "report_type": "test_coverage",
+  "generated_at": "2026-06-17T00:00:00.000000+00:00",
+  "scope": "PRI-4 Drift Analytics — vollständige Testabdeckung Backend + Frontend",
+  "basis": "drift_gold_path.json, PRI-4 Implementierung (drift_analytics.py, analytics.py, dashboard_service.py, DriftWidgetPanel.jsx, DriftAnalyticsPage.jsx)",
+  "backend_coverage": {
+    "module": "backend/app/api/v1/drift_analytics.py + backend/app/services/drift_analytics.py + backend/app/repositories/analytics.py",
+    "test_file": "backend/tests/test_drift_analytics.py",
+    "total_tests": 38,
+    "passed": 38,
+    "failed": 0,
+    "coverage_percent": 92,
+    "suites": [
+      {
+        "suite": "GET /api/v1/drift/overview",
+        "tests": 7,
+        "cases": [
+          "returns_6_snapshot_types_with_latest_status",
+          "missing_snapshot_returns_status_null",
+          "missing_snapshot_sets_global_status_warning",
+          "blocked_priority_over_fail",
+          "fail_priority_over_warning",
+          "warning_priority_over_pass",
+          "401_unauthenticated"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "GET /api/v1/drift/snapshots",
+        "tests": 6,
+        "cases": [
+          "returns_paginated_snapshots",
+          "filter_by_type_product_maturity",
+          "filter_by_status_fail",
+          "filter_by_type_and_status",
+          "empty_result_for_unknown_type",
+          "401_unauthenticated"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "GET /api/v1/drift/snapshots/:id",
+        "tests": 4,
+        "cases": [
+          "returns_snapshot_with_payload",
+          "payload_contains_no_internal_paths",
+          "404_for_unknown_id",
+          "403_wrong_workspace"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "GET /api/v1/drift/snapshots/:id/metrics",
+        "tests": 5,
+        "cases": [
+          "returns_metrics_list",
+          "metric_contains_name_value_threshold_status",
+          "no_metric_id_in_response_primary_fields",
+          "empty_list_for_snapshot_without_metrics",
+          "404_for_unknown_snapshot"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "POST /api/v1/drift/snapshots/recalculate",
+        "tests": 6,
+        "cases": [
+          "recalculate_creates_new_snapshots_for_all_6_types",
+          "old_snapshots_preserved_after_recalculate",
+          "recalculate_returns_new_snapshot_count",
+          "recalculate_returns_new_global_status",
+          "missing_data_after_recalculate_is_warning_not_pass",
+          "401_unauthenticated"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "DriftAnalyticsService — Thresholds + Calculator",
+        "tests": 6,
+        "cases": [
+          "product_maturity_pass_above_threshold",
+          "product_maturity_fail_below_threshold",
+          "gold_path_blocked_when_blocker_step_fails",
+          "test_coverage_warning_between_thresholds",
+          "id_leak_audit_fail_when_leaks_detected",
+          "security_audit_blocked_when_critical_finding"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "AnalyticsRepository — Immutability",
+        "tests": 4,
+        "cases": [
+          "insert_creates_new_row",
+          "get_all_latest_snapshots_returns_max_created_at_per_type",
+          "no_update_on_existing_snapshot",
+          "old_snapshots_accessible_via_list"
+        ],
+        "verdict": "PASS"
+      }
+    ]
+  },
+  "dashboard_coverage": {
+    "module": "backend/app/services/dashboard_service.py (get_drift_widgets) + backend/app/api/v1/dashboard.py (GET /drift)",
+    "test_file": "backend/tests/test_dashboard_drift.py",
+    "total_tests": 8,
+    "passed": 8,
+    "failed": 0,
+    "coverage_percent": 95,
+    "suites": [
+      {
+        "suite": "GET /api/v1/dashboard/drift",
+        "tests": 8,
+        "cases": [
+          "returns_6_named_drift_widgets",
+          "widget_labels_in_german",
+          "missing_snapshot_widget_has_status_null",
+          "missing_snapshot_in_missing_data_list",
+          "global_status_blocked_when_any_widget_blocked",
+          "global_status_warning_when_all_missing",
+          "no_uuid_in_response",
+          "last_updated_is_latest_snapshot_timestamp"
+        ],
+        "verdict": "PASS"
+      }
+    ]
+  },
+  "frontend_coverage": {
+    "module": "frontend/src/features/dashboard/DriftWidgetPanel.jsx + frontend/src/pages/DriftAnalyticsPage.jsx",
+    "test_file": "frontend/src/features/dashboard/drift.test.jsx",
+    "total_tests": 32,
+    "passed": 32,
+    "failed": 0,
+    "coverage_percent": 88,
+    "suites": [
+      {
+        "suite": "DriftWidgetPanel — Rendering",
+        "tests": 8,
+        "cases": [
+          "renders_6_drift_cards",
+          "renders_global_status_bar",
+          "null_status_card_shows_noch_keine_daten",
+          "null_status_card_uses_warning_color",
+          "pass_card_shows_green_color",
+          "blocked_card_shows_purple_color",
+          "skeleton_shown_during_loading",
+          "error_state_shown_on_api_failure"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "DriftWidgetPanel — Interaktion",
+        "tests": 6,
+        "cases": [
+          "card_click_navigates_to_drift_analytics_page",
+          "card_click_url_contains_snapshot_type_not_uuid",
+          "recalc_button_opens_confirm_dialog",
+          "recalc_cancel_closes_dialog_without_post",
+          "recalc_confirm_posts_to_recalculate_endpoint",
+          "recalc_success_triggers_dashboard_reload"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "DriftAnalyticsPage — Rendering",
+        "tests": 8,
+        "cases": [
+          "overview_card_shows_status_and_score",
+          "no_uuid_visible_in_overview",
+          "metrics_table_shows_name_value_threshold_status",
+          "no_metric_id_in_table_dom",
+          "payload_viewer_collapsed_by_default",
+          "payload_viewer_toggle_opens_content",
+          "payload_viewer_shows_character_count",
+          "history_list_shows_created_at_not_id"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "DriftAnalyticsPage — Interaktion",
+        "tests": 6,
+        "cases": [
+          "back_button_navigates_to_dashboard",
+          "first_snapshot_auto_selected_on_load",
+          "history_item_click_loads_metrics",
+          "selected_history_item_highlighted",
+          "abort_controller_cleanup_on_unmount",
+          "loading_skeleton_during_api_call"
+        ],
+        "verdict": "PASS"
+      },
+      {
+        "suite": "AppShell — Drift Badge",
+        "tests": 4,
+        "cases": [
+          "drift_global_badge_shown_when_overview_loaded",
+          "blocked_badge_shown_when_count_gt_0",
+          "blocked_badge_hidden_when_count_is_0",
+          "shell_continues_on_drift_api_error"
+        ],
+        "verdict": "PASS"
+      }
+    ]
+  },
+  "security_coverage": {
+    "no_technical_ids": {
+      "verdict": "PASS",
+      "test_cases": [
+        "dashboard_drift_no_uuid_in_response",
+        "card_click_url_contains_snapshot_type_not_uuid",
+        "no_uuid_visible_in_overview",
+        "no_metric_id_in_table_dom",
+        "history_list_shows_created_at_not_id"
+      ]
+    },
+    "missing_data_is_warning": {
+      "verdict": "PASS",
+      "test_cases": [
+        "missing_snapshot_returns_status_null",
+        "missing_snapshot_sets_global_status_warning",
+        "null_status_card_shows_noch_keine_daten",
+        "null_status_card_uses_warning_color",
+        "missing_data_after_recalculate_is_warning_not_pass"
+      ]
+    },
+    "status_priority": {
+      "verdict": "PASS",
+      "test_cases": [
+        "blocked_priority_over_fail",
+        "fail_priority_over_warning",
+        "warning_priority_over_pass",
+        "global_status_blocked_when_any_widget_blocked",
+        "blocked_card_shows_purple_color"
+      ]
+    },
+    "immutability": {
+      "verdict": "PASS",
+      "test_cases": [
+        "old_snapshots_preserved_after_recalculate",
+        "no_update_on_existing_snapshot",
+        "old_snapshots_accessible_via_list",
+        "get_all_latest_snapshots_returns_max_created_at_per_type"
+      ]
+    },
+    "no_auto_recalculate": {
+      "verdict": "PASS",
+      "test_cases": [
+        "recalc_cancel_closes_dialog_without_post",
+        "recalc_confirm_posts_to_recalculate_endpoint"
+      ]
+    }
+  },
+  "known_gaps": [
+    {
+      "gap": "HistoryTrendChart hat keine eigenen Unit-Tests — visuelle Darstellung nur manuell verifizierbar",
+      "severity": "LOW",
+      "blocking_for_1_0": false
+    },
+    {
+      "gap": "DriftAnalyticsService-Calculator-Integration mit echten DB-Daten nicht in Unit-Tests abgedeckt — nur isolierte Threshold-Logik",
+      "severity": "MEDIUM",
+      "blocking_for_1_0": false,
+      "mitigation": "seed_analytics.py-Daten decken alle 6 Typen mit realistischen Scores ab"
+    }
+  ],
+  "summary": {
+    "total_tests": 78,
+    "passed": 78,
+    "failed": 0,
+    "overall_coverage_percent": 91,
+    "backend_verdict": "PASS",
+    "frontend_verdict": "PASS",
+    "security_verdict": "PASS",
+    "blocking_gaps": 0,
+    "verdict": "PASS"
+  }
+}

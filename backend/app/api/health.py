@@ -1,8 +1,10 @@
 from fastapi import APIRouter
+from fastapi.responses import Response
 
 from app.core.config import settings
 from app.core.database import DatabaseConfigurationError, check_database_connection
 from app.core.errors import ServiceUnavailableApiError
+from app.observability.prometheus_metrics import metrics_response
 
 router = APIRouter(tags=["health"])
 
@@ -22,6 +24,13 @@ def database_health() -> dict[str, str]:
         raise ServiceUnavailableApiError(message="Database connection check failed") from exc
 
     return {"status": "ok"}
+
+
+@router.get("/metrics", include_in_schema=False)
+def prometheus_metrics() -> Response:
+    """Prometheus /metrics Endpoint. Gibt text/plain im Prometheus-Format zurück."""
+    content, content_type = metrics_response()
+    return Response(content=content, media_type=content_type)
 
 
 @router.get("/health/preflight")

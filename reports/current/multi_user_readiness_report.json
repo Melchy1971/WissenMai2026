@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "report_name": "multi_user_readiness_report",
+  "generated_at": "2026-06-17T14:30:00.000000+00:00",
+  "sprint": "PRI-7",
+  "scope_definition": {
+    "v1_constraint": "Single-User, keine Loginpflicht",
+    "vorbereitung": "workspace_id und owner_user_id in DB-Modellen vorhanden",
+    "ziel": "Architektur ist multi-user-ready, Enforcement erfolgt in V2"
+  },
+  "ist_analyse": {
+    "owner_scope": {
+      "status": "VORHANDEN",
+      "detail": "Document.owner_user_id vorhanden, nicht überall enforced",
+      "fundstellen": [
+        "models/documents.py: owner_user_id",
+        "repositories/documents.py: workspace_id Filter"
+      ]
+    },
+    "workspace_scope": {
+      "status": "VORHANDEN",
+      "detail": "workspace_id in Document, Topic, AnalysisJob, BackgroundJob, Export",
+      "luecken": [
+        "DriftRun: workspace_id vorhanden, Filter nicht konsistent",
+        "SearchUnified: workspace_id Parameter, aber kein Default-Fallback"
+      ]
+    },
+    "repository_filter": {
+      "status": "TEILWEISE",
+      "detail": "DocumentRepository: workspace_id Filter in list_documents(), get_document(). TopicRepository: workspace_id in list_topics(). AnalysisJobRepository: workspace_id.",
+      "luecken": [
+        "DriftRepository: kein workspace_id Filter in allen Methoden",
+        "SearchRepository: search_unified ohne workspace_id-Guard"
+      ]
+    },
+    "dtos": {
+      "status": "TEILWEISE",
+      "detail": "Schemas enthalten workspace_id in Responses",
+      "luecken": [
+        "Kein UserContext-DTO",
+        "workspace_id nicht in allen Response-Schemas"
+      ]
+    },
+    "services": {
+      "status": "TEILWEISE",
+      "luecken": [
+        "DashboardService: get_summary() hat workspace_id, list_activity() hat workspace_id — OK",
+        "ExportService: workspace_id vorhanden",
+        "BackupRestoreService: kein workspace_id (systemweit — korrekt)"
+      ]
+    },
+    "audit_logs": {
+      "status": "FEHLT",
+      "detail": "Kein strukturiertes Audit-Log für user_id + action + resource"
+    },
+    "exporte": {
+      "status": "VORHANDEN",
+      "detail": "ExportService filtert nach workspace_id"
+    },
+    "analysejobs": {
+      "status": "VORHANDEN",
+      "detail": "AnalysisJobService filtert nach workspace_id"
+    }
+  },
+  "luecken_gesamt": [
+    {
+      "id": "MU-01",
+      "bereich": "SearchRepository",
+      "beschreibung": "search_unified ohne workspace_id-Guard",
+      "prioritaet": "HIGH"
+    },
+    {
+      "id": "MU-02",
+      "bereich": "DriftRepository",
+      "beschreibung": "Nicht alle Methoden filtern nach workspace_id",
+      "prioritaet": "MEDIUM"
+    },
+    {
+      "id": "MU-03",
+      "bereich": "Audit-Log",
+      "beschreibung": "Kein strukturiertes Audit-Log",
+      "prioritaet": "MEDIUM"
+    },
+    {
+      "id": "MU-04",
+      "bereich": "UserContext-Service",
+      "beschreibung": "Kein UserContext-Service (V1: Default-User)",
+      "prioritaet": "LOW (V2)"
+    },
+    {
+      "id": "MU-05",
+      "bereich": "Scope-Middleware",
+      "beschreibung": "Kein Request-scoped WorkspaceContext (V1: aus ENV)",
+      "prioritaet": "LOW (V2)"
+    }
+  ],
+  "readiness_score": {
+    "workspace_scope_db_models": "PASS",
+    "repository_filter_konsistenz": "PARTIAL",
+    "service_scope": "PASS",
+    "dto_coverage": "PARTIAL",
+    "audit_log": "FEHLT",
+    "gesamturteil": "MULTI_USER_PREPARED",
+    "bewertung": "Architektur ist für V2-Multi-User vorbereitet. 2 Repository-Lücken (MU-01, MU-02) und fehlendes Audit-Log (MU-03) müssen vor V2-Go-Live geschlossen werden."
+  }
+}

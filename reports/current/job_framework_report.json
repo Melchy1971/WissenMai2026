@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "report_name": "job_framework_report",
+  "generated_at": "2026-06-17T14:00:00.000000+00:00",
+  "sprint": "PRI-7",
+  "ist_stand": {
+    "job_systeme": {
+      "import": {
+        "service": "BackgroundJobService",
+        "datei": "services/jobs/background_jobs.py",
+        "status_modell": [
+          "pending",
+          "running",
+          "completed",
+          "failed",
+          "retryable"
+        ],
+        "retry": "VORHANDEN (backoff, max_attempts=3)",
+        "timeout": "settings.background_job_lock_timeout_seconds=300",
+        "progress": "VORHANDEN (progress_current, progress_total, progress_message)",
+        "cancellation": "FEHLT",
+        "dead_letter": "FEHLT",
+        "cleanup": "FEHLT",
+        "status_history": "FEHLT"
+      },
+      "analyse": {
+        "service": "AnalysisJobService",
+        "datei": "services/analysis/service.py",
+        "status_modell": [
+          "pending",
+          "running",
+          "completed",
+          "failed",
+          "cancelled"
+        ],
+        "retry": "TEILWEISE (RETRY_LIMIT=2 hardcoded)",
+        "timeout": "FEHLT",
+        "progress": "FEHLT",
+        "cancellation": "VORHANDEN (cancel_job)",
+        "dead_letter": "FEHLT",
+        "cleanup": "FEHLT",
+        "status_history": "FEHLT"
+      },
+      "export": {
+        "service": "ExportService",
+        "datei": "services/export/service.py",
+        "status_modell": [
+          "QUEUED",
+          "RUNNING",
+          "COMPLETED",
+          "FAILED",
+          "CANCELLED"
+        ],
+        "retry": "TEILWEISE (retry nur für FAILED/CANCELLED)",
+        "timeout": "FEHLT",
+        "progress": "FEHLT",
+        "cancellation": "VORHANDEN",
+        "dead_letter": "FEHLT",
+        "cleanup": "FEHLT",
+        "status_history": "FEHLT"
+      },
+      "drift_recalculation": {
+        "service": "DriftRunEngine",
+        "datei": "services/drift_run_engine.py",
+        "status_modell": [
+          "pending",
+          "running",
+          "completed",
+          "failed"
+        ],
+        "retry": "FEHLT",
+        "timeout": "FEHLT",
+        "progress": "FEHLT",
+        "cancellation": "FEHLT",
+        "dead_letter": "FEHLT",
+        "cleanup": "FEHLT",
+        "status_history": "FEHLT"
+      },
+      "indexierung": {
+        "service": "SearchIndexRebuildService",
+        "datei": "services/search_index_service.py",
+        "status_modell": "via BackgroundJob",
+        "retry": "Über BackgroundJobService",
+        "timeout": "Über BackgroundJobService",
+        "progress": "VORHANDEN",
+        "cancellation": "FEHLT",
+        "dead_letter": "FEHLT",
+        "cleanup": "FEHLT",
+        "status_history": "FEHLT"
+      }
+    },
+    "gemeinsame_interface_luecken": [
+      "Kein gemeinsames JobInterface-Protokoll",
+      "Status-Enum unterschiedlich pro System (lowercase vs UPPERCASE)",
+      "Kein einheitlicher Dead-Letter-Queue-Mechanismus",
+      "Kein Job-Status-History-Log",
+      "Kein Worker-Concurrency-Limit"
+    ]
+  },
+  "soll_interface": {
+    "job_interface": {
+      "methoden": [
+        "enqueue",
+        "claim",
+        "complete",
+        "fail",
+        "retry",
+        "cancel",
+        "get_status",
+        "list_history"
+      ],
+      "felder": {
+        "id": "UUID",
+        "job_type": "Enum: import|analysis|export|drift|reindex",
+        "status": "Enum: PENDING|RUNNING|COMPLETED|FAILED|RETRYING|CANCELLED|DEAD",
+        "workspace_id": "str",
+        "created_at": "datetime",
+        "started_at": "datetime|None",
+        "finished_at": "datetime|None",
+        "attempt_count": "int",
+        "max_attempts": "int (default: 3)",
+        "timeout_seconds": "int (default: 300)",
+        "progress_current": "int",
+        "progress_total": "int",
+        "progress_message": "str",
+        "last_error_code": "str|None",
+        "last_error_message": "str|None",
+        "dead_letter_at": "datetime|None",
+        "cancelled_at": "datetime|None",
+        "cancelled_by": "str|None"
+      }
+    },
+    "retry_strategie": {
+      "type": "exponential_backoff",
+      "base_seconds": 30,
+      "max_attempts": 3,
+      "backoff_multiplier": 2,
+      "max_backoff_seconds": 300,
+      "nicht_retryable_fehler": [
+        "VALIDATION_ERROR",
+        "PERMISSION_DENIED",
+        "RESOURCE_NOT_FOUND"
+      ]
+    },
+    "timeout_strategie": {
+      "import": 300,
+      "analysis": 600,
+      "export": 120,
+      "drift": 180,
+      "reindex": 900
+    },
+    "dead_letter_queue": {
+      "trigger": "attempt_count >= max_attempts",
+      "status": "DEAD",
+      "aufbewahrung_tage": 30,
+      "benachrichtigung": "Log-Event JOB_DEAD mit job_id, job_type, last_error"
+    },
+    "progress_events": {
+      "mechanismus": "DB-Update auf progress_current + progress_message",
+      "sse_endpoint": "GET /api/v1/jobs/:id/events (Server-Sent Events)",
+      "poll_fallback": "GET /api/v1/jobs/:id (Polling alle 2s)"
+    },
+    "cancellation": {
+      "flow": "API → SET status=CANCELLED, cancelled_at, cancelled_by → Worker prüft cancelled_flag zwischen Schritten",
+      "cooperative": true,
+      "timeout_nach_cancel_request_seconds": 30
+    },
+    "job_cleanup": {
+      "completed": "7 Tage aufbehalten",
+      "failed": "14 Tage aufbehalten",
+      "dead": "30 Tage aufbehalten",
+      "cleanup_job": "täglich, via Cron oder Background-Thread"
+    },
+    "status_historie": {
+      "tabelle": "job_status_history",
+      "felder": [
+        "job_id",
+        "from_status",
+        "to_status",
+        "changed_at",
+        "changed_by",
+        "reason"
+      ],
+      "retention": "90 Tage"
+    }
+  },
+  "migrationsplan": {
+    "phase_1": "BackgroundJobService als Referenz-Implementierung ausbauen (Cancellation + Cleanup + History)",
+    "phase_2": "AnalysisJobService und ExportService auf gemeinsames JobInterface migrieren",
+    "phase_3": "DriftRunEngine und SearchIndexService integrieren",
+    "phase_4": "Job-Status-History-Tabelle (Migration 0027)",
+    "aufwand_gesamt": "XL (1–2 Wochen)"
+  }
+}

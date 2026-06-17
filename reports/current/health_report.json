@@ -1,0 +1,88 @@
+{
+  "report_id": "health-check-extended-v1",
+  "sprint": "PRI-7",
+  "task": "#42",
+  "generated_at": "2026-06-17T00:00:00Z",
+  "implementation": {
+    "endpoint_live": "GET /health/live",
+    "endpoint_ready": "GET /health/ready",
+    "file": "backend/app/api/health_extended.py",
+    "registered_in": "backend/app/main.py",
+    "status": "IMPLEMENTED"
+  },
+  "components": {
+    "database": {
+      "check": "_db_check()",
+      "method": "check_database_connection() via psycopg",
+      "states": ["UP", "DOWN"],
+      "detail_example": "connection ok"
+    },
+    "filesystem": {
+      "check": "_filesystem_check()",
+      "method": "write/delete .healthcheck in original_file_store_dir",
+      "states": ["UP", "DEGRADED"],
+      "detail_example": "uploads les- und schreibbar"
+    },
+    "metrics": {
+      "check": "_metrics_check()",
+      "method": "import prometheus_metrics._PROMETHEUS_AVAILABLE",
+      "states": ["UP", "DEGRADED"],
+      "detail_example": "prometheus_client verfügbar"
+    },
+    "job_queue": {
+      "check": "_job_queue_check()",
+      "method": "SELECT status, COUNT(*) FROM background_jobs GROUP BY status",
+      "states": ["UP", "DEGRADED", "DOWN"],
+      "thresholds": {"DEGRADED": "running > 10", "DOWN": "running > 50"},
+      "detail_example": "running=0, pending=3"
+    },
+    "storage": {
+      "check": "_storage_check()",
+      "method": "psutil.disk_usage('/')",
+      "states": ["UP", "DEGRADED", "DOWN"],
+      "thresholds": {"DEGRADED": ">80%", "DOWN": ">90%"},
+      "detail_example": "62.4% used"
+    },
+    "reports": {
+      "check": "_reports_check()",
+      "method": "os.path.isdir('reports/current')",
+      "states": ["UP", "DEGRADED"],
+      "detail_example": "reports/current vorhanden"
+    },
+    "provider": {
+      "check": "_provider_check()",
+      "method": "stub (no live ping — avoids cascading timeouts in health check)",
+      "states": ["UP"],
+      "rationale": "Live-Ping würde Health-Latenz erhöhen; Provider-Timeouts separat via /metrics tracked"
+    }
+  },
+  "aggregation": {
+    "rule": "DOWN > DEGRADED > UP",
+    "http_200": "status UP or DEGRADED",
+    "http_503": "status DOWN"
+  },
+  "response_schema": {
+    "status": "UP | DEGRADED | DOWN",
+    "version": "string",
+    "uptime_seconds": "float",
+    "timestamp": "ISO-8601",
+    "components": {
+      "<name>": {
+        "status": "UP | DEGRADED | DOWN",
+        "detail": "string"
+      }
+    }
+  },
+  "test_scenarios": {
+    "service_unavailable": "Wenn DATABASE_URL fehlt → database DOWN → overall DOWN → HTTP 503",
+    "provider_timeout": "Provider-Timeouts werden nicht im Health-Check simuliert; via Prometheus-Metriken observable",
+    "storage_readonly": "Wenn Upload-Dir nicht schreibbar → filesystem DEGRADED → overall DEGRADED → HTTP 200",
+    "metrics_unavailable": "prometheus_client nicht installiert → metrics DEGRADED → overall DEGRADED → HTTP 200"
+  },
+  "ga_impact": {
+    "closes": ["GA-OPS-03"],
+    "maturity_areas": ["operations", "monitoring"],
+    "previous_gap": "Health-Check nur Datenbankstatus, keine Komponentenübersicht",
+    "current_state": "7 Komponenten, 3 Status-Stufen, Liveness + Readiness getrennt"
+  }
+}

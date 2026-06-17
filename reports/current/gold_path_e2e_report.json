@@ -1,0 +1,126 @@
+{
+  "report_schema_version": "1.0",
+  "report_name": "Gold Path E2E Report",
+  "report_type": "GOLD_PATH_E2E",
+  "generated_at": "2026-06-17T10:30:00Z",
+  "sprint": "PRI-5",
+  "source": "e2e_report.json",
+  "note": "Jeder Gold Path Schritt muss mindestens einen PASS-E2E-Test haben.",
+  "gold_path_e2e_mapping": [
+    {
+      "gp_id": "GP-01",
+      "name": "Login / Bereichsauswahl",
+      "e2e_flow": "E2E-01 (Login)",
+      "spec_files": [
+        "frontend/tests/gui_truth/test_01_login.spec.js",
+        "frontend/tests/gui_truth/test_02_auth_bootstrap.spec.js"
+      ],
+      "tests_covering": 4,
+      "verdict": "PASS",
+      "security_critical": false
+    },
+    {
+      "gp_id": "GP-02",
+      "name": "Dokument importieren",
+      "e2e_flow": "E2E-01 (Import Flow)",
+      "spec_files": [
+        "frontend/tests/gui_truth/test_05_upload.spec.js"
+      ],
+      "tests_covering": 7,
+      "verdict": "PASS",
+      "security_critical": false
+    },
+    {
+      "gp_id": "GP-03",
+      "name": "Dokument suchen",
+      "e2e_flow": "E2E-02 (Search Flow)",
+      "spec_files": [
+        "frontend/tests/gui_truth/test_06_search.spec.js"
+      ],
+      "tests_covering": 7,
+      "verdict": "PASS",
+      "security_critical": false
+    },
+    {
+      "gp_id": "GP-04",
+      "name": "Themen finden und bearbeiten",
+      "e2e_flow": "E2E-08 (Topics Flow)",
+      "spec_files": [
+        "frontend/tests/gui_truth/test_18_topics_flow.spec.js"
+      ],
+      "tests_covering": 7,
+      "verdict": "PASS",
+      "security_critical": false
+    },
+    {
+      "gp_id": "GP-05",
+      "name": "Analyse starten und Ergebnis anzeigen",
+      "e2e_flow": "E2E-03 (Analysis Flow)",
+      "spec_files": [
+        "frontend/tests/gui_truth/test_13_analysis_flow.spec.js"
+      ],
+      "tests_covering": 6,
+      "verdict": "PASS",
+      "security_critical": false
+    },
+    {
+      "gp_id": "GP-06",
+      "name": "Analyse freigeben und Ergebnis übernehmen",
+      "e2e_flow": "E2E-04 (Approval Flow)",
+      "spec_files": [
+        "frontend/tests/gui_truth/test_14_approval_flow.spec.js"
+      ],
+      "tests_covering": 6,
+      "verdict": "PASS",
+      "security_critical": true,
+      "security_rules_verified": [
+        "Member → 403 bei Approve-Endpunkt",
+        "PROHIBIT-08: Import nur nach confirm=true",
+        "Topics nach Import in status=draft",
+        "DRAFT zeigt Freigabeanforderungs-Hinweis"
+      ]
+    },
+    {
+      "gp_id": "GP-07",
+      "name": "Export erzeugen",
+      "e2e_flow": "E2E-05 (Export Flow)",
+      "spec_files": [
+        "frontend/tests/gui_truth/test_15_export_flow.spec.js"
+      ],
+      "tests_covering": 6,
+      "verdict": "PASS",
+      "security_critical": false
+    },
+    {
+      "gp_id": "GP-08",
+      "name": "Dashboard Status prüfen",
+      "e2e_flow": "E2E-06 (Dashboard & Drift Flow)",
+      "spec_files": [
+        "frontend/tests/gui_truth/test_16_dashboard_drift_flow.spec.js"
+      ],
+      "tests_covering": 8,
+      "verdict": "PASS",
+      "security_critical": false
+    }
+  ],
+  "additional_coverage": [
+    {
+      "name": "Error Flow",
+      "e2e_flow": "E2E-07",
+      "spec_file": "frontend/tests/gui_truth/test_17_error_flow.spec.js",
+      "tests_covering": 7,
+      "verdict": "PASS",
+      "note": "Kein direkter GP, deckt Fehlerbehandlung über alle Flows ab"
+    }
+  ],
+  "summary": {
+    "gold_path_steps_total": 8,
+    "gold_path_steps_covered": 8,
+    "gold_path_steps_pass": 8,
+    "gp06_pass": true,
+    "security_rules_verified": true,
+    "additional_flows_covered": 1,
+    "overall_verdict": "PASS",
+    "gate_assessment": "RC_READY — alle 8 GP-Schritte durch E2E-Tests abgedeckt und PASS"
+  }
+}

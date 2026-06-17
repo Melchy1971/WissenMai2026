@@ -1,0 +1,145 @@
+{
+  "report_schema_version": 1,
+  "report_name": "export_release_report",
+  "report_type": "feature_release_report",
+  "generated_at": "2026-06-17T00:00:00.000000+00:00",
+  "feature": "Export Center (PRI-3)",
+  "evaluation_method": "Synthese aus export_gold_path.json, export_coverage.json, export_center_product_ready.json (PRI-3 aktualisiert)",
+
+  "implemented_features": {
+    "export_center": {
+      "status": "IMPLEMENTIERT",
+      "url": "/export",
+      "description": "Zentrales Export-Center: Job-Liste, Status-Anzeige, Download, Retry"
+    },
+    "pdf_export": {
+      "status": "IMPLEMENTIERT",
+      "scope": "IN_SCOPE_1_0",
+      "endpoint": "POST /api/v1/export/jobs {format: 'pdf'}",
+      "sources": ["analysis_result (approved)", "topic"],
+      "templates": ["Standard-Bericht"],
+      "renderer": "pdfkit",
+      "note": "Quellen immer enthalten. Keine technischen IDs im Output."
+    },
+    "markdown_export": {
+      "status": "IMPLEMENTIERT",
+      "scope": "IN_SCOPE_1_0",
+      "endpoint": "POST /api/v1/export/jobs {format: 'markdown'}",
+      "sources": ["topic"],
+      "options": {
+        "include_documents": "optional",
+        "include_sources": "immer — nicht deaktivierbar"
+      }
+    },
+    "json_export": {
+      "status": "IMPLEMENTIERT",
+      "scope": "IN_SCOPE_1_0",
+      "endpoint": "POST /api/v1/export/jobs {format: 'json'}",
+      "sources": ["search_result", "document_collection"],
+      "options": {
+        "filter_state": "wird im Job-Metadaten und Export eingeschlossen"
+      }
+    },
+    "export_templates": {
+      "status": "IMPLEMENTIERT",
+      "endpoint": "GET /api/v1/export/templates?format=pdf",
+      "note": "System-Templates. Custom-Templates POST_1_0."
+    },
+    "retry_mechanism": {
+      "status": "IMPLEMENTIERT",
+      "endpoint": "POST /api/v1/export/jobs/:id/retry"
+    },
+    "draft_guard": {
+      "status": "IMPLEMENTIERT",
+      "frontend": "ExportButton nicht sichtbar bei status=draft. Hinweis-Banner mit Freigabe-Link.",
+      "backend": "POST /export/jobs: 403 wenn source analysis_result.status != 'approved'"
+    },
+    "workspace_isolation": {
+      "status": "IMPLEMENTIERT",
+      "note": "Alle Export-Endpoints prüfen workspace_id aus JWT. 403 bei Cross-Workspace-Zugriff."
+    },
+    "no_technical_ids": {
+      "status": "IMPLEMENTIERT",
+      "scope": "UI + Export-Output",
+      "note": "UUIDs intern gehalten. PDF/Markdown/JSON-Output enthält keine UUIDs als Primärtext. Dateinamen ohne UUIDs."
+    }
+  },
+
+  "integration_in_produktbereiche": {
+    "suche": {
+      "status": "IMPLEMENTIERT",
+      "entry_point": "ExportButton in SearchResultsToolbar",
+      "export_source": "Aktuelles Suchergebnis (inkl. Filterzustand)",
+      "format": "JSON"
+    },
+    "analyse": {
+      "status": "IMPLEMENTIERT",
+      "entry_point": "ExportButton in AnalysisResultDetail",
+      "export_source": "Genehmigtes Analyseergebnis",
+      "formats": ["PDF"],
+      "guard": "Nur bei status=approved. Draft → Hinweis-Banner."
+    },
+    "themen": {
+      "status": "IMPLEMENTIERT",
+      "entry_point": "ExportButton in TopicDetail",
+      "export_source": "Topic mit Quellen (+ optionale Dokumente)",
+      "formats": ["PDF", "Markdown"]
+    },
+    "dokumente": {
+      "status": "IMPLEMENTIERT",
+      "entry_point": "Mehrfachauswahl in DocumentList → CollectionExportButton",
+      "export_source": "Dokumenten-Sammlung",
+      "format": "JSON"
+    }
+  },
+
+  "routing": {
+    "export_center": "/export",
+    "job_detail": "/export/jobs/:id",
+    "note": "Alle Export-Einstiegspunkte routen nach Joberstellung ins Export-Center. Statusfeedback inline via Toast + Badge im Export-Center-Link in der Navigation."
+  },
+
+  "security": {
+    "no_technical_ids_in_output": "PASS",
+    "no_secrets_in_output": "PASS",
+    "draft_analysis_blocked": "PASS",
+    "workspace_isolation": "PASS",
+    "auth_required_for_download": "PASS"
+  },
+
+  "test_results": {
+    "backend_tests": "42/42 PASS (94% Coverage)",
+    "frontend_tests": "28/28 PASS (91% Coverage)",
+    "security_tests": "5/5 PASS",
+    "gold_path_main": "12/12 PASS",
+    "gold_path_additional": "4/4 PASS",
+    "source": "export_coverage.json, export_gold_path.json"
+  },
+
+  "known_limitations": [
+    {
+      "id": "EXP-LIM-01",
+      "description": "Bulk-Download (ZIP) nicht verfügbar",
+      "workaround": "Einzeldownload je Job",
+      "severity": "LOW",
+      "scope": "POST_1_0"
+    },
+    {
+      "id": "EXP-LIM-02",
+      "description": "Job-History auf 50 Einträge begrenzt (keine Pagination)",
+      "severity": "LOW",
+      "scope": "POST_1_0"
+    },
+    {
+      "id": "EXP-LIM-03",
+      "description": "Custom PDF-Templates nicht verfügbar (nur System-Templates)",
+      "severity": "LOW",
+      "scope": "POST_1_0"
+    }
+  ],
+
+  "verdict": "RELEASE_CANDIDATE",
+  "gp_07": "PASS",
+  "blocking_for_1_0": false,
+  "next_priority": "PRI-4 Dashboard Drift Analytics"
+}

@@ -1,0 +1,122 @@
+{
+  "report_schema_version": 1,
+  "report_name": "technical_id_leak_gate",
+  "report_type": "release_gate",
+  "generated_at": "2026-06-17T10:30:00Z",
+  "gate_id": "GATE-18",
+  "rule": "Keine technischen IDs (UUIDs, interne Schluessel, Dateipfade) als sichtbarer Text in Endanwender-UI, Exporten oder Reports.",
+  "checks": [
+    {
+      "id": "TIG-01",
+      "area": "Frontend DOM — statische Analyse",
+      "tool": "scripts/audit_ui_technical_ids.py",
+      "scope": "frontend/src (72 Dateien, excl. /api/, /tests/, /lib/, Admin-Ausnahmen)",
+      "patterns_checked": [
+        "document.id", "document.workspaceId", "document.ownerUserId",
+        "user.id", "workspace.id", "job.id", "run.id",
+        "latest_run_id", "run_id", "workspaceId als Tag-Inhalt",
+        "ownerUserId als JSX-Ausdruck", "technische dt-Labels", "uuid-Feld",
+        "item.id als Tag-Inhalt"
+      ],
+      "allowed_exclusions": [
+        "key={} (React-intern)",
+        "value={} (Form-Attribut)",
+        "onClick/onChange/on*={} (Event-Handler)",
+        "if() Bedingungen (keine Renderausgabe)",
+        "href/to={} (URL-Routing)",
+        "data-testid / data-* (Test-Attribute)",
+        "API-Layer (src/api/)",
+        "Tests (src/tests/)",
+        "Admin-Scope-Ausnahmen (AdminDiagnosticsPage.jsx)"
+      ],
+      "files_scanned": 72,
+      "leaks_found": 0,
+      "false_positives_corrected": 8,
+      "false_positive_reason": "onClick-Callbacks und if()-Conditionals triggerten job.id-Pattern — kein sichtbarer Text",
+      "status": "PASS"
+    },
+    {
+      "id": "TIG-02",
+      "area": "Backend DTO — Unit Tests",
+      "tool": "backend/tests/test_id_leak_gate.py",
+      "scope": "Topics, Analysis-Jobs, Export-Jobs, Dashboard, Error-DTOs, Dateipfade",
+      "test_classes": [
+        "TestTopicDtoIdLeak (3 Tests)",
+        "TestAnalysisJobDtoIdLeak (3 Tests)",
+        "TestExportDtoIdLeak (3 Tests)",
+        "TestDashboardDtoIdLeak (2 Tests)",
+        "TestErrorDtoIdLeak (5 Tests)",
+        "TestInternalPathLeak (3 Tests)"
+      ],
+      "tests_total": 19,
+      "tests_passed": 19,
+      "tests_failed": 0,
+      "rules_enforced": [
+        "UUID niemals in Display-Feldern: name, title, label, summary, message, filename",
+        "UUID erlaubt in ID-Feldern: id, result_id, job_id, topic_id, document_id",
+        "Kein Stacktrace im Error-DTO",
+        "Kein interner Dateipfad in Error-Message",
+        "Fehlende Daten ergeben data_quality=WARNING, nicht PASS"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "TIG-03",
+      "area": "E2E DOM-Traversal — Playwright",
+      "tool": "frontend/tests/gui_truth/test_19_id_leak_gate.spec.js",
+      "scope": "Dashboard, Topics-Liste, Analysis-Job-Detail, Analysis-Result, Export-Center, Drift-Analytics, Error-States",
+      "tests_total": 8,
+      "tests_passed": 8,
+      "tests_failed": 0,
+      "method": "TreeWalker(SHOW_TEXT) — prüft alle sichtbaren Textknoten, excl. <script>, <style>, <meta>",
+      "mock_data": "Echte UUID-Werte in ID-Feldern der Mock-Responses — sicherstellt dass sie NICHT im DOM landen",
+      "checks_per_page": ["UUID_PATTERN /[0-9a-f]{8}-...-[0-9a-f]{12}/i", "INTERNAL_PATH_PATTERN /(home|usr|var|tmp|...)/"],
+      "status": "PASS"
+    },
+    {
+      "id": "TIG-04",
+      "area": "Export-Dateinamen",
+      "scope": "PDF, Markdown, JSON Exporte",
+      "rule": "Dateiname liest sich als Klartext (z.B. analyse_wissensmanagement_2026-06-17.pdf), kein UUID-Segment",
+      "tests_total": 1,
+      "tests_passed": 1,
+      "status": "PASS"
+    },
+    {
+      "id": "TIG-05",
+      "area": "Interne Dateipfade",
+      "scope": "Alle Error-DTOs, alle Display-Felder in allen DTO-Typen",
+      "pattern": "/(home|usr|var|tmp|opt|sessions|app|backend|frontend)/",
+      "tests_total": 4,
+      "tests_passed": 4,
+      "status": "PASS"
+    }
+  ],
+  "summary": {
+    "checks_total": 5,
+    "checks_passed": 5,
+    "checks_failed": 0,
+    "checks_warning": 0,
+    "frontend_files_scanned": 72,
+    "backend_unit_tests": 19,
+    "e2e_tests": 8,
+    "total_tests": 27,
+    "leaks_found": 0
+  },
+  "security_constraints": {
+    "SEC-01_no_technical_ids_visible": "PASS",
+    "SEC-02_no_stacktrace_in_error_dto": "PASS",
+    "SEC-03_no_internal_path_in_response": "PASS",
+    "SEC-04_missing_data_yields_warning_not_pass": "PASS",
+    "SEC-05_export_filename_human_readable": "PASS"
+  },
+  "ci_integration": {
+    "static_audit_command": "python3 scripts/audit_ui_technical_ids.py --quiet",
+    "unit_test_command": "pytest backend/tests/test_id_leak_gate.py -m unit_fast --noconftest",
+    "e2e_command": "npx playwright test frontend/tests/gui_truth/test_19_id_leak_gate.spec.js",
+    "fail_on": "any leak found (exit 1 from audit script, any test FAIL)",
+    "ci_blocking": true
+  },
+  "verdict": "PASS",
+  "rc_assessment": "PASS — 0 Leaks in 72 Frontend-Dateien, 19 Backend-Tests, 8 E2E-Tests. Gate ist CI-blockend."
+}

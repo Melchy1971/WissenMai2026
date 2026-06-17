@@ -1,0 +1,125 @@
+{
+  "report_schema_version": 1,
+  "report_name": "dashboard_release_report",
+  "report_type": "feature_release_report",
+  "generated_at": "2026-06-17T00:00:00.000000+00:00",
+  "feature": "Dashboard Drift Analytics (PRI-4)",
+  "evaluation_method": "Synthese aus drift_gold_path.json, drift_coverage.json, statische Code-Analyse PRI-4-Implementierung",
+  "implemented_features": {
+    "dashboard_drift_widgets": {
+      "status": "IMPLEMENTIERT",
+      "url": "/dashboard → DriftWidgetPanel (data-testid='drift-widget-section')",
+      "description": "6 Drift-Analytics-Karten: Produktreife, Gold Path, Release Gate, Test Coverage, Technische ID Prüfung, Sicherheitsaudit. GlobalStatusBar zeigt aggregierten Status.",
+      "endpoint": "GET /api/v1/dashboard/drift → DashboardDriftResponse"
+    },
+    "appshell_drift_badge": {
+      "status": "IMPLEMENTIERT",
+      "description": "DriftGlobalBadge im AppShell-Statusbar (best-effort, kein Fehler-State bei API-Ausfall). BlockedBadge am Dashboard-Navpunkt wenn blockedCount > 0.",
+      "colors": {
+        "PASS": "#2e7d32",
+        "WARNING": "#e65100",
+        "FAIL": "#c62828",
+        "BLOCKED": "#6a1a6a"
+      }
+    },
+    "drift_detail_page": {
+      "status": "IMPLEMENTIERT",
+      "url": "/drift-analytics/:snapshotType",
+      "sections": [
+        "OverviewCard — aktueller Status/Score",
+        "MetricsTable — name, value, threshold, status",
+        "PayloadViewer — collapsible, Zeichenanzahl",
+        "HistoryTrendChart + HistoryList — Score-Verlauf, Snapshot-Auswahl"
+      ],
+      "note": "Keine UUIDs in UI sichtbar. snapshotType als URL-Parameter, nicht UUID."
+    },
+    "recalculate_workflow": {
+      "status": "IMPLEMENTIERT",
+      "trigger": "Manueller Button → RecalcDialog → Bestätigung → POST /api/v1/drift/snapshots/recalculate",
+      "constraints": [
+        "Kein Auto-Recalculate (PROHIBIT-08)",
+        "Alte Snapshots bleiben erhalten (immutable)",
+        "Fehlende Daten nach Recalculate → WARNING nicht PASS"
+      ]
+    },
+    "analytics_data_model": {
+      "status": "IMPLEMENTIERT",
+      "tables": ["analytics_snapshots", "analytics_metrics"],
+      "migration": "20260617_0025_analytics_snapshots.py",
+      "repository": "AnalyticsRepository — INSERT-only, frozen dataclasses",
+      "service": "DriftAnalyticsService — THRESHOLDS-Dict, 6 Calculators"
+    },
+    "api_endpoints": {
+      "status": "IMPLEMENTIERT",
+      "endpoints": [
+        "GET /api/v1/drift/overview",
+        "GET /api/v1/drift/snapshots",
+        "GET /api/v1/drift/snapshots/:id",
+        "GET /api/v1/drift/snapshots/:id/metrics",
+        "POST /api/v1/drift/snapshots/recalculate"
+      ]
+    }
+  },
+  "not_in_scope_1_0": [
+    {
+      "feature": "Drift-Benachrichtigungen / Alerts bei Status-Wechsel",
+      "reason": "POST_1_0 — erfordert Notification-Service"
+    },
+    {
+      "feature": "Drift-Verlauf als exportierbare Datei (CSV/PDF)",
+      "reason": "POST_1_0 — Export-Center kann später erweitert werden"
+    },
+    {
+      "feature": "Konfigurierbare Thresholds pro Workspace",
+      "reason": "POST_1_0 — THRESHOLDS-Dict zentral, Admin-UI nicht geplant"
+    }
+  ],
+  "security_constraints_verified": {
+    "keine_technischen_ids_sichtbar": {
+      "status": "PASS",
+      "evidence": "snapshot_type (String) als URL-Param und Navigationsschlüssel. UUIDs nur intern für DB-Queries. Verifiziert in drift_coverage.json: 5 Test-Cases."
+    },
+    "fehlende_daten_ergeben_warning": {
+      "status": "PASS",
+      "evidence": "DashboardSummaryService: snap is None → all_statuses.append('WARNING'). DriftCard: status===null → WARNING-Farbe + 'Noch keine Daten'. Verifiziert in drift_coverage.json: 5 Test-Cases."
+    },
+    "status_prioritaet_blocked_fail_warning_pass": {
+      "status": "PASS",
+      "evidence": "_PRIORITY={'PASS':0,'WARNING':1,'FAIL':2,'BLOCKED':3}. max(...key=_PRIORITY.get). Verifiziert in drift_coverage.json: 5 Test-Cases."
+    },
+    "snapshots_immutable": {
+      "status": "PASS",
+      "evidence": "AnalyticsRepository: INSERT-only, kein UPDATE/DELETE. Recalculate erstellt neue Zeilen. Alte Snapshots per get_all_snapshots_by_type abrufbar. Verifiziert: 4 Test-Cases."
+    },
+    "kein_auto_recalculate_prohibit_08": {
+      "status": "PASS",
+      "evidence": "RecalcDialog erfordert explizite Bestätigung vor POST. Kein automatischer Trigger durch AppShell oder DriftWidgetPanel. Verifiziert: 2 Test-Cases."
+    },
+    "kein_repair_button_prohibit_02": {
+      "status": "PASS",
+      "evidence": "DriftWidgetPanel und DriftAnalyticsPage enthalten keinen RepairButton, keine automatischen Reparatur-Aktionen."
+    },
+    "kein_cleanup_button_prohibit_06": {
+      "status": "PASS",
+      "evidence": "Kein CleanupButton in Drift Analytics UI. Alte Snapshots werden nie automatisch gelöscht."
+    },
+    "keine_internen_dateipfade_sichtbar": {
+      "status": "PASS",
+      "evidence": "DriftAnalyticsService: payload-Dict enthält keine Serverpfade (/sessions/, C:\\). PayloadViewer zeigt nur API-Response-Inhalt."
+    }
+  },
+  "abschlussregel": {
+    "bedingung": "Dashboard Drift PASS → PRI-5 Release Hardening starten",
+    "status": "ERFÜLLT",
+    "nachweis": "drift_gold_path.json: 10/10 PASS, 2/2 Additional Paths PASS, 7/7 Security Checks PASS. drift_coverage.json: 78/78 Tests PASS, 0 blocking gaps."
+  },
+  "summary": {
+    "gold_path_verdict": "PASS",
+    "coverage_verdict": "PASS",
+    "security_verdict": "PASS",
+    "blocking_items": 0,
+    "open_post_1_0_items": 3,
+    "release_decision": "FREIGEGEBEN für PRI-5",
+    "next_step": "PRI-5 Release Hardening starten"
+  }
+}

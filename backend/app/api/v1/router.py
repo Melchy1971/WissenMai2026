@@ -23,9 +23,11 @@ from app.api.v1.drift import router as drift_router
 from app.api.v1.memory import router as memory_router
 from app.api.v1.topics import router as topics_router
 from app.api.v1.orchestrator import router as orchestrator_router
+from app.api.v1.export import router as export_router
 from app.api.v1.projects import router as projects_router
 from app.api.v1.tasks import router as tasks_router
 from app.api.v1.tools import router as tools_router
+from app.api.v1.drift_analytics import router as drift_analytics_router
 
 router = APIRouter()
 
@@ -66,5 +68,11 @@ router.include_router(drift_router)
 
 # Topics
 router.include_router(topics_router)
+
+# Export Center
+router.include_router(export_router)
+
+# Dashboard Drift Analytics (PRI-4)
+router.include_router(drift_analytics_router)
 
 api_router = router

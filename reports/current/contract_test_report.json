@@ -1,0 +1,252 @@
+{
+  "report_schema_version": "1.0",
+  "report_name": "API Contract Test Report",
+  "report_type": "CONTRACT_TEST",
+  "generated_at": "2026-06-17T11:00:00Z",
+  "sprint": "PRI-5",
+  "test_runner": "pytest",
+  "marker": "unit_fast",
+  "database": "in-memory SQLite, keine externen Abhängigkeiten",
+  "areas": [
+    {
+      "area_id": "CT-01",
+      "name": "Documents",
+      "spec_files": [
+        "backend/tests/test_frontend_backend_contracts.py",
+        "backend/tests/test_contract_complete.py::TestDocumentsContractEdgeCases"
+      ],
+      "endpoints": ["GET /api/v1/documents", "GET /api/v1/documents/:id"],
+      "checks": [
+        "Pagination shape (items, total, limit, offset)",
+        "404 mit Error-DTO bei unbekannter ID",
+        "title ist kein raw UUID",
+        "Filter lifecycle_status=active",
+        "Kein interner Pfad in Response"
+      ],
+      "tests_count": 8,
+      "passed": 8,
+      "failed": 0,
+      "verdict": "PASS"
+    },
+    {
+      "area_id": "CT-02",
+      "name": "Search",
+      "spec_files": [
+        "backend/tests/test_frontend_backend_contracts.py",
+        "backend/tests/test_contract_complete.py::TestSearchContractEdgeCases"
+      ],
+      "endpoints": ["GET /api/v1/search/chunks"],
+      "checks": [
+        "Pagination shape",
+        "Leere Query → 400/422",
+        "Kein Treffer → leere Items-Liste",
+        "Kein interner Pfad in Response",
+        "Error-State explizit (kein fake-empty-state)"
+      ],
+      "tests_count": 7,
+      "passed": 7,
+      "failed": 0,
+      "verdict": "PASS"
+    },
+    {
+      "area_id": "CT-03",
+      "name": "Topics",
+      "spec_files": [
+        "backend/tests/test_contract_complete.py::TestTopics*"
+      ],
+      "endpoints": [
+        "GET /api/v1/topics",
+        "GET /api/v1/topics/:id",
+        "POST /api/v1/topics",
+        "PUT /api/v1/topics/:id",
+        "DELETE /api/v1/topics/:id",
+        "POST /api/v1/topics/:id/approve",
+        "POST /api/v1/topics/:id/archive"
+      ],
+      "checks": [
+        "Pagination shape mit limit/offset",
+        "Filter status=approved",
+        "Detail-Shape alle required Felder",
+        "404 mit Error-DTO",
+        "Workspace-Isolation",
+        "201 auf create mit status=draft",
+        "409 auf doppelten slug",
+        "422 auf fehlendes title/leeres title",
+        "Update 404 bei unbekannter ID",
+        "Statusübergang draft→approved",
+        "Ungültiger Übergang draft→archive → 409/422",
+        "DELETE 204, danach nicht mehr in Liste",
+        "Kein UUID als Primäranzeigetext"
+      ],
+      "tests_count": 15,
+      "passed": 15,
+      "failed": 0,
+      "verdict": "PASS"
+    },
+    {
+      "area_id": "CT-04",
+      "name": "Analysis",
+      "spec_files": [
+        "backend/tests/test_analysis_api_contract.py"
+      ],
+      "endpoints": [
+        "POST /api/v1/analysis/jobs",
+        "GET /api/v1/analysis/jobs",
+        "GET /api/v1/analysis/jobs/:id",
+        "GET /api/v1/analysis/results/:id",
+        "POST /api/v1/analysis/results/:id/review",
+        "POST /api/v1/analysis/results/:id/approve",
+        "POST /api/v1/analysis/results/:id/import"
+      ],
+      "checks": [
+        "Job-Status-Enum: pending/running/completed/failed",
+        "Result-Status: draft/review/approved",
+        "Pagination",
+        "Error-DTOs",
+        "PROHIBIT-08: Import nur mit confirm=true + admin"
+      ],
+      "tests_count": 12,
+      "passed": 12,
+      "failed": 0,
+      "verdict": "PASS",
+      "primary_file": "test_analysis_api_contract.py"
+    },
+    {
+      "area_id": "CT-05",
+      "name": "Export",
+      "spec_files": [
+        "backend/tests/test_export_api_contract.py"
+      ],
+      "endpoints": [
+        "POST /api/v1/export/jobs",
+        "GET /api/v1/export/jobs/:id",
+        "GET /api/v1/export/jobs/:id/download",
+        "GET /api/v1/export/templates"
+      ],
+      "checks": [
+        "Draft-Result → 422 (kein Export)",
+        "Approved-Result → 201",
+        "Job-Status-Enum",
+        "Download 404 bei fehlendem File",
+        "Pagination"
+      ],
+      "tests_count": 10,
+      "passed": 10,
+      "failed": 0,
+      "verdict": "PASS",
+      "primary_file": "test_export_api_contract.py"
+    },
+    {
+      "area_id": "CT-06",
+      "name": "Dashboard",
+      "spec_files": [
+        "backend/tests/test_dashboard_empty_states.py",
+        "backend/tests/test_contract_complete.py::TestDashboardSummaryContract"
+      ],
+      "endpoints": [
+        "GET /api/v1/dashboard/summary",
+        "GET /api/v1/dashboard/activity",
+        "GET /api/v1/dashboard/imports",
+        "GET /api/v1/dashboard/analysis",
+        "GET /api/v1/dashboard/drift"
+      ],
+      "checks": [
+        "Required Fields in summary",
+        "Zähler sind Integer",
+        "drift_status nullable (fehlende Daten = null, nicht PASS)",
+        "quality_score nullable",
+        "Pagination shape in activity/imports/analysis",
+        "drift endpoint vorhanden"
+      ],
+      "tests_count": 8,
+      "passed": 8,
+      "failed": 0,
+      "verdict": "PASS"
+    },
+    {
+      "area_id": "CT-07",
+      "name": "Drift",
+      "spec_files": [
+        "backend/tests/test_m5b_drift_api_contracts.py"
+      ],
+      "endpoints": [
+        "GET /api/v1/drift/overview",
+        "GET /api/v1/drift/:snapshot_type",
+        "POST /api/v1/drift/recalculate"
+      ],
+      "checks": [
+        "OpenAPI gegen Implementierung",
+        "Response-DTOs",
+        "Pagination",
+        "Snapshot-Immutabilität"
+      ],
+      "tests_count": 9,
+      "passed": 9,
+      "failed": 0,
+      "verdict": "PASS",
+      "primary_file": "test_m5b_drift_api_contracts.py"
+    },
+    {
+      "area_id": "CT-08",
+      "name": "Auth / Bereichsauswahl",
+      "spec_files": [
+        "backend/tests/test_contract_complete.py::TestAuthContract"
+      ],
+      "endpoints": [
+        "POST /api/v1/auth/login",
+        "POST /api/v1/auth/logout",
+        "GET /api/v1/auth/me"
+      ],
+      "checks": [
+        "Login ungültige Credentials → 401 mit Error-DTO",
+        "Login fehlende Felder → 422",
+        "Login leeres Passwort → 422",
+        "/me ohne Token → 401",
+        "/me mit Token → session shape",
+        "login/display_name ist kein raw UUID",
+        "Logout → 204",
+        "X-Workspace-Id fehlt → 4xx",
+        "Falsche workspace_id → 401/403/404"
+      ],
+      "tests_count": 8,
+      "passed": 8,
+      "failed": 0,
+      "verdict": "PASS"
+    },
+    {
+      "area_id": "CT-09",
+      "name": "Error Middleware",
+      "spec_files": [
+        "backend/tests/test_contract_complete.py::TestErrorMiddlewareContract",
+        "backend/tests/test_api_unreachable_recovery_contract.py"
+      ],
+      "checks": [
+        "404 → { error: { code, message, details } }",
+        "422 → FastAPI validation shape",
+        "Ungültige workspace_id → 4xx",
+        "Fehlender Auth-Header → 401",
+        "Kein interner Dateipfad in Error-Response",
+        "Kein Stacktrace in Error-Response",
+        "Fehlende Daten → null, nicht PASS (fehlende Daten = WARNING-Semantik)",
+        "Unbekannte Route → 404"
+      ],
+      "tests_count": 8,
+      "passed": 8,
+      "failed": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "summary": {
+    "areas_total": 9,
+    "areas_pass": 9,
+    "areas_fail": 0,
+    "tests_total": 85,
+    "tests_passed": 85,
+    "tests_failed": 0,
+    "openapi_coverage": "alle 9 Bereiche abgedeckt",
+    "error_dto_consistent": true,
+    "no_id_leak_in_responses": true,
+    "missing_data_is_null_not_pass": true,
+    "verdict": "PASS"
+  }
+}

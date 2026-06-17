@@ -89,6 +89,29 @@ Quellen: `reports/current/analysis_sprint_gate.json`, `reports/current/analysis_
 
 Nächster Sprint PRI-3: Export Center (GP-07), Release-Gate entsperren (TEST_DATABASE_URL), Suche KWIC.
 
+## PRI-4 Abschluss — Dashboard Drift Analytics (Stand 2026-06-17)
+
+Sprint PRI-4 "Dashboard Drift Analytics" abgeschlossen. 10/10 Tasks (#3–#12) completed. Sprint-Gate PASS.
+
+| Kennzahl | Wert |
+|---|---|
+| Tasks abgeschlossen | 10/10 |
+| Gold-Path DGP-01–DGP-10 | 10/10 PASS |
+| Additional Paths | 2/2 PASS |
+| Security Checks | 7/7 PASS |
+| Test-Coverage (Gesamt) | 78 Tests PASS |
+| Backend Coverage | 92% |
+| Frontend Coverage | 88% |
+| Blocking Gaps | 0 |
+
+Dashboard Drift Analytics ist vollständig implementiert: Datenmodell (Migration 0025, analytics_snapshots + analytics_metrics), AnalyticsRepository (INSERT-only, frozen dataclasses), DriftAnalyticsService (THRESHOLDS-Dict, 6 Calculators), 5 REST-Endpoints (/api/v1/drift/*), DriftWidgetPanel (6 Karten, GlobalStatusBar, RecalcDialog), DriftAnalyticsPage (4 Sektionen), AppShell-Integration (DriftGlobalBadge, BlockedBadge).
+
+Security-Constraints eingehalten: PROHIBIT-02 (kein RepairButton), PROHIBIT-06 (kein CleanupButton), PROHIBIT-08 (POST /recalculate nur nach Confirm-Dialog). Fehlende Daten → WARNING (nicht PASS). BLOCKED(3) > FAIL(2) > WARNING(1) > PASS(0). Snapshots immutable. Keine technischen IDs sichtbar.
+
+**Abschlussregel erfüllt:** Dashboard Drift PASS → PRI-5 Release Hardening starten.
+
+Quellen: `reports/current/drift_gold_path.json`, `reports/current/drift_coverage.json`, `reports/current/dashboard_release_report.json`.
+
 ## Drift v2 (Stand 2026-06-15)
 
 Route `/drift` → `DriftPage` → `drift_v2/DriftDashboard` — aktiv.

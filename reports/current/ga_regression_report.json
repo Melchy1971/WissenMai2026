@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "report_name": "ga_regression_report",
+  "generated_at": "2026-06-17T14:40:00.000000+00:00",
+  "sprint": "PRI-7",
+  "bereiche": {
+    "documents": {
+      "unit": {
+        "status": "TEILWEISE",
+        "vorhanden": [
+          "test_document_model.py",
+          "test_document_service.py"
+        ],
+        "fehlend": [
+          "Edge-Cases: leere PDF, Sonderzeichen im Titel"
+        ]
+      },
+      "integration": {
+        "status": "GESPERRT",
+        "grund": "TEST_DATABASE_URL (SCGB-01)"
+      },
+      "e2e": {
+        "status": "SPEZIFIZIERT"
+      },
+      "performance": {
+        "status": "SPEZIFIZIERT",
+        "ziel": "Upload 10 MB < 5s"
+      },
+      "security": {
+        "status": "SPEZIFIZIERT",
+        "pruefpunkte": [
+          "workspace_id Isolation",
+          "owner_user_id Validation"
+        ]
+      }
+    },
+    "search": {
+      "unit": {
+        "status": "TEILWEISE",
+        "fehlend": [
+          "Sonderzeichen-Handling",
+          "Leeranfrage"
+        ]
+      },
+      "integration": {
+        "status": "GESPERRT",
+        "grund": "SCGB-01 + GIN-Index fehlt"
+      },
+      "performance": {
+        "status": "SPEZIFIZIERT",
+        "ziel": "Suchanfrage < 500ms bei 10k Chunks"
+      },
+      "security": {
+        "status": "SPEZIFIZIERT",
+        "pruefpunkte": [
+          "workspace_id in search_unified",
+          "keine Kreuzsuche"
+        ]
+      }
+    },
+    "topics": {
+      "unit": {
+        "status": "TEILWEISE"
+      },
+      "integration": {
+        "status": "GESPERRT",
+        "grund": "SCGB-01"
+      },
+      "e2e": {
+        "status": "SPEZIFIZIERT"
+      }
+    },
+    "analysis": {
+      "unit": {
+        "status": "TEILWEISE",
+        "fehlend": [
+          "Provider-Timeout-Simulation",
+          "Retry-Logik"
+        ]
+      },
+      "integration": {
+        "status": "GESPERRT",
+        "grund": "SCGB-01"
+      },
+      "contract": {
+        "status": "SPEZIFIZIERT",
+        "beschreibung": "Provider-API-Kontrakt (Request/Response-Schema)"
+      }
+    },
+    "approval": {
+      "unit": {
+        "status": "VORHANDEN"
+      },
+      "security": {
+        "status": "VORHANDEN",
+        "pruefpunkte": [
+          "DRAFT zeigt Freigabe-Hinweis",
+          "nur APPROVED exportierbar",
+          "keine technischen IDs"
+        ]
+      },
+      "e2e": {
+        "status": "SPEZIFIZIERT"
+      }
+    },
+    "export": {
+      "unit": {
+        "status": "TEILWEISE"
+      },
+      "integration": {
+        "status": "GESPERRT",
+        "grund": "SCGB-01"
+      },
+      "security": {
+        "status": "VORHANDEN",
+        "pruefpunkte": [
+          "nur APPROVED exportierbar",
+          "workspace_id Scope"
+        ]
+      },
+      "performance": {
+        "status": "SPEZIFIZIERT",
+        "ziel": "PDF-Export < 10s"
+      }
+    },
+    "dashboard": {
+      "unit": {
+        "status": "TEILWEISE",
+        "fehlend": [
+          "Leerer-Workspace-Case",
+          "Null-Werte in Summary"
+        ]
+      },
+      "integration": {
+        "status": "GESPERRT",
+        "grund": "SCGB-01"
+      },
+      "performance": {
+        "status": "SPEZIFIZIERT",
+        "ziel": "Dashboard-Load < 1s"
+      }
+    },
+    "drift": {
+      "unit": {
+        "status": "VORHANDEN"
+      },
+      "integration": {
+        "status": "GESPERRT",
+        "grund": "SCGB-01"
+      },
+      "e2e": {
+        "status": "SPEZIFIZIERT"
+      }
+    },
+    "reports": {
+      "unit": {
+        "status": "TEILWEISE"
+      },
+      "security": {
+        "status": "VORHANDEN",
+        "pruefpunkte": [
+          "Snapshots immutable",
+          "alte Snapshots erhalten"
+        ]
+      }
+    },
+    "jobs": {
+      "unit": {
+        "status": "TEILWEISE",
+        "fehlend": [
+          "DLQ-Logik",
+          "Cancellation-Flow",
+          "Status-History"
+        ]
+      },
+      "integration": {
+        "status": "GESPERRT",
+        "grund": "SCGB-01"
+      }
+    }
+  },
+  "test_typen_matrix": {
+    "unit": "TEILWEISE (70% Coverage geschätzt)",
+    "integration": "GESPERRT (SCGB-01)",
+    "contract": "SPEZIFIZIERT",
+    "e2e": "SPEZIFIZIERT",
+    "performance": "SPEZIFIZIERT",
+    "security": "TEILWEISE VORHANDEN",
+    "accessibility": "NICHT_BEWERTET"
+  },
+  "gesperrt_tests": {
+    "grund": "SCGB-01 (TEST_DATABASE_URL nicht konfiguriert)",
+    "betroffen": [
+      "alle Integration-Tests",
+      "alle E2E-Tests gegen echte DB"
+    ]
+  },
+  "gesamtstatus": "TEILWEISE",
+  "ga_blocking": true,
+  "naechste_schritte": [
+    "SCGB-01 schließen → Integration-Tests aktivieren",
+    "Unit-Test-Gaps schließen (Sonderzeichen, Edge-Cases)",
+    "E2E-Framework aufsetzen (Playwright empfohlen)",
+    "Performance-Benchmarks implementieren (locust oder pytest-benchmark)",
+    "Accessibility-Audit (axe-core oder Lighthouse)"
+  ]
+}

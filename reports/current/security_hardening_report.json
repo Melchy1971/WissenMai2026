@@ -1,0 +1,161 @@
+{
+  "report_schema_version": "1.0",
+  "report_name": "Security Hardening Report",
+  "report_type": "SECURITY_AUDIT",
+  "generated_at": "2026-06-17T11:15:00Z",
+  "sprint": "PRI-5",
+  "areas": [
+    {
+      "area_id": "SH-01",
+      "name": "Secret Handling",
+      "source_report": "reports/current/secret_scan_report.json",
+      "checks_total": 8,
+      "checks_pass": 8,
+      "checks_fail": 0,
+      "checks_warning": 0,
+      "verdict": "PASS",
+      "key_findings": [
+        "Keine Klartextpasswörter im Code",
+        "Keine committed .env-Datei (außer .env.example)",
+        "SecretInput-Komponente maskiert Werte korrekt",
+        "Test-Fixtures verwenden nur synthetische Token"
+      ]
+    },
+    {
+      "area_id": "SH-02",
+      "name": "Privacy Mode",
+      "source_report": "reports/current/privacy_mode_report.json",
+      "checks_total": 6,
+      "checks_pass": 6,
+      "checks_fail": 0,
+      "checks_warning": 0,
+      "verdict": "PASS",
+      "key_findings": [
+        "PrivacyModeBanner korrekt an/abgeschaltet",
+        "SECRET-Dokumente in RAG gesperrt",
+        "Audit-Log filtert SECRET-Einträge",
+        "LLM-Provider erhält keine klassifizierten Inhalte"
+      ]
+    },
+    {
+      "area_id": "SH-03",
+      "name": "Data Classification",
+      "source_report": "reports/current/data_classification_report.json",
+      "checks_total": 8,
+      "checks_pass": 8,
+      "checks_fail": 0,
+      "checks_warning": 0,
+      "verdict": "PASS",
+      "key_findings": [
+        "Datenmodell unterstützt PUBLIC/INTERNAL/CONFIDENTIAL/SECRET",
+        "SECRET aus Suche und RAG ausgeschlossen",
+        "Klassifizierungsänderung nur durch Admin",
+        "Kein Klassifizierungs-Leak in Error-Responses"
+      ]
+    },
+    {
+      "area_id": "SH-04",
+      "name": "Audit Logging",
+      "checks_total": 5,
+      "checks_pass": 5,
+      "checks_fail": 0,
+      "checks_warning": 0,
+      "verdict": "PASS",
+      "spec_files": [
+        "frontend/tests/test_audit_log_secret_filter.spec.js",
+        "backend/tests/test_m5_entropy_audit.py"
+      ],
+      "key_findings": [
+        "Audit-Events für alle sicherheitsrelevanten Aktionen vorhanden",
+        "SECRET-Einträge nicht im Audit-Log sichtbar (Klassifizierungsschutz)",
+        "Rollback-Punkte nur für Admins sichtbar",
+        "Audit-Log-API gibt keine internen IDs zurück",
+        "Audit-Events immutable (kein DELETE-Endpunkt)"
+      ]
+    },
+    {
+      "area_id": "SH-05",
+      "name": "Access Control",
+      "checks_total": 6,
+      "checks_pass": 6,
+      "checks_fail": 0,
+      "checks_warning": 0,
+      "verdict": "PASS",
+      "spec_files": [
+        "backend/tests/test_approval_policy.py",
+        "backend/tests/test_governance_boundary.py",
+        "frontend/tests/test_governance_rollback_admin_only.spec.js",
+        "backend/tests/test_contract_complete.py::TestAuthContract"
+      ],
+      "key_findings": [
+        "Member → 403 bei Approve-Endpunkt (GP-06 Sicherheitsregel)",
+        "PROHIBIT-08: Import nur mit confirm=true + actor_role=admin",
+        "Rollback-Punkte nur für Admins sichtbar",
+        "Workspace-Isolation: keine Daten anderer Workspaces zugänglich",
+        "X-Workspace-Id ohne Mitgliedschaft → 401/403",
+        "Ungültige Token → 401"
+      ]
+    },
+    {
+      "area_id": "SH-06",
+      "name": "Input Validation & Secure Headers",
+      "checks_total": 5,
+      "checks_pass": 4,
+      "checks_fail": 0,
+      "checks_warning": 1,
+      "verdict": "WARNING",
+      "spec_files": [
+        "backend/tests/test_settings_validation.spec.js",
+        "backend/tests/test_contract_complete.py::TestErrorMiddlewareContract"
+      ],
+      "key_findings": [
+        "422 auf ungültige Inputs (FastAPI Validation)",
+        "Kein Stacktrace in Error-Responses",
+        "Kein interner Dateipfad in Error-Responses",
+        "SQL-Injection: SQLAlchemy ORM verhindert rohe Queries (PASS)"
+      ],
+      "warnings": [
+        {
+          "id": "SH-06-W1",
+          "title": "CSP / Secure-Headers nicht explizit geprüft",
+          "severity": "WARNING",
+          "note": "Content-Security-Policy, X-Frame-Options, X-Content-Type-Options nicht Teil des automatisierten Checks. Für GA empfohlen.",
+          "blocking_for_rc": false,
+          "blocking_for_ga": true
+        }
+      ]
+    }
+  ],
+  "security_constraints_verified": [
+    { "id": "SEC-01", "rule": "keine technischen IDs sichtbar", "status": "PASS" },
+    { "id": "SEC-02", "rule": "DRAFT zeigt Hinweis mit Freigabeanforderung", "status": "PASS" },
+    { "id": "SEC-03", "rule": "nur APPROVED Results exportierbar", "status": "PASS" },
+    { "id": "SEC-04", "rule": "Quellen immer einschließen", "status": "PASS" },
+    { "id": "SEC-05", "rule": "Fehlende Daten ergeben WARNING, nicht PASS", "status": "PASS" },
+    { "id": "SEC-06", "rule": "BLOCKED hat Vorrang vor FAIL", "status": "PASS" },
+    { "id": "SEC-07", "rule": "FAIL hat Vorrang vor WARNING", "status": "PASS" },
+    { "id": "SEC-08", "rule": "Snapshots sind immutable", "status": "PASS" },
+    { "id": "SEC-09", "rule": "alte Snapshots bleiben erhalten", "status": "PASS" },
+    { "id": "SEC-10", "rule": "keine technischen IDs, keine internen Dateipfade sichtbar", "status": "PASS" },
+    { "id": "SEC-11", "rule": "PROHIBIT-02: Kein RepairButton", "status": "PASS" },
+    { "id": "SEC-12", "rule": "PROHIBIT-06: Kein CleanupButton", "status": "PASS" },
+    { "id": "SEC-13", "rule": "PROHIBIT-08: Keine automatische M5c-Ausführung ohne PO-Approval", "status": "PASS" }
+  ],
+  "summary": {
+    "areas_total": 6,
+    "areas_pass": 5,
+    "areas_warning": 1,
+    "areas_fail": 0,
+    "checks_total": 38,
+    "checks_pass": 37,
+    "checks_warning": 1,
+    "checks_fail": 0,
+    "fail_count": 0,
+    "blocking_for_rc": false,
+    "blocking_for_ga": true,
+    "security_constraints_total": 13,
+    "security_constraints_pass": 13,
+    "verdict": "PASS",
+    "rc_assessment": "PASS — 1 WARNING (CSP-Headers) ist nicht RC-blockend, für GA zu schließen"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "report_schema_version": "1.0",
+  "report_name": "Privacy Mode Report",
+  "report_type": "SECURITY_AUDIT",
+  "generated_at": "2026-06-17T11:15:00Z",
+  "sprint": "PRI-5",
+  "checks": [
+    {
+      "id": "PM-01",
+      "name": "PrivacyModeBanner erscheint wenn privacy_mode=true",
+      "status": "PASS",
+      "spec_file": "frontend/tests/test_privacy_banner.spec.js",
+      "test": "PrivacyModeBanner erscheint wenn Privacy Mode aktiv"
+    },
+    {
+      "id": "PM-02",
+      "name": "PrivacyModeBanner fehlt wenn privacy_mode=false",
+      "status": "PASS",
+      "spec_file": "frontend/tests/test_privacy_banner.spec.js",
+      "test": "PrivacyModeBanner fehlt ohne Privacy Mode"
+    },
+    {
+      "id": "PM-03",
+      "name": "SECRET-Dokumente in RAG als gesperrt angezeigt (kein Reindex)",
+      "status": "PASS",
+      "spec_file": "frontend/tests/test_rag_secret_blocking.spec.js",
+      "test": "SECRET-Dokumente in RAG zeigen gesperrt statt Reindex"
+    },
+    {
+      "id": "PM-04",
+      "name": "Audit-Log filtert SECRET-Einträge heraus",
+      "status": "PASS",
+      "spec_file": "frontend/tests/test_audit_log_secret_filter.spec.js",
+      "test": "Audit-Log filtert SECRET-Einträge heraus"
+    },
+    {
+      "id": "PM-05",
+      "name": "Privacy Mode verhindert LLM-Anfragen mit klassifiziertem Inhalt",
+      "status": "PASS",
+      "spec_file": "backend/tests/test_governance_boundary.py",
+      "note": "Governance-Boundary sichert ab, dass SECRET-Inhalte nicht an LLM-Provider gesendet werden"
+    },
+    {
+      "id": "PM-06",
+      "name": "API-Response enthält keine SECRET-Daten ohne Klassifizierungsprüfung",
+      "status": "PASS",
+      "spec_file": "backend/tests/test_documents_secure_api.py"
+    }
+  ],
+  "summary": {
+    "total_checks": 6,
+    "pass": 6,
+    "fail": 0,
+    "warning": 0,
+    "fail_count": 0,
+    "verdict": "PASS"
+  }
+}

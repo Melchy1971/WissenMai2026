@@ -1,159 +1,95 @@
 {
-  "report_schema_version": 3,
+  "schema_version": 3,
   "report_name": "product_maturity_v3",
-  "report_type": "maturity_assessment",
-  "generated_at": "2026-06-16T00:00:00.000000+00:00",
-  "evaluation_method": "Synthese aus 8 Input-Reports + PRI-2 Task-Abschluss (#74–#82)",
-  "score_range": "0-100. Schwellwert für 1.0-Release: 85",
-  "prior_version": "reports/current/product_maturity_v2.json (Score 52, generiert 2026-06-15)",
-
-  "inputs": {
-    "document_center_product_ready": "reports/current/document_center_product_ready.json",
-    "topic_center_product_ready": "reports/current/topic_center_product_ready.json",
-    "search_experience_ready": "reports/current/search_experience_ready.json",
-    "export_center_product_ready": "reports/current/export_center_product_ready.json",
-    "analysis_e2e_product_ready": "reports/current/analysis_e2e_product_ready.json",
-    "product_gold_path": "reports/current/product_gold_path.json",
-    "analysis_gold_path": "reports/current/analysis_gold_path.json",
-    "analysis_sprint_gate": "reports/current/analysis_sprint_gate.json"
-  },
-
-  "dimensionen": {
-    "fachliche_reife": {
-      "gewichtung": 0.40,
-      "score": 66,
-      "delta_zu_v2": "+22",
-      "bewertung_je_bereich": {
-        "dashboard":        { "score": 65, "delta": "+15", "note": "Topics-Kennzahlen-Widget durch Task #72" },
-        "dokumente":        { "score": 80, "delta": "+15", "note": "Technische IDs entfernt (#58-#59). Tags via KI-Import." },
-        "import":           { "score": 85, "delta":  "0",  "note": "Unverändert." },
-        "suche":            { "score": 40, "delta":  "0",  "note": "Kein KWIC, kein Stemming. Unverändert." },
-        "themen":           { "score": 80, "delta": "+75", "note": "ORM+API+Service vollständig (Tasks #64–#70). 4/8 GP-Schritte PASS." },
-        "datenanalyse":     { "score": 85, "delta": "+65", "note": "10 Endpoints, AnalysisPage, Approval-Policy, KB-Import. GP-A01–A11 PASS." },
-        "export":           { "score":  0, "delta":  "0",  "note": "Export Center nicht implementiert. PRI-3." },
-        "benutzerverwaltung":{ "score": 90, "delta": "0",  "note": "Unverändert." }
-      },
-      "berechnung": "(65+80+85+40+80+85+0+90) / 8 = 65.6"
+  "generated_at": "2026-06-17T15:00:00.000000+00:00",
+  "sprint": "PRI-7",
+  "ga_threshold": 90,
+  "dimensions": {
+    "functional_coverage": {
+      "score": 82,
+      "max": 100,
+      "delta_from_pri6": 2
     },
-
-    "ux_reife": {
-      "gewichtung": 0.25,
+    "security": {
+      "score": 84,
+      "max": 100,
+      "delta_from_pri6": 0,
+      "blocker": "CSP fehlt (GA-SEC-01)"
+    },
+    "test_coverage": {
       "score": 65,
-      "delta_zu_v2": "+22",
-      "bewertung_je_bereich": {
-        "dokumente_ux":    { "score": 80, "delta": "+15", "note": "Technische IDs entfernt. Full Error/Empty/Loading States." },
-        "import_ux":       { "score": 75, "delta":  "0",  "note": "Unverändert." },
-        "suche_ux":        { "score": 55, "delta":  "0",  "note": "Unverändert." },
-        "themen_ux":       { "score": 75, "delta": "+65", "note": "TopicCenter: Liste, Detail, Filter, Suche, Tags, Merge. Vollständig." },
-        "analyse_ux":      { "score": 80, "delta": "+75", "note": "AnalysisPage, NewAnalysisJobDialog, Approval, Import-Guard. Vollständig." },
-        "export_ux":       { "score":  0, "delta":  "0",  "note": "Kein UI-Einstiegspunkt. Unverändert." },
-        "login_logout_ux": { "score": 90, "delta":  "0",  "note": "Unverändert." }
-      },
-      "berechnung": "(80+75+55+75+80+0+90) / 7 = 65.0"
+      "max": 100,
+      "delta_from_pri6": 0,
+      "blocker": "SCGB-01"
     },
-
-    "betriebsreife": {
-      "gewichtung": 0.15,
-      "score": 91,
-      "delta_zu_v2": "+2",
-      "bewertung_aspekte": {
-        "workspace_isolation":    { "score": 90,  "note": "Unverändert." },
-        "soft_delete":            { "score": 95,  "note": "Unverändert." },
-        "security_prohibits":     { "score": 100, "note": "PROHIBIT-02/06/08 durch Layer-3-Tests verifiziert." },
-        "fehlerresistenz_backend":{ "score": 80,  "delta": "+10", "note": "Topics+Analyse implementiert, weniger fehlende Endpunkte." },
-        "logging_sicherheit":     { "score": 90,  "note": "Unverändert." }
-      },
-      "berechnung": "(90+95+100+80+90) / 5 = 91"
+    "documentation": {
+      "score": 88,
+      "max": 100,
+      "delta_from_pri6": 5
     },
-
-    "release_reife": {
-      "gewichtung": 0.20,
-      "score": 64,
-      "delta_zu_v2": "+15",
-      "bewertung_aspekte": {
-        "gold_path": {
-          "score": 87, "delta": "+50",
-          "note": "7/8 GP-Schritte PASS. GP-04/05/06 geschlossen. GP-07 Export offen.",
-          "berechnung": "7/8 = 87.5 → 87"
-        },
-        "e2e_truth_suite": {
-          "score": 55, "delta": "+11",
-          "note": "Topics+Analyse PASS. Geschätzt 5.5/9 → 55 (Release Gate BLOCKED zieht ab)."
-        },
-        "release_gate": {
-          "score": 14, "delta": "0",
-          "note": "product_release_gate.json nicht neu ausgeführt. TEST_DATABASE_URL fehlt → Cascade. PRI-3."
-        },
-        "scope_freeze": {
-          "score": 100, "delta": "0",
-          "note": "Unverändert."
-        }
-      },
-      "berechnung": "(87+55+14+100) / 4 = 64"
+    "performance": {
+      "score": 60,
+      "max": 100,
+      "delta_from_pri6": 0,
+      "blocker": "GIN-Index fehlt"
+    },
+    "scalability": {
+      "score": 55,
+      "max": 100,
+      "delta_from_pri6": 0,
+      "blocker": "Python-side Pagination"
+    },
+    "approval_workflow": {
+      "score": 90,
+      "max": 100,
+      "delta_from_pri6": 2
+    },
+    "search_quality": {
+      "score": 45,
+      "max": 100,
+      "delta_from_pri6": 0,
+      "blocker": "GIN-Index fehlt"
+    },
+    "export_pipeline": {
+      "score": 80,
+      "max": 100,
+      "delta_from_pri6": 2
+    },
+    "observability": {
+      "score": 35,
+      "max": 100,
+      "delta_from_pri6": 5
+    },
+    "operational_readiness": {
+      "score": 72,
+      "max": 100,
+      "delta_from_pri6": 20
     }
   },
-
-  "gesamtscore": {
-    "berechnung": {
-      "fachliche_reife": "66 × 0.40 = 26.4",
-      "ux_reife":        "65 × 0.25 = 16.25",
-      "betriebsreife":   "91 × 0.15 = 13.65",
-      "release_reife":   "64 × 0.20 = 12.8"
-    },
-    "summe": "69.1",
-    "score": 69,
-    "schwellwert": 85,
-    "delta_zu_schwellwert": -16,
-    "verdict": "UNTER_SCHWELLWERT"
-  },
-
-  "score_entwicklung": {
-    "product_maturity_v2": 52,
-    "product_maturity_v3": 69,
-    "delta": "+17",
-    "haupttreiber": [
-      "Topics-Backend implementiert: Fachliche Reife Themen 5→80, UX Themen 10→75",
-      "Datenanalyse implementiert: Fachliche Reife 20→85, UX Analyse 5→80",
-      "Technische IDs entfernt: Dokumente +15 Fachlich, +15 UX",
-      "Gold Path: 3/8 → 7/8 PASS"
-    ]
-  },
-
-  "verbleibende_haupthindernisse": [
+  "total_score": 68.7,
+  "previous_score_pri6": 80.0,
+  "delta": -11.3,
+  "status": "BLOCKED",
+  "top_blockers": [
     {
-      "hindernis": "Export Center vollständig fehlend (GP-07)",
-      "impact_auf_score": "-8 Punkte",
-      "sprint_fix": "PRI-3"
+      "dimension": "search_quality",
+      "score": 45,
+      "hebel": "GIN-Index (TD-004) → +15-20 Punkte"
     },
     {
-      "hindernis": "Release Gate BLOCKED (TEST_DATABASE_URL, report_integrity cascade)",
-      "impact_auf_score": "-7 Punkte auf Release-Reife",
-      "sprint_fix": "PRI-3"
+      "dimension": "observability",
+      "score": 35,
+      "hebel": "Prometheus + strukturiertes Logging → +25-30 Punkte"
     },
     {
-      "hindernis": "Suche: KWIC, Stemming, Tag-/Topic-Filter fehlen",
-      "impact_auf_score": "-4 Punkte",
-      "sprint_fix": "PRI-3"
+      "dimension": "scalability",
+      "score": 55,
+      "hebel": "Cursor Pagination + Python-Pagination-Fix → +15 Punkte"
+    },
+    {
+      "dimension": "test_coverage",
+      "score": 65,
+      "hebel": "SCGB-01 schließen + Integration-Tests → +15 Punkte"
     }
-  ],
-
-  "fuer_85_zusaetzlich_noetig": [
-    "Export Center (GP-07): POST /api/v1/export + Frontend",
-    "Release Gate entsperren (TEST_DATABASE_URL setzen)",
-    "Suche: KWIC-Highlighting + deutsches Stemming",
-    "Tags: direktes Frontend-UI für manuelle Zuweisung"
-  ],
-
-  "score_nach_export_center": {
-    "erwarteter_score": "~78-82",
-    "note": "Export Center + Release-Gate-Fix: ca. +9-13 Punkte. Verbleibende Lücken halten Score knapp unter 85."
-  },
-
-  "security_constraints_verified": {
-    "PROHIBIT_02": "EINGEHALTEN",
-    "PROHIBIT_06": "EINGEHALTEN",
-    "PROHIBIT_08": "EINGEHALTEN — Import nur nach approved, confirm=True Pflicht, Member 403",
-    "m5c_status": "NO_GO",
-    "drift_readonly": "EINGEHALTEN"
-  }
+  ]
 }

@@ -1,0 +1,117 @@
+{
+  "report_schema_version": "1.0",
+  "report_name": "E2E Test Coverage Report",
+  "report_type": "E2E_COVERAGE",
+  "generated_at": "2026-06-17T10:30:00Z",
+  "sprint": "PRI-5",
+  "test_runner": "Playwright",
+  "config_file": "frontend/playwright.config.js",
+  "test_database": "TEST_DATABASE_URL (isoliert)",
+  "provider_mocks": "deterministic route intercepts, keine Live-Provider-Abhängigkeit",
+  "secrets_in_tests": false,
+  "flows": [
+    {
+      "flow_id": "E2E-01",
+      "name": "Import Flow",
+      "gold_path": "GP-02",
+      "spec_file": "frontend/tests/gui_truth/test_05_upload.spec.js",
+      "tests_count": 7,
+      "passed": 7,
+      "failed": 0,
+      "status": "PASS",
+      "notes": "Abdeckt: Upload, Polling, Fehlerarten (FILE_REQUIRED, UNSUPPORTED_FILE_TYPE, PARSER_FAILED, OCR_REQUIRED, FILE_TOO_LARGE, DUPLICATE_DOCUMENT)"
+    },
+    {
+      "flow_id": "E2E-02",
+      "name": "Search Flow",
+      "gold_path": "GP-03",
+      "spec_file": "frontend/tests/gui_truth/test_06_search.spec.js",
+      "tests_count": 7,
+      "passed": 7,
+      "failed": 0,
+      "status": "PASS",
+      "notes": "Abdeckt: Treffer, keine Treffer, archivierte/gelöschte Dokumente ausgeblendet, Loading-State, API-Fehler"
+    },
+    {
+      "flow_id": "E2E-03",
+      "name": "Analysis Flow",
+      "gold_path": "GP-05",
+      "spec_file": "frontend/tests/gui_truth/test_13_analysis_flow.spec.js",
+      "tests_count": 6,
+      "passed": 6,
+      "failed": 0,
+      "status": "PASS",
+      "notes": "Abdeckt: Job pending→running→completed, status=draft, kein Auto-Approve (PROHIBIT-08), Topics/Quellen sichtbar, UUID-Schutz, API-Fehler"
+    },
+    {
+      "flow_id": "E2E-04",
+      "name": "Approval Flow",
+      "gold_path": "GP-06",
+      "security_critical": true,
+      "spec_file": "frontend/tests/gui_truth/test_14_approval_flow.spec.js",
+      "tests_count": 6,
+      "passed": 6,
+      "failed": 0,
+      "status": "PASS",
+      "notes": "Abdeckt: DRAFT-Hinweis, submit for review, Member→403, Admin→Confirmation-Dialog, Import confirm=true (PROHIBIT-08), Topics in status=draft"
+    },
+    {
+      "flow_id": "E2E-05",
+      "name": "Export Flow",
+      "gold_path": "GP-07",
+      "spec_file": "frontend/tests/gui_truth/test_15_export_flow.spec.js",
+      "tests_count": 6,
+      "passed": 6,
+      "failed": 0,
+      "status": "PASS",
+      "notes": "Abdeckt: Draft-Guard (kein ExportButton), Approved→ExportButton, Job pending→completed, Download-Link, Quellen inklusive, API-Fehler, UUID-Schutz"
+    },
+    {
+      "flow_id": "E2E-06",
+      "name": "Dashboard & Drift Flow",
+      "gold_path": "GP-08",
+      "spec_file": "frontend/tests/gui_truth/test_16_dashboard_drift_flow.spec.js",
+      "tests_count": 8,
+      "passed": 8,
+      "failed": 0,
+      "status": "PASS",
+      "notes": "Abdeckt: Summary-Widgets, 6 Drift-Karten, GlobalStatusBar WARNING, AppShell Drift-Badge, Klick→DriftDetail, History-Chart, UUID-Schutz, API-Fehler"
+    },
+    {
+      "flow_id": "E2E-07",
+      "name": "Error Flow",
+      "gold_path": null,
+      "spec_file": "frontend/tests/gui_truth/test_17_error_flow.spec.js",
+      "tests_count": 7,
+      "passed": 7,
+      "failed": 0,
+      "status": "PASS",
+      "notes": "Abdeckt: 404, leere Liste, abgebrochener Job, fehlende Quellen→WARNING, Duplicate-Job, fehlende Datei, ungültiges JSON"
+    },
+    {
+      "flow_id": "E2E-08",
+      "name": "Topics Flow",
+      "gold_path": "GP-04",
+      "spec_file": "frontend/tests/gui_truth/test_18_topics_flow.spec.js",
+      "tests_count": 7,
+      "passed": 7,
+      "failed": 0,
+      "status": "PASS",
+      "notes": "Abdeckt: Listenansicht, Detail, Edit, Status-Filter, UUID-Schutz, API-Fehler"
+    }
+  ],
+  "summary": {
+    "flows_total": 8,
+    "flows_passed": 8,
+    "flows_failed": 0,
+    "tests_total": 54,
+    "tests_passed": 54,
+    "tests_failed": 0,
+    "security_critical_flows_pass": true,
+    "prohibit_08_compliant": true,
+    "no_live_provider_dependency": true,
+    "no_secrets_in_tests": true,
+    "uuid_leak_in_ui": false,
+    "verdict": "PASS"
+  }
+}

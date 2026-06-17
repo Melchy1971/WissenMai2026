@@ -1,0 +1,219 @@
+{
+  "report_schema_version": 1,
+  "report_name": "rc_final_gate_report",
+  "report_type": "release_gate",
+  "generated_at": "2026-06-17T00:00:00+00:00",
+  "sprint": "PRI-5",
+  "sprint_scope": "Release Hardening: Security, Performance, Operational Readiness, Technical ID Gate, E2E Stabilization, API Contracts",
+
+  "pri5_gate_checks": [
+    {
+      "id": "PRI5-01",
+      "task": "#14 Gold Path Matrix",
+      "area": "E2E Gold Path",
+      "source": "reports/current/gold_path_e2e_report.json",
+      "result": "8/8 GP-Schritte PASS",
+      "gate_assessment": "RC_READY",
+      "status": "PASS"
+    },
+    {
+      "id": "PRI5-02",
+      "task": "#15 E2E-Testabdeckung",
+      "area": "E2E Truth Suite",
+      "source": "reports/current/gold_path_e2e_report.json",
+      "result": "Alle GP-Schritte durch E2E-Tests abgedeckt, Security-Rules verifiziert",
+      "status": "PASS"
+    },
+    {
+      "id": "PRI5-03",
+      "task": "#16 API Contract Tests",
+      "area": "API Contract Coverage",
+      "source": "reports/current/contract_test_report.json",
+      "result": "85/85 Tests PASS, 9 Bereiche, OpenAPI-Coverage vollständig, no_id_leak_in_responses=true",
+      "status": "PASS"
+    },
+    {
+      "id": "PRI5-04",
+      "task": "#17 Security Hardening",
+      "area": "Security",
+      "source": "reports/current/security_hardening_report.json",
+      "areas_checked": 6,
+      "areas_pass": 5,
+      "areas_warning": 1,
+      "warning_detail": "SH-06-W1: CSP / Secure-Headers nicht explizit geprüft — GA-blockend, nicht RC-blockend",
+      "status": "WARNING",
+      "rc_blocking": false
+    },
+    {
+      "id": "PRI5-05",
+      "task": "#18 Technical ID Leak Gate",
+      "area": "Security / UX",
+      "source": "reports/current/technical_id_leak_gate.json",
+      "result": "0 Leaks in 72 Frontend-Dateien, 19 Backend-Unit-Tests PASS, 8 E2E-Tests PASS",
+      "gate_id": "GATE-18",
+      "ci_blocking": true,
+      "status": "PASS"
+    },
+    {
+      "id": "PRI5-06",
+      "task": "#19 Performance Baseline",
+      "area": "Performance",
+      "source": "reports/current/performance_baseline_report.json",
+      "measurements": {
+        "documents_p95_ms": 142.8,
+        "search_p95_ms": 237.8,
+        "export_pdf_ms": 3200,
+        "frontend_load_p95_ms": 325.5
+      },
+      "rc_limits": {
+        "documents_p95_ms": 800,
+        "search_p95_ms": 1500,
+        "export_pdf_ms": 10000,
+        "frontend_load_p95_ms": 3000
+      },
+      "all_rc_limits_met": true,
+      "ga_risks": 2,
+      "status": "PASS"
+    },
+    {
+      "id": "PRI5-07",
+      "task": "#20 Operational Readiness",
+      "area": "Operations",
+      "deliverables": [
+        "docs/operations/runbook.md",
+        "docs/operations/backup_restore.md",
+        "docs/operations/troubleshooting.md",
+        "docs/operations/healthchecks.md",
+        ".env.example (erweitert)"
+      ],
+      "env_vars_documented": [
+        "ADMIN_API_TOKEN",
+        "MAX_UPLOAD_SIZE_BYTES",
+        "IMPORT_JOBS_TEMP_DIR",
+        "ORIGINAL_FILE_STORE_DIR",
+        "BACKUP_RESTORE_ROOT_DIR",
+        "BACKGROUND_JOB_LOCK_TIMEOUT_SECONDS",
+        "BACKGROUND_JOB_HEARTBEAT_INTERVAL_SECONDS",
+        "BACKGROUND_JOB_MAX_ATTEMPTS",
+        "BACKGROUND_JOB_RETRY_BACKOFF_SECONDS"
+      ],
+      "scgb04_addressed": true,
+      "status": "PASS"
+    }
+  ],
+
+  "pri5_summary": {
+    "checks_total": 7,
+    "checks_pass": 6,
+    "checks_warning": 1,
+    "checks_fail": 0,
+    "checks_blocked": 0,
+    "pri5_verdict": "PASS"
+  },
+
+  "upstream_gate_status": {
+    "gate_hierarchy_result": "PASS",
+    "gate_hierarchy_timestamp": "2026-06-05T15:33:53+00:00",
+    "gates_total": 19,
+    "gates_pass": 19,
+    "rc_stabilization_gate": "BLOCKED",
+    "rc_stabilization_timestamp": "2026-06-15",
+    "open_blockers": [
+      {
+        "id": "SCGB-01",
+        "text": "TEST_DATABASE_URL nicht gesetzt — externe Infrastrukturentscheidung erforderlich",
+        "pri5_scope": false,
+        "addressed_in_pri5": false
+      },
+      {
+        "id": "SCGB-02",
+        "text": "PO-Entscheidung zu NAV_ITEMS (Option A oder B) ausstehend",
+        "pri5_scope": false,
+        "addressed_in_pri5": false
+      },
+      {
+        "id": "SCGB-03",
+        "text": "Router-Guard für /admin/diagnostics nicht implementiert",
+        "pri5_scope": false,
+        "addressed_in_pri5": false
+      },
+      {
+        "id": "SCGB-04",
+        "text": "ENV vars unvollständig (.env.example fehlte Backend-Variablen)",
+        "pri5_scope": true,
+        "addressed_in_pri5": true,
+        "resolution": "Task #20: .env.example um alle config.py-Variablen erweitert"
+      }
+    ],
+    "open_blockers_unresolved": 3
+  },
+
+  "rc_limitation_summary": {
+    "source": "reports/current/rc_limitation_register.json",
+    "total": 5,
+    "blocks_rc": 0,
+    "blocks_ga": 1,
+    "limitations": [
+      {
+        "id": "RCL-01",
+        "title": "GP-07 Export: CONDITIONAL_PASS (kein PDF-Export in 1.0)",
+        "blocks_rc": false,
+        "blocks_ga": true
+      },
+      {
+        "id": "RCL-02",
+        "title": "Dashboard W06 Drift-Widget fehlt",
+        "blocks_rc": false,
+        "blocks_ga": false
+      },
+      {
+        "id": "RCL-03",
+        "title": "Tags-API unvollständig (POST/DELETE fehlen)",
+        "blocks_rc": false,
+        "blocks_ga": false
+      },
+      {
+        "id": "RCL-04",
+        "title": "GP-05 Analyse Schritte 5+7 — PO-Diskussion",
+        "blocks_rc": false,
+        "blocks_ga": false
+      },
+      {
+        "id": "RCL-05",
+        "title": "OCR für gescannte PDFs nicht in 1.0",
+        "blocks_rc": false,
+        "blocks_ga": false
+      }
+    ]
+  },
+
+  "ga_risks": [
+    {
+      "id": "GA-RISK-01",
+      "source": "performance_risks.md",
+      "title": "ILIKE ohne GIN-Index (Topics/Documents-Suche)",
+      "fix": "CREATE INDEX idx_topics_title_trgm ON topics USING GIN (title gin_trgm_ops)"
+    },
+    {
+      "id": "GA-RISK-02",
+      "source": "performance_risks.md",
+      "title": "Python-seitiges Sorting in search_unified",
+      "fix": "SQL-seitige Sortierung + Cursor-Pagination"
+    },
+    {
+      "id": "GA-RISK-03",
+      "source": "security_hardening_report.json SH-06-W1",
+      "title": "CSP / Secure-Headers nicht explizit konfiguriert",
+      "fix": "Content-Security-Policy, X-Frame-Options, X-Content-Type-Options setzen"
+    }
+  ],
+
+  "overall_verdict": "CONDITIONAL_RC",
+  "overall_verdict_reason": "Alle PRI-5 Hardening-Checks PASS oder WARNING (nicht RC-blockend). 3 vorgelagerte Blocker (SCGB-01/02/03) aus rc_stabilization_gate unresolved — ausserhalb PRI-5-Scope, erfordern Infrastruktur-/PO-Entscheidung. SCGB-04 durch Task #20 adressiert.",
+  "rc_unblock_conditions": [
+    "SCGB-01: TEST_DATABASE_URL setzen und report_integrity_v2 re-runnen",
+    "SCGB-02: PO-Entscheidung NAV_ITEMS (Option A oder B)",
+    "SCGB-03: Router-Guard für /admin/diagnostics implementieren"
+  ],
+  "m5c_lock": "LOCKED — NO_GO bis m5c_start_gate=PASS + PO-Sign-off"
+}

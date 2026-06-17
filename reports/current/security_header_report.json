@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "report_name": "security_header_report",
+  "generated_at": "2026-06-18T10:30:00.000000+00:00",
+  "sprint": "PRI-7",
+  "header_status": {
+    "Content-Security-Policy": "IMPLEMENTIERT",
+    "X-Content-Type-Options": "IMPLEMENTIERT",
+    "Referrer-Policy": "IMPLEMENTIERT",
+    "Permissions-Policy": "IMPLEMENTIERT",
+    "X-Frame-Options": "IMPLEMENTIERT",
+    "Strict-Transport-Security": "NICHT_IMPLEMENTIERT (HSTS — benötigt HTTPS, für V1 nicht relevant)",
+    "X-XSS-Protection": "NICHT_IMPLEMENTIERT (veraltet, durch CSP ersetzt)"
+  },
+  "owasp_top10_abdeckung": {
+    "A05_Security_Misconfiguration": "VERBESSERT durch CSP + Security Headers",
+    "A03_Injection": "TEILWEISE (CSP verhindert injizierte Script-Ausführung)",
+    "A07_Identification_Auth": "NICHT_GEAENDERT (V1: kein Login-Zwang)"
+  },
+  "maturity_impact": {
+    "dimension": "security",
+    "vorher": 84,
+    "nachher": 92,
+    "delta": 8
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "report_name": "csp_report",
+  "generated_at": "2026-06-18T10:30:00.000000+00:00",
+  "sprint": "PRI-7",
+  "status": "IMPLEMENTIERT",
+  "blocker_geschlossen": "GA-SEC-01",
+  "implementierung": {
+    "datei": "backend/app/observability/security_headers.py",
+    "middleware_klasse": "SecurityHeadersMiddleware",
+    "eingebunden_in": "backend/app/main.py",
+    "reihenfolge": "Erste Middleware (outermost) — setzt Header auf jede Response"
+  },
+  "direktiven_prod": {
+    "default-src": "'self'",
+    "script-src": "'self'",
+    "style-src": "'self' 'unsafe-inline'",
+    "img-src": "'self' data: blob:",
+    "font-src": "'self'",
+    "connect-src": "'self' http://localhost:11434 http://127.0.0.1:11434 https://api.openai.com https://generativelanguage.googleapis.com",
+    "frame-src": "'none'",
+    "object-src": "'none'",
+    "base-uri": "'self'",
+    "frame-ancestors": "'none'",
+    "form-action": "'self'",
+    "upgrade-insecure-requests": true
+  },
+  "direktiven_dev_override": {
+    "script-src": "'self' 'unsafe-eval'",
+    "hinweis": "Vite HMR benötigt unsafe-eval in Entwicklung"
+  },
+  "zusatz_header": {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+    "X-Frame-Options": "DENY"
+  },
+  "tests": {
+    "datei": "backend/tests/test_security_headers.py",
+    "anzahl_tests": 20,
+    "abgedeckte_szenarien": [
+      "CSP-Header vorhanden",
+      "X-Content-Type-Options: nosniff",
+      "Referrer-Policy korrekt",
+      "Permissions-Policy vorhanden",
+      "X-Frame-Options: DENY",
+      "default-src 'self'",
+      "frame-src 'none' (iframe-Block)",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "kein unsafe-eval in Prod",
+      "script-src nur 'self' in Prod (External-Script-Block)",
+      "upgrade-insecure-requests",
+      "Ollama in connect-src",
+      "OpenAI in connect-src",
+      "Gemini in connect-src",
+      "Dev-Mode: unsafe-eval erlaubt",
+      "CSP-Builder Unit-Tests (2)"
+    ],
+    "status": "SPEZIFIZIERT — ausführbar nach SCGB-01 oder lokal mit Test-FastAPI-App"
+  }
+}

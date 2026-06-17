@@ -1,7 +1,9 @@
 # Operations Runbook
 
-Stand: 2026-05-29
-Bezug: `docs/m4e-operations-release.md`, `reports/current/m4e_operations_release_gate.json`
+Stand: 2026-06-17 (aktualisiert PRI-6)
+Bezug: `docs/m4e-operations-release.md`, `reports/current/m4e_operations_release_gate.json`, `reports/current/conditional_rc_decision.json`
+
+**PRI-6 Aenderung:** `/admin/diagnostics` ist durch `AdminRoute`-Guard gesichert. Zugriff erfordert `user.role === 'admin'`. Member-Requests erhalten HTTP 403. DevOps-Anforderung: `TEST_DATABASE_URL` muss in CI/CD-Umgebung gesetzt werden (SCGB-01, noch offen).
 
 > Jede mutierende Aktion (Restore, Reindex, Seed) erfordert eine Dry-Run-Pruefung,
 > einen Audit-Log-Eintrag und — bei Restore — eine Zweitperson als Review.

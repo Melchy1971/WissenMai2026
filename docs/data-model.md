@@ -340,6 +340,45 @@ Service-Regeln:
 - Die API response fuer `POST /messages` enthaelt die Assistant-Message; die User-Message ist persistiert, aber nicht Teil dieser Response.
 - Fehlende oder unzureichende Quellen verhindern eine Assistant-Persistenz.
 
+## PRI-4 Analytics (Stand 2026-06-17)
+
+Migration `20260617_0025_analytics_snapshots.py` fuegt zwei Tabellen fuer Drift Analytics ein.
+
+### analytics_snapshots
+
+Immutable Snapshot-Tabelle. Jede Recalculate-Operation erzeugt neue Zeilen — keine Updates bestehender Snapshots.
+
+| Spalte | Typ | Beschreibung |
+|---|---|---|
+| `id` | UUID PK | Intern. Kein Anzeigewert in UI oder API-Response. |
+| `snapshot_type` | VARCHAR | Typ-Bezeichner: PRODUCT_MATURITY, GOLD_PATH, RELEASE_GATE, TEST_COVERAGE, ID_LEAK_AUDIT, SECURITY_AUDIT |
+| `status` | VARCHAR | PASS / WARNING / FAIL / BLOCKED |
+| `score` | FLOAT | Aggregierter Qualitaetsscore 0.0–1.0 |
+| `payload` | JSON | Calculator-Ergebnis. Keine internen Dateipfade, keine Secrets. |
+| `created_at` | TIMESTAMP | Erstellungszeitpunkt (INSERT-only, nie geaendert) |
+
+Index: `(snapshot_type, created_at DESC)` fuer `get_all_latest_snapshots()`.
+
+### analytics_metrics
+
+Einzelmetriken zu einem Snapshot. Eltern-Fremdschluessel: `analytics_snapshots.id`.
+
+| Spalte | Typ | Beschreibung |
+|---|---|---|
+| `id` | UUID PK | Intern. Kein Anzeigewert. |
+| `snapshot_id` | UUID FK | Referenz auf `analytics_snapshots.id` |
+| `metric_name` | VARCHAR | Technischer Metrikname (lesbar, kein UUID) |
+| `value` | FLOAT | Gemessener Wert |
+| `threshold` | FLOAT | Schwellwert aus THRESHOLDS-Dict in `drift_analytics.py` |
+| `status` | VARCHAR | PASS / WARNING / FAIL / BLOCKED — Prioritaet BLOCKED > FAIL > WARNING > PASS |
+
+### Invarianten
+
+- `analytics_snapshots`: INSERT-only. `AnalyticsRepository` besitzt keine UPDATE- oder DELETE-Methoden.
+- Fehlender Snapshot (kein Eintrag fuer einen Typ) → `status=None` in API-Response → UI zeigt WARNING. Nie PASS fuer fehlende Daten.
+- `snapshot_type` ist der externe Navigationsschluessel (URL-Param `/drift-analytics/:snapshotType`). Die interne `id` erscheint nicht in der UI.
+- Snapshot-Typen sind fest: Aenderungen erfordern Migration + THRESHOLDS-Anpassung in `drift_analytics.py`.
+
 ## V1-Grenzen
 
 - Keine Authentifizierung.

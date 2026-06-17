@@ -1,6 +1,126 @@
-﻿# Changelog
+# Changelog
 
-Stand: 2026-06-16
+Stand: 2026-06-17
+
+## 2026-06-17 — PRI-6 Release Candidate Hardening vollständig (Tasks #23–#28)
+
+### Added
+- `reports/current/blocking_matrix.json` — 10 Blocker BLK-01..BLK-10, priorisiert nach Schweregrad
+- `docs/blocking_matrix.md` — Tabelle + Detailsektionen aller Blocker
+- `reports/current/critical_blocker_fix_report.json` — BLK-01 CLOSED, BLK-02 EXTERNAL
+- `frontend/src/app/routes.jsx` — AdminRoute-Guard für /admin/diagnostics (SCGB-03)
+- `frontend/src/tests/app/AdminRouteGuard.test.jsx` — 3 Regressionstests (Member→403, null→403, Admin→durch)
+- `reports/current/warning_disposition_report.json` — 9 Warnings klassifiziert (GA_BEHEBEN / RC_LIMITATION)
+- `reports/current/gold_path_rerun_report.json` — 8/8 GP PASS nach BLK-01-Fix
+- `reports/current/product_maturity_v3.json` — Score 80, 11-Dimensionen, schema_version 5
+- `reports/current/conditional_rc_decision.json` — Verdict CONDITIONAL_RC
+- `reports/current/ga_backlog.json` — 8 GA-Backlog-Items, 3 GA-blocking
+- `docs/rc_limitations.md` — 4 RC-Limitationen + externe Blocker-Tabelle
+- `docs/ga_backlog.md` — Minimaler GA-Pfad: GA-SEC-01 → GA-PERF-01 → GA-PERF-02
+- `docs/release_notes_rc.md` — RC Release Notes (10 Sektionen)
+- `docs/product_maturity_delta.md` — Score-Entwicklung PRI-5→PRI-6, Hebel für GA
+- `docs/gold_path_evidence.md` — Evidenz-Nachweise für alle 8 Gold Paths
+
+### Changed
+- `reports/current/masterplan_status.json` — Version 4, PRI-6 complete, 2 externe Blocker
+- `reports/current/rc_decision.md` — Aktualisiert auf CONDITIONAL_RC (PRI-6)
+
+### Security
+- SCGB-03 geschlossen: /admin/diagnostics nur noch für Admins erreichbar (role-check)
+- 0 Technical ID Leaks bestätigt
+- GP-06 Approval-Flow PASS (PROHIBIT-08 eingehalten)
+
+### Decision
+- CONDITIONAL_RC erreicht: Maturity=80, 8/8 GP, Security=kein Blocker
+- RC_READY blockiert durch SCGB-01 (DevOps) + SCGB-02 (PO) — beide extern
+- Nächster Sprint: PRI-7 GA-Vorbereitung
+
+## 2026-06-17 — PRI-5 Release Hardening vollständig (Tasks #14–#22)
+
+### Added
+
+- `scripts/audit_ui_technical_ids.py` — UI Technical ID Leak Audit (72 Dateien, 0 Leaks, CI-blockend)
+- `backend/tests/test_id_leak_gate.py` — 19 Unit-Tests (6 Klassen): Topic-, Analysis-, Export-, Dashboard-, Error-DTOs, Dateipfade
+- `frontend/tests/gui_truth/test_19_id_leak_gate.spec.js` — 8 Playwright E2E-Tests (DOM TreeWalker, UUID + Path Scan)
+- `scripts/perf_baseline.py` — Performance-Messskript (p50/p95/p99, 4 Endpunkte, Dry-Run-Modus)
+- `docs/operations/runbook.md` — Ops-Runbook mit 8 Szenarien + Eskalationsmodell
+- `docs/operations/backup_restore.md` — Backup/Restore-Prozedur, Post-Restore-Checkliste, DR-Szenarien
+- `docs/operations/troubleshooting.md` — Kurzreferenz 9 Störungsbilder + bekannte RC-Limitierungen
+- `docs/operations/healthchecks.md` — Health-Endpunkte, CI-Gate-Befehle, Statusmodell
+- `reports/current/technical_id_leak_gate.json` — Gate GATE-18: 5 Checks, alle PASS, CI-blockend
+- `reports/current/ui_technical_id_leak_audit.json` — Audit-Output: 72 Dateien, 0 Leaks
+- `reports/current/performance_baseline_report.json` — Dry-Run: documents p95=143ms, search p95=238ms, alle PASS
+- `reports/current/performance_risks.md` — 5 Risiken: RISIKO-01/02 GA-blockend, Rest dokumentiert
+- `reports/current/rc_final_gate_report.json` — PRI-5 Final Gate: 6 PASS, 1 WARNING, CONDITIONAL_RC
+- `reports/current/rc_decision.md` — Entscheidungsdokument: CONDITIONAL_RC + 3 Unblock-Bedingungen
+- `reports/current/product_maturity_v3.json` — Score 76, PRI-5-Updates in UX- und Betriebsreife
+- `reports/current/release_gate.json` — 10 Checks: 8 PASS, 1 WARNING, 1 BLOCKED, Verdict CONDITIONAL_RC
+- `reports/current/masterplan_status.json` — Status CONDITIONAL_RC, 82%, 3 externe Blocker
+
+### Changed
+
+- `.env.example` — erweitert um: `ADMIN_API_TOKEN`, `MAX_UPLOAD_SIZE_BYTES`, `IMPORT_JOBS_TEMP_DIR`, `ORIGINAL_FILE_STORE_DIR`, `BACKUP_RESTORE_ROOT_DIR`, `BACKGROUND_JOB_LOCK_TIMEOUT_SECONDS`, `BACKGROUND_JOB_HEARTBEAT_INTERVAL_SECONDS`, `BACKGROUND_JOB_MAX_ATTEMPTS`, `BACKGROUND_JOB_RETRY_BACKOFF_SECONDS`
+- `masterplan.md` — Maschinenstatus auf CONDITIONAL_RC aktualisiert (v7)
+- `README.md` — Freigabestand auf PRI-5 CONDITIONAL_RC aktualisiert
+
+### Security
+
+- GATE-18 Technical ID Leak Gate eingerichtet und CI-blockend: UUID-Pattern + interne Pfade
+- PROHIBIT-02/06/08 weiterhin eingehalten (kein RepairButton, kein CleanupButton, kein Auto-M5c)
+- Security Hardening: 5 Bereiche PASS, SH-06 CSP WARNING (GA-blockend, nicht RC-blockend)
+- API Contract Tests: `no_id_leak_in_responses=true` verifiziert (85/85)
+
+### Decision
+
+- PRI-5 Release Hardening abgeschlossen. Alle sprintspezifischen Checks PASS oder WARNING.
+- CONDITIONAL_RC: 3 externe Blocker (SCGB-01 TEST_DATABASE_URL, SCGB-02 NAV_ITEMS, SCGB-03 Router-Guard) ausstehend.
+- SCGB-04 (ENV vars) durch Task #20 adressiert.
+- M5c: NO_GO — unverändert. m5c_lock=LOCKED.
+
+## 2026-06-17 — PRI-4 Dashboard Drift Analytics vollständig implementiert (Tasks #3–#12)
+
+### Added
+
+- `backend/app/models/analytics.py` — ORM-Modelle `AnalyticsSnapshot`, `AnalyticsMetric`
+- `backend/migrations/versions/20260617_0025_analytics_snapshots.py` — Migration für analytics_snapshots, analytics_metrics
+- `backend/app/schemas/analytics.py` — Pydantic-Schemas: `AnalyticsSnapshotSchema`, `AnalyticsMetricSchema`, `DriftOverviewResponse`, `DriftSnapshotListResponse`, `RecalculateResponse`
+- `backend/app/schemas/dashboard.py` — `DriftWidget`, `DashboardDriftResponse` (6 benannte Widget-Felder + global_status + missing_data)
+- `backend/app/repositories/analytics.py` — `AnalyticsRepository`: INSERT-only, frozen dataclasses, `get_all_latest_snapshots()`, `get_all_snapshots_by_type()`
+- `backend/app/services/drift_analytics.py` — `DriftAnalyticsService`: THRESHOLDS-Dict, 6 Calculator-Funktionen (PRODUCT_MATURITY, GOLD_PATH, RELEASE_GATE, TEST_COVERAGE, ID_LEAK_AUDIT, SECURITY_AUDIT), `recalculate()`
+- `backend/app/api/v1/drift_analytics.py` — 5 Endpoints: GET overview, GET snapshots, GET snapshots/:id, GET snapshots/:id/metrics, POST recalculate
+- `backend/app/api/v1/router.py` — `drift_analytics_router` unter `/api/v1/drift` registriert
+- `backend/scripts/seed_analytics.py` — Seed-Daten für alle 6 Snapshot-Typen
+- `frontend/src/api/drift_analytics.js` — 5 API-Funktionen mit AbortController-Unterstützung
+- `frontend/src/features/dashboard/DriftWidgetPanel.jsx` — 6 Drift-Karten, GlobalStatusBar, RecalcDialog, Skeleton/Error/Empty-States
+- `frontend/src/pages/DriftAnalyticsPage.jsx` — 4 Sektionen: OverviewCard, MetricsTable, PayloadViewer (collapsible), HistoryTrendChart + HistoryList
+- `frontend/src/app/AppShell.jsx` — DriftGlobalBadge im Status-Bar, BlockedBadge am Dashboard-Navpunkt
+- `reports/current/drift_gold_path.json` — DGP-01–DGP-10: 10/10 PASS, 2 Additional Paths PASS, 7 Security Checks PASS
+- `reports/current/drift_coverage.json` — 78 Tests PASS, Backend 92%, Frontend 88%, 0 blocking gaps
+- `reports/current/dashboard_release_report.json` — FREIGEGEBEN für PRI-5
+
+### Changed
+
+- `backend/app/services/dashboard_service.py` — `get_drift_widgets()` ergänzt, `AnalyticsRepository`-Import
+- `backend/app/api/v1/dashboard.py` — GET /dashboard/drift Endpoint ergänzt
+- `frontend/src/pages/DashboardPage.jsx` — `<DriftWidgetPanel />` eingebunden
+- `frontend/src/app/routes.jsx` — Route `/drift-analytics/:snapshotType` → `DriftAnalyticsPage` registriert
+- `docs/data-model.md` — analytics_snapshots + analytics_metrics Tabellen dokumentiert
+- `docs/status.md` — PRI-4 Abschluss eingetragen
+
+### Security
+
+- PROHIBIT-02 eingehalten: kein RepairButton
+- PROHIBIT-06 eingehalten: kein CleanupButton
+- PROHIBIT-08 eingehalten: POST /recalculate nur nach explizitem Confirm-Dialog, kein Auto-Trigger
+- Fehlende Daten → WARNING (nicht PASS): snap is None → all_statuses.append('WARNING'), DriftCard status=null → WARNING-Farbe
+- BLOCKED(3) > FAIL(2) > WARNING(1) > PASS(0): _PRIORITY-Dict in DashboardSummaryService + DriftAnalyticsService
+- Snapshots immutable: AnalyticsRepository INSERT-only, kein UPDATE/DELETE
+- Keine technischen IDs sichtbar: snapshot_type (String) als URL-Param und Navigationsschlüssel, UUIDs nur intern
+
+### Decision
+
+- Dashboard Drift PASS → PRI-5 Release Hardening starten (Abschlussregel erfüllt)
+- M5c: NO_GO — unverändert
 
 ## 2026-06-16 — PRI-2 Analysebereich vollständig implementiert (Tasks #74–#82)
 
@@ -526,84 +646,4 @@ Historischer Eintrag: Diese Freigabe ist durch die M3a/M4 Gesamt-Reconciliation 
 ### Validated
 
 - Historischer Zwischenstand: Frontend-Testlauf `5 passed`.
-- Historischer Zwischenstand: Frontend-Build `vite build` erfolgreich.
-- Diese historischen Nachweise begruenden keine aktuelle M3a-Freigabe; verbindlich ist der aktuelle Gate-Stand vom 2026-05-18.
-
-### Outstanding
-
-- Keine separaten Unit-Tests fuer ViewModel-Mapping und Fehlerabbildung.
-- Keine eigenstaendigen API-Mock-Tests fuer `404`, `409` und API down.
-- Kein E2E-Smoke-Test.
-- Versionen und Chunks haben noch keine eigenen Routen, sondern leben aktuell im Detailscreen.
-
-## 2026-05-04 - M3b Retrieval Foundation
-
-### Added
-
-- Search API `GET /api/v1/search/chunks`.
-- `SearchService`, `SearchRepository` und Search-Response-Schema.
-- Migration `20260504_0011_chunk_search_vector.py` fuer PostgreSQL `search_vector` und `GIN`-Index.
-- Frontend-Suchmaske auf der Dokumentuebersicht.
-- Suchergebnisliste mit Vorschau, Rank und Quellenanker.
-- Dokument `docs/m3b-retrieval-foundation.md`.
-- Dokument `docs/m3b-retrieval-evaluation-dataset.md`.
-- Dokument `docs/retrieval.md` als Retrieval-Einstiegspunkt.
-
-### Changed
-
-- `docs/api.md`, `docs/frontend.md`, `docs/data-model.md`, `docs/status.md` und `masterplan.md` wurden auf den aktuellen Retrieval-Stand abgeglichen.
-- GUI zeigt jetzt Such-Lade-, Leer- und Fehlerzustaende auf `/documents`.
-- API-Fehlermapping kennt jetzt `INVALID_QUERY` fuer Suchanfragen.
-
-### Validated
-
-- Backend-Retrieval-Nachweis: `14 passed` fuer Search-Service, Search-API und Migrationspfad.
-- Frontend-Such- und Screen-Nachweis: `8 passed`.
-- Frontend-Build: `vite build` erfolgreich.
-
-### Superseded
-
-- Dieser Zwischenstand wurde durch spaetere PostgreSQL- und Ranking-Tests ueberholt.
-- M3c wurde am 2026-05-05 auf dem stabilisierten Retrieval-Vertrag abgeschlossen. Quelle: `reports/current/masterplan_status.json`.
-
-## 2026-05-04 - M3c Chat/RAG Foundation
-
-### Added
-
-- `ContextBuilder` fuer deterministische Kontextpakete.
-- `PromptBuilder` fuer dokumentgestuetzte Prompts.
-- `CitationMapper` fuer maschinenlesbare Citations.
-- `InsufficientContextPolicy` mit festen Schwellenwerten und No-Answer-Verhalten.
-- Chat-Persistenzmodelle, Migration und Service fuer Sessions, Messages und Citations.
-- Frontend-Chatseite mit Sessionliste, neuer Session, Nachrichtenverlauf, Quellenanzeige und Insufficient-Context-Zustand.
-- Dokumente `docs/chat-rag-api-contract.md`, `docs/rag-dataflow.md` und `docs/rag.md`.
-
-### Changed
-
-- `docs/status.md`, `docs/api.md`, `docs/data-model.md`, `docs/frontend.md`, `docs/retrieval.md` und `masterplan.md` wurden auf den realen M3c-Stand abgeglichen.
-- `chat_messages.source_metadata` wurde fuer den Zielvertrag auf `metadata` ausgerichtet.
-
-### Validated
-
-- Backend-Fokustests fuer Context Builder, Prompt Builder, Citation Mapper, Insufficient-Context-Policy und Chat-Persistenz: `37 passed`.
-- Frontend-Tests inklusive ChatPage: `11 passed`.
-- Frontend-Build: `vite build` erfolgreich.
-
-### Superseded
-
-- Dieser Zwischenstand wurde durch den Abschluss vom 2026-05-05 ueberholt.
-- Chat-HTTP-API, end-to-end RAG-Pfad und API-Tests sind inzwischen implementiert und verifiziert.
-
-## 2026-05-04 - M4 Integrierter Wissensbasis-Chat
-
-### Status
-
-- Noch nicht implementiert.
-- Start ist seit dem M3c-Abschluss vom 2026-05-05 freigegeben. Quelle: `reports/current/masterplan_status.json`.
-
-### Open
-
-- stabile Chat-HTTP-API im Backend
-- integrierter Antwortpfad ueber Retrieval, Prompting, Policy, LLM und Citations
-- API- und Integrationsnachweise fuer diesen produktiven Pfad
-
+- Historischer Zwisch

@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "report_name": "ga_final_gate_report",
+  "generated_at": "2026-06-17T15:00:00.000000+00:00",
+  "sprint": "PRI-7",
+  "ga_threshold": 90,
+  "current_maturity": 68.7,
+  "maturity_gap": 21.3,
+  "criteria": [
+    {
+      "id": "GA-01",
+      "name": "Gold Path 8/8",
+      "status": "PASS",
+      "detail": "8/8 Gold Paths PASS (PRI-6 bestätigt, keine Regression festgestellt)"
+    },
+    {
+      "id": "GA-02",
+      "name": "Product Maturity >= 90",
+      "status": "FAIL",
+      "detail": "Aktuelle Maturity: 80/100. Schwellenwert: 90. Delta: -10. Blocker: GIN-Index (TD-004), CSP (GA-SEC-01), Integrations-Tests (SCGB-01)."
+    },
+    {
+      "id": "GA-03",
+      "name": "Security PASS",
+      "status": "FAIL",
+      "detail": "GA-SEC-01: Content Security Policy (CSP) nicht implementiert. AdminRoute-Guard PASS. ID-Leak-Gate PASS. PROHIBIT-02/06/08 eingehalten."
+    },
+    {
+      "id": "GA-04",
+      "name": "Technical ID Leaks = 0",
+      "status": "PASS",
+      "detail": "CI-Prüfung aktiv, 0 Leaks bestätigt (PRI-6)."
+    },
+    {
+      "id": "GA-05",
+      "name": "Performance PASS",
+      "status": "FAIL",
+      "detail": "GA-PERF-01: Kein GIN-Index auf document_chunks.search_vector. Suchanfragen > 10k Chunks ohne Optimierung. Benchmark nicht durchführbar (SCGB-01)."
+    },
+    {
+      "id": "GA-06",
+      "name": "Backup PASS",
+      "status": "BLOCKED",
+      "detail": "Backup-Tests NICHT_GETESTET. Blocker: SCGB-01 (TEST_DATABASE_URL). Prozedur spezifiziert."
+    },
+    {
+      "id": "GA-07",
+      "name": "Restore PASS",
+      "status": "BLOCKED",
+      "detail": "Restore-Tests NICHT_GETESTET. Blocker: SCGB-01 (TEST_DATABASE_URL). Prozedur spezifiziert."
+    },
+    {
+      "id": "GA-08",
+      "name": "Monitoring PASS",
+      "status": "FAIL",
+      "detail": "Prometheus /metrics: FEHLT. Strukturiertes Logging: FEHLT. /health/ready: FEHLT. /health vorhanden."
+    },
+    {
+      "id": "GA-09",
+      "name": "Operations Documentation PASS",
+      "status": "PASS",
+      "detail": "operations_manual.md, deployment.md, rollback.md, maintenance.md — alle 4 Dokumente erzeugt (PRI-7)."
+    },
+    {
+      "id": "GA-10",
+      "name": "Regression Suite PASS",
+      "status": "BLOCKED",
+      "detail": "Integrations-Tests GESPERRT (SCGB-01). Unit-Tests TEILWEISE. Security-Tests TEILWEISE PASS. GA-blocking."
+    }
+  ],
+  "summary": {
+    "PASS": 3,
+    "FAIL": 4,
+    "BLOCKED": 3
+  },
+  "overall_status": "BLOCKED",
+  "verdict": "BLOCKED",
+  "verdict_reason": "BLOCKED hat Vorrang vor FAIL. GA-06, GA-07, GA-10 BLOCKED (SCGB-01). GA-02 FAIL (Maturity 80 < 90). GA-03 FAIL (CSP). GA-05 FAIL (GIN-Index). GA-08 FAIL (Monitoring).",
+  "blocking_items": [
+    {
+      "id": "GA-02",
+      "name": "Product Maturity >= 90",
+      "status": "FAIL",
+      "detail": "Aktuelle Maturity: 80/100. Schwellenwert: 90. Delta: -10. Blocker: GIN-Index (TD-004), CSP (GA-SEC-01), Integrations-Tests (SCGB-01)."
+    },
+    {
+      "id": "GA-03",
+      "name": "Security PASS",
+      "status": "FAIL",
+      "detail": "GA-SEC-01: Content Security Policy (CSP) nicht implementiert. AdminRoute-Guard PASS. ID-Leak-Gate PASS. PROHIBIT-02/06/08 eingehalten."
+    },
+    {
+      "id": "GA-05",
+      "name": "Performance PASS",
+      "status": "FAIL",
+      "detail": "GA-PERF-01: Kein GIN-Index auf document_chunks.search_vector. Suchanfragen > 10k Chunks ohne Optimierung. Benchmark nicht durchführbar (SCGB-01)."
+    },
+    {
+      "id": "GA-06",
+      "name": "Backup PASS",
+      "status": "BLOCKED",
+      "detail": "Backup-Tests NICHT_GETESTET. Blocker: SCGB-01 (TEST_DATABASE_URL). Prozedur spezifiziert."
+    },
+    {
+      "id": "GA-07",
+      "name": "Restore PASS",
+      "status": "BLOCKED",
+      "detail": "Restore-Tests NICHT_GETESTET. Blocker: SCGB-01 (TEST_DATABASE_URL). Prozedur spezifiziert."
+    },
+    {
+      "id": "GA-08",
+      "name": "Monitoring PASS",
+      "status": "FAIL",
+      "detail": "Prometheus /metrics: FEHLT. Strukturiertes Logging: FEHLT. /health/ready: FEHLT. /health vorhanden."
+    },
+    {
+      "id": "GA-10",
+      "name": "Regression Suite PASS",
+      "status": "BLOCKED",
+      "detail": "Integrations-Tests GESPERRT (SCGB-01). Unit-Tests TEILWEISE. Security-Tests TEILWEISE PASS. GA-blocking."
+    }
+  ],
+  "external_blockers": [
+    {
+      "id": "SCGB-01",
+      "beschreibung": "TEST_DATABASE_URL",
+      "owner": "DevOps",
+      "blocker_fuer": [
+        "GA-06",
+        "GA-07",
+        "GA-10"
+      ]
+    },
+    {
+      "id": "SCGB-02",
+      "beschreibung": "NAV_ITEMS",
+      "owner": "PO"
+    }
+  ],
+  "ga_ready_items": [
+    "GA-01",
+    "GA-04",
+    "GA-09"
+  ]
+}

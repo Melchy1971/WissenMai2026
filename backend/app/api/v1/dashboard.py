@@ -14,6 +14,7 @@ from app.db.session import get_session
 from app.schemas.dashboard import (
     DashboardActivityResponse,
     DashboardAnalysisResponse,
+    DashboardDriftResponse,
     DashboardImportsResponse,
     DashboardQualityResponse,
     DashboardSummary,
@@ -97,3 +98,17 @@ def dashboard_topics_widgets(
     service: Annotated[DashboardSummaryService, Depends(get_dashboard_summary_service)],
 ) -> TopicsWidgetData:
     return service.get_topics_widgets(workspace_id=ctx.workspace_id)
+
+
+@router.get("/drift", response_model=DashboardDriftResponse)
+def dashboard_drift(
+    _ctx: Annotated[AuthContext, Depends(require_workspace_member)],
+    service: Annotated[DashboardSummaryService, Depends(get_dashboard_summary_service)],
+) -> DashboardDriftResponse:
+    """Return 6 drift analytics widgets for the Dashboard overview.
+
+    Missing snapshots (no data) are returned with status=None — the UI must
+    display these as WARNING. Listed in missing_data field.
+    No UUIDs or technical IDs in response.
+    """
+    return service.get_drift_widgets()

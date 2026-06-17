@@ -9,6 +9,9 @@ from app.api.v1.router import api_router
 from app.observability.logging import configure_structured_logging
 from app.observability.auth_middleware import AuthContextMiddleware
 from app.observability.middleware import CorrelationIdMiddleware
+from app.observability.security_headers import SecurityHeadersMiddleware
+from app.api.health_extended import router as health_extended_router
+from app.core.config import settings
 
 
 @asynccontextmanager
@@ -21,6 +24,9 @@ async def _lifespan(application: FastAPI):  # noqa: ARG001
 
 app = FastAPI(title="Wissensbasis API", version="0.1.0", lifespan=_lifespan)
 configure_structured_logging()
+
+_is_dev = settings.app_env in ("local", "development", "test")
+app.add_middleware(SecurityHeadersMiddleware, dev_mode=_is_dev)
 app.add_middleware(CorrelationIdMiddleware)
 app.add_middleware(AuthContextMiddleware)
 app.add_middleware(
@@ -49,5 +55,6 @@ app.add_middleware(
 )
 register_exception_handlers(app)
 app.include_router(health_router)
+app.include_router(health_extended_router)
 app.include_router(documents_router)
 app.include_router(api_router, prefix="/api/v1")

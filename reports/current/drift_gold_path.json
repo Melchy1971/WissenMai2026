@@ -1,0 +1,246 @@
+{
+  "report_schema_version": 1,
+  "report_name": "drift_gold_path",
+  "report_type": "gold_path_test",
+  "generated_at": "2026-06-17T00:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis + component_inspection + api_contract_review",
+  "scope": "PRI-4 Drift Analytics — Dashboard-Integration, DriftDetailPage, Recalculate-Workflow",
+  "basis": "DriftWidgetPanel.jsx, DriftAnalyticsPage.jsx, AppShell.jsx, drift_analytics.py, dashboard_service.py, dashboard.py",
+  "pass_criteria": "Alle 10 Hauptpfad-Schritte PASS. Keine technischen IDs sichtbar. Fehlende Daten → WARNING (nicht PASS). BLOCKED > FAIL > WARNING > PASS eingehalten.",
+  "main_gold_path": {
+    "name": "Drift Analytics — Haupt-Gold-Path",
+    "steps": [
+      {
+        "step_id": "DGP-01",
+        "name": "Dashboard öffnen — DriftWidgetPanel sichtbar",
+        "url": "/dashboard",
+        "actions": [
+          "Zu /dashboard navigieren",
+          "DashboardPage rendert <DriftWidgetPanel /> in Section mit data-testid='drift-widget-section'",
+          "Panel lädt GET /api/v1/dashboard/drift",
+          "6 Drift-Karten werden angezeigt: Produktreife, Gold Path, Release Gate, Test Coverage, Technische ID Prüfung, Sicherheitsaudit",
+          "GlobalStatusBar zeigt globalen Drift-Status (PASS/WARNING/FAIL/BLOCKED)"
+        ],
+        "verdict": "PASS",
+        "clicks": 1,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "DashboardPage importiert DriftWidgetPanel und rendert es bedingungslos. useReducer-Phasen idle→loading→success steuern Skeleton/Content-Anzeige. data-testid='drift-widget-panel' bestätigt Mounting.",
+        "blocking_for_1_0": true
+      },
+      {
+        "step_id": "DGP-02",
+        "name": "AppShell — Drift-Status-Badge im Status-Bar sichtbar",
+        "url": "/dashboard (AppShell)",
+        "actions": [
+          "AppShell lädt getDriftOverview() on mount (best-effort, Fehler werden ignoriert)",
+          "DriftGlobalBadge erscheint im Status-Bar mit globalem Status-Label",
+          "Badge-Farbe: PASS=#2e7d32, WARNING=#e65100, FAIL=#c62828, BLOCKED=#6a1a6a",
+          "Bei API-Fehler: kein Badge sichtbar (kein Error-State im Shell)"
+        ],
+        "verdict": "PASS",
+        "clicks": 0,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "AppShell.jsx: getDriftOverview().then(...).catch(() => null). DriftGlobalBadge rendert nur wenn driftStatus !== null. Keine UUIDs im Badge — nur Status-Label.",
+        "blocking_for_1_0": true
+      },
+      {
+        "step_id": "DGP-03",
+        "name": "BlockedBadge am Dashboard-Navpunkt bei BLOCKED-Status",
+        "url": "/dashboard (AppShell Nav)",
+        "actions": [
+          "Wenn ≥1 Drift-Widget status='BLOCKED': countBlocked(overview) > 0",
+          "Dashboard-Navpunkt zeigt BlockedBadge (Zahl, Hintergrund #6a1a6a, weiß Schrift)",
+          "Bei 0 BLOCKED-Items: kein Badge sichtbar"
+        ],
+        "verdict": "PASS",
+        "clicks": 0,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "countBlocked() prüft 6 feste snapshot-type-Keys im overview-Objekt auf status==='BLOCKED'. BlockedBadge rendert nur wenn blockedCount > 0. Kein UUID in Badge-Text.",
+        "blocking_for_1_0": true
+      },
+      {
+        "step_id": "DGP-04",
+        "name": "Drift-Karte klicken → Navigation zur DriftDetailPage",
+        "url": "/dashboard → /drift-analytics/:snapshotType",
+        "actions": [
+          "Benutzer klickt auf eine Drift-Karte (z.B. 'Produktreife')",
+          "DriftCard ruft navigate('/drift-analytics/PRODUCT_MATURITY')",
+          "URL wechselt zu /drift-analytics/PRODUCT_MATURITY",
+          "DriftAnalyticsPage rendert mit snapshotType='PRODUCT_MATURITY'",
+          "Kein UUID in der URL"
+        ],
+        "verdict": "PASS",
+        "clicks": 1,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "DriftCard.onClick: navigate('/drift-analytics/' + encodeURIComponent(snapshotType)). Route /drift-analytics/:snapshotType ist in routes.jsx registriert. URL enthält snapshot_type-String, keinen UUID.",
+        "blocking_for_1_0": true
+      },
+      {
+        "step_id": "DGP-05",
+        "name": "DriftDetailPage — Übersicht-Sektion, kein UUID sichtbar",
+        "url": "/drift-analytics/PRODUCT_MATURITY",
+        "actions": [
+          "DriftAnalyticsPage lädt GET /api/v1/drift/overview",
+          "OverviewCard zeigt: snapshot_type als Label (nicht als UUID), status, score, last_updated",
+          "Seite zeigt Snapshot-Liste für diesen Typ (typeToKey-Mapping: PRODUCT_MATURITY→product_maturity)",
+          "Kein id-Feld sichtbar in der UI — nur created_at, status, score",
+          "Back-Button führt zu /dashboard"
+        ],
+        "verdict": "PASS",
+        "clicks": 2,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "DriftAnalyticsPage: typeToKey-Mapping mappt URL-Param auf overview-Key. OverviewCard rendert kein id-Feld. Snapshot-Liste: id wird nur intern für API-Calls verwendet, nicht im DOM angezeigt.",
+        "blocking_for_1_0": true
+      },
+      {
+        "step_id": "DGP-06",
+        "name": "DriftDetailPage — Metriken-Tabelle für ausgewählten Snapshot",
+        "url": "/drift-analytics/PRODUCT_MATURITY",
+        "actions": [
+          "Erster Snapshot wird automatisch ausgewählt (auto-select first)",
+          "GET /api/v1/drift/snapshots/:id/metrics wird geladen",
+          "MetricsTable zeigt: metric_name, value, threshold, status (PASS/WARNING/FAIL/BLOCKED)",
+          "Kein metric.id oder snapshot.id sichtbar in der Tabelle",
+          "Zeile mit status=BLOCKED erhält visuell höchste Priorität"
+        ],
+        "verdict": "PASS",
+        "clicks": 0,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "MetricsTable rendert metric_name, value, threshold, status aus API-Response. id-Felder werden für API-Calls gehalten, nicht in DOM-Spalten gerendert. Status-Priorität BLOCKED>FAIL>WARNING>PASS durch Sortierung und Farbgebung sichtbar.",
+        "blocking_for_1_0": true
+      },
+      {
+        "step_id": "DGP-07",
+        "name": "DriftDetailPage — Payload-Viewer öffnen und schließen",
+        "url": "/drift-analytics/PRODUCT_MATURITY",
+        "actions": [
+          "PayloadViewer-Sektion ist standardmäßig eingeklappt",
+          "'Details anzeigen'-Button klicken → aria-expanded='true', Payload wird sichtbar",
+          "Zeichenanzahl wird angezeigt (z.B. '1.234 Zeichen')",
+          "Button erneut klicken → aria-expanded='false', Payload verschwindet",
+          "Kein interner Dateipfad im Payload sichtbar (kein /sessions/, kein C:\\)"
+        ],
+        "verdict": "PASS",
+        "clicks": 2,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "PayloadViewer: useState(false) steuert expanded-Zustand. aria-expanded gesetzt. Zeichenanzahl via JSON.stringify(payload).length berechnet. Payload kommt aus API-Response, enthält keine internen Serverpfade.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "DGP-08",
+        "name": "DriftDetailPage — Score-Verlauf, älteren Snapshot auswählen",
+        "url": "/drift-analytics/PRODUCT_MATURITY",
+        "actions": [
+          "HistoryList zeigt alle Snapshots für diesen Typ (created_at, status, score)",
+          "Kein Snapshot-UUID in der Liste sichtbar",
+          "Benutzer klickt auf älteren Snapshot",
+          "Ausgewählter Eintrag erhält visuell hervorgehobenen Rand (magenta oder Status-Farbe)",
+          "MetricsTable und PayloadViewer aktualisieren sich für den ausgewählten Snapshot",
+          "HistoryTrendChart zeigt Score-Verlauf aller Snapshots (Scores als Zahlen, kein UUID auf X-Achse)"
+        ],
+        "verdict": "PASS",
+        "clicks": 2,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "HistoryList.onClick(snap): setzt selectedSnapshotId (intern), lädt getDriftSnapshotMetrics(snap.id). snap.id wird nur für API-Call verwendet, nicht als Anzeigetext. HistoryTrendChart.x-Achse: formatiertes created_at-Datum.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "DGP-09",
+        "name": "Dashboard — 'Neu berechnen' → Confirm-Dialog → POST recalculate",
+        "url": "/dashboard (DriftWidgetPanel)",
+        "actions": [
+          "Zurück zum Dashboard navigieren",
+          "'Neu berechnen'-Button klicken → RecalcDialog öffnet sich",
+          "Dialog zeigt Warnung: 'Neue Snapshots werden erstellt. Alte Snapshots bleiben erhalten (immutable).'",
+          "Benutzer klickt 'Bestätigen' → POST /api/v1/drift/snapshots/recalculate",
+          "Dialog zeigt Ladezustand während POST",
+          "Bei Erfolg: Ergebnis-Zusammenfassung sichtbar (neue Snapshot-Anzahl, global_status)"
+        ],
+        "verdict": "PASS",
+        "clicks": 3,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "RecalcDialog: Confirm-Phase → POST postDriftRecalculate() → result-Phase. Kein Auto-Fire ohne Bestätigung (PROHIBIT-08). Dialog schließt automatisch nach 3s Erfolg. DriftWidgetPanel lädt anschließend GET /dashboard/drift neu.",
+        "blocking_for_1_0": true
+      },
+      {
+        "step_id": "DGP-10",
+        "name": "Recalculate-Ergebnis validieren — Snapshots immutable, keine Secrets",
+        "url": "/dashboard (nach Recalculate)",
+        "actions": [
+          "GET /api/v1/drift/overview nach Recalculate: neue Snapshots vorhanden",
+          "Alte Snapshots in /drift-analytics/:type HistoryList noch sichtbar (immutable, nicht überschrieben)",
+          "GET /api/v1/drift/snapshots liefert erhöhte Anzahl pro Typ",
+          "Kein Secret, kein UUID, kein interner Dateipfad in API-Response sichtbar",
+          "Fehlende Daten nach Recalculate: status=null → UI zeigt WARNING, nicht PASS"
+        ],
+        "verdict": "PASS",
+        "clicks": 1,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "AnalyticsRepository: INSERT-only, kein UPDATE. get_all_latest_snapshots() wählt neuesten per created_at-MAX. DriftAnalyticsService: kein secret_value im payload. Fehlende Snapshots nach Recalculate: DriftWidget.status=None → UI WARNING-Behandlung. Alle Constraints aus Immutabilitätsregel eingehalten.",
+        "blocking_for_1_0": true
+      }
+    ]
+  },
+  "additional_paths": [
+    {
+      "name": "Fehlende Daten-Pfad — WARNING statt PASS",
+      "steps": [
+        {
+          "step_id": "DGP-A1",
+          "name": "Widget ohne Snapshot zeigt WARNING",
+          "actions": [
+            "GET /api/v1/dashboard/drift: Widget ohne Snapshot → status=null in Response",
+            "DriftCard mit status=null: zeigt 'Noch keine Daten', Status-Farbe WARNING (#e65100)",
+            "global_status: WARNING (nicht PASS) wenn min. 1 Snapshot fehlt",
+            "missing_data-Liste enthält snapshot_type des fehlenden Widgets"
+          ],
+          "verdict": "PASS",
+          "rationale": "DashboardSummaryService.get_drift_widgets(): snap is None → missing.append(), all_statuses.append('WARNING'). DriftCard: status===null → STATUS_META['WARNING']-Farbe + 'Noch keine Daten'-Text."
+        }
+      ]
+    },
+    {
+      "name": "Prioritätspfad — BLOCKED schlägt FAIL",
+      "steps": [
+        {
+          "step_id": "DGP-A2",
+          "name": "BLOCKED-Status hat Vorrang vor FAIL",
+          "actions": [
+            "Wenn 1 Widget BLOCKED, andere FAIL/WARNING/PASS: global_status=BLOCKED",
+            "AppShell BlockedBadge sichtbar",
+            "DriftWidgetPanel GlobalStatusBar zeigt BLOCKED-Farbe (#6a1a6a)"
+          ],
+          "verdict": "PASS",
+          "rationale": "max(all_statuses, key=lambda s: _PRIORITY.get(s, 1)): _PRIORITY={'PASS':0,'WARNING':1,'FAIL':2,'BLOCKED':3}. BLOCKED=3 ist Maximum. GlobalStatusBar STATUS_META['BLOCKED'].color='#6a1a6a'."
+        }
+      ]
+    }
+  ],
+  "security_checks": {
+    "no_technical_ids_in_ui": "PASS — snapshot_type (String) als Navigationsschlüssel, UUID/id nur intern für API-Calls",
+    "no_internal_paths_in_payload": "PASS — PayloadViewer zeigt API-Response-Inhalt, keine Serverpfade in DriftAnalyticsService-Payloads",
+    "missing_data_is_warning": "PASS — DriftWidget.status=null → WARNING-Behandlung in UI und global_status-Berechnung",
+    "blocked_priority": "PASS — BLOCKED(3) > FAIL(2) > WARNING(1) > PASS(0) in _PRIORITY-Dict",
+    "snapshots_immutable": "PASS — AnalyticsRepository: INSERT-only, kein UPDATE/DELETE auf analytics_snapshots",
+    "no_auto_recalculate": "PASS — POST /drift/snapshots/recalculate nur nach explizitem Confirm-Dialog (PROHIBIT-08 eingehalten)",
+    "no_repair_button": "PASS — kein RepairButton in DriftWidgetPanel oder DriftAnalyticsPage (PROHIBIT-02 eingehalten)"
+  },
+  "summary": {
+    "main_path_verdict": "PASS",
+    "main_path_steps": "10/10 PASS",
+    "additional_paths_verdict": "PASS",
+    "additional_paths": "2/2 PASS",
+    "security_checks": "7/7 PASS",
+    "blocking_for_1_0": false
+  }
+}

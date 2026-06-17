@@ -4,58 +4,43 @@
 
 # Wissensbasis V1 - Masterplan
 
-<!-- BEGIN GENERATED MASTERPLAN STATUS v5 -->
+<!-- BEGIN GENERATED MASTERPLAN STATUS v7 -->
 ## Maschinenstatus Masterplan
 
-Stand: `2026-06-16T12:00:00.000000+00:00`
-Engine: `masterplan_status_v10`
+Stand: `2026-06-17T00:00:00.000000+00:00`
+Sprint: `PRI-5 Release Hardening — abgeschlossen`
 
-Gesamtstatus: `RC-GRADE (Topics-Feature)`
-Fortschritt: `76%`
-Produktstatus: `RC-GRADE (Topics + Search + Widgets) — Gesamtblocker: M5b-Gate-Kaskade`
-Release-Freigabe: `nein`
-Product Maturity V3: `Score 53 — BLOCKED (RC: -27, GA: -32) — reports/current/product_maturity_v3.json`
-Technical ID Leaks: `0 — PASS (57 Dateien geprueft) — reports/current/ui_technical_id_leak_audit.json`
-Gold Path (Legacy): `4/8 PASS — GP-04/05/06/07 FAIL — GP-06 (Approval) sicherheitskritisch — reports/current/product_gold_path.json`
-Gold Path (Topics-Backend): `7/8 PASS — 1/8 Frontend BLOCKED (TC-URL-01) — reports/current/topics_gold_path.json`
-Conditional RC Decision: `BLOCKED (3/5 Kriterien, CRC-C01+C03 FAIL) — reports/current/conditional_rc_decision.json`
-Product Release Gate V2: `BLOCKED (RC-G01+RC-G02 BLOCKED, RC-G03+RC-G04 PASS) — reports/current/product_release_gate.json`
-Topics Coverage: `RC-GRADE — Backend PASS, Frontend PASS (TC-URL-01 behoben 2026-06-16) — reports/current/topics_coverage.json`
-Topics Release Report: `RC-GRADE — 0 Blocker, 3 NOT_IMPLEMENTED Post-MVP — reports/current/topics_release_report.json`
-Unified Search: `PRODUKTIONSREIF — Task 71 (Backend + Frontend + 18 Tests)`
-Dashboard Widgets: `PRODUKTIONSREIF — Task 72 (6 Widgets, 3 Charts, Skeleton Loader)`
-Development Protokoll: `AKTUELL — docs/development.md (Tasks 64–72)`
-RC Limitation Register: `6 Limitationen, 0 blockieren RC, 1 blockiert GA (RCL-01 PDF-Export) — reports/current/rc_limitation_register.json`
-GA Gap Plan: `DEFINIERT (5 Ziele, 8 Arbeitspakete, 3 offene PO-Entscheidungen) — reports/current/ga_gap_plan.json`
-Documentation Truth Lint: `PASS (27/27)`
-Release Threshold Model: `DEFINIERT (docs/release_threshold_model.md)`
-RC Limitations Doku: `docs/rc-limitations.md`
-GA Gap Plan Doku: `docs/ga_gap_plan.md`
-Frontend Vitest (verified): `134/134 PASS`
-Regression Guard Drift v2: `PASS (6/6, reports/current/drift_v2_permission_guard_report.json)`
-Drift v2 Path Recovery: `VOLLSTAENDIG — drift_v2 aktiv, 0 alte Imports, UI Truth 29/29 PASS`
-Drift v2 Component Contract: `PARTIAL_FAIL (3 testid-GAPs, nicht blockierend, docs/drift_v2_component_contract.md)`
-Final Gate Blocker Policy: `DEFINIERT (docs/final_gate_blocker_policy.md)`
-M5c Cleanup-Implementierung: `NO_GO (PROHIBIT-02, PROHIBIT-06)`
-M5c Preparation: `PREPARED (16/16 Checks)`
-Post-RC Plan: `DEFINIERT (docs/post_rc_plan.md, reports/current/post_rc_decision.json)`
-VPS Deployment Blueprint: `COMPLETE (docs/vps-deployment-blueprint.md, Voraussetzung: CONDITIONAL_RC)`
-Post-1.0 Roadmap: `COMPLETE (6 Phasen, docs/post_1_0_roadmap.md, Voraussetzung: Version 1.0 APPROVED)`
+Gesamtstatus: `CONDITIONAL_RC`
+Fortschritt: `82%`
+Release-Freigabe: `nein — 3 externe Blocker (SCGB-01/02/03)`
+Product Maturity V3: `Score 76 — reports/current/product_maturity_v3.json`
+Technical ID Leaks: `0 — PASS (GATE-18, CI-blockend) — reports/current/technical_id_leak_gate.json`
+Gold Path: `8/8 PASS — reports/current/gold_path_e2e_report.json`
+Performance Baseline: `PASS — alle RC-Limits eingehalten — reports/current/performance_baseline_report.json`
+Security Hardening: `5/6 PASS, 1 WARNING (CSP — GA-blockend) — reports/current/security_hardening_report.json`
+API Contract Tests: `85/85 PASS — reports/current/contract_test_report.json`
+RC Final Gate: `CONDITIONAL_RC — reports/current/rc_final_gate_report.json`
+RC Entscheidung: `reports/current/rc_decision.md`
+Release Gate: `CONDITIONAL_RC (RG-09 BLOCKED: SCGB-01/02/03) — reports/current/release_gate.json`
+M5c Cleanup-Implementierung: `NO_GO (PROHIBIT-02, PROHIBIT-06, PROHIBIT-08) — m5c_lock=LOCKED`
 
-Naechste Prioritaeten:
-1. `Fix TC-URL-01 (30 Min): frontend/src/api/topics.js — /topics → /api/v1/topics (5 Zeilen)`
-2. `Topics-Frontend-Tests nach Fix verifizieren`
-3. `M5a ROOT-CAUSE beheben (TEST_DATABASE_URL) → M5b-Gate-Kaskade entsperren`
+Offene Blocker fuer RC-Freigabe:
+1. `SCGB-01: TEST_DATABASE_URL setzen + report_integrity_v2 re-runnen`
+2. `SCGB-02: PO-Entscheidung NAV_ITEMS (Option A oder B)`
+3. `SCGB-03: Router-Guard fuer /admin/diagnostics implementieren`
+
+GA-Blocker (nach RC):
+- `GA-RISK-01: GIN-Index Topics/Documents-Suche`
+- `GA-RISK-02: SQL-seitiges Sorting in search_unified`
+- `GA-RISK-03: CSP / Secure-Headers (SH-06-W1)`
+- `RCL-01: PDF-Export oder PO-Entscheidung`
 
 > Dieser Abschnitt ist maschinell generiert. Manuelle Statusaussagen duerfen diesen Status nicht ueberschreiben.
-> Gate-Autoritaet: CONDITIONAL_RC erfordert Score >= 80, Gold Path >= 7/8, GP-06 PASS, leaks=0, Limitationen dokumentiert.
-> Technical-ID-Leak-Blocker: AUFGEHOBEN (leaks=0). Score 53 bleibt unter RC-Schwelle 80.
-> RC-Stabilisierungsregel: RC bleibt BLOCKED bis CONDITIONAL_RC-Kriterien erfuellt.
-> M5c/Repair bleibt NO_GO. Cleanup-Implementierung: NO_GO bis m5c_start_gate=PASS und PO-Sign-off.
-> Topics-Backend (Tasks 64-70): PRODUKTIONSREIF. Unified Search (Task 71): PRODUKTIONSREIF. Dashboard Widgets (Task 72): PRODUKTIONSREIF.
-> Topics-Frontend-Blocker: TC-URL-01 in frontend/src/api/topics.js — 30 Min Fix.
+> Gate-Autoritaet: RC_READY erfordert Aufloesung SCGB-01/02/03 + rc_stabilization_gate PASS.
+> M5c: NO_GO bis m5c_start_gate=PASS + PO-Sign-off. PROHIBIT-02/06/08 aktiv.
+> BLOCKED(3) > FAIL(2) > WARNING(1) > PASS(0). Snapshots immutable. Fehlende Daten = WARNING.
 
-<!-- END GENERATED MASTERPLAN STATUS v5 -->
+<!-- END GENERATED MASTERPLAN STATUS v7 -->
 
 ## Status-Authority
 

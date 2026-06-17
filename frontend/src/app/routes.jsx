@@ -10,6 +10,7 @@ import { ChatPage } from '../pages/ChatPage.jsx';
 import { DashboardPage } from '../pages/DashboardPage.jsx';
 import { DataQualityPage } from '../pages/DataQualityPage.jsx';
 import { DriftPage } from '../pages/DriftPage.jsx';
+import { DriftAnalyticsPage } from '../pages/DriftAnalyticsPage.jsx';
 import { DocumentDetailPage } from '../pages/DocumentDetailPage.jsx';
 import { DocumentCenterPage } from '../pages/DocumentCenterPage.jsx';
 import { ImportCenterPage } from '../pages/ImportCenterPage.jsx';
@@ -73,6 +74,34 @@ function ProtectedRoute() {
   return <AppShell />;
 }
 
+/**
+ * AdminRoute — SCGB-03 Fix (PRI-6)
+ * Schützt Routen, die ausschließlich für Admins zugänglich sind.
+ * Voraussetzung: ProtectedRoute muss bereits durchlaufen worden sein (Token + Workspace valid).
+ * Prüft zusätzlich auth.user.role === 'admin'. Alle anderen Rollen erhalten 403.
+ */
+function AdminRoute({ children }) {
+  const auth = useAuth();
+  const { user } = auth;
+
+  if (!user || user.role !== 'admin') {
+    return (
+      <ErrorState
+        error={{
+          code: 'FORBIDDEN',
+          title: 'Zugriff verweigert',
+          message: 'Dieser Bereich ist ausschliesslich fuer Administratoren zugaenglich.',
+          details: {},
+          status: 403,
+        }}
+        testId="admin-access-denied"
+      />
+    );
+  }
+
+  return children;
+}
+
 export function AppRoutes() {
   return (
     <Routes>
@@ -92,6 +121,7 @@ export function AppRoutes() {
         <Route path="/rag" element={<RAGCenterPage />} />
         <Route path="/data-quality" element={<DataQualityPage />} />
         <Route path="/drift" element={<DriftPage />} />
+        <Route path="/drift-analytics/:snapshotType" element={<DriftAnalyticsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/tools" element={<SimpleListPage title="Tools" endpoint="/api/v1/tools" testId="tools-page" />} />
         <Route path="/memory" element={<SimpleListPage title="Memory" endpoint="/api/v1/memory" testId="memory-page" />} />
@@ -101,7 +131,7 @@ export function AppRoutes() {
         <Route path="/collaboration" element={<CollaborationPage />} />
         <Route path="/governance" element={<GovernancePage />} />
         <Route path="/analysis" element={<AnalysisPage />} />
-        <Route path="/admin/diagnostics" element={<AdminDiagnosticsPage />} />
+        <Route path="/admin/diagnostics" element={<AdminRoute><AdminDiagnosticsPage /></AdminRoute>} />
       </Route>
     </Routes>
   );

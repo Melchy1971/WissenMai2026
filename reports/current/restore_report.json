@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "report_name": "restore_report",
+  "generated_at": "2026-06-17T14:10:00.000000+00:00",
+  "sprint": "PRI-7",
+  "restore_prozedur": {
+    "voraussetzungen": [
+      "Backup-Dateien vorhanden und validiert",
+      "Ziel-System: leeres PostgreSQL (SCN-03) oder bestehendes (SCN-04)",
+      "Alembic-Stand bekannt",
+      "Konfiguration entschlüsselt"
+    ],
+    "schritte": [
+      "1. pg_restore -d $TARGET_DB backup_db_*.dump",
+      "2. alembic upgrade head (falls Ziel-System leer)",
+      "3. tar -xzf backup_uploads_*.tar.gz -C uploads/",
+      "4. tar -xzf backup_exports_*.tar.gz -C exports/",
+      "5. tar -xzf backup_reports_*.tar.gz -C reports/",
+      "6. Integritätsprüfung: python scripts/validate_restore.py"
+    ],
+    "integritaetspruefung": {
+      "pruefpunkte": [
+        "FK-Constraints (pg_constraint)",
+        "Row-Count je Tabelle vs. Backup-Manifest",
+        "Checksummen (SHA256) kritischer Dateien",
+        "Health-Endpoint /health: status=ok",
+        "Login-Test (Admin-User)"
+      ]
+    }
+  },
+  "szenarien": {
+    "SCN-03": {
+      "status": "NICHT_GETESTET",
+      "blocker": "SCGB-01"
+    },
+    "SCN-04": {
+      "status": "NICHT_GETESTET",
+      "blocker": "SCGB-01"
+    },
+    "SCN-05": {
+      "status": "NICHT_GETESTET",
+      "blocker": "SCGB-01"
+    },
+    "SCN-06": {
+      "status": "NICHT_GETESTET",
+      "blocker": "SCGB-01"
+    }
+  },
+  "gesamtstatus": "NICHT_GETESTET",
+  "rto_ziel_minuten": 30,
+  "rpo_ziel_stunden": 1,
+  "blocker": "SCGB-01 (TEST_DATABASE_URL) — Restore-Tests erst nach SCGB-01-Schließung ausführbar"
+}

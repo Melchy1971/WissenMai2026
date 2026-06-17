@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "report_name": "technical_debt_register",
+  "generated_at": "2026-06-17T14:00:00.000000+00:00",
+  "sprint": "PRI-7",
+  "summary": {
+    "total_items": 15,
+    "prioritaet_1_kritisch": 3,
+    "prioritaet_2_hoch": 3,
+    "prioritaet_3_mittel": 6,
+    "prioritaet_4_niedrig": 3,
+    "risiko_HIGH": 4,
+    "risiko_MEDIUM": 8,
+    "risiko_LOW": 3
+  },
+  "items": [
+    {
+      "id": "TD-001",
+      "beschreibung": "Unified Search paginiert in Python nach Laden aller Treffer. Bei >10k Dokumenten werden alle passenden Chunks in RAM geladen, dann slice() genutzt.",
+      "kategorie": "Performance",
+      "betroffene_datei": "backend/app/repositories/search.py: search_unified()",
+      "aufwand": "M (2–3 Tage)",
+      "risiko": "HIGH",
+      "prioritaet": 1,
+      "empfohlene_loesung": "Cursor-basierte Pagination pro Unterabfrage; keine Python-seitige Zusammenführung für count; COUNT(*) über Subquery statt len(records)."
+    },
+    {
+      "id": "TD-002",
+      "beschreibung": "Dashboard-Service feuert 5 separate SELECT-Statements für activity_feed (Documents, BackgroundJobs, AnalysisJobs, DataQualityRuns, DriftRuns), dann Python-seitig sortiert und begrenzt.",
+      "kategorie": "N+1 / Performance",
+      "betroffene_datei": "backend/app/services/dashboard_service.py: list_activity()",
+      "aufwand": "S (1 Tag)",
+      "risiko": "MEDIUM",
+      "prioritaet": 2,
+      "empfohlene_loesung": "UNION ALL auf DB-Ebene oder dedizierte activity_log-Tabelle mit Einzel-Query."
+    },
+    {
+      "id": "TD-003",
+      "beschreibung": "AnalysisJob-Relationships (result, suggestions, source_document_links, comparison) sind lazy-loaded. Beim Listings-Endpoint wird pro Job ein lazy-load ausgelöst.",
+      "kategorie": "N+1",
+      "betroffene_datei": "backend/app/models/analysis.py",
+      "aufwand": "S (0.5 Tag)",
+      "risiko": "MEDIUM",
+      "prioritaet": 3,
+      "empfohlene_loesung": "selectinload() oder joinedload() für AnalysisJob-List-Endpoint; lazy='raise' in Produktion setzen."
+    },
+    {
+      "id": "TD-004",
+      "beschreibung": "Kein GIN-Index auf chunks.search_vector explizit erstellt. Migration 0011 erstellt die Spalte mit TSVECTOR, aber kein CREATE INDEX USING GIN.",
+      "kategorie": "Performance / Index",
+      "betroffene_datei": "backend/migrations/versions/20260504_0011_chunk_search_vector.py",
+      "aufwand": "XS (2h)",
+      "risiko": "HIGH",
+      "prioritaet": 1,
+      "empfohlene_loesung": "CREATE INDEX CONCURRENTLY ix_chunks_search_vector ON document_chunks USING GIN (search_vector); in neuer Migration."
+    },
+    {
+      "id": "TD-005",
+      "beschreibung": "Zwei Import-Pfade koexistieren: import_service.py (Top-Level), services/importing/pipeline.py, services/documents/import_executor.py. Unklare Canonical-Route.",
+      "kategorie": "Duplicate Code / Architektur",
+      "betroffene_datei": "backend/app/services/import_service.py, services/importing/pipeline.py, services/documents/import_executor.py",
+      "aufwand": "M (2 Tage)",
+      "risiko": "MEDIUM",
+      "prioritaet": 3,
+      "empfohlene_loesung": "import_service.py als Adapter markieren oder entfernen. Canonical: importing/pipeline.py → import_executor.py."
+    },
+    {
+      "id": "TD-006",
+      "beschreibung": "backup_restore.py (693 Zeilen) ist God-Service: DB-Dump, File-System-Backup, Restore, Integrity-Check, Compression, Manifest-Writing in einer Klasse.",
+      "kategorie": "God Service",
+      "betroffene_datei": "backend/app/services/backup_restore.py",
+      "aufwand": "M (2–3 Tage)",
+      "risiko": "LOW",
+      "prioritaet": 4,
+      "empfohlene_loesung": "Aufteilen in BackupManifestService, DatabaseDumpService, FileBackupService, RestoreOrchestrator."
+    },
+    {
+      "id": "TD-007",
+      "beschreibung": "diagnostics.py (528 Zeilen) vereint System-, DB-, Provider-, FS-Checks und aggregiert Status. Nicht testbar in Isolation.",
+      "kategorie": "God Service",
+      "betroffene_datei": "backend/app/services/diagnostics.py",
+      "aufwand": "M (1–2 Tage)",
+      "risiko": "LOW",
+      "prioritaet": 5,
+      "empfohlene_loesung": "DiagnosticPlugin-Interface mit je einem Plugin pro Check-Kategorie."
+    },
+    {
+      "id": "TD-008",
+      "beschreibung": "DriftWidgetPanel.jsx (465 Zeilen) mischt Datenabruf, Formatierung, 6 Widget-Typen und Skeleton-State in einer Komponente. Nicht einzeln testbar.",
+      "kategorie": "Große Komponente",
+      "betroffene_datei": "frontend/src/features/dashboard/DriftWidgetPanel.jsx",
+      "aufwand": "M (1–2 Tage)",
+      "risiko": "LOW",
+      "prioritaet": 5,
+      "empfohlene_loesung": "Aufteilen: useDriftWidgets()-Hook + DriftWidget-Subkomponente pro Widget-Typ."
+    },
+    {
+      "id": "TD-009",
+      "beschreibung": "Zwei parallele Drift-Dashboard-Implementierungen: features/dashboard/DriftWidgetPanel.jsx und features/drift_v2/DriftDashboard.jsx. Unterschiedliche State-Modelle.",
+      "kategorie": "Duplicate Code",
+      "betroffene_datei": "frontend/src/features/dashboard/, frontend/src/features/drift_v2/",
+      "aufwand": "M (2 Tage)",
+      "risiko": "MEDIUM",
+      "prioritaet": 3,
+      "empfohlene_loesung": "DriftWidgetPanel als Embedded-Variante, DriftDashboard als Full-Page-Variante aus gemeinsamen Hooks composieren."
+    },
+    {
+      "id": "TD-010",
+      "beschreibung": "Keine Response-Caching-Schicht (kein Redis, keine HTTP-Cache-Header, kein In-Memory-Cache). Jeder Dashboard-Load triggert 8+ DB-Queries.",
+      "kategorie": "Performance / Fehlende Abstraktion",
+      "betroffene_datei": "backend/app/services/dashboard_service.py, api/v1/dashboard.py",
+      "aufwand": "L (3–5 Tage)",
+      "risiko": "MEDIUM",
+      "prioritaet": 3,
+      "empfohlene_loesung": "ETag + Last-Modified Headers; optionaler In-Memory-Cache für Dashboard-Summary (TTL 30s) im Service."
+    },
+    {
+      "id": "TD-011",
+      "beschreibung": "Kein cursor-basiertes Pagination-Interface — nur limit/offset. Ab 50k+ Einträgen werden frühe Offset-Werte teuer (full-table-scan bis zur Seite).",
+      "kategorie": "Skalierungsrisiko",
+      "betroffene_datei": "backend/app/repositories/documents.py, topics.py, analysis.py",
+      "aufwand": "L (3–5 Tage)",
+      "risiko": "HIGH",
+      "prioritaet": 2,
+      "empfohlene_loesung": "Keyset-Pagination (cursor = last_seen_id + created_at) als Alternative; ?cursor=<token> API-Parameter."
+    },
+    {
+      "id": "TD-012",
+      "beschreibung": "topics-Suche im search_unified() lädt alle Tags per separatem Statement pro Topic (N+1 innerhalb _search_topics).",
+      "kategorie": "N+1",
+      "betroffene_datei": "backend/app/repositories/search.py: _search_topics()",
+      "aufwand": "S (0.5 Tag)",
+      "risiko": "MEDIUM",
+      "prioritaet": 3,
+      "empfohlene_loesung": "TopicTag per JOIN oder selectinload() statt separatem Statement pro Topic."
+    },
+    {
+      "id": "TD-013",
+      "beschreibung": "CSP-Header fehlen (GA-SEC-01). Kein Content-Security-Policy im Backend-Middleware-Stack.",
+      "kategorie": "Security",
+      "betroffene_datei": "backend/app/observability/middleware.py, main.py",
+      "aufwand": "S (0.5 Tag)",
+      "risiko": "HIGH",
+      "prioritaet": 1,
+      "empfohlene_loesung": "CSP-Header in FastAPI-Middleware: default-src 'self'; script-src 'self'; object-src 'none'."
+    },
+    {
+      "id": "TD-014",
+      "beschreibung": "Kein KWIC-Highlighting in Suche (GA-FUNC-01). Frontend erhält raw-text-preview, keine gewichteten Snippets. Suche-Maturity-Dimension: 45/100.",
+      "kategorie": "Fehlende Abstraktion / Funktion",
+      "betroffene_datei": "backend/app/repositories/search.py, frontend/src/components/documents/SearchResultList.jsx",
+      "aufwand": "L (3–5 Tage)",
+      "risiko": "MEDIUM",
+      "prioritaet": 2,
+      "empfohlene_loesung": "ts_headline() auf PG bereits vorbereitet in _search_chunks_pg; Frontend-Rendering mit <mark>-Tag-Support."
+    },
+    {
+      "id": "TD-015",
+      "beschreibung": "Job-Framework fehlt einheitliches Interface: Import-Jobs via BackgroundJobService, Analyse-Jobs via AnalysisJobService, Export-Jobs via ExportService — getrennte Retry-/Timeout-Logiken.",
+      "kategorie": "Architektur / Fehlende Abstraktion",
+      "betroffene_datei": "backend/app/services/jobs/, services/analysis/, services/export/",
+      "aufwand": "XL (1–2 Wochen)",
+      "risiko": "MEDIUM",
+      "prioritaet": 3,
+      "empfohlene_loesung": "Gemeinsames JobInterface (enqueue, claim, complete, fail, retry, cancel) mit JobRegistry-Pattern."
+    }
+  ]
+}

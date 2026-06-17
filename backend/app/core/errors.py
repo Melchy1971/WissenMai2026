@@ -334,3 +334,45 @@ class AnalysisResultInvalidStateApiError(ApiError):
     status_code = 409
     code = "ANALYSIS_RESULT_INVALID_STATE"
     message = "Analysis result is not in the required state for this operation"
+
+
+class ExportJobNotFoundApiError(ApiError):
+    status_code = 404
+    code = "EXPORT_JOB_NOT_FOUND"
+    message = "Export job not found"
+
+
+class ExportJobInvalidStateApiError(ApiError):
+    status_code = 409
+    code = "EXPORT_JOB_INVALID_STATE"
+    message = "Export job is not in the required state for this operation"
+
+
+class ExportSourceNotApprovedApiError(ApiError):
+    status_code = 422
+    code = "EXPORT_SOURCE_NOT_APPROVED"
+    message = "Only approved analysis results may be exported"
+
+
+class ExportSourceNotFoundApiError(ApiError):
+    status_code = 404
+    code = "EXPORT_SOURCE_NOT_FOUND"
+    message = "Export source not found"
+
+
+class ExportFileNotFoundApiError(ApiError):
+    status_code = 404
+    code = "EXPORT_FILE_NOT_FOUND"
+    message = "Export file not found"
+
+
+class ExportTemplateNotFoundApiError(ApiError):
+    status_code = 404
+    code = "EXPORT_TEMPLATE_NOT_FOUND"
+    message = "Export template not found"
+
+
+class ExportTemplateNameConflictApiError(ApiError):
+    status_code = 409
+    code = "EXPORT_TEMPLATE_NAME_CONFLICT"
+    message = "Export template name already in use"

@@ -1,0 +1,134 @@
+{
+  "report_schema_version": 1,
+  "report_name": "warning_disposition_report",
+  "report_type": "warning_analysis",
+  "generated_at": "2026-06-17T00:00:00+00:00",
+  "sprint": "PRI-6",
+  "warnings": [
+    {
+      "id": "WD-01",
+      "source": "SH-06-W1",
+      "titel": "CSP / Secure-Headers nicht konfiguriert",
+      "disposition": "GA_BEHEBEN",
+      "begruendung": "Betrifft Security. Blockiert GA. XSS ohne CSP moeglich.",
+      "aktion": "SecurityHeadersMiddleware in FastAPI. CSP, X-Frame-Options, X-Content-Type-Options setzen.",
+      "aufwand": "0.5 Tag",
+      "rc_impact": false,
+      "ga_blocking": true,
+      "ga_ticket": "GA-SEC-01",
+      "workaround": "Internal-Only Deployment im RC-Scope. Kein oeffentlicher Zugang."
+    },
+    {
+      "id": "WD-02",
+      "source": "RG-05 WARNING",
+      "titel": "Security Hardening — 1/6 Bereiche WARNING",
+      "disposition": "RC_LIMITATION",
+      "begruendung": "Kein RC-User-Impact. SH-06-W1 separat in WD-01 erfasst.",
+      "aktion": "RCL-SEC-01 in rc_limitations.md dokumentiert.",
+      "rc_impact": false,
+      "ga_blocking": true,
+      "ga_ticket": "GA-SEC-01",
+      "workaround": "Deployment im internen Netzwerk."
+    },
+    {
+      "id": "WD-03",
+      "source": "RISIKO-01",
+      "titel": "ILIKE-Suche ohne GIN-Index",
+      "disposition": "GA_BEHEBEN",
+      "begruendung": "Blockiert GA. Betrifft GP-03. Suchlatenz-Regression bei >10k Dokumenten.",
+      "aktion": "Alembic-Migration: GIN-Index auf documents.title + topics.name.",
+      "aufwand": "< 1h",
+      "rc_impact": false,
+      "ga_blocking": true,
+      "ga_ticket": "GA-PERF-01",
+      "workaround": "RC-Scope < 1000 Dokumente. p95=142ms weit unter RC-Limit."
+    },
+    {
+      "id": "WD-04",
+      "source": "RISIKO-02",
+      "titel": "Python-seitiges Sorting in search_unified",
+      "disposition": "GA_BEHEBEN",
+      "begruendung": "Blockiert GA. Memory-Risiko bei >500 Ergebnissen.",
+      "aktion": "SQL ORDER BY in Repository, Pagination vor Python-Processing.",
+      "aufwand": "1–2 Tage",
+      "rc_impact": false,
+      "ga_blocking": true,
+      "ga_ticket": "GA-PERF-02",
+      "workaround": "RC-UI liefert max. 50 Ergebnisse per Seite."
+    },
+    {
+      "id": "WD-05",
+      "source": "fachliche_reife/suche Score 40",
+      "titel": "Suche ohne KWIC, Stemming, Tag-Filter",
+      "disposition": "GA_BEHEBEN",
+      "begruendung": "Erzeugt Supportaufwand. Beeinflusst GP-03.",
+      "aktion": "KWIC-Highlighting, Stemming via PG german-Dictionary, Tag-Filter in SearchBar.",
+      "aufwand": "3–5 Tage",
+      "rc_impact": false,
+      "ga_blocking": false,
+      "ga_ticket": "GA-FUNC-01",
+      "workaround": "Volltextsuche funktioniert. Ergebnisliste korrekt ohne Highlighting."
+    },
+    {
+      "id": "WD-06",
+      "source": "fachliche_reife/dashboard Score 65",
+      "titel": "Dashboard W06 Drift-Widget fehlt",
+      "disposition": "GA_BEHEBEN",
+      "begruendung": "Beeinflusst GP-08. Systemzustand nicht auf einen Blick erkennbar.",
+      "aktion": "Drift-Summary-Widget in DashboardPage.jsx.",
+      "aufwand": "1–2 Tage",
+      "rc_impact": false,
+      "ga_blocking": false,
+      "ga_ticket": "GA-UX-01",
+      "workaround": "Direkte Navigation zu /drift-analytics moeglich."
+    },
+    {
+      "id": "WD-07",
+      "source": "RISIKO-03",
+      "titel": "PDF-Export langsam bei grossen Dokumenten",
+      "disposition": "RC_LIMITATION",
+      "begruendung": "Kein RC-User-Impact. RC-Scope hat max. 5-seitige Test-Exporte.",
+      "aktion": "RCL-EXP-01 in rc_limitations.md.",
+      "rc_impact": false,
+      "ga_blocking": false,
+      "ga_ticket": "GA-FUNC-02",
+      "workaround": "JSON/MD-Export als Ersatz. PDF optional."
+    },
+    {
+      "id": "WD-08",
+      "source": "RISIKO-04",
+      "titel": "Frontend-Bundle-Groesse nicht gemessen",
+      "disposition": "RC_LIMITATION",
+      "begruendung": "Kein Security-Risiko. Kein RC-Impact. Frontend-Load p95=326ms weit im gruenen Bereich.",
+      "aktion": "RCL-PERF-01 in rc_limitations.md.",
+      "rc_impact": false,
+      "ga_blocking": false,
+      "ga_ticket": "GA-PERF-03",
+      "workaround": "p95=326ms < RC-Limit 3000ms."
+    },
+    {
+      "id": "WD-09",
+      "source": "RISIKO-05",
+      "titel": "Kein DB Connection-Pool-Limit",
+      "disposition": "RC_LIMITATION",
+      "begruendung": "Kein User-Impact bei RC-Nutzerzahl (< 5 parallele User).",
+      "aktion": "RCL-OPS-01 in rc_limitations.md.",
+      "rc_impact": false,
+      "ga_blocking": false,
+      "ga_ticket": "GA-OPS-01",
+      "workaround": "SQLALCHEMY_POOL_SIZE in .env.example konfigurierbar."
+    }
+  ],
+  "summary": {
+    "total_warnings": 9,
+    "ga_beheben": 5,
+    "rc_limitation": 4,
+    "rc_blocking": 0,
+    "rc_limitations": [
+      "RCL-SEC-01",
+      "RCL-EXP-01",
+      "RCL-PERF-01",
+      "RCL-OPS-01"
+    ]
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "report_schema_version": 1,
+  "report_name": "ga_backlog",
+  "report_type": "ga_backlog",
+  "generated_at": "2026-06-17T00:00:00+00:00",
+  "sprint": "GA-Vorbereitung (PRI-7)",
+  "items": [
+    {
+      "id": "GA-SEC-01",
+      "titel": "CSP und Secure-Headers konfigurieren",
+      "beschreibung": "Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy als FastAPI-Middleware implementieren. Header-Tests in contract_test_report ergaenzen.",
+      "kategorie": "Security",
+      "betroffene_komponente": "backend/app/main.py — Middleware-Stack",
+      "betroffener_gold_path": null,
+      "prioritaet": "HOCH",
+      "aufwand": "0.5 Tag",
+      "akzeptanzkriterien": [
+        "SH-06 geht von WARNING auf PASS",
+        "X-Frame-Options: DENY in allen Responses",
+        "CSP-Header in contract_test_report verifiziert"
+      ],
+      "risiko_bei_verschiebung": "XSS und Clickjacking-Vektoren offen. GA-blockend.",
+      "abhaengigkeiten": []
+    },
+    {
+      "id": "GA-PERF-01",
+      "titel": "GIN-Index fuer Volltextsuche",
+      "beschreibung": "CREATE INDEX CONCURRENTLY auf documents.title und topics.name mit to_tsvector('german', ...). Alembic-Migration.",
+      "kategorie": "Performance",
+      "betroffene_komponente": "backend/migrations/ + backend/app/repositories/",
+      "betroffener_gold_path": "GP-03",
+      "prioritaet": "HOCH",
+      "aufwand": "< 1h",
+      "akzeptanzkriterien": [
+        "GIN-Index vorhanden",
+        "EXPLAIN ANALYZE zeigt Index Scan",
+        "p95 Suche < 200ms bei 10k Dokumenten"
+      ],
+      "risiko_bei_verschiebung": "Suchlatenz-Regression bei Produktionslast. GA-blockend.",
+      "abhaengigkeiten": []
+    },
+    {
+      "id": "GA-PERF-02",
+      "titel": "SQL-seitiges Sorting in search_unified",
+      "beschreibung": "Python-seitiges Sorting in search_unified durch SQL ORDER BY ersetzen. Pagination vor Python-Processing anwenden.",
+      "kategorie": "Performance",
+      "betroffene_komponente": "backend/app/services/search.py",
+      "betroffener_gold_path": "GP-03",
+      "prioritaet": "HOCH",
+      "aufwand": "1–2 Tage",
+      "akzeptanzkriterien": [
+        "Kein Python-Sorting nach DB-Abfrage",
+        "Memory-Verbrauch stabil bei 500+ Ergebnissen",
+        "Contract-Test fuer Paginierung PASS"
+      ],
+      "risiko_bei_verschiebung": "OOM-Risiko unter Produktionslast.",
+      "abhaengigkeiten": [
+        "GA-PERF-01"
+      ]
+    },
+    {
+      "id": "GA-FUNC-01",
+      "titel": "Suche: KWIC-Highlighting, Stemming, Tag-Filter",
+      "beschreibung": "KWIC-Highlighting im Backend (Treffer-Kontext markieren). Stemming via PostgreSQL german-Dictionary. Tag-Filter in SearchBar.jsx.",
+      "kategorie": "Produktfunktion",
+      "betroffene_komponente": "backend/app/services/search.py + frontend/src/features/search/SearchBar.jsx",
+      "betroffener_gold_path": "GP-03",
+      "prioritaet": "MITTEL",
+      "aufwand": "3–5 Tage",
+      "akzeptanzkriterien": [
+        "KWIC-Snippets in Suchergebnissen sichtbar",
+        "Stemming: 'Prozesse' findet 'Prozess'",
+        "Tag-Filter reduziert Ergebnisse korrekt"
+      ],
+      "risiko_bei_verschiebung": "Suche-Score bleibt 45. Groesste Schwaeche im System.",
+      "abhaengigkeiten": [
+        "GA-PERF-01"
+      ]
+    },
+    {
+      "id": "GA-UX-01",
+      "titel": "Dashboard W06 Drift-Summary-Widget",
+      "beschreibung": "Drift-Analytics-Uebersicht direkt im Dashboard (W06). Daten aus GET /api/v1/drift/overview. GlobalStatusBar-Integration.",
+      "kategorie": "UX",
+      "betroffene_komponente": "frontend/src/pages/DashboardPage.jsx",
+      "betroffener_gold_path": "GP-08",
+      "prioritaet": "MITTEL",
+      "aufwand": "1–2 Tage",
+      "akzeptanzkriterien": [
+        "W06 zeigt Drift-Score und Status-Badge",
+        "Klick navigiert zu /drift-analytics",
+        "E2E-Test in test_16_dashboard_drift_flow.spec.js ergaenzt"
+      ],
+      "risiko_bei_verschiebung": "GP-08 Systemzustand nicht auf einen Blick erkennbar.",
+      "abhaengigkeiten": []
+    },
+    {
+      "id": "GA-FUNC-02",
+      "titel": "PDF-Export: Renderer integrieren oder PO-Entscheidung",
+      "beschreibung": "Echten PDF-Renderer (WeasyPrint oder ReportLab) integrieren ODER PO bestaetigt JSON/MD als ausreichend fuer GA.",
+      "kategorie": "Produktfunktion",
+      "betroffene_komponente": "backend/app/services/export.py",
+      "betroffener_gold_path": "GP-07",
+      "prioritaet": "MITTEL",
+      "aufwand": "PO-Entscheidung (0) oder 2–3 Tage",
+      "akzeptanzkriterien": [
+        "PDF-Export liefert echte Datei < 10s",
+        "ODER PO-Sign-off dass JSON/MD genuegt"
+      ],
+      "risiko_bei_verschiebung": "Stakeholder-Erwartung bzgl. PDF ungeklaert.",
+      "abhaengigkeiten": []
+    },
+    {
+      "id": "GA-PERF-03",
+      "titel": "Frontend-Bundle-Groesse analysieren und optimieren",
+      "beschreibung": "vite-bundle-analyzer ausfuehren. Code-Splitting fuer schwere Pages (DriftAnalyticsPage, AnalysisPage). LCP-Messung.",
+      "kategorie": "Performance",
+      "betroffene_komponente": "frontend/vite.config.js",
+      "betroffener_gold_path": null,
+      "prioritaet": "NIEDRIG",
+      "aufwand": "0.5 Tag",
+      "akzeptanzkriterien": [
+        "Bundle analysiert",
+        "LCP < 2500ms auf 3G-Verbindung"
+      ],
+      "risiko_bei_verschiebung": "Performance-Regression auf schwachen Endgeraeten.",
+      "abhaengigkeiten": []
+    },
+    {
+      "id": "GA-OPS-01",
+      "titel": "DB Connection-Pool konfigurieren",
+      "beschreibung": "SQLALCHEMY_POOL_SIZE und SQLALCHEMY_MAX_OVERFLOW in config.py lesen. Werte in .env.example dokumentieren.",
+      "kategorie": "Betrieb",
+      "betroffene_komponente": "backend/app/core/config.py + backend/app/db/session.py",
+      "betroffener_gold_path": null,
+      "prioritaet": "NIEDRIG",
+      "aufwand": "< 1h",
+      "akzeptanzkriterien": [
+        "Pool-Limits konfigurierbar via ENV",
+        "Healthcheck-Endpunkt zeigt Pool-Status"
+      ],
+      "risiko_bei_verschiebung": "DB-Verbindungserschoepfung unter Last.",
+      "abhaengigkeiten": []
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "hoch": 3,
+    "mittel": 3,
+    "niedrig": 2,
+    "kategorien": {
+      "Security": 1,
+      "Performance": 3,
+      "Produktfunktion": 2,
+      "UX": 1,
+      "Betrieb": 1
+    },
+    "ga_blocking": [
+      "GA-SEC-01",
+      "GA-PERF-01",
+      "GA-PERF-02"
+    ]
+  }
+}

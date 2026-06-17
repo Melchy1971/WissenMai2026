@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { callApi } from '../lib/apiClient.js';
 import { PrivacyModeBanner } from '../components/shared/PrivacyModeBanner.jsx';
+import { getDriftOverview } from '../api/drift_analytics.js';
+
+// ── Telekom logo ──────────────────────────────────────────────────────────────
 
 function TelekomLogo() {
   return (
@@ -14,7 +17,65 @@ function TelekomLogo() {
   );
 }
 
-// Navigation gemäß docs/navigation_simplification.md — max 7, keine technischen Labels
+// ── Drift status helpers ──────────────────────────────────────────────────────
+
+const DRIFT_STATUS_PRIORITY = { PASS: 0, WARNING: 1, FAIL: 2, BLOCKED: 3 };
+
+const DRIFT_STATUS_STYLE = {
+  PASS:    { bg: '#2e7d32', color: '#fff', label: 'PASS' },
+  WARNING: { bg: '#e65100', color: '#fff', label: 'WARN' },
+  FAIL:    { bg: '#c62828', color: '#fff', label: 'FAIL' },
+  BLOCKED: { bg: '#6a1a6a', color: '#fff', label: 'BLOCKED' },
+};
+
+/**
+ * Counts how many drift widgets are BLOCKED (for nav badge).
+ * Missing data (status=null) counts as WARNING, not BLOCKED.
+ */
+function countBlocked(overview) {
+  if (!overview) return 0;
+  const keys = ['product_maturity', 'gold_path', 'release_gate', 'test_coverage', 'id_leak_audit', 'security_audit'];
+  return keys.reduce((n, k) => {
+    const w = overview[k];
+    return n + (w?.status === 'BLOCKED' ? 1 : 0);
+  }, 0);
+}
+
+// ── Global drift badge (status bar) ──────────────────────────────────────────
+
+function DriftGlobalBadge({ overview }) {
+  if (!overview) return null;
+  const style = DRIFT_STATUS_STYLE[overview.global_status];
+  if (!style) return null;
+
+  return (
+    <span
+      className="shell__drift-badge"
+      style={{ background: style.bg, color: style.color }}
+      title={`Drift-Gesamtstatus: ${overview.global_status}`}
+    >
+      Drift: {style.label}
+    </span>
+  );
+}
+
+// ── Nav badge for BLOCKED count ───────────────────────────────────────────────
+
+function BlockedBadge({ count }) {
+  if (!count || count === 0) return null;
+  return (
+    <span
+      className="shell__nav-badge"
+      aria-label={`${count} blockiert`}
+      title={`${count} Drift-Bereich(e) BLOCKED`}
+    >
+      {count}
+    </span>
+  );
+}
+
+// ── Navigation config ─────────────────────────────────────────────────────────
+
 const NAV_ITEMS = [
   { to: '/dashboard',   label: 'Dashboard' },
   { to: '/documents',   label: 'Dokumente' },
@@ -27,13 +88,25 @@ const NAV_ITEMS = [
   { to: '/settings',    label: 'Einstellungen' },
 ];
 
+// Drift Analytics nav is NOT a separate top-level nav item — it is accessible
+// via Dashboard → Drift card click → /drift-analytics/:type.
+// The "Drift" nav item here goes to /drift (M5b detection, existing).
+
+// ── AppShell ──────────────────────────────────────────────────────────────────
+
 export function AppShell() {
   const navigate = useNavigate();
   const { token, user, active_workspace_id: workspaceId, memberships, signOut, switchWorkspace } = useAuth();
   const [status, setStatus] = useState(null);
+  const [driftOverview, setDriftOverview] = useState(null);
 
   useEffect(() => {
     callApi('/api/v1/status').then(r => { if (r.ok) setStatus(r.data); });
+  }, []);
+
+  // Load drift overview once on mount — best-effort, no error display in shell
+  useEffect(() => {
+    getDriftOverview().then(setDriftOverview).catch(() => null);
   }, []);
 
   async function handleLogout() {
@@ -45,6 +118,7 @@ export function AppShell() {
   const provider    = status?.provider_name ?? '—';
   const autonomy    = status?.autonomy_level ?? '—';
   const release     = status?.release_status ?? '—';
+  const blockedCount = countBlocked(driftOverview);
 
   return (
     <div className="shell" data-testid="app-shell">
@@ -57,6 +131,7 @@ export function AppShell() {
         <span>Autonomie: <strong>{autonomy}</strong></span>
         <span>Release: <strong>{release}</strong></span>
         {privacyMode && <span className="badge badge--warning">PRIVACY MODE</span>}
+        <DriftGlobalBadge overview={driftOverview} />
       </div>
 
       <header className="shell__header">
@@ -70,12 +145,21 @@ export function AppShell() {
 
         <nav aria-label="Hauptnavigation">
           <div className="shell__nav">
-            {NAV_ITEMS.map(item => (
-              <NavLink key={item.to} to={item.to}
-                className={({ isActive }) => isActive ? 'nav-link nav-link--active' : 'nav-link'}>
-                {item.label}
-              </NavLink>
-            ))}
+            {NAV_ITEMS.map(item => {
+              // Show BLOCKED count badge on Dashboard nav item when drift has blockers
+              const showBadge = item.to === '/dashboard' && blockedCount > 0;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) => isActive ? 'nav-link nav-link--active' : 'nav-link'}
+                  style={{ position: 'relative' }}
+                >
+                  {item.label}
+                  {showBadge && <BlockedBadge count={blockedCount} />}
+                </NavLink>
+              );
+            })}
           </div>
         </nav>
 
@@ -104,6 +188,34 @@ export function AppShell() {
       <main className="shell__content" data-testid="workspace-ready">
         <Outlet />
       </main>
+
+      <style>{`
+        /* Global drift badge in status bar */
+        .shell__drift-badge {
+          padding: 2px 9px;
+          border-radius: 10px;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          margin-left: 4px;
+        }
+
+        /* Nav badge (BLOCKED count) */
+        .shell__nav-badge {
+          position: absolute;
+          top: -5px;
+          right: -8px;
+          background: #6a1a6a;
+          color: #fff;
+          font-size: 9px;
+          font-weight: 700;
+          padding: 1px 5px;
+          border-radius: 8px;
+          line-height: 1.4;
+          pointer-events: none;
+        }
+      `}</style>
     </div>
   );
 }

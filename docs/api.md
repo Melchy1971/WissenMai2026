@@ -1032,6 +1032,64 @@ Schemas: `app/schemas/data_quality.py`. Router: `app/api/v1/data_quality.py`, ei
 
 ---
 
+## PRI-4 Drift Analytics API (Stand 2026-06-17)
+
+Router-Prefix: `/api/v1/drift`. Alle Endpoints erfordern workspace-member-Authentifizierung.
+
+### GET /api/v1/drift/overview
+
+Gibt den aktuellen Status aller 6 Analytics-Snapshot-Typen zurueck.
+
+- Fehlender Snapshot (kein DB-Eintrag) → `status: null` im Response → UI muss WARNING anzeigen.
+- `global_status`: hoechste Prioritaet unter allen Typen (BLOCKED > FAIL > WARNING > PASS).
+- `missing_data`: Liste der Typen ohne vorhandenen Snapshot.
+- Keine UUIDs im Response. `snapshot_type` als Bezeichner.
+
+```json
+{
+  "product_maturity": {"snapshot_type": "PRODUCT_MATURITY", "label": "Produktreife", "status": "PASS", "score": 0.84},
+  "gold_path": {"snapshot_type": "GOLD_PATH", "label": "Gold Path", "status": null},
+  "global_status": "WARNING",
+  "missing_data": ["GOLD_PATH"],
+  "last_updated": "2026-06-17T10:00:00Z"
+}
+```
+
+### GET /api/v1/drift/snapshots
+
+Paginierte Liste aller Snapshots. Query-Parameter: `type` (Snapshot-Typ), `status` (PASS/WARNING/FAIL/BLOCKED), `page`, `page_size`.
+
+### GET /api/v1/drift/snapshots/:id
+
+Einzelner Snapshot mit `payload`. Payload enthaelt keine internen Dateipfade, keine Secrets.
+
+### GET /api/v1/drift/snapshots/:id/metrics
+
+Liste der `AnalyticsMetric`-Eintraege fuer den Snapshot. Felder: `metric_name`, `value`, `threshold`, `status`. Keine `id`-Felder als Anzeigewert.
+
+### POST /api/v1/drift/snapshots/recalculate
+
+Erstellt neue Snapshots fuer alle 6 Typen. Alte Snapshots bleiben erhalten (immutable). Darf nicht automatisch aufgerufen werden — nur nach expliziter PO/User-Bestaetigung (PROHIBIT-08).
+
+Response: `{"snapshots_created": 6, "global_status": "PASS", "missing_data": []}`.
+
+### GET /api/v1/dashboard/drift
+
+Dashboard-spezifischer Endpunkt. Gibt 6 benannte DriftWidget-Felder zurueck (`product_maturity`, `gold_path`, `release_gate`, `test_coverage`, `id_leak_audit`, `security_audit`) plus `global_status`, `missing_data`, `last_updated`.
+
+### Statusmodell
+
+| Status | Prioritaet | Bedeutung |
+|---|---|---|
+| BLOCKED | 3 (hoechste) | Kritischer Blocker — verhindert Release |
+| FAIL | 2 | Schwellwert unterschritten |
+| WARNING | 1 | Grenzbereich oder fehlende Daten |
+| PASS | 0 | Alle Schwellwerte erfuellt |
+
+Fehlende Daten (kein Snapshot vorhanden) ergeben immer WARNING, nie PASS.
+
+---
+
 ## Offene Punkte
 
 - Der Alias `/api/v1/documents` ist weiter nicht implementiert.

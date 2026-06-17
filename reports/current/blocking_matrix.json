@@ -1,0 +1,170 @@
+{
+  "report_schema_version": 1,
+  "report_name": "blocking_matrix",
+  "report_type": "blocker_analysis",
+  "generated_at": "2026-06-17T00:00:00+00:00",
+  "sprint": "PRI-6",
+  "severity_legend": {
+    "CRITICAL": "Blockiert RC-Freigabe oder verletzt Security-Constraint",
+    "HIGH": "Blockiert GA oder erzeugt messbaren User-Impact",
+    "MEDIUM": "Qualitaetsrisiko, kein akuter RC-Blocker",
+    "LOW": "Dokumentiertes Risiko, kein messbarer Impact im RC-Scope"
+  },
+  "blockers": [
+    {
+      "id": "BLK-01",
+      "source_id": "SCGB-03",
+      "kategorie": "Security",
+      "schweregrad": "CRITICAL",
+      "betroffener_gold_path": "GP-01",
+      "betroffene_komponente": "frontend/src/app/routes.jsx — /admin/diagnostics Route",
+      "ursache": "AdminDiagnosticsPage innerhalb ProtectedRoute (Token-Check), aber kein Role-Check auf admin. Jeder authentifizierte User kann /admin/diagnostics aufrufen.",
+      "impact": "Member-User koennen Diagnose-Daten einsehen. Verletzt SH-05 Access Control Policy.",
+      "fix_aufwand": "< 2h — AdminRoute-Guard in routes.jsx, Role-Check auth.user.role === 'admin'",
+      "risiko_bei_nichtbehebung": "Security-FAIL bei GA. Information Disclosure. SCG-05 bleibt PARTIAL_PASS.",
+      "empfohlene_reihenfolge": 1
+    },
+    {
+      "id": "BLK-02",
+      "source_id": "SCGB-01",
+      "kategorie": "CI-Infrastruktur",
+      "schweregrad": "CRITICAL",
+      "betroffener_gold_path": null,
+      "betroffene_komponente": "CI-Pipeline — TEST_DATABASE_URL Env-Variable",
+      "ursache": "TEST_DATABASE_URL ist in CI nicht gesetzt. report_integrity_v2, Backup/Restore und Performance-Smoke schlagen fehl.",
+      "impact": "rc_stabilization_gate BLOCKED. Vollstaendige RC-Freigabe nicht moeglich.",
+      "fix_aufwand": "0.5–1 Tag DevOps — PostgreSQL-Container in CI oder TEST_DATABASE_URL auf Staging-DB",
+      "risiko_bei_nichtbehebung": "rc_stabilization_gate bleibt dauerhaft BLOCKED. Kein RC_READY erreichbar.",
+      "empfohlene_reihenfolge": 2
+    },
+    {
+      "id": "BLK-03",
+      "source_id": "SCGB-02",
+      "kategorie": "UX / PO-Entscheidung",
+      "schweregrad": "HIGH",
+      "betroffener_gold_path": "GP-01",
+      "betroffene_komponente": "frontend Navigation — NAV_ITEMS",
+      "ursache": "PO-Entscheidung zwischen Option A (5 Nav-Items) und Option B (8 Items) offen.",
+      "impact": "SCG-05 bleibt PARTIAL_PASS. GP-01 Navigation nicht abschliessend verifiziert.",
+      "fix_aufwand": "PO-Entscheidung (kein Code-Aufwand). Danach 0.5 Tag Implementierung.",
+      "risiko_bei_nichtbehebung": "Benutzer-Orientierung unklar. Potenzielle Sackgassen in GP-01.",
+      "empfohlene_reihenfolge": 3
+    },
+    {
+      "id": "BLK-04",
+      "source_id": "SH-06-W1",
+      "kategorie": "Security",
+      "schweregrad": "HIGH",
+      "betroffener_gold_path": null,
+      "betroffene_komponente": "Backend — HTTP Response Headers (FastAPI Middleware)",
+      "ursache": "CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy nicht gesetzt.",
+      "impact": "GA-blockend. XSS-Risiko ohne CSP. Clickjacking ohne X-Frame-Options.",
+      "fix_aufwand": "0.5 Tag — SecurityHeadersMiddleware in FastAPI. Test in contract_test_report.",
+      "risiko_bei_nichtbehebung": "Security-Audit bei GA scheitert.",
+      "empfohlene_reihenfolge": 4
+    },
+    {
+      "id": "BLK-05",
+      "source_id": "RISIKO-01",
+      "kategorie": "Performance",
+      "schweregrad": "MEDIUM",
+      "betroffener_gold_path": "GP-03",
+      "betroffene_komponente": "backend — Topics/Documents ILIKE ohne GIN-Index",
+      "ursache": "ILIKE-Suche erzwingt Sequential Scan. Bei >10k Dokumenten kritisch.",
+      "impact": "GA-blockend. Suchlatenz ueberschreitet RC-Limit unter Last.",
+      "fix_aufwand": "< 1h — Alembic-Migration: GIN-Index auf title/content",
+      "risiko_bei_nichtbehebung": "Suchperformanz bricht unter Last ein.",
+      "empfohlene_reihenfolge": 5
+    },
+    {
+      "id": "BLK-06",
+      "source_id": "RISIKO-02",
+      "kategorie": "Performance",
+      "schweregrad": "MEDIUM",
+      "betroffener_gold_path": "GP-03",
+      "betroffene_komponente": "backend/app/services — search_unified Python-Sorting",
+      "ursache": "Suchergebnisse Python-seitig sortiert statt SQL ORDER BY.",
+      "impact": "GA-blockend. Memory-Spike bei >500 Ergebnissen.",
+      "fix_aufwand": "1–2 Tage — SQL ORDER BY in Repository, Pagination vor Python-Processing",
+      "risiko_bei_nichtbehebung": "OOM-Risiko unter Last.",
+      "empfohlene_reihenfolge": 6
+    },
+    {
+      "id": "BLK-07",
+      "source_id": "RCL-02",
+      "kategorie": "Produktfunktion",
+      "schweregrad": "MEDIUM",
+      "betroffener_gold_path": "GP-08",
+      "betroffene_komponente": "frontend Dashboard — W06 Drift-Summary-Widget",
+      "ursache": "Dashboard-Widget W06 nicht implementiert.",
+      "impact": "GP-08 Drift-Sichtbarkeit eingeschraenkt. Nutzer muss separat navigieren.",
+      "fix_aufwand": "1–2 Tage — Drift-Summary-Widget in DashboardPage.jsx",
+      "risiko_bei_nichtbehebung": "Systemzustand nicht auf einen Blick erkennbar.",
+      "empfohlene_reihenfolge": 7
+    },
+    {
+      "id": "BLK-08",
+      "source_id": "RCL-01",
+      "kategorie": "Produktfunktion",
+      "schweregrad": "LOW",
+      "betroffener_gold_path": "GP-07",
+      "betroffene_komponente": "Export Center — PDF-Export",
+      "ursache": "PDF-Export ist Dry-Run. Echter PDF-Renderer nicht integriert.",
+      "impact": "GP-07 PASS mit JSON/MD. PO-Entscheidung ob PDF benoetigt wird.",
+      "fix_aufwand": "PO-Entscheidung oder 2–3 Tage (WeasyPrint/ReportLab)",
+      "risiko_bei_nichtbehebung": "Stakeholder-Erwartung bzgl. PDF-Export ungeklaert.",
+      "empfohlene_reihenfolge": 8
+    },
+    {
+      "id": "BLK-09",
+      "source_id": "RISIKO-04",
+      "kategorie": "Performance",
+      "schweregrad": "LOW",
+      "betroffener_gold_path": null,
+      "betroffene_komponente": "Frontend Build — Bundle-Groesse",
+      "ursache": "Bundle-Groesse nicht gemessen. Kein Chunk-Splitting analysiert.",
+      "impact": "Potenzielle LCP-Regression bei schlechter Verbindung. Kein RC-Impact.",
+      "fix_aufwand": "0.5 Tag — vite-bundle-analyzer + Code-Splitting",
+      "risiko_bei_nichtbehebung": "Performance-Regression auf schwachen Endgeraeten.",
+      "empfohlene_reihenfolge": 9
+    },
+    {
+      "id": "BLK-10",
+      "source_id": "RISIKO-05",
+      "kategorie": "Betrieb",
+      "schweregrad": "LOW",
+      "betroffener_gold_path": null,
+      "betroffene_komponente": "Backend — SQLAlchemy Connection Pool",
+      "ursache": "Kein Connection-Pool-Limit konfiguriert.",
+      "impact": "Potenzielle DB-Verbindungserschoepfung unter Last.",
+      "fix_aufwand": "< 1h — SQLALCHEMY_POOL_SIZE/MAX_OVERFLOW in config.py",
+      "risiko_bei_nichtbehebung": "DB-Verbindungsfehler unter Last.",
+      "empfohlene_reihenfolge": 10
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "critical": 2,
+    "high": 2,
+    "medium": 3,
+    "low": 3,
+    "rc_blocking": 2,
+    "ga_blocking": 4,
+    "code_fixable_in_pri6": [
+      "BLK-01"
+    ],
+    "external_dependency": [
+      "BLK-02",
+      "BLK-03"
+    ],
+    "ga_scope": [
+      "BLK-04",
+      "BLK-05",
+      "BLK-06",
+      "BLK-07",
+      "BLK-08",
+      "BLK-09",
+      "BLK-10"
+    ]
+  }
+}

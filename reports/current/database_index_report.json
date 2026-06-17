@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "report_name": "database_index_report",
+  "generated_at": "2026-06-18T10:00:00.000000+00:00",
+  "sprint": "PRI-7",
+  "migration": "20260618_0026_gin_indexes_search_and_metadata.py",
+  "revision": "20260618_0026",
+  "down_revision": "20260617_0025",
+  "existing_indexes": [
+    {
+      "table": "document_chunks",
+      "name": "ix_document_chunks_doc_ver_idx",
+      "columns": [
+        "document_id",
+        "document_version_id",
+        "chunk_index"
+      ],
+      "type": "B-TREE"
+    },
+    {
+      "table": "documents",
+      "name": "ix_documents_workspace_created",
+      "columns": [
+        "workspace_id",
+        "created_at"
+      ],
+      "type": "B-TREE"
+    },
+    {
+      "table": "analysis_jobs",
+      "name": "ix_analysis_jobs_workspace_id",
+      "columns": [
+        "workspace_id"
+      ],
+      "type": "B-TREE"
+    },
+    {
+      "table": "analysis_jobs",
+      "name": "ix_analysis_jobs_status",
+      "columns": [
+        "status"
+      ],
+      "type": "B-TREE"
+    },
+    {
+      "table": "analysis_jobs",
+      "name": "ix_analysis_jobs_created_at",
+      "columns": [
+        "created_at"
+      ],
+      "type": "B-TREE"
+    },
+    {
+      "table": "analysis_results",
+      "name": "ix_analysis_results_status",
+      "columns": [
+        "status"
+      ],
+      "type": "B-TREE"
+    },
+    {
+      "table": "export_jobs",
+      "name": "ix_export_jobs_status",
+      "columns": [
+        "status"
+      ],
+      "type": "B-TREE"
+    },
+    {
+      "table": "export_jobs",
+      "name": "ix_export_jobs_source_type",
+      "columns": [
+        "source_type"
+      ],
+      "type": "B-TREE"
+    },
+    {
+      "table": "export_jobs",
+      "name": "ix_export_jobs_workspace_id",
+      "columns": [
+        "workspace_id"
+      ],
+      "type": "B-TREE"
+    }
+  ],
+  "missing_indexes_found": [
+    {
+      "id": "IDX-01",
+      "table": "document_chunks",
+      "column": "search_vector",
+      "type": "GIN",
+      "risk": "KRITISCH",
+      "impact": "Volltextsuche ohne Index: sequentieller Tabellen-Scan O(n). Bei 10k Chunks: ~500ms, bei 100k Chunks: >5s",
+      "query_pattern": "WHERE search_vector @@ to_tsquery($1)"
+    },
+    {
+      "id": "IDX-02",
+      "table": "document_versions",
+      "column": "metadata",
+      "type": "GIN (jsonb_path_ops)",
+      "risk": "MEDIUM",
+      "impact": "JSONB-Key-Lookups ohne Index: O(n) pro Abfrage",
+      "query_pattern": "WHERE metadata @> '{\"key\": value}'"
+    },
+    {
+      "id": "IDX-03",
+      "table": "documents",
+      "column": "title (tsvector)",
+      "type": "GIN (functional)",
+      "risk": "MEDIUM",
+      "impact": "Titelsuche ohne FTS-Index: LIKE-Fallback oder Seqscan",
+      "query_pattern": "WHERE to_tsvector('german', title) @@ query"
+    },
+    {
+      "id": "IDX-04",
+      "table": "analysis_results",
+      "column": "sources",
+      "type": "GIN (jsonb_path_ops)",
+      "risk": "MEDIUM",
+      "impact": "Quellenfilterung ohne Index: O(n)",
+      "query_pattern": "WHERE sources @> '[{\"document_id\": $1}]'"
+    },
+    {
+      "id": "IDX-05",
+      "table": "analysis_results",
+      "column": "content_markdown + summary (tsvector)",
+      "type": "GIN (functional)",
+      "risk": "MEDIUM",
+      "impact": "Volltextsuche auf Analyseergebnissen ohne Index",
+      "query_pattern": "WHERE to_tsvector('german', content_markdown || summary) @@ query"
+    },
+    {
+      "id": "IDX-06",
+      "table": "export_jobs",
+      "column": "file_name (tsvector)",
+      "type": "GIN (functional)",
+      "risk": "LOW",
+      "impact": "Dateinamen-Suche ohne Index",
+      "query_pattern": "WHERE to_tsvector('simple', file_name) @@ query"
+    },
+    {
+      "id": "IDX-07",
+      "table": "export_jobs",
+      "column": "workspace_id + source_type + status",
+      "type": "B-TREE (composite)",
+      "risk": "MEDIUM",
+      "impact": "List-and-filter-Query lädt alle workspace_id-Zeilen, dann filtert auf source_type + status",
+      "query_pattern": "WHERE workspace_id = $1 AND source_type = $2 AND status = $3"
+    },
+    {
+      "id": "IDX-08",
+      "table": "document_chunks",
+      "column": "metadata",
+      "type": "GIN (jsonb_path_ops)",
+      "risk": "LOW",
+      "impact": "Chunk-Metadata-Filterung ohne Index",
+      "query_pattern": "WHERE metadata @> '{\"heading_level\": 1}'"
+    }
+  ],
+  "new_indexes": [
+    {
+      "id": "IDX-01",
+      "name": "ix_document_chunks_search_vector_gin",
+      "status": "IMPLEMENTIERT"
+    },
+    {
+      "id": "IDX-02",
+      "name": "ix_document_versions_metadata_gin",
+      "status": "IMPLEMENTIERT"
+    },
+    {
+      "id": "IDX-03",
+      "name": "ix_documents_title_fts_gin",
+      "status": "IMPLEMENTIERT"
+    },
+    {
+      "id": "IDX-04",
+      "name": "ix_analysis_results_sources_gin",
+      "status": "IMPLEMENTIERT"
+    },
+    {
+      "id": "IDX-05",
+      "name": "ix_analysis_results_content_fts_gin",
+      "status": "IMPLEMENTIERT"
+    },
+    {
+      "id": "IDX-06",
+      "name": "ix_export_jobs_file_name_fts_gin",
+      "status": "IMPLEMENTIERT"
+    },
+    {
+      "id": "IDX-07",
+      "name": "ix_export_jobs_workspace_source_status",
+      "status": "IMPLEMENTIERT"
+    },
+    {
+      "id": "IDX-08",
+      "name": "ix_document_chunks_metadata_gin",
+      "status": "IMPLEMENTIERT"
+    }
+  ],
+  "topics_note": "topics-Tabelle: Modell nicht gelesen — Index auf title/summary/tags als separate Migration 0027 vorbereitet",
+  "naming_convention": {
+    "gin_tsvector": "ix_{table}_{column}_gin",
+    "gin_functional_fts": "ix_{table}_{column}_fts_gin",
+    "gin_jsonb": "ix_{table}_{column}_gin",
+    "composite_btree": "ix_{table}_{col1}_{col2}_{col3}"
+  },
+  "rollback": "downgrade(): alle 8 Indizes via DROP INDEX CONCURRENTLY IF EXISTS",
+  "benchmark_targets": {
+    "10k_chunks": {
+      "search_without_gin": "~500ms",
+      "search_with_gin": "<20ms"
+    },
+    "50k_chunks": {
+      "search_without_gin": "~2500ms",
+      "search_with_gin": "<50ms"
+    },
+    "100k_chunks": {
+      "search_without_gin": ">5000ms",
+      "search_with_gin": "<100ms"
+    }
+  },
+  "summary": {
+    "total_missing": 8,
+    "implemented": 8,
+    "kritisch": 1,
+    "medium": 5,
+    "low": 2
+  }
+}

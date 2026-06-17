@@ -176,3 +176,93 @@ Topics-Backend: PRODUKTIONSREIF. Unified Search: PRODUKTIONSREIF. Dashboard Widg
 Gesamtbewertung Topics-Feature: **RC-GRADE**. Quelle: `reports/current/topics_release_report.json`, `reports/current/masterplan_status.json`.
 
 Verbleibender Gesamtblocker: BLOCK-02 (M5b-Gate-Kaskade, root: TEST_DATABASE_URL / M5a not READY_FOR_M5B).
+---
+
+## PRI-6 Release Candidate Hardening (Stand 2026-06-17)
+
+Statusquelle: `reports/current/conditional_rc_decision.json`, `reports/current/product_maturity_v3.json`
+
+### Entscheidung: CONDITIONAL_RC
+
+Product Maturity 80/100 (CONDITIONAL_RC-Schwellwert exakt erreicht). 8/8 Gold Paths PASS. BLK-01 (SCGB-03 Router-Guard) geschlossen. 2 externe Blocker verbleiben.
+
+### Geschlossene Blocker
+
+**BLK-01 — SCGB-03 Router-Guard (/admin/diagnostics) — CLOSED**
+
+- `frontend/src/app/routes.jsx`: `AdminRoute`-Wrapper-Komponente ergänzt zwischen `ProtectedRoute` und `AppRoutes`. Prüft `auth.user.role === 'admin'`. Bei Verletzung: `ErrorState` mit `testId="admin-access-denied"` (HTTP 403).
+- `frontend/src/tests/app/AdminRouteGuard.test.jsx` (NEU): 3 Regressionstests — Member→403, null-User→403, Admin→Seite sichtbar.
+
+### Externe Blocker (nicht code-fixbar)
+
+| ID | Titel | Owner |
+|----|-------|-------|
+| SCGB-01 | TEST_DATABASE_URL fehlt in CI/CD | DevOps |
+| SCGB-02 | NAV_ITEMS Struktur offen | PO |
+
+### Deliverables PRI-6
+
+- `reports/current/blocking_matrix.json` (10 Blocker, 2 CRITICAL, 2 HIGH)
+- `reports/current/critical_blocker_fix_report.json`
+- `reports/current/warning_disposition_report.json` (9 Warnings)
+- `reports/current/gold_path_rerun_report.json` (8/8 PASS)
+- `reports/current/product_maturity_v3.json` (Score=80, 11 Dim., schema v5)
+- `reports/current/conditional_rc_decision.json` (CONDITIONAL_RC)
+- `reports/current/ga_backlog.json` (8 Items, 3 GA-blocking)
+- `docs/rc_limitations.md`, `docs/ga_backlog.md`, `docs/release_notes_rc.md`
+- `docs/product_maturity_delta.md`, `docs/gold_path_evidence.md`
+
+### Nächster Sprint: PRI-7 GA-Vorbereitung
+
+Ziel: GA_READY (Maturity ≥ 85). GA-Blocking: GA-SEC-01 (CSP), GA-PERF-01 (GIN-Index), GA-PERF-02 (SQL Sorting). Größter Maturity-Hebel: Suche 45→85 (KWIC+Stemming+Tags).
+
+---
+
+## PRI-7 — GA-Vorbereitung (2026-06-17)
+
+**Ergebnis: BLOCKED**
+**GA Final Gate: 3× PASS, 4× FAIL, 3× BLOCKED**
+**Product Maturity: 68.7/100 (Schwellenwert: 90)**
+
+### Analyse-Deliverables (alle erzeugt)
+
+- `docs/architecture_review.md` — 10 Bereiche, 15 TD-Items identifiziert
+- `reports/current/technical_debt_register.json` / `docs/technical_debt_register.md`
+- `reports/current/scalability_report.json` / `docs/query_optimization_report.md`
+- `reports/current/job_framework_report.json` / `docs/job_state_machine.md`
+- `reports/current/backup_report.json` / `restore_report.json` / `docs/backup_restore_test_report.md`
+- `reports/current/observability_report.json` / `docs/metrics_catalog.md` / `docs/health_matrix.md`
+- `reports/current/multi_user_readiness_report.json` / `docs/workspace_architecture.md`
+- `docs/operations/` (operations_manual.md, deployment.md, rollback.md, maintenance.md)
+- `reports/current/ga_regression_report.json` / `docs/ga_test_matrix.md`
+
+### GA Final Gate (ga_final_gate_report.json)
+
+| Kriterium | Status |
+|-----------|--------|
+| Gold Path 8/8 | PASS |
+| Maturity >= 90 | FAIL (68.7) |
+| Security | FAIL (CSP fehlt) |
+| ID Leaks = 0 | PASS |
+| Performance | FAIL (GIN-Index fehlt) |
+| Backup | BLOCKED (SCGB-01) |
+| Restore | BLOCKED (SCGB-01) |
+| Monitoring | FAIL (Prometheus fehlt) |
+| Operations Doku | PASS |
+| Regression Suite | BLOCKED (SCGB-01) |
+
+### Externe Blocker
+
+- **SCGB-01** (TEST_DATABASE_URL, DevOps) — entsperrt Backup, Restore, Integrations-Tests
+- **SCGB-02** (NAV_ITEMS, PO) — offen seit PRI-5
+
+### Interne Blocker (PRI-8)
+
+- **GA-PERF-01**: GIN-Index auf `document_chunks.search_vector` (Migration, Aufwand S)
+- **GA-SEC-01**: Content Security Policy in FastAPI-Middleware (Aufwand S)
+- **GA-OBS-01**: Prometheus /metrics + JSON-Logging (Aufwand M)
+- **GA-TEST-01**: Integrations-Test-Suite (nach SCGB-01, Aufwand M)
+
+### Trigger: PRI-8 Blockerbehebung
+
+Ziel: GA_READY (Maturity >= 90). Alle 4 internen Blocker behebbar in PRI-8.

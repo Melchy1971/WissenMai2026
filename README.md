@@ -38,9 +38,11 @@ Der aktuelle Gate-Status wird nicht manuell in dieser Datei gepflegt. Verbindlic
 
 M3a, M4 und M5 sind getrennte Gates: M3a wird ueber die Frontend-Full-Suite bewertet, M4 ueber die aktuellen M4-Split-Reports plus `reports/current/m4_truth_report.json`, und M5 ueber das M5-Start-Gate aus `reports/current/masterplan_status.json`.
 
-**Stand 2026-06-15:** Release Candidate Decision = **BLOCKED** (`reports/current/release_candidate_decision.json`). Root Cause: `TEST_DATABASE_URL` nicht gesetzt. Vollstaendige Dokumentation: `docs/release-candidate.md`.
+**Stand 2026-06-17 (PRI-7):** GA Final Gate = **BLOCKED** (`reports/current/ga_final_gate_report.json`). Product Maturity 68.7/100 (GA-Schwellenwert 90). 3 GA-Kriterien PASS, 4 FAIL, 3 BLOCKED. Blocker: SCGB-01 (DevOps), GIN-Index, CSP, Prometheus. Trigger: **PRI-8 Blockerbehebung**.
 
-Drift Detection (`/drift`) ist implementiert und erreichbar (`drift_v2/DriftDashboard`, UI Truth 29/29 PASS). Formale Freigabe blockiert durch Gate-Kaskade. Cleanup/Repair: NO_GO (PROHIBIT-02, PROHIBIT-06).
+**Stand 2026-06-17 (PRI-6, Basis):** RC Final Gate = **CONDITIONAL_RC** (`reports/current/conditional_rc_decision.json`). Alle PRI-6-Hardening-Checks PASS. BLK-01 (SCGB-03 Router-Guard) geschlossen. Product Maturity 80/100 (CONDITIONAL_RC-Schwellwert exakt erreicht). 8/8 Gold Paths PASS. 2 externe Blocker verbleiben: SCGB-01 (TEST_DATABASE_URL, DevOps) und SCGB-02 (NAV_ITEMS, PO). Vollstaendige Dokumentation: `reports/current/rc_decision.md`, `docs/rc_limitations.md`.
+
+Drift Detection (`/drift`) implementiert und erreichbar. Gold Path 8/8 PASS. Technical ID Leak Gate CI-blockend (0 Leaks). Performance alle RC-Limits eingehalten. AdminRoute-Guard aktiv fuer /admin/diagnostics. GA-Backlog dokumentiert (`docs/ga_backlog.md`). Cleanup/Repair: NO_GO (PROHIBIT-02, PROHIBIT-06, PROHIBIT-08).
 
 ## Backend-Setup & Bootstrap (Stand 2026-05-26)
 
@@ -158,7 +160,4 @@ npm install
 ## ADRs
 
 - [Technische Grundentscheidung fuer V1](h:\WissenMai2026\docs\adr\0001-tech-stack-v1.md)
-- [V1-Scope, Nicht-Ziele und vorbereitete Mehrbenutzerfaehigkeit](h:\WissenMai2026\docs\adr\0002-v1-scope-and-boundaries.md)
-
-Die aelteren Kurzfassungen unter `docs/adr/0001-tech-stack.md` und `docs/adr/0002-v1-scope.md` existieren weiterhin, die aktuellen Paket-1-Referenzen zeigen jedoch auf die ausfuehrlichen V1-ADRs.
-
+- [V1-Scope, Nicht-Ziele und vorbereitete Mehrbenutzerfaehigkeit](h:\WissenMai2026\docs\adr\0002-v1

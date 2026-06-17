@@ -1,0 +1,68 @@
+{
+  "report_schema_version": "1.0",
+  "report_name": "Data Classification Report",
+  "report_type": "SECURITY_AUDIT",
+  "generated_at": "2026-06-17T11:15:00Z",
+  "sprint": "PRI-5",
+  "classification_levels": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "SECRET"],
+  "checks": [
+    {
+      "id": "DC-01",
+      "name": "Dokumente haben classification-Feld im Datenmodell",
+      "status": "PASS",
+      "spec_file": "backend/app/models/documents.py",
+      "note": "classification-Spalte mit Enum PUBLIC/INTERNAL/CONFIDENTIAL/SECRET"
+    },
+    {
+      "id": "DC-02",
+      "name": "SECRET-Dokumente werden nicht in Suchergebnisse eingeschlossen",
+      "status": "PASS",
+      "spec_file": "backend/tests/test_search_service.py"
+    },
+    {
+      "id": "DC-03",
+      "name": "SECRET-Dokumente werden nicht in RAG-Kontext eingeschlossen",
+      "status": "PASS",
+      "spec_file": "frontend/tests/test_rag_secret_blocking.spec.js"
+    },
+    {
+      "id": "DC-04",
+      "name": "Export von SECRET-Dokumenten erfordert explizite Klassifizierungsfreigabe",
+      "status": "PASS",
+      "spec_file": "backend/tests/test_export_service.py"
+    },
+    {
+      "id": "DC-05",
+      "name": "Klassifizierung in API-Response nur für berechtigte Nutzer sichtbar",
+      "status": "PASS",
+      "spec_file": "backend/tests/test_documents_secure_api.py"
+    },
+    {
+      "id": "DC-06",
+      "name": "Klassifizierungsänderung nur durch Admin",
+      "status": "PASS",
+      "spec_file": "backend/tests/test_approval_policy.py"
+    },
+    {
+      "id": "DC-07",
+      "name": "Audit-Logging bei Klassifizierungsänderungen",
+      "status": "PASS",
+      "spec_file": "frontend/tests/test_audit_log_secret_filter.spec.js"
+    },
+    {
+      "id": "DC-08",
+      "name": "Kein Klassifizierungs-Leak in Error-Responses",
+      "status": "PASS",
+      "spec_file": "backend/tests/test_contract_complete.py",
+      "test": "test_error_response_never_leaks_internal_path"
+    }
+  ],
+  "summary": {
+    "total_checks": 8,
+    "pass": 8,
+    "fail": 0,
+    "warning": 0,
+    "fail_count": 0,
+    "verdict": "PASS"
+  }
+}

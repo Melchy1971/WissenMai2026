@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "report_name": "backup_report",
+  "generated_at": "2026-06-17T14:10:00.000000+00:00",
+  "sprint": "PRI-7",
+  "backup_komponenten": [
+    {
+      "id": "BK-01",
+      "name": "PostgreSQL Datenbank",
+      "methode": "pg_dump --format=custom",
+      "datei_muster": "backup_db_YYYYMMDD_HHMMSS.dump",
+      "geschaetzt_mb": 50,
+      "status": "SPEZIFIZIERT",
+      "skript": "scripts/backup_db.sh"
+    },
+    {
+      "id": "BK-02",
+      "name": "Uploads (Originaldateien)",
+      "methode": "rsync / tar.gz",
+      "datei_muster": "backup_uploads_YYYYMMDD_HHMMSS.tar.gz",
+      "geschaetzt_mb": 500,
+      "status": "SPEZIFIZIERT",
+      "skript": "scripts/backup_uploads.sh"
+    },
+    {
+      "id": "BK-03",
+      "name": "Exports (generierte PDFs)",
+      "methode": "tar.gz",
+      "datei_muster": "backup_exports_YYYYMMDD_HHMMSS.tar.gz",
+      "geschaetzt_mb": 200,
+      "status": "SPEZIFIZIERT",
+      "skript": "scripts/backup_exports.sh"
+    },
+    {
+      "id": "BK-04",
+      "name": "Reports (JSON)",
+      "methode": "tar.gz",
+      "datei_muster": "backup_reports_YYYYMMDD_HHMMSS.tar.gz",
+      "geschaetzt_mb": 10,
+      "status": "SPEZIFIZIERT",
+      "skript": "scripts/backup_reports.sh"
+    },
+    {
+      "id": "BK-05",
+      "name": "Konfiguration (.env, alembic.ini)",
+      "methode": "sichere Ablage, kein Git",
+      "datei_muster": "backup_config_YYYYMMDD_HHMMSS.tar.gz",
+      "geschaetzt_mb": 1,
+      "status": "SPEZIFIZIERT",
+      "skript": "scripts/backup_config.sh",
+      "hinweis": "Credentials verschluesselt ablegen (GPG oder Secret Manager)"
+    }
+  ],
+  "backup_strategie": {
+    "full_backup_intervall": "täglich 02:00 UTC",
+    "incremental_backup_intervall": "stündlich (Datenbank WAL-Archivierung)",
+    "aufbewahrung_full_backups": "30 Tage",
+    "aufbewahrung_incremental": "7 Tage",
+    "aufbewahrungsort": "lokaler Backup-Pfad + optionaler Remote-Store",
+    "backup_validierung": "Nach jeder Erstellung: pg_restore --list prüfen, tar -tzf prüfen"
+  },
+  "szenarien": {
+    "SCN-01_full_backup": {
+      "beschreibung": "Vollständiger Backup aller 5 Komponenten",
+      "erwartetes_ergebnis": "5 Backup-Dateien, Checksummen vorhanden",
+      "status": "SPEZIFIZIERT",
+      "grund": "Kein Live-System verfügbar (TEST_DATABASE_URL: SCGB-01 offen)"
+    },
+    "SCN-02_incremental_backup": {
+      "beschreibung": "Inkrementeller Backup seit letztem Full Backup",
+      "erwartetes_ergebnis": "WAL-Segmente oder Diff-Archiv",
+      "status": "SPEZIFIZIERT",
+      "grund": "Benötigt WAL-Archivierung (PostgreSQL-Konfiguration)"
+    },
+    "SCN-03_restore_empty": {
+      "beschreibung": "Restore auf leeres System (Erstinstallation)",
+      "erwartetes_ergebnis": "Vollständig funktionsfähiges System",
+      "status": "SPEZIFIZIERT",
+      "grund": "Kein isoliertes Test-System verfügbar"
+    },
+    "SCN-04_restore_existing": {
+      "beschreibung": "Restore auf bestehendes System (Überschreiben)",
+      "erwartetes_ergebnis": "Datenstand identisch mit Backup-Zeitpunkt",
+      "status": "SPEZIFIZIERT",
+      "grund": "Kein Live-System verfügbar"
+    },
+    "SCN-05_restore_nach_fehler": {
+      "beschreibung": "Restore nach fehlgeschlagener Migration",
+      "erwartetes_ergebnis": "Rollback erfolgreich, System lauffähig",
+      "status": "SPEZIFIZIERT",
+      "grund": "Kein Live-System verfügbar"
+    },
+    "SCN-06_datenintegritaet": {
+      "beschreibung": "Datenintegrität nach Restore prüfen",
+      "erwartetes_ergebnis": "Alle FK-Constraints, Row-Counts, Checksummen OK",
+      "status": "SPEZIFIZIERT",
+      "grund": "Kein Live-System verfügbar"
+    }
+  },
+  "gesamtstatus": "SPEZIFIZIERT",
+  "blocker": "SCGB-01 (TEST_DATABASE_URL nicht konfiguriert) — Live-Tests nicht ausführbar",
+  "naechste_schritte": [
+    "SCGB-01 schließen (DevOps)",
+    "scripts/backup_*.sh implementieren",
+    "Backup-Tests in CI integrieren",
+    "Restore-Prozedur in operations_manual.md dokumentieren"
+  ]
+}

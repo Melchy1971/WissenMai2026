@@ -2,16 +2,16 @@
   "report_schema_version": 2,
   "report_name": "ui_technical_id_leak_audit",
   "report_type": "automated_security_ux_audit",
-  "generated_at": "2026-06-16T06:48:25.158002+00:00",
-  "audit_root": "/sessions/relaxed-hopeful-dijkstra/mnt/WissenMai2026/frontend/src",
-  "rule": "Technische IDs (UUIDs, interne Schlüssel) dürfen nicht als sichtbarer Text in der Endanwender-GUI erscheinen. Erlaubt: React-Keys, URL-Parameter, value=-Attribute, API-Layer, Tests, Admin-Ausnahmen.",
-  "scanned_files": 57,
+  "generated_at": "2026-06-17T08:14:38.165296+00:00",
+  "audit_root": "/sessions/busy-sleepy-archimedes/mnt/WissenMai2026/frontend/src",
+  "rule": "Technische IDs duerfen nicht als sichtbarer Text in der Endanwender-GUI erscheinen. Erlaubt: React-Keys, URL-Parameter, value=-Attribute, API-Layer, Tests, Admin-Ausnahmen, Event-Handler, bedingte Logik.",
+  "scanned_files": 72,
   "visible_leaks": 0,
   "leaks": [],
   "exceptions_accepted": [
     {
       "file": "pages/AdminDiagnosticsPage.jsx",
-      "reason": "Admin-Ausnahme: Explizit ausgeschlossen aus 1.0-Scope (docs/version_1_0_scope_freeze.md)"
+      "reason": "Admin-Ausnahme: Explizit ausgeschlossen aus 1.0-Scope"
     }
   ],
   "verdict": "PASS"

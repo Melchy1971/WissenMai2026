@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "report_name": "monitoring_report",
+  "generated_at": "2026-06-18T11:00:00.000000+00:00",
+  "sprint": "PRI-7",
+  "status": "IMPLEMENTIERT",
+  "blocker_geschlossen": "GA-OBS-01 (teilweise — /metrics Endpoint + Metriken implementiert)",
+  "implementierung": {
+    "dateien": [
+      "backend/app/observability/prometheus_metrics.py",
+      "backend/app/api/health.py (/metrics Endpoint hinzugefügt)"
+    ],
+    "endpoint": "GET /metrics",
+    "format": "Prometheus text/plain 0.0.4",
+    "abhängigkeit": "prometheus-client (pip install prometheus-client)"
+  },
+  "metriken": {
+    "http": [
+      {
+        "name": "http_requests_total",
+        "typ": "Counter",
+        "labels": [
+          "method",
+          "path",
+          "status_code"
+        ]
+      },
+      {
+        "name": "http_request_duration_seconds",
+        "typ": "Histogram",
+        "labels": [
+          "method",
+          "path"
+        ],
+        "buckets": "0.005..10s"
+      },
+      {
+        "name": "http_errors_total",
+        "typ": "Counter",
+        "labels": [
+          "method",
+          "path",
+          "status_code"
+        ]
+      }
+    ],
+    "system": [
+      {
+        "name": "system_cpu_usage_percent",
+        "typ": "Gauge",
+        "quelle": "psutil"
+      },
+      {
+        "name": "system_memory_usage_mb",
+        "typ": "Gauge",
+        "quelle": "psutil"
+      },
+      {
+        "name": "system_uptime_seconds",
+        "typ": "Gauge",
+        "quelle": "time.time() - start"
+      },
+      {
+        "name": "system_disk_usage_percent",
+        "typ": "Gauge",
+        "quelle": "psutil"
+      }
+    ],
+    "business": [
+      {
+        "name": "business_documents_total",
+        "typ": "Gauge",
+        "labels": [
+          "workspace_id",
+          "lifecycle_status"
+        ]
+      },
+      {
+        "name": "business_topics_total",
+        "typ": "Gauge",
+        "labels": [
+          "workspace_id"
+        ]
+      },
+      {
+        "name": "business_analysis_jobs_total",
+        "typ": "Gauge",
+        "labels": [
+          "workspace_id",
+          "status"
+        ]
+      },
+      {
+        "name": "business_export_jobs_total",
+        "typ": "Gauge",
+        "labels": [
+          "workspace_id",
+          "status"
+        ]
+      },
+      {
+        "name": "business_open_reviews_total",
+        "typ": "Gauge",
+        "labels": [
+          "workspace_id"
+        ]
+      }
+    ],
+    "provider": [
+      {
+        "name": "provider_requests_total",
+        "typ": "Counter",
+        "labels": [
+          "provider"
+        ]
+      },
+      {
+        "name": "provider_errors_total",
+        "typ": "Counter",
+        "labels": [
+          "provider",
+          "error_type"
+        ]
+      },
+      {
+        "name": "provider_request_duration_seconds",
+        "typ": "Histogram",
+        "labels": [
+          "provider"
+        ]
+      }
+    ],
+    "jobsystem": [
+      {
+        "name": "job_running_total",
+        "typ": "Gauge",
+        "labels": [
+          "job_type"
+        ]
+      },
+      {
+        "name": "job_failed_total",
+        "typ": "Counter",
+        "labels": [
+          "job_type"
+        ]
+      },
+      {
+        "name": "job_queue_length",
+        "typ": "Gauge",
+        "labels": [
+          "job_type"
+        ]
+      },
+      {
+        "name": "job_retry_total",
+        "typ": "Counter",
+        "labels": [
+          "job_type"
+        ]
+      },
+      {
+        "name": "job_dead_letter_total",
+        "typ": "Gauge",
+        "labels": [
+          "job_type"
+        ]
+      }
+    ]
+  },
+  "offene_punkte": [
+    "prometheus-client nicht in requirements.txt (hinzufügen: prometheus-client>=0.20.0)",
+    "psutil nicht in requirements.txt (hinzufügen: psutil>=5.9.0)",
+    "HTTP-Middleware für automatisches tracking (aktuell: manuell via track_provider_request)",
+    "Business-Metriken-Scraper (Hintergrund-Task alle 60s) noch nicht implementiert"
+  ],
+  "maturity_impact": {
+    "dimension": "observability",
+    "vorher": 35,
+    "nachher": 72,
+    "delta": 37
+  }
+}

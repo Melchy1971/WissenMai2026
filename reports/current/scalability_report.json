@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "report_name": "scalability_report",
+  "generated_at": "2026-06-17T14:00:00.000000+00:00",
+  "sprint": "PRI-7",
+  "ziel": "Applikation für >10k Dokumente, >1k gleichzeitige Suchanfragen, >100 Analyse-Jobs/Tag vorbereiten",
+  "bereiche": {
+    "documents": {
+      "status": "PARTIAL",
+      "issues": [
+        "List-Query: offset-basiert, bei >50k Einträgen teuer",
+        "DocumentRepository.list_documents(): kein GIN-Index-Hint für FTS",
+        "Chunk-Count via COUNT(*): kein Covering Index"
+      ],
+      "empfehlungen": [
+        "Keyset Pagination: WHERE (created_at, id) < (cursor_ts, cursor_id) ORDER BY created_at DESC, id DESC LIMIT 50",
+        "GIN-Index auf search_vector (TD-004) — kritisch",
+        "Covering Index (document_id, chunk_index, content[1:200]) für Chunk-Preview"
+      ],
+      "aufwand": "M"
+    },
+    "topics": {
+      "status": "PARTIAL",
+      "issues": [
+        "TopicTag N+1 in search_unified (TD-012)",
+        "Kein Index auf topics.status + workspace_id (kombiniert)",
+        "Merge-Service lädt beide Topic-Objekte komplett in RAM"
+      ],
+      "empfehlungen": [
+        "Composite Index: (workspace_id, status, created_at DESC)",
+        "selectinload für Tags in Search-Context",
+        "Merge-Service: nur benötigte Felder laden"
+      ],
+      "aufwand": "S"
+    },
+    "search": {
+      "status": "KRITISCH",
+      "issues": [
+        "search_unified(): Python-seitige Pagination — lädt ALLE Treffer in RAM (TD-001)",
+        "Kein GIN-Index auf search_vector (TD-004)",
+        "SQLite-Fallback: ILIKE ohne Index — O(n) Sequential Scan",
+        "Kein Query-Result-Cache für identische Suchanfragen",
+        "Topic-Tag N+1 innerhalb _search_topics (TD-012)"
+      ],
+      "empfehlungen": [
+        "DB-seitige Pagination: Sub-Queries mit individuellem LIMIT, UNION ALL mit shared LIMIT",
+        "GIN-Index Migration sofort",
+        "Cache: SHA256(workspace_id + query + filter) → TTL 60s In-Memory-Cache",
+        "Max-Limit: Query-Parameter limit auf 100 begrenzen"
+      ],
+      "aufwand": "L"
+    },
+    "analysis": {
+      "status": "OK",
+      "issues": [
+        "RETRY_LIMIT=2 hardcoded",
+        "Kein Timeout auf KI-Provider-Calls",
+        "Kein Worker-Pool-Limit — beliebig viele parallele Jobs möglich"
+      ],
+      "empfehlungen": [
+        "settings.analysis_retry_limit = 3 konfigurierbar",
+        "httpx.AsyncClient mit timeout=settings.provider_timeout_seconds (Default 120s)",
+        "MAX_CONCURRENT_ANALYSIS_JOBS=5 als Semaphore"
+      ],
+      "aufwand": "S"
+    },
+    "export": {
+      "status": "PARTIAL",
+      "issues": [
+        "Keine Export-File-Cleanup-Logik — FS wächst unbegrenzt",
+        "Keine Komprimierung für große JSON-Exports",
+        "PDF-Export nur Dry-Run"
+      ],
+      "empfehlungen": [
+        "Export-Cleanup-Job: DELETE WHERE created_at < now() - interval '30 days'",
+        "gzip-Komprimierung für JSON-Exports > 1MB",
+        "Export-File-Size-Limit: 100MB max"
+      ],
+      "aufwand": "S"
+    },
+    "dashboard": {
+      "status": "PARTIAL",
+      "issues": [
+        "5 separate Queries für ActivityFeed (TD-002)",
+        "Kein Caching — jeder Reload triggert 8+ DB-Queries (TD-010)",
+        "Dashboard-Summary lädt alle Counts ohne Index"
+      ],
+      "empfehlungen": [
+        "ETag-Header für Dashboard-Summary (Cache-Control: max-age=30)",
+        "UNION ALL für ActivityFeed",
+        "Materialized View für Dashboard-Summary (täglich refresh) optional"
+      ],
+      "aufwand": "M"
+    },
+    "hintergrundjobs": {
+      "status": "PARTIAL",
+      "issues": [
+        "Kein Worker-Pool-Management — Thread pro Job",
+        "Kein Job-Cleanup für alte completed/failed Jobs",
+        "Heartbeat-Interval: 30s — bei Absturz bleibt Job 5min locked"
+      ],
+      "empfehlungen": [
+        "Job-Cleanup: DELETE WHERE status IN ('completed','failed') AND finished_at < now() - interval '7 days'",
+        "Thread-Pool mit MAX_WORKERS=4 Konfiguration",
+        "Heartbeat-Timeout-Reduction auf 60s"
+      ],
+      "aufwand": "S"
+    }
+  },
+  "n_plus_1_analyse": {
+    "fundstellen": [
+      {
+        "location": "repositories/search.py:_search_topics()",
+        "schwere": "HOCH",
+        "beschreibung": "1 SELECT pro Topic für Tags"
+      },
+      {
+        "location": "services/dashboard_service.py:list_activity()",
+        "schwere": "MITTEL",
+        "beschreibung": "5 Queries statt UNION ALL"
+      },
+      {
+        "location": "models/analysis.py:AnalysisJob.result",
+        "schwere": "MITTEL",
+        "beschreibung": "Lazy-Load bei Job-Listing"
+      },
+      {
+        "location": "models/analysis.py:AnalysisJob.suggestions",
+        "schwere": "MITTEL",
+        "beschreibung": "Lazy-Load bei Job-Detail"
+      },
+      {
+        "location": "models/data_quality.py:DataQualityRun.findings",
+        "schwere": "NIEDRIG",
+        "beschreibung": "Lazy-Load bei Run-Detail"
+      }
+    ]
+  },
+  "index_analyse": {
+    "vorhandene_indexes": [
+      "ix_documents_workspace_id (single)",
+      "ix_documents_created_at (single)",
+      "ix_documents_workspace_created (composite, Migration 0008)",
+      "ix_document_chunks_doc_ver_idx (composite, Migration 0008)",
+      "ix_document_versions_document_id",
+      "uq_documents_workspace_content_hash"
+    ],
+    "fehlende_indexes": [
+      {
+        "name": "ix_chunks_search_vector",
+        "type": "GIN",
+        "prioritaet": "KRITISCH",
+        "migration": "0026"
+      },
+      {
+        "name": "ix_topics_workspace_status_created",
+        "type": "BTREE",
+        "prioritaet": "HOCH",
+        "migration": "0026"
+      },
+      {
+        "name": "ix_analysis_jobs_workspace_created",
+        "type": "BTREE",
+        "prioritaet": "MITTEL",
+        "migration": "0026"
+      },
+      {
+        "name": "ix_export_jobs_workspace_status",
+        "type": "BTREE",
+        "prioritaet": "MITTEL",
+        "migration": "0026"
+      }
+    ]
+  },
+  "response_caching": {
+    "status": "NICHT_IMPLEMENTIERT",
+    "empfehlung": "ETag + Cache-Control-Header für Dashboard-Summary, Search-Results. In-Memory-Cache (functools.lru_cache oder redis) für identische Queries. TTL: Summary=30s, Search=60s."
+  },
+  "lazy_loading_frontend": {
+    "status": "TEILWEISE",
+    "implementiert": [
+      "VirtualizedTable.jsx vorhanden",
+      "Chunk-Preview lazy per API"
+    ],
+    "fehlend": [
+      "React.lazy() für Page-Komponenten",
+      "Intersection Observer für lange Listen",
+      "Infinite Scroll statt Load-More-Button"
+    ]
+  },
+  "gesamtbewertung": "PARTIAL — kritische Lücken bei Search-Pagination und GIN-Index. Sofortige Maßnahmen: Migration 0026 (GIN-Index + Indexes), dann TD-001 (Search-Pagination)."
+}

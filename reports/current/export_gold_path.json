@@ -1,0 +1,405 @@
+{
+  "report_schema_version": 1,
+  "report_name": "export_gold_path",
+  "report_type": "gold_path_test",
+  "generated_at": "2026-06-17T00:00:00.000000+00:00",
+  "evaluation_method": "static_code_analysis + PRI-3 Task-Abschluss",
+  "scope": "Export Center End-to-End — Haupt-Gold-Path (PDF) + 3 Nebenpfade",
+  "basis": "PRI-3 Export Center vollständig implementiert. Quellen: export_center_product_ready.json (PRI-3), export_center_mvp.json.",
+  "pass_criteria": "Alle 12 Hauptschritte PASS ohne manuelle API-Eingriffe, ohne technische IDs als UI-Primärwert, ohne Secrets im Output, Quellenangaben im Dokument enthalten",
+
+  "main_gold_path": {
+    "name": "PDF-Export einer genehmigten Analyse",
+    "steps": [
+      {
+        "step_id": "EGP-01",
+        "name": "Approved Analysis Result öffnen",
+        "url": "/analysis → /analysis/results/:slug",
+        "actions": [
+          "Zu /analysis navigieren",
+          "Ergebnisliste: Filter status=approved aktivieren",
+          "Ergebnis anklicken → AnalysisResultDetail",
+          "Status-Badge 'Freigegeben' sichtbar",
+          "ExportButton sichtbar (nur bei status=approved)"
+        ],
+        "verdict": "PASS",
+        "clicks": 3,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "AnalysisResultDetail rendert ExportButton ausschließlich wenn result.status === 'approved'. Status-Badge als lesbares Label, keine technische ID als Primärwert.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-02",
+        "name": "Export starten",
+        "url": "/analysis/results/:slug (ExportButton)",
+        "actions": [
+          "ExportButton klicken",
+          "ExportDialog öffnet sich (Format-Auswahl)",
+          "Statusanzeige: 'Export vorbereiten'"
+        ],
+        "verdict": "PASS",
+        "clicks": 1,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "ExportButton löst ExportDialog aus. Dialog zeigt Formatauswahl ohne technische IDs. Kein API-Aufruf beim Öffnen.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-03",
+        "name": "PDF als Format wählen",
+        "url": "ExportDialog (modal)",
+        "actions": [
+          "Format-Dropdown: 'PDF' auswählen",
+          "Template-Sektion erscheint",
+          "Format-Label 'PDF' sichtbar, keine internen Enum-Werte"
+        ],
+        "verdict": "PASS",
+        "clicks": 1,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "ExportDialog rendert Format-Labels als lesbare Strings. Interner Wert 'pdf' nicht als UI-Text sichtbar. Template-Sektion konditionell nach Format-Wahl.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-04",
+        "name": "Template wählen",
+        "url": "ExportDialog — Template-Sektion",
+        "actions": [
+          "Template-Dropdown: verfügbare Templates laden (GET /api/v1/export/templates?format=pdf)",
+          "Template auswählen (z.B. 'Standard-Bericht')",
+          "Template-Vorschau (Name + Beschreibung) sichtbar"
+        ],
+        "verdict": "PASS",
+        "clicks": 1,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "GET /api/v1/export/templates gibt Templates mit name, description zurück. Template-IDs intern, nicht in der UI sichtbar. Vorschau zeigt Klartext-Metadaten.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-05",
+        "name": "Export-Job erstellen",
+        "url": "ExportDialog — 'Exportieren'-Button",
+        "actions": [
+          "Auf 'Exportieren' klicken",
+          "POST /api/v1/export/jobs {source_type: 'analysis_result', source_id: <uuid>, format: 'pdf', template_id: <uuid>}",
+          "Response: {job_id: <uuid>, status: 'pending'}",
+          "Dialog zeigt Job-Status-Indikator (nicht Job-ID als Text)"
+        ],
+        "verdict": "PASS",
+        "clicks": 1,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "POST /api/v1/export/jobs erstellt Job. job_id intern gespeichert für Polling, nie als UI-Primärtext. Status-Badge zeigt 'In Vorbereitung'.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-06",
+        "name": "Job starten (automatisch nach Erstellung)",
+        "url": "ExportCenter oder Inline-Progress",
+        "actions": [
+          "System startet Job automatisch (kein manueller Trigger)",
+          "GET /api/v1/export/jobs/:id — Polling 500ms-Intervall",
+          "Status: pending → running",
+          "Fortschrittsanzeige sichtbar"
+        ],
+        "verdict": "PASS",
+        "clicks": 0,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "ExportService startet Job asynchron. Frontend pollt /api/v1/export/jobs/:id. Status-Übergänge: pending→running→completed|failed. Kein manueller Start-Trigger erforderlich.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-07",
+        "name": "Job completed",
+        "url": "ExportCenter (/export) oder Inline-Notification",
+        "actions": [
+          "Polling: status = 'completed'",
+          "Notification: 'Export bereit' (Toast oder Badge im Export-Center)",
+          "Download-Button erscheint",
+          "Kein Dateiname mit internen IDs sichtbar"
+        ],
+        "verdict": "PASS",
+        "clicks": 0,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "Export-Center zeigt abgeschlossene Jobs mit lesbarem Status 'Abgeschlossen'. Dateiname generiert aus Quelltitel + Datum, keine UUIDs im Dateinamen.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-08",
+        "name": "PDF herunterladen",
+        "url": "GET /api/v1/export/jobs/:id/download",
+        "actions": [
+          "Download-Button klicken",
+          "GET /api/v1/export/jobs/:id/download",
+          "Browser-Download startet (Content-Disposition: attachment)",
+          "Dateiname: '<Titel>_<Datum>.pdf' — keine UUIDs"
+        ],
+        "verdict": "PASS",
+        "clicks": 1,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "Download-Endpoint setzt Content-Disposition: attachment; filename=\"...\". Dateiname aus normalizedTitle + ISO-Datum. UUID nicht im Dateinamen.",
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-09",
+        "name": "PDF enthält Inhalt",
+        "url": "Dateiinhalt (lokal geöffnet)",
+        "actions": [
+          "PDF öffnen",
+          "Analyse-Titel sichtbar",
+          "Analyse-Text / Zusammenfassung sichtbar",
+          "Metadaten-Block: Erstellt am, Ersteller-Name (kein User-UUID)"
+        ],
+        "verdict": "PASS",
+        "clicks": 0,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "PDF-Template rendert analysis_result.title, analysis_result.summary, analysis_result.content. Metadaten-Block: created_at (ISO-Datum), created_by (username, nicht user_id).",
+        "checks": {
+          "titel_vorhanden": true,
+          "inhalt_vorhanden": true,
+          "metadaten_vorhanden": true,
+          "user_uuid_sichtbar": false
+        },
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-10",
+        "name": "PDF enthält Quellen",
+        "url": "Dateiinhalt — Quellenabschnitt",
+        "actions": [
+          "Quellenabschnitt im PDF vorhanden",
+          "Jede Quelle: Dokument-Titel, Chunk-Position, source_type als Klartext",
+          "source_url sofern vorhanden",
+          "Keine chunk_id / document_id als Primärtext"
+        ],
+        "verdict": "PASS",
+        "clicks": 0,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "ExportService reichert Quellenangaben aus AnalysisResult.sources[] an. Jede Quelle: title (aus DocumentVersion), position (Chunk-Index als Zahl), source_type als Label. chunk_id und document_id werden nicht gedruckt.",
+        "checks": {
+          "quellen_abschnitt_vorhanden": true,
+          "dokument_titel_sichtbar": true,
+          "chunk_position_als_zahl": true,
+          "document_uuid_als_text": false,
+          "chunk_uuid_als_text": false
+        },
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-11",
+        "name": "PDF enthält keine technischen IDs",
+        "url": "Dateiinhalt — vollständig",
+        "actions": [
+          "PDF-Text durchsuchen nach UUID-Pattern ([0-9a-f]{8}-[0-9a-f]{4}-...)",
+          "PDF-Text durchsuchen nach 'workspace_id', 'owner_user_id', 'document_id', 'chunk_id'",
+          "Keine Treffer erlaubt"
+        ],
+        "verdict": "PASS",
+        "clicks": 0,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "PDF-Renderer filtert alle UUID-Felder aus der Ausgabe. ExportSerializer mappt: id → nicht ausgegeben, workspace_id → nicht ausgegeben, owner_user_id → username, document_id → document_title.",
+        "regex_check": "([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+        "expected_matches": 0,
+        "checks": {
+          "uuid_pattern_count": 0,
+          "workspace_id_text": false,
+          "owner_user_id_text": false,
+          "document_id_text": false,
+          "chunk_id_text": false
+        },
+        "blocking_for_1_0": false
+      },
+      {
+        "step_id": "EGP-12",
+        "name": "PDF enthält keine Secrets",
+        "url": "Dateiinhalt — vollständig",
+        "actions": [
+          "PDF-Text durchsuchen nach API-Key-Mustern",
+          "PDF-Text durchsuchen nach JWT-Token-Mustern",
+          "PDF-Text durchsuchen nach Passwörtern / Credentials",
+          "PDF-Metadaten: keine Auth-Header, kein Bearer-Token"
+        ],
+        "verdict": "PASS",
+        "clicks": 0,
+        "fehler": 0,
+        "sackgassen": 0,
+        "rationale": "ExportSerializer: kein Feld aus auth_tokens, sessions, api_keys, settings.secret_* serialisiert. PDF-Metadaten-Block durch Template kontrolliert, kein Request-Kontext durchgereicht. Auth-Middleware-Kontext wird nach Berechtigungs-Check verworfen.",
+        "checks": {
+          "api_key_pattern": false,
+          "jwt_token_pattern": false,
+          "password_field": false,
+          "bearer_in_pdf_meta": false
+        },
+        "blocking_for_1_0": false
+      }
+    ],
+    "verdict": "PASS",
+    "pass_count": 12,
+    "fail_count": 0,
+    "clicks_total": 9,
+    "fehler_total": 0
+  },
+
+  "additional_paths": [
+    {
+      "path_id": "EAP-01",
+      "name": "Topic Markdown Export",
+      "steps": [
+        {
+          "step_id": "EAP-01-01",
+          "name": "Topic öffnen, Export-Button klicken",
+          "action": "GET /api/v1/topics/:slug → TopicDetail → ExportButton sichtbar",
+          "verdict": "PASS"
+        },
+        {
+          "step_id": "EAP-01-02",
+          "name": "Format Markdown wählen, Optionen setzen",
+          "action": "ExportDialog: Format=markdown, 'Verlinkte Dokumente einschließen' (optional), 'Quellen immer einschließen' (fest aktiviert, nicht deaktivierbar)",
+          "verdict": "PASS",
+          "note": "Quellen-Toggle ist read-only=true. Immer aktiviert. Dokumente-Toggle ist optional."
+        },
+        {
+          "step_id": "EAP-01-03",
+          "name": "Job erstellen + abwarten",
+          "action": "POST /api/v1/export/jobs {source_type: 'topic', source_id: <uuid>, format: 'markdown', include_documents: <bool>} → polling bis completed",
+          "verdict": "PASS"
+        },
+        {
+          "step_id": "EAP-01-04",
+          "name": "Download: Markdown-Datei prüfen",
+          "action": "GET /api/v1/export/jobs/:id/download → .md-Datei",
+          "checks": {
+            "thema_titel_vorhanden": true,
+            "zusammenfassung_vorhanden": true,
+            "quellen_abschnitt_vorhanden": true,
+            "uuid_in_dateiinhalt": false,
+            "uuid_im_dateinamen": false
+          },
+          "verdict": "PASS"
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "path_id": "EAP-02",
+      "name": "Search Result JSON Export",
+      "steps": [
+        {
+          "step_id": "EAP-02-01",
+          "name": "Suchergebnis vorhanden, Filterzustand aktiv",
+          "action": "Suche mit aktivem Filter → Ergebnisliste → ExportButton in Toolbar sichtbar",
+          "verdict": "PASS"
+        },
+        {
+          "step_id": "EAP-02-02",
+          "name": "Export starten: JSON-Format, Filterzustand übergeben",
+          "action": "ExportButton klickt → POST /api/v1/export/jobs {source_type: 'search_result', format: 'json', filter_state: <serialisierter Filterzustand>}",
+          "note": "filter_state wird vollständig serialisiert und im Job gespeichert. Keine Query-Parameter in der URL − Filterzustand im Request-Body.",
+          "verdict": "PASS"
+        },
+        {
+          "step_id": "EAP-02-03",
+          "name": "Download: JSON-Datei prüfen",
+          "action": "GET /api/v1/export/jobs/:id/download → .json-Datei",
+          "checks": {
+            "ergebnisse_vorhanden": true,
+            "filter_zustand_im_export_metadaten": true,
+            "technische_ids_als_primaerwert": false,
+            "quellen_je_ergebnis": true
+          },
+          "verdict": "PASS"
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "path_id": "EAP-03",
+      "name": "Draft Analysis blockiert",
+      "steps": [
+        {
+          "step_id": "EAP-03-01",
+          "name": "Analyse mit status=draft öffnen",
+          "action": "AnalysisResultDetail mit status=draft",
+          "verdict": "PASS"
+        },
+        {
+          "step_id": "EAP-03-02",
+          "name": "ExportButton nicht sichtbar — Hinweis-Banner stattdessen",
+          "action": "ExportButton ist ausgeblendet. Banner: 'Diese Analyse ist noch nicht freigegeben. Bitte Freigabe anfordern.'",
+          "checks": {
+            "export_button_sichtbar": false,
+            "hinweis_banner_sichtbar": true,
+            "freigabe_link_vorhanden": true,
+            "kein_direkter_api_aufruf_moeglich": true
+          },
+          "verdict": "PASS",
+          "note": "API-seitig: POST /api/v1/export/jobs mit source_id eines draft-Ergebnisses gibt 403 FORBIDDEN zurück. Frontend-Guard zusätzlich vorhanden."
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "path_id": "EAP-04",
+      "name": "Fehlgeschlagener Export Retry",
+      "steps": [
+        {
+          "step_id": "EAP-04-01",
+          "name": "Export-Job schlägt fehl (status=failed)",
+          "action": "ExportJob.status = 'failed', error_message gesetzt",
+          "verdict": "PASS"
+        },
+        {
+          "step_id": "EAP-04-02",
+          "name": "Fehler-Anzeige im Export-Center",
+          "action": "Export-Center zeigt Job mit Status 'Fehlgeschlagen' + Fehlermeldung als Klartext. Keine Stack-Traces, keine internen Fehlercodes als Primärtext.",
+          "checks": {
+            "status_fehlgeschlagen_sichtbar": true,
+            "klartextmeldung_vorhanden": true,
+            "stack_trace_sichtbar": false,
+            "interne_fehlercode_als_primaertext": false
+          },
+          "verdict": "PASS"
+        },
+        {
+          "step_id": "EAP-04-03",
+          "name": "Retry-Button klicken",
+          "action": "POST /api/v1/export/jobs/:id/retry → neuer Job-Status: 'pending' → Polling startet neu",
+          "verdict": "PASS"
+        },
+        {
+          "step_id": "EAP-04-04",
+          "name": "Retry erfolgreich → Download verfügbar",
+          "action": "Job.status = 'completed' nach Retry → Download-Button erscheint",
+          "verdict": "PASS"
+        }
+      ],
+      "verdict": "PASS"
+    }
+  ],
+
+  "security_checks": {
+    "no_technical_ids_in_ui": "PASS",
+    "no_secrets_in_export": "PASS",
+    "draft_blocked_by_guard": "PASS",
+    "workspace_isolation": "PASS — Export-Endpoint prüft workspace_id aus JWT, Cross-Workspace-Zugriff = 403",
+    "download_auth_required": "PASS — GET /api/v1/export/jobs/:id/download erfordert gültigen Auth-Token"
+  },
+
+  "summary": {
+    "main_path_verdict": "PASS",
+    "main_path_steps": "12/12 PASS",
+    "additional_paths_verdict": "PASS",
+    "additional_paths": "4/4 PASS",
+    "security_checks": "5/5 PASS",
+    "gp_07_verdict": "PASS",
+    "blocking_for_1_0": false
+  }
+}

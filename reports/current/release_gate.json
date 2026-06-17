@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "report_name": "release_gate",
+  "generated_at": "2026-06-17T15:00:00.000000+00:00",
+  "sprint": "PRI-7",
+  "current_status": "BLOCKED",
+  "previous_status_pri6": "CONDITIONAL_RC",
+  "ga_threshold_maturity": 90,
+  "current_maturity": 68.7,
+  "blocker_count": 3,
+  "fail_count": 4,
+  "pass_count": 3,
+  "blockers": [
+    {
+      "id": "SCGB-01",
+      "typ": "EXTERN",
+      "owner": "DevOps"
+    },
+    {
+      "id": "GA-PERF-01",
+      "typ": "INTERN",
+      "owner": "Dev",
+      "beschreibung": "GIN-Index auf search_vector"
+    },
+    {
+      "id": "GA-SEC-01",
+      "typ": "INTERN",
+      "owner": "Dev",
+      "beschreibung": "Content Security Policy"
+    },
+    {
+      "id": "GA-OBS-01",
+      "typ": "INTERN",
+      "owner": "Dev",
+      "beschreibung": "Prometheus /metrics + strukturiertes Logging"
+    },
+    {
+      "id": "GA-TEST-01",
+      "typ": "EXTERN+INTERN",
+      "owner": "DevOps+Dev",
+      "beschreibung": "Integrations-Test-Suite"
+    }
+  ],
+  "trigger": "BLOCKED → PRI-8 Blockerbehebung"
+}

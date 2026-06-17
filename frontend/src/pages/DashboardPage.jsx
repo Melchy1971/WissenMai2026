@@ -6,6 +6,7 @@ import { LoadingState } from '../components/status/LoadingState.jsx';
 import { ErrorState } from '../components/status/ErrorState.jsx';
 import { StatusBadge } from '../components/status/StatusBadge.jsx';
 import { TopicsWidgetPanel } from '../features/dashboard/TopicsWidgetPanel.jsx';
+import { DriftWidgetPanel } from '../features/dashboard/DriftWidgetPanel.jsx';
 
 const UNKNOWN = 'UNKNOWN';
 
@@ -209,6 +210,11 @@ export function DashboardPage() {
       </section>
 
       {/* Activity */}
+      {/* Drift Analytics widget panel (PRI-4) */}
+      <section className="dashboard-section" data-testid="drift-widget-section">
+        <DriftWidgetPanel />
+      </section>
+
       <ActivityList items={activity} />
 
       <style>{`

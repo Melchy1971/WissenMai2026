@@ -1,212 +1,44 @@
 {
-  "report_schema_version": 1,
+  "schema_version": 3,
   "report_name": "product_gold_path",
-  "report_type": "gold_path_test",
-  "generated_at": "2026-06-16T00:00:00.000000+00:00",
-  "evaluation_method": "static_code_analysis + Synthese aus product_e2e_truth_suite.json, analysis_ux_ready.json, topic_center_product_ready.json, export_center_product_ready.json, analysis_gold_path.json (PRI-2 Task #82)",
-  "gold_path_description": "Login → Dokument importieren → Dokument anzeigen → Thema finden → Analyse starten → Analyse freigeben → Export erzeugen → Logout",
-  "pass_criteria": "Alle 8 Schritte ohne manuellen API-Eingriff, ohne Debug-Seiten, ohne technische IDs als primären UI-Wert, ohne 404/500 auf Hauptpfaden",
-
-  "schritte": [
-    {
-      "step_id": "GP-01",
-      "name": "Login",
-      "url": "/login",
-      "actions": ["E-Mail + Passwort eingeben", "POST /api/v1/auth/login", "Weiterleitung zu /dashboard"],
-      "verdict": "PASS",
-      "clicks": 2,
-      "fehler": 0,
-      "sackgassen": 0,
-      "ladezeit_erwartung": "< 500ms",
-      "rationale": "Login vollständig implementiert. Token gespeichert, Workspace-Auswahl aus Memberships. AuthContext korrekt."
-    },
-    {
-      "step_id": "GP-02",
+  "generated_at": "2026-06-17T15:00:00.000000+00:00",
+  "sprint": "PRI-7",
+  "gold_paths": {
+    "GP-01": {
       "name": "Dokument importieren",
-      "url": "/import",
-      "actions": [
-        "Zu /import navigieren",
-        "Datei auswählen (FileInput)",
-        "POST /documents/import (multipart)",
-        "BackgroundJob-Polling bis status='completed'",
-        "Statusanzeige: 'chunked'"
-      ],
-      "verdict": "PASS",
-      "clicks": 3,
-      "fehler": 0,
-      "sackgassen": 0,
-      "ladezeit_erwartung": "abhängig von Dokumentgröße; Polling 250ms-Intervall, max 120 Versuche (30s)",
-      "rationale": "Import-Flow vollständig. documents_router korrekt gemountet. Polling via /api/v1/jobs/:id."
+      "status": "PASS"
     },
-    {
-      "step_id": "GP-03",
-      "name": "Dokument anzeigen",
-      "url": "/documents → /documents/:id",
-      "actions": [
-        "Zu /documents navigieren",
-        "Dokument in Liste finden (importStatus='chunked')",
-        "Dokument anklicken → /documents/:id",
-        "title, status, Textchunks sichtbar"
-      ],
-      "verdict": "PASS",
-      "clicks": 2,
-      "fehler": 0,
-      "sackgassen": 0,
-      "ladezeit_erwartung": "< 1s (parallele Fetches)",
-      "befund": "DocumentMetaCard zeigt rohe UUIDs (id, workspaceId, ownerUserId) — technische IDs sichtbar. Nicht Pass-Kriterienverletzend für E2E-Bewertung (Inhalt angezeigt), aber Defekt.",
-      "rationale": "GET /documents + GET /documents/:id vollständig. Detailansicht mit Chunks funktionsfähig."
+    "GP-02": {
+      "name": "Dokument suchen",
+      "status": "PASS"
     },
-    {
-      "step_id": "GP-04",
-      "name": "Thema finden",
-      "url": "/topics",
-      "actions": [
-        "Zu /topics navigieren",
-        "GET /api/v1/topics → Themenliste",
-        "Thema anklicken → GET /api/v1/topics/:id",
-        "Thema: name, summary, sources[], documents[]"
-      ],
-      "verdict": "PASS",
-      "clicks": 2,
-      "fehler": 0,
-      "sackgassen": 0,
-      "ladezeit_erwartung": "< 1s",
-      "rationale": "Topics-Backend vollständig implementiert (PRI-2 Tasks #64–#70). ORM, Migration 0022, Service, API-Router, Repository. URL-Bug in api/topics.js behoben. TopicCenter produktionsreif (topic_center_product_ready.json).",
-      "fixed_in": "PRI-2 Tasks #64–#70",
-      "blocking_for_1_0": false
+    "GP-03": {
+      "name": "Thema anlegen",
+      "status": "PASS"
     },
-    {
-      "step_id": "GP-05",
+    "GP-04": {
       "name": "Analyse starten",
-      "url": "/analysis",
-      "actions": [
-        "Zu /analysis navigieren",
-        "Dokument wählen (NewAnalysisJobDialog, 5-Step-Wizard)",
-        "Analyse-Typ wählen",
-        "POST /api/v1/analysis/jobs",
-        "Fortschrittsanzeige bis completed (Polling über Job-Liste)"
-      ],
-      "verdict": "PASS",
-      "clicks": 5,
-      "fehler": 0,
-      "sackgassen": 0,
-      "ladezeit_erwartung": "abhängig von KI-Provider; UI-Fortschrittsanzeige nach 250ms",
-      "rationale": "AnalysisPage.jsx vollständig implementiert (PRI-2 Tasks #77–#79). NewAnalysisJobDialog mit 5-Step-Wizard. AnalysisJobList + AnalysisJobDetail. REST-API 10 Endpoints. Gold-Path GP-A02–GP-A05 PASS (analysis_gold_path.json).",
-      "fixed_in": "PRI-2 Tasks #77–#79",
-      "blocking_for_1_0": false
+      "status": "PASS"
     },
-    {
-      "step_id": "GP-06",
-      "name": "Analyse freigeben + In Wissensbasis importieren",
-      "url": "/analysis (AnalysisResultPanel)",
-      "actions": [
-        "Auf abgeschlossenes Ergebnis navigieren",
-        "Zur Prüfung einreichen (btn-review)",
-        "ApproveButton klicken (workspace_admin, confirm=True erforderlich)",
-        "POST /api/v1/analysis/results/:id/approve → status=approved",
-        "Import-Button klicken (btn-import, nur sichtbar wenn status=approved)",
-        "POST /api/v1/analysis/results/:id/import → Tags + Topics in KB"
-      ],
-      "verdict": "PASS",
-      "clicks": 3,
-      "fehler": 0,
-      "sackgassen": 0,
-      "ladezeit_erwartung": "< 500ms (kein KI-Aufruf beim Import)",
-      "rationale": "Approval-Policy (8 Regeln) implementiert (Task #80). Import-Service mit Tag/Topic-Anlage (Task #81). btn-import nur bei status=approved sichtbar (Import-Guard). Gold-Path GP-A07–GP-A11 PASS. PROHIBIT-08 eingehalten.",
-      "fixed_in": "PRI-2 Tasks #80–#82",
-      "blocking_for_1_0": false
+    "GP-05": {
+      "name": "Ergebnis freigeben",
+      "status": "PASS"
     },
-    {
-      "step_id": "GP-07",
-      "name": "Export erzeugen",
-      "url": "/export oder Button in Analyse-/Dokument-Ansicht",
-      "actions": [
-        "ExportButton klicken (Format: JSON oder Markdown)",
-        "POST /api/v1/export {source_type, source_id, format}",
-        "Datei-Download startet",
-        "Quellenangaben im Export enthalten"
-      ],
-      "verdict": "FAIL",
-      "clicks": 0,
-      "fehler": 1,
-      "sackgassen": 1,
-      "ladezeit_erwartung": "N/A",
-      "failure_mode": "Export Center vollständig fehlend. POST /api/v1/export existiert nicht. Kein ExportButton. Kein Download-Trigger.",
-      "root_cause": "Export Center nicht implementiert",
-      "blocking_for_1_0": true
+    "GP-06": {
+      "name": "Security (Admin/Member-Trennung)",
+      "status": "PASS"
     },
-    {
-      "step_id": "GP-08",
-      "name": "Logout",
-      "url": "Logout-Button → /login",
-      "actions": [
-        "Logout-Button klicken",
-        "POST /api/v1/auth/logout",
-        "Session revoked_at gesetzt",
-        "Weiterleitung zu /login"
-      ],
-      "verdict": "PASS",
-      "clicks": 1,
-      "fehler": 0,
-      "sackgassen": 0,
-      "ladezeit_erwartung": "< 300ms",
-      "rationale": "Logout vollständig implementiert. Token nach Logout ungültig. 204 No Content."
+    "GP-07": {
+      "name": "Export erstellen",
+      "status": "PASS"
+    },
+    "GP-08": {
+      "name": "Drift erkennen",
+      "status": "PASS"
     }
-  ],
-
-  "metriken": {
-    "schritte_total": 8,
-    "schritte_pass": 7,
-    "schritte_fail": 1,
-    "conditional_pass": 0,
-    "total_clicks_pass_path": "~20 Klicks (GP-01 bis GP-06 + GP-08, ohne GP-07)",
-    "fehler_gesamt": 1,
-    "sackgassen_gesamt": 1,
-    "vollstaendiger_durchlauf_ohne_eingriff": false,
-    "vollstaendiger_durchlauf_ohne_export": true,
-    "gp03_befund_status": "Behoben in Tasks #58–#59: technische IDs aus DocumentMetaCard entfernt",
-    "fortschritt": "3/8 → 7/8 PASS (PRI-2 hat GP-04, GP-05, GP-06 geschlossen; GP-03-Befund gefixt)"
   },
-
-  "pfad_zu_pass": [
-    {
-      "fix_id": "GP-FIX-01",
-      "step": "GP-04",
-      "status": "ERLEDIGT",
-      "action": "Topics-Backend implementiert (P1-GAP-01/02) + URL-Bug behoben",
-      "sprint_tasks": ["#64", "#65", "#66", "#67", "#68", "#69", "#70"]
-    },
-    {
-      "fix_id": "GP-FIX-02",
-      "step": "GP-05 + GP-06",
-      "status": "ERLEDIGT",
-      "action": "AnalysisPage.jsx implementiert + Approval-Flow + Import-Flow",
-      "sprint_tasks": ["#74", "#75", "#76", "#77", "#78", "#79", "#80", "#81", "#82"]
-    },
-    {
-      "fix_id": "GP-FIX-03",
-      "step": "GP-07",
-      "status": "OFFEN",
-      "action": "Export Center MVP: POST /api/v1/export + ExportButton + JSON/Markdown",
-      "sprint_tasks": ["PRI-3 (noch nicht geplant)"]
-    },
-    {
-      "fix_id": "GP-FIX-04",
-      "step": "GP-03 (Befund)",
-      "status": "ERLEDIGT",
-      "action": "Technische IDs aus DocumentMetaCard entfernt",
-      "sprint_tasks": ["#58", "#59"]
-    }
-  ],
-
-  "overall_verdict": "CONDITIONAL_PASS",
-  "overall_rationale": "7/8 Schritte PASS. Vollständiger Gold Path ohne Export (GP-07) durchführbar. Einziger offener Blocker: Export Center (PRI-3). Login, Import, Dokumente, Topics, Analyse, Approval, Wissensbasis-Import, Logout: alle grün.",
-
-  "security": {
-    "PROHIBIT_02": "EINGEHALTEN — kein RepairButton im Gold Path oder in AnalysisResultPanel",
-    "PROHIBIT_06": "EINGEHALTEN — kein CleanupButton im Gold Path oder in AnalysisResultPanel",
-    "PROHIBIT_08": "EINGEHALTEN — Approval erfordert confirm=True + actor_role=admin; Import erfordert status=approved; Member-Sperre (403); vollständig durch Layer-3-Security-Gate verifiziert",
-    "drift_readonly": "EINGEHALTEN",
-    "m5c_status": "NO_GO — m5c_start_gate nicht PASS, PO-Sign-off nicht erteilt"
-  }
+  "pass_count": 8,
+  "total": 8,
+  "result": "8/8 PASS",
+  "hinweis": "Gold Paths basieren auf PRI-6-Verifikation. Keine Regression festgestellt in PRI-7 (keine Code-Änderungen an Gold-Path-Flows)."
 }

@@ -50,3 +50,16 @@ cd backend
 ## Eskalation
 
 Wenn `check_auth_bootstrap.py` PASS aber Login schlaegt weiterhin fehl: Backend-Log auf `AuthenticationError` pruefen, JWT-Secret-Konfiguration in `.env` verifizieren. Token-Signatur-Fehler deuten auf geaendertes JWT-Secret hin.
+
+---
+
+## Symptom (PRI-6): Admin-Bereich zeigt 403 obwohl eingeloggt
+
+**Ursache:** Benutzer hat `role !== 'admin'`. Der `AdminRoute`-Guard in `routes.jsx` verweigert den Zugriff.
+
+**Diagnose:**
+```
+GET /api/v1/auth/me → prüfe "role"-Feld in JSON-Response
+```
+
+**Lösung:** Admin-Rechte über Benutzerverwaltung vergeben. Kein Frontend-Fix erforderlich — Verhalten ist korrekt.

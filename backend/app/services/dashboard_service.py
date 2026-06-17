@@ -8,11 +8,13 @@ from app.models.data_quality import DataQualityRun
 from app.models.documents import BackgroundJob, Document
 from app.models.drift import DriftRun
 from app.models.topics import Topic, TopicTag
+from app.repositories.analytics import AnalyticsRepository
 from app.schemas.dashboard import (
     DashboardActivityItem,
     DashboardActivityResponse,
     DashboardAnalysisItem,
     DashboardAnalysisResponse,
+    DashboardDriftResponse,
     DashboardImportItem,
     DashboardImportsResponse,
     DashboardQualityItem,
@@ -20,6 +22,7 @@ from app.schemas.dashboard import (
     DashboardSummary,
     DashboardTopicItem,
     DashboardTopicsResponse,
+    DriftWidget,
     TopicsDayCount,
     TopicTagCount,
     TopicsWidgetData,
@@ -217,6 +220,167 @@ class DashboardSummaryService:
         ]
         return DashboardTopicsResponse(items=items[:limit], total=len(items))
 
+    # -- Topics widget data ----------------------------------------------------
+
+    def get_topics_widgets(self, *, workspace_id: str) -> TopicsWidgetData:
+        """Aggregate Topics-model stats for dashboard widgets."""
+        from datetime import UTC, datetime, timedelta
+        from sqlalchemy import text
+
+        # 1. Total + by_status
+        status_rows = self._session.execute(
+            select(Topic.status, func.count(Topic.id).label("cnt"))
+            .where(Topic.workspace_id == workspace_id, Topic.deleted_at.is_(None))
+            .group_by(Topic.status)
+        ).all()
+
+        by_status: dict[str, int] = {"draft": 0, "review": 0, "approved": 0, "archived": 0}
+        total = 0
+        for status, cnt in status_rows:
+            by_status[status] = int(cnt)
+            total += int(cnt)
+
+        unreviewed = by_status.get("draft", 0) + by_status.get("review", 0)
+
+        # 2. New last 7 days + per-day breakdown
+        cutoff = datetime.now(UTC) - timedelta(days=7)
+        new_rows = self._session.scalars(
+            select(Topic.created_at)
+            .where(
+                Topic.workspace_id == workspace_id,
+                Topic.deleted_at.is_(None),
+                Topic.created_at >= cutoff,
+            )
+        ).all()
+
+        day_counts: dict[str, int] = {}
+        for dt in new_rows:
+            day_key = dt.strftime("%Y-%m-%d")
+            day_counts[day_key] = day_counts.get(day_key, 0) + 1
+
+        new_per_day: list[TopicsDayCount] = []
+        for i in range(6, -1, -1):
+            d = (datetime.now(UTC) - timedelta(days=i)).strftime("%Y-%m-%d")
+            new_per_day.append(TopicsDayCount(date=d, count=day_counts.get(d, 0)))
+
+        new_last_7_days = sum(day_counts.values())
+
+        # 3. Top tags via JOIN (no ORM model — use text)
+        bind = self._session.get_bind()
+        dialect = bind.dialect.name if bind else "sqlite"
+
+        if dialect == "postgresql":
+            tag_sql = text("""
+                SELECT t.name, COUNT(tt.topic_id) AS cnt
+                FROM tags t
+                JOIN topic_tags tt ON tt.tag_id = t.id
+                JOIN topics tp ON tp.id = tt.topic_id
+                WHERE tp.workspace_id = :ws AND tp.deleted_at IS NULL
+                GROUP BY t.name
+                ORDER BY cnt DESC
+                LIMIT 10
+            """)
+        else:
+            tag_sql = text("""
+                SELECT t.name, COUNT(tt.topic_id) AS cnt
+                FROM tags t
+                JOIN topic_tags tt ON tt.tag_id = t.id
+                JOIN topics tp ON tp.id = tt.topic_id
+                WHERE tp.workspace_id = :ws AND tp.deleted_at IS NULL
+                GROUP BY t.name
+                ORDER BY cnt DESC
+                LIMIT 10
+            """)
+
+        tag_rows = self._session.execute(tag_sql, {"ws": workspace_id}).all()
+        top_tags = [TopicTagCount(name=str(row[0]), count=int(row[1])) for row in tag_rows]
+
+        return TopicsWidgetData(
+            total=total,
+            by_status=by_status,
+            new_last_7_days=new_last_7_days,
+            new_per_day=new_per_day,
+            unreviewed=unreviewed,
+            top_tags=top_tags,
+        )
+
+    # -----------------------------------------------------------------------
+    # Drift Analytics widgets (PRI-4)
+    # -----------------------------------------------------------------------
+
+    def get_drift_widgets(self) -> DashboardDriftResponse:
+        """Return 6 drift analytics widgets for the Dashboard overview.
+
+        Rules:
+        - Missing snapshot (None) → DriftWidget with status=None.
+          UI must display as WARNING. Listed in missing_data.
+        - BLOCKED > FAIL > WARNING > PASS (priority order).
+        - No UUIDs, no internal IDs in response.
+        - snapshot_type is used for click-through to DriftDetailPage.
+        - No technical IDs visible per product requirement.
+        """
+        _PRIORITY = {"PASS": 0, "WARNING": 1, "FAIL": 2, "BLOCKED": 3}
+        _LABELS: dict[str, str] = {
+            "PRODUCT_MATURITY": "Produktreife",
+            "GOLD_PATH": "Gold Path",
+            "RELEASE_GATE": "Release Gate",
+            "TEST_COVERAGE": "Test Coverage",
+            "ID_LEAK_AUDIT": "Technische ID Prüfung",
+            "SECURITY_AUDIT": "Sicherheitsaudit",
+        }
+
+        repo = AnalyticsRepository(self._session)
+        latest = repo.get_all_latest_snapshots()
+
+        missing: list[str] = []
+        all_statuses: list[str] = []
+        last_updated = None
+
+        def _make_widget(snap_type: str) -> DriftWidget:
+            nonlocal last_updated
+            snap = latest.get(snap_type)
+            if snap is None:
+                missing.append(snap_type)
+                all_statuses.append("WARNING")
+                return DriftWidget(
+                    snapshot_type=snap_type,
+                    label=_LABELS[snap_type],
+                    status=None,
+                )
+            all_statuses.append(snap.status)
+            if last_updated is None or snap.created_at > last_updated:
+                last_updated = snap.created_at
+            return DriftWidget(
+                snapshot_type=snap_type,
+                label=_LABELS[snap_type],
+                status=snap.status,
+                score=snap.score,
+                last_updated=snap.created_at,
+            )
+
+        widgets = {t: _make_widget(t) for t in _LABELS}
+        global_status = (
+            max(all_statuses, key=lambda s: _PRIORITY.get(s, 1))
+            if all_statuses
+            else "WARNING"
+        )
+
+        return DashboardDriftResponse(
+            product_maturity=widgets["PRODUCT_MATURITY"],
+            gold_path=widgets["GOLD_PATH"],
+            release_gate=widgets["RELEASE_GATE"],
+            test_coverage=widgets["TEST_COVERAGE"],
+            id_leak_audit=widgets["ID_LEAK_AUDIT"],
+            security_audit=widgets["SECURITY_AUDIT"],
+            global_status=global_status,
+            missing_data=missing,
+            last_updated=last_updated,
+        )
+
+    # -----------------------------------------------------------------------
+    # Private helpers
+    # -----------------------------------------------------------------------
+
     def _count_documents(self, workspace_id: str, *, lifecycle_status: str | None = None) -> int:
         query = select(func.count(Document.id)).where(Document.workspace_id == workspace_id)
         if lifecycle_status is not None:
@@ -278,6 +442,10 @@ class DashboardSummaryService:
         )
 
 
+# ---------------------------------------------------------------------------
+# Module-level helpers (used by list_activity / list_imports)
+# ---------------------------------------------------------------------------
+
 def _safe_import_filename(payload: dict | None) -> str | None:
     if not isinstance(payload, dict):
         return None
@@ -294,88 +462,3 @@ def _safe_import_mime_type(payload: dict | None) -> str | None:
 
 def _safe_import_title(payload: dict | None) -> str:
     return _safe_import_filename(payload) or "Document import"
-
-    # -- Topics widget data ----------------------------------------------------
-
-    def get_topics_widgets(self, *, workspace_id: str) -> TopicsWidgetData:
-        """Aggregate Topics-model stats for dashboard widgets."""
-        from datetime import UTC, datetime, timedelta
-        from sqlalchemy import case, func, literal_column, select, text
-
-        # 1. Total + by_status
-        status_rows = self._session.execute(
-            select(Topic.status, func.count(Topic.id).label("cnt"))
-            .where(Topic.workspace_id == workspace_id, Topic.deleted_at.is_(None))
-            .group_by(Topic.status)
-        ).all()
-
-        by_status: dict[str, int] = {"draft": 0, "review": 0, "approved": 0, "archived": 0}
-        total = 0
-        for status, cnt in status_rows:
-            by_status[status] = int(cnt)
-            total += int(cnt)
-
-        unreviewed = by_status.get("draft", 0) + by_status.get("review", 0)
-
-        # 2. New last 7 days + per-day breakdown
-        cutoff = datetime.now(UTC) - timedelta(days=7)
-        new_rows = self._session.scalars(
-            select(Topic.created_at)
-            .where(
-                Topic.workspace_id == workspace_id,
-                Topic.deleted_at.is_(None),
-                Topic.created_at >= cutoff,
-            )
-        ).all()
-
-        day_counts: dict[str, int] = {}
-        for dt in new_rows:
-            day_key = dt.strftime("%Y-%m-%d")
-            day_counts[day_key] = day_counts.get(day_key, 0) + 1
-
-        # Fill last 7 days including zeros
-        new_per_day: list[TopicsDayCount] = []
-        for i in range(6, -1, -1):
-            d = (datetime.now(UTC) - timedelta(days=i)).strftime("%Y-%m-%d")
-            new_per_day.append(TopicsDayCount(date=d, count=day_counts.get(d, 0)))
-
-        new_last_7_days = sum(day_counts.values())
-
-        # 3. Top tags via JOIN to tags table (no ORM model — use text)
-        bind = self._session.get_bind()
-        dialect = bind.dialect.name if bind else "sqlite"
-
-        if dialect == "postgresql":
-            tag_sql = text("""
-                SELECT t.name, COUNT(tt.topic_id) AS cnt
-                FROM tags t
-                JOIN topic_tags tt ON tt.tag_id = t.id
-                JOIN topics tp ON tp.id = tt.topic_id
-                WHERE tp.workspace_id = :ws AND tp.deleted_at IS NULL
-                GROUP BY t.name
-                ORDER BY cnt DESC
-                LIMIT 10
-            """)
-        else:
-            tag_sql = text("""
-                SELECT t.name, COUNT(tt.topic_id) AS cnt
-                FROM tags t
-                JOIN topic_tags tt ON tt.tag_id = t.id
-                JOIN topics tp ON tp.id = tt.topic_id
-                WHERE tp.workspace_id = :ws AND tp.deleted_at IS NULL
-                GROUP BY t.name
-                ORDER BY cnt DESC
-                LIMIT 10
-            """)
-
-        tag_rows = self._session.execute(tag_sql, {"ws": workspace_id}).all()
-        top_tags = [TopicTagCount(name=str(row[0]), count=int(row[1])) for row in tag_rows]
-
-        return TopicsWidgetData(
-            total=total,
-            by_status=by_status,
-            new_last_7_days=new_last_7_days,
-            new_per_day=new_per_day,
-            unreviewed=unreviewed,
-            top_tags=top_tags,
-        )

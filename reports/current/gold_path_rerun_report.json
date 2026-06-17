@@ -1,0 +1,81 @@
+{
+  "report_schema_version": 1,
+  "report_name": "gold_path_rerun_report",
+  "report_type": "gold_path_rerun",
+  "generated_at": "2026-06-17T00:00:00+00:00",
+  "sprint": "PRI-6",
+  "basis": "Re-Run nach BLK-01 Fix (SCGB-03 Router-Guard). Evaluation: static_code_analysis + component_inspection + contract_review.",
+  "pass_criteria": "RC_READY: 8/8 PASS. CONDITIONAL_RC: >= 7/8 PASS + GP-06 PASS + Security kein Blocker.",
+  "gold_path_results": [
+    {
+      "gp_id": "GP-01",
+      "name": "Login / Bereichsauswahl",
+      "verdict": "PASS",
+      "delta": "PASS (unveraendert)",
+      "note": "Auth-Flow stabil. AdminRoute-Guard greift fuer /admin/diagnostics — normaler Login-Flow unveraendert. Kein UUID sichtbar.",
+      "security_change": "AdminRoute hinzugefuegt. Member-User koennen /admin/diagnostics nicht mehr aufrufen."
+    },
+    {
+      "gp_id": "GP-02",
+      "name": "Dokument importieren",
+      "verdict": "PASS",
+      "delta": "PASS (unveraendert)",
+      "note": "Import-Pipeline unveraendert. lifecycle_status=active, kein UUID in Liste."
+    },
+    {
+      "gp_id": "GP-03",
+      "name": "Dokument suchen",
+      "verdict": "PASS",
+      "delta": "PASS (unveraendert)",
+      "note": "FTS PASS. KWIC-Limitation dokumentiert als GA-FUNC-01. p95=142ms.",
+      "limitation": "WD-05 als GA-Backlog erfasst."
+    },
+    {
+      "gp_id": "GP-04",
+      "name": "Themen finden und bearbeiten",
+      "verdict": "PASS",
+      "delta": "PASS (unveraendert)",
+      "note": "Topics ORM+API vollstaendig. Slug als URL-Param, kein UUID."
+    },
+    {
+      "gp_id": "GP-05",
+      "name": "Analyse starten und Ergebnis anzeigen",
+      "verdict": "PASS",
+      "delta": "PASS (unveraendert)",
+      "note": "Job-Flow pending→running→completed. PROHIBIT-08 eingehalten."
+    },
+    {
+      "gp_id": "GP-06",
+      "name": "Analyse freigeben und Ergebnis uebernehmen",
+      "verdict": "PASS",
+      "delta": "PASS (unveraendert)",
+      "security_critical": true,
+      "note": "Member → 403. Admin → Confirmation-Dialog. confirm=true + actor_role=admin. PROHIBIT-08 eingehalten. DRAFT-Hinweis korrekt."
+    },
+    {
+      "gp_id": "GP-07",
+      "name": "Export erzeugen",
+      "verdict": "PASS",
+      "delta": "PASS (unveraendert)",
+      "note": "JSON/MD-Export vollstaendig. PDF Dry-Run (RCL-EXP-01 dokumentiert). Quellen inklusive."
+    },
+    {
+      "gp_id": "GP-08",
+      "name": "Dashboard Status pruefen",
+      "verdict": "PASS",
+      "delta": "PASS (unveraendert)",
+      "note": "Summary-Widgets + 6 Drift-Karten PASS. W06 Drift-Summary-Widget fehlt (GA-UX-01).",
+      "limitation": "WD-06 als GA-Backlog erfasst."
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "pass": 8,
+    "fail": 0,
+    "security_critical_pass": true,
+    "gp06_status": "PASS",
+    "verdict": "RC_READY_CRITERIA_MET",
+    "conditional_rc_threshold": "8/8 >= 7/8 PASS — Schwellwert erfuellt",
+    "rc_ready_threshold": "8/8 PASS — Schwellwert erfuellt (aber Release Gate noch BLOCKED durch externe Infra)"
+  }
+}

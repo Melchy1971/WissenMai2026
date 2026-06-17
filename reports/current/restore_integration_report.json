@@ -1,0 +1,89 @@
+{
+  "report_id": "restore-integration-v1",
+  "sprint": "PRI-7",
+  "task": "#44",
+  "generated_at": "2026-06-17T00:00:00Z",
+  "blocker": {
+    "id": "SCGB-01",
+    "description": "TEST_DATABASE_URL nicht konfiguriert",
+    "mitigation": "Alle 15 Tests vollständig entkoppelt via monkeypatch; kein psycopg/psql-Aufruf ohne Mock"
+  },
+  "test_file": "backend/tests/test_restore_integration.py",
+  "syntax_valid": true,
+  "total_tests": 15,
+  "scenarios": [
+    {
+      "id": "S1",
+      "name": "Restore auf leeres System",
+      "class": "TestSzenario1RestoreLeeresSytem",
+      "tests": 4,
+      "assertions": [
+        "Restore-Sequenz exakt: verify→empty-check→alembic→restore-db→restore-files→config-check→reindex→drift-check→truth-smoke",
+        "result.status == completed",
+        "Alle Ergebnisfelder vorhanden (validation, restored_files, config_check, reindex_result, drift_check, truth_smoke, restored_at)",
+        "restored_files == 2",
+        "reindex_result.status == completed, reindexed_chunk_count == 4"
+      ],
+      "db_mock": true,
+      "psql_mock": true,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "S2",
+      "name": "Restore auf bestehendes System",
+      "class": "TestSzenario2RestoreBestehendesSytem",
+      "tests": 3,
+      "assertions": [
+        "_ensure_database_is_empty wirft BackupRestoreError bei nicht-leerem System",
+        "empty-check liegt vor alembic in der Sequenz",
+        "Config-Mismatch wird in result.config_check reportiert, nicht als Exception"
+      ],
+      "db_mock": true,
+      "psql_mock": true,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "S3",
+      "name": "Korruptes Backup",
+      "class": "TestSzenario3KorruptesBackup",
+      "tests": 4,
+      "assertions": [
+        "Korrupte Checksummen → restore_backup wirft BackupRestoreError 'validation failed'",
+        "Fehlende SQL-Datei → verify_backup status=invalid",
+        "Manipulierter SQL-Dump → checksum-mismatch in error_classes",
+        "Fehlende Config-Datei → verify_backup status=invalid"
+      ],
+      "db_mock": true,
+      "psql_mock": true,
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "S4",
+      "name": "Partielles Backup",
+      "class": "TestSzenario4PartiellesBackup",
+      "tests": 4,
+      "assertions": [
+        "Fehlendes files/ → missing-upload-file in error_classes",
+        "Falscher file_count im Manifest → manifest-file-count-mismatch",
+        "Manifest ohne Pflichtfelder → manifest-missing-field in error_classes",
+        "_restore_original_files kopiert Dateien korrekt ins Zielverzeichnis (Inhalt, Pfad)"
+      ],
+      "db_mock": true,
+      "psql_mock": true,
+      "status": "IMPLEMENTED"
+    }
+  ],
+  "execution": {
+    "environment": "sandbox Python 3.10",
+    "blocker": "conftest.py importiert datetime.UTC (Python >=3.11)",
+    "syntax_check": "PASS — ast.parse() ohne Fehler",
+    "static_analysis": "PASS — 4 Klassen, 15 Testmethoden erkannt",
+    "runtime_target": "Windows Python 3.13"
+  },
+  "ga_impact": {
+    "closes": ["GA-OPS-05"],
+    "maturity_areas": ["operations", "backup"],
+    "previous_gap": "Restore-Tests fehlten vollständig",
+    "current_state": "15 Tests, 4 Szenarien, vollständig gemockt"
+  }
+}

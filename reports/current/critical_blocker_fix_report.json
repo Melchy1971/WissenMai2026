@@ -1,0 +1,70 @@
+{
+  "report_schema_version": 1,
+  "report_name": "critical_blocker_fix_report",
+  "report_type": "blocker_fix_log",
+  "generated_at": "2026-06-17T00:00:00+00:00",
+  "sprint": "PRI-6",
+  "basis": "blocking_matrix.json (BLK-01 bis BLK-02 = CRITICAL)",
+  "fix_priority_rules": [
+    "Security vor Funktion",
+    "Datenverlust vor UX",
+    "GP-06 vor GP-07",
+    "Technical-ID-Leaks vor Dashboard-Polish",
+    "Contract-Brueche vor E2E-Stabilisierung"
+  ],
+  "fixes": [
+    {
+      "blocker_id": "BLK-01",
+      "source_id": "SCGB-03",
+      "titel": "Router-Guard fuer /admin/diagnostics",
+      "status": "CLOSED",
+      "fix_typ": "Code-Fix",
+      "ursache": "AdminDiagnosticsPage war in ProtectedRoute (Token-Check) ohne Role-Check. Member-User konnten /admin/diagnostics aufrufen.",
+      "fix_implementiert": {
+        "datei": "frontend/src/app/routes.jsx",
+        "aenderung": "AdminRoute-Komponente ergaenzt. Prueft auth.user.role === 'admin'. Nicht-Admins erhalten 403-ErrorState mit testId='admin-access-denied'.",
+        "route_vorher": "<Route path='/admin/diagnostics' element={<AdminDiagnosticsPage />} />",
+        "route_nachher": "<Route path='/admin/diagnostics' element={<AdminRoute><AdminDiagnosticsPage /></AdminRoute>} />"
+      },
+      "regressionstest": {
+        "datei": "frontend/src/tests/app/AdminRouteGuard.test.jsx",
+        "tests": [
+          "blockiert Member-User mit 403 ErrorState",
+          "blockiert User ohne user-Objekt (null) mit 403",
+          "laesst Admin-User durch — AdminDiagnosticsPage wird gerendert"
+        ],
+        "tests_total": 3,
+        "status": "PASS"
+      },
+      "betroffener_gold_path": "GP-01",
+      "gold_path_retest": "GP-01 PASS — AdminRoute-Guard greift korrekt. Auth-Flow unveraendert fuer normale User.",
+      "security_impact": "SH-05 Access Control: /admin/diagnostics jetzt vollstaendig durch Role-Guard geschuetzt.",
+      "rc_stabilization_impact": "SCG-05 geht von PARTIAL_PASS auf PASS (Router-Guard-Bedingung erfuellt)"
+    },
+    {
+      "blocker_id": "BLK-02",
+      "source_id": "SCGB-01",
+      "titel": "TEST_DATABASE_URL in CI setzen",
+      "status": "EXTERNAL_DEPENDENCY",
+      "fix_typ": "Infrastruktur",
+      "ursache": "TEST_DATABASE_URL ist in CI-Umgebung nicht konfiguriert. Kein Code-Fix moeglich.",
+      "massnahmen_pri6": [
+        "Anforderung in .env.example und docs/operations/healthchecks.md dokumentiert",
+        "CI-Setup-Anleitung in docs/operations/runbook.md ergaenzt (Sektion: CI-Infrastruktur)",
+        "Blocker bleibt OPEN fuer DevOps-Team"
+      ],
+      "betroffener_gold_path": null,
+      "rc_stabilization_impact": "SCG-01/03/04 bleiben BLOCKED bis TEST_DATABASE_URL gesetzt ist. rc_stabilization_gate bleibt BLOCKED.",
+      "next_action": "DevOps: PostgreSQL-Container in CI-Pipeline konfigurieren oder TEST_DATABASE_URL auf Staging-DB setzen.",
+      "verantwortung": "DevOps / Infrastruktur"
+    }
+  ],
+  "summary": {
+    "critical_total": 2,
+    "closed": 1,
+    "external_dependency": 1,
+    "rc_stabilization_gate_nach_fix": "BLOCKED (SCGB-01 + SCGB-02 verbleiben)",
+    "security_improvement": "SH-05 vollstaendig PASS. SCG-05 PASS.",
+    "overall_verdict": "PARTIAL — BLK-01 geschlossen, BLK-02 extern"
+  }
+}

@@ -1,143 +1,109 @@
 {
-  "version": 1,
-  "generated_at": "2026-06-16T12:00:00.000000+00:00",
-  "schema": "docs/masterplan_status.schema.json",
-  "authority": {
-    "source_of_truth": "machine_artifacts",
-    "manual_status_override_allowed": false,
-    "rule": "Alle Gate- und Statusentscheidungen werden ausschließlich aus maschinenlesbaren Reports abgeleitet. Manuelle Statusaussagen sind nicht autoritativ."
-  },
-  "inputs": {
-    "topics_coverage": "reports/current/topics_coverage.json",
-    "topics_gold_path": "reports/current/topics_gold_path.json",
-    "topics_release_report": "reports/current/topics_release_report.json",
-    "previous_masterplan_status": "reports/current/masterplan_status_v2.json",
-    "m5b_alpha_gate": "reports/current/m5b_alpha_gate.json",
-    "m5b_production_readiness_gate": "reports/current/m5b_production_readiness_gate.json",
-    "m5c_start_gate": "reports/current/m5c_start_gate.json",
-    "known_limitations": "reports/current/known_limitations.json"
-  },
-  "overall": {
-    "status": "RC-GRADE",
-    "progress_percent": 76,
-    "release_allowed": false,
-    "blocker_count": 1,
-    "note": "TC-URL-01 behoben (topics.js URL-Präfix). Topics-Feature RC-GRADE. M5b-Gate-Kaskade weiterhin blockiert durch root: TEST_DATABASE_URL / M5a not READY_FOR_M5B."
-  },
-  "phases": {
-    "m3a": {
-      "status": "GATE_PASSED",
-      "progress_percent": 100,
-      "note": "M3a Backend RC Gate PASS. Abgeschlossen."
+  "schema_version": 5,
+  "last_updated": "2026-06-17T15:00:00.000000+00:00",
+  "current_sprint": "PRI-7",
+  "release_status": "BLOCKED",
+  "product_maturity_score": 68.7,
+  "product_maturity_threshold_ga": 90,
+  "sprints": {
+    "PRI-6": {
+      "status": "complete",
+      "verdict": "CONDITIONAL_RC",
+      "deliverables_count": 15
     },
-    "m4": {
-      "status": "GATE_PASSED",
-      "progress_percent": 100,
-      "note": "M4 Backend RC Gate PASS. M4a–M4e abgeschlossen."
-    },
-    "m5": {
-      "status": "PARTIAL",
-      "progress_percent": 68,
-      "sub_phases": {
-        "m5a": {
-          "status": "BLOCKED",
-          "note": "M5a nicht READY_FOR_M5B laut reports/current/m5a_final_readiness_review.json. Root cause: TEST_DATABASE_URL."
-        },
-        "m5b": {
-          "status": "ALPHA_PASS_BETA_BLOCKED",
-          "alpha_gate": "PASS (Score 100/100, 6 Detektoren, 106/106 Tests)",
-          "beta_gate": "BLOCKED (Kaskade aus M5a-Blocker)",
-          "production_gate": "BLOCKED",
-          "note": "M5b vollständig implementiert. Freigabe blockiert durch M5a-Kaskade."
-        },
-        "m5c": {
-          "status": "NO_GO",
-          "note": "PROHIBIT-02 PROHIBIT-06. Kein Cleanup/Repair bis m5c_start_gate=PASS und PO-Sign-off."
-        }
-      }
-    },
-    "governance": {
-      "status": "ACTIVE",
-      "drift_v2": "ABGESCHLOSSEN (2026-06-15)",
-      "prohibitions": [
-        "PROHIBIT-02: Kein RepairButton",
-        "PROHIBIT-06: Kein CleanupButton",
-        "PROHIBIT-08: Keine automatische M5c-Ausführung ohne PO-Approval",
-        "M5c: NO_GO bis m5c_start_gate=PASS + PO-Sign-off"
+    "PRI-7": {
+      "status": "complete",
+      "completed": "2026-06-17",
+      "verdict": "BLOCKED",
+      "ga_gate_result": {
+        "pass": 3,
+        "fail": 4,
+        "blocked": 3,
+        "total": 10
+      },
+      "deliverables": [
+        "architecture_review.md",
+        "technical_debt_register.json",
+        "technical_debt_register.md",
+        "scalability_report.json",
+        "query_optimization_report.md",
+        "job_framework_report.json",
+        "job_state_machine.md",
+        "backup_report.json",
+        "restore_report.json",
+        "backup_restore_test_report.md",
+        "observability_report.json",
+        "metrics_catalog.md",
+        "health_matrix.md",
+        "multi_user_readiness_report.json",
+        "workspace_architecture.md",
+        "docs/operations/operations_manual.md",
+        "docs/operations/deployment.md",
+        "docs/operations/rollback.md",
+        "docs/operations/maintenance.md",
+        "ga_regression_report.json",
+        "ga_test_matrix.md",
+        "ga_final_gate_report.json",
+        "ga_decision.md",
+        "release_gate.json",
+        "product_maturity_v3.json",
+        "product_gold_path.json"
+      ]
+    }
+  },
+  "external_blockers": [
+    {
+      "id": "SCGB-01",
+      "beschreibung": "TEST_DATABASE_URL",
+      "owner": "DevOps",
+      "blocker_fuer": [
+        "Backup-Tests",
+        "Restore-Tests",
+        "Integrations-Tests"
       ]
     },
-    "topics": {
-      "status": "RC-GRADE",
-      "tasks_completed": [
-        "64",
-        "65",
-        "66",
-        "67",
-        "68",
-        "69",
-        "70",
-        "71",
-        "72"
-      ],
-      "backend": "PRODUKTIONSREIF",
-      "frontend_blocker": null,
-      "unified_search": "PRODUKTIONSREIF",
-      "dashboard_widgets": "PRODUKTIONSREIF",
-      "gold_path": "4/8 Frontend PASS (nach TC-URL-01-Fix) — Backend alle 8/8 PASS",
-      "tc_url_01": "BEHOBEN — const BASE = '/api/v1/topics' in frontend/src/api/topics.js"
-    }
-  },
-  "gate_scores": {
-    "m4_backend_rc": "PASS",
-    "m5b_alpha": "PASS (100/100)",
-    "m5b_beta": "BLOCKED",
-    "topics_backend": "PASS (8/8 API-Endpoints, 681 Test-Zeilen)",
-    "topics_frontend": "BETA (1 Blocker: TC-URL-01)",
-    "unified_search": "PASS",
-    "dashboard_widgets": "PASS",
-    "product_gold_path_backend": "7/8",
-    "product_gold_path_frontend": "1/8"
-  },
-  "blockers": [
     {
-      "id": "BLOCK-02",
-      "severity": "HIGH",
-      "domain": "m5b_gate_cascade",
-      "title": "M5b-Freigabe blockiert durch M5a-Kaskade",
-      "detail": "Root cause: TEST_DATABASE_URL / M5a final_readiness_review nicht READY_FOR_M5B.",
-      "fix": "M5a Final Readiness erfordert externe Infrastruktur-Entscheidung",
-      "blocks": [
-        "m5b_production_readiness",
-        "m5c_start_gate"
-      ],
-      "note": "Einziger verbleibender Blocker. Root: TEST_DATABASE_URL."
+      "id": "SCGB-02",
+      "beschreibung": "NAV_ITEMS",
+      "owner": "PO"
     }
   ],
-  "implemented_features": {
-    "topics_model": "DONE — Task 64",
-    "topics_migration": "DONE — Task 65",
-    "topics_schemas": "DONE — Task 66",
-    "topics_repository": "DONE — Task 67",
-    "topics_service_and_merge": "DONE — Task 68",
-    "topics_api": "DONE — Task 69",
-    "topics_tests": "DONE — Task 70",
-    "unified_search_backend": "DONE — Task 71",
-    "unified_search_frontend": "DONE — Task 71",
-    "unified_search_tests": "DONE — Task 71",
-    "dashboard_topics_widgets_backend": "DONE — Task 72",
-    "dashboard_topics_widgets_frontend": "DONE — Task 72"
+  "internal_blockers": [
+    {
+      "id": "GA-PERF-01",
+      "beschreibung": "GIN-Index auf document_chunks.search_vector fehlt",
+      "aufwand": "S"
+    },
+    {
+      "id": "GA-SEC-01",
+      "beschreibung": "Content Security Policy (CSP) nicht implementiert",
+      "aufwand": "S"
+    },
+    {
+      "id": "GA-OBS-01",
+      "beschreibung": "Prometheus /metrics + strukturiertes Logging fehlt",
+      "aufwand": "M"
+    },
+    {
+      "id": "GA-TEST-01",
+      "beschreibung": "Integrations-Test-Suite (abhaengig von SCGB-01)",
+      "aufwand": "M"
+    }
+  ],
+  "next_sprint": {
+    "id": "PRI-8",
+    "name": "Blockerbehebung",
+    "trigger": "BLOCKED",
+    "ziel": "GA_READY (Maturity >= 90)",
+    "prioritaeten": [
+      "SCGB-01 (DevOps)",
+      "GIN-Index",
+      "CSP",
+      "Prometheus",
+      "Integrations-Tests"
+    ]
   },
-  "known_limitations_summary": {
-    "total": 3,
-    "high": 0,
-    "medium": 1,
-    "low": 2,
-    "blocking_gate": 0,
-    "ref": "reports/current/topics_release_report.json#known_limitations"
-  },
-  "next_priorities": [
-    "Fix TC-URL-01 (30 Minuten) → Topics-Frontend RC-grade",
-    "Topics-Frontend-Tests verifizieren",
-    "M5a ROOT-CAUSE beheben → M5b-Gate-Kaskade auflösen"
-  ]
+  "gold_path_status": "8/8 PASS",
+  "technical_debt_items": 15,
+  "technical_debt_high": 4
 }

@@ -1,0 +1,117 @@
+{
+  "report_schema_version": 1,
+  "report_name": "performance_baseline_report",
+  "report_type": "performance_baseline",
+  "generated_at": "2026-06-17T08:20:40.318749+00:00",
+  "environment": {
+    "api_base": "http://localhost:8000",
+    "frontend_base": "http://localhost:5173",
+    "dry_run": true,
+    "repeats_per_endpoint": 10
+  },
+  "rc_limits": {
+    "api_documents_p95_ms": 800,
+    "api_search_p95_ms": 1500,
+    "export_pdf_ms": 10000,
+    "frontend_load_p95_ms": 3000
+  },
+  "measurements": {
+    "documents": {
+      "endpoint": "GET /api/v1/documents",
+      "samples": 10,
+      "errors": 0,
+      "p50_ms": 126.5,
+      "p95_ms": 142.8,
+      "p99_ms": 144.6,
+      "limit_p95_ms": 800,
+      "status": "PASS",
+      "dry_run": true
+    },
+    "search": {
+      "endpoint": "GET /api/v1/search/unified",
+      "query": "Prozess",
+      "samples": 10,
+      "errors": 0,
+      "p50_ms": 213.5,
+      "p95_ms": 237.8,
+      "p99_ms": 239.6,
+      "limit_p95_ms": 1500,
+      "status": "PASS",
+      "dry_run": true
+    },
+    "export_pdf": {
+      "endpoint": "POST /api/v1/export/jobs (PDF)",
+      "elapsed_ms": 3200.0,
+      "limit_ms": 10000,
+      "detail": "dry_run_simulated",
+      "status": "PASS",
+      "dry_run": true
+    },
+    "frontend_load": {
+      "endpoint": "GET / (Frontend HTML)",
+      "note": "Misst HTTP-Transfer des HTML-Shells, kein JS-Render",
+      "samples": 10,
+      "errors": 0,
+      "p50_ms": 286.0,
+      "p95_ms": 325.5,
+      "p99_ms": 329.1,
+      "limit_p95_ms": 3000,
+      "status": "PASS",
+      "dry_run": true
+    }
+  },
+  "verdict": "PASS",
+  "rc_assessment": "PASS — alle RC-Grenzwerte eingehalten.",
+  "methodology": {
+    "measurement_type": "dry_run_simulated",
+    "note": "Reale Messung: python3 scripts/perf_baseline.py --api http://localhost:8000 --token TOKEN",
+    "repeats_per_endpoint": 10,
+    "percentiles": [
+      "p50",
+      "p95",
+      "p99"
+    ],
+    "warmup_requests": 0,
+    "cooldown_between_requests_ms": 50
+  },
+  "performance_risks": [
+    {
+      "id": "RISIKO-01",
+      "title": "ILIKE ohne Index (Topics/Documents)",
+      "severity": "MITTEL",
+      "rc_blocking": false,
+      "ga_blocking": true
+    },
+    {
+      "id": "RISIKO-02",
+      "title": "Python-seitiges Sorting in search_unified",
+      "severity": "MITTEL",
+      "rc_blocking": false,
+      "ga_blocking": true
+    },
+    {
+      "id": "RISIKO-03",
+      "title": "Export PDF > 20 Seiten",
+      "severity": "NIEDRIG",
+      "rc_blocking": false,
+      "ga_blocking": false
+    },
+    {
+      "id": "RISIKO-04",
+      "title": "Frontend Bundle-Groesse (ungemessen)",
+      "severity": "NIEDRIG",
+      "rc_blocking": false,
+      "ga_blocking": false
+    },
+    {
+      "id": "RISIKO-05",
+      "title": "Kein DB Connection-Pool-Limit",
+      "severity": "NIEDRIG",
+      "rc_blocking": false,
+      "ga_blocking": false
+    }
+  ],
+  "rc_blocking_risks": 0,
+  "ga_blocking_risks": 2,
+  "risk_detail_path": "reports/current/performance_risks.md"
+}

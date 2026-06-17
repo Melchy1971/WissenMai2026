@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "report_name": "pri6_completion_report",
+  "generated_at": "2026-06-17T12:00:00.000000+00:00",
+  "sprint": "PRI-6",
+  "sprint_goal": "Release Candidate Hardening — alle Critical Blocker schliessen, CONDITIONAL_RC absichern",
+  "verdict": "PASS",
+  "release_status": "CONDITIONAL_RC",
+  "evaluation_rule": {
+    "PASS": "CONDITIONAL_RC oder RC_READY erreicht",
+    "FAIL": "BLOCKED bleibt bestehen; verbleibende Blocker, Ursache, naechster Fix-Prompt dokumentiert"
+  },
+  "checklist": {
+    "blocking_matrix_vorhanden": {
+      "status": "PASS",
+      "file": "reports/current/blocking_matrix.json",
+      "detail": "10 Blocker BLK-01..BLK-10, 2 CRITICAL, 2 HIGH, 3 MEDIUM, 3 LOW"
+    },
+    "critical_blocker_geschlossen": {
+      "status": "PASS",
+      "detail": "BLK-01 (SCGB-03 Router-Guard) CLOSED. BLK-02 (SCGB-01) EXTERNAL_DEPENDENCY — nicht code-fixbar, korrekt dokumentiert.",
+      "blocker_status": {
+        "BLK-01_SCGB-03": "CLOSED",
+        "BLK-02_SCGB-01": "EXTERNAL_DEPENDENCY"
+      }
+    },
+    "warning_disposition_report_vorhanden": {
+      "status": "PASS",
+      "file": "reports/current/warning_disposition_report.json",
+      "detail": "9 Warnings klassifiziert: 5 GA_BEHEBEN, 4 RC_LIMITATION"
+    },
+    "gold_path_rerun_durchgefuehrt": {
+      "status": "PASS",
+      "file": "reports/current/gold_path_rerun_report.json",
+      "detail": "8/8 GP PASS. GP-06 Security-Critical PASS. Evidenz: docs/gold_path_evidence.md",
+      "result": "8/8"
+    },
+    "product_maturity_neu_berechnet": {
+      "status": "PASS",
+      "file": "reports/current/product_maturity_v3.json",
+      "detail": "Score 80, 11-Dimensionen-Formel (schema_version 5). CONDITIONAL_RC-Schwellwert exakt erreicht.",
+      "score": 80,
+      "threshold_conditional_rc": 80,
+      "threshold_ga": 85
+    },
+    "conditional_rc_decision_erzeugt": {
+      "status": "PASS",
+      "file": "reports/current/conditional_rc_decision.json",
+      "detail": "Verdict CONDITIONAL_RC. Alle 6 CONDITIONAL_RC-Kriterien met=True.",
+      "verdict": "CONDITIONAL_RC"
+    },
+    "ga_backlog_vorhanden": {
+      "status": "PASS",
+      "file": "reports/current/ga_backlog.json",
+      "detail": "8 Items, 3 GA-blocking (GA-SEC-01, GA-PERF-01, GA-PERF-02). Minimaler GA-Pfad dokumentiert."
+    },
+    "rc_release_notes_vorhanden": {
+      "status": "PASS",
+      "file": "docs/release_notes_rc.md",
+      "detail": "10 Sektionen: Release Status, Hauptfunktionen, GP-Ergebnis, Security, Limitationen, Workarounds, Nicht-GA-Funktionen, Teststatus, Betriebsanforderungen, Upgrade-Hinweise"
+    },
+    "dokumentation_aktualisiert": {
+      "status": "PASS",
+      "detail": "Alle Projektdokumentationen aktualisiert.",
+      "files_updated": [
+        "reports/current/masterplan_status.json (version 4)",
+        "reports/current/rc_decision.md",
+        "docs/changelog.md (PRI-6 Eintrag)",
+        "README.md (Freigabestand PRI-6)",
+        "Entwicklung.md (PRI-6 Sektion)",
+        "docs/operations-runbook.md (AdminRoute-Hinweis)",
+        "docs/runbooks/05-login-funktioniert-nicht.md (403-Runbook)",
+        "docs/product_maturity_delta.md",
+        "docs/gold_path_evidence.md"
+      ]
+    }
+  },
+  "checklist_summary": {
+    "total_checks": 9,
+    "pass": 9,
+    "fail": 0,
+    "warning": 0
+  },
+  "sprint_deliverables": {
+    "new_files": [
+      "reports/current/blocking_matrix.json",
+      "docs/blocking_matrix.md",
+      "reports/current/critical_blocker_fix_report.json",
+      "reports/current/warning_disposition_report.json",
+      "reports/current/gold_path_rerun_report.json",
+      "reports/current/product_maturity_v3.json",
+      "reports/current/conditional_rc_decision.json",
+      "reports/current/ga_backlog.json",
+      "docs/rc_limitations.md",
+      "docs/ga_backlog.md",
+      "docs/release_notes_rc.md",
+      "docs/product_maturity_delta.md",
+      "docs/gold_path_evidence.md",
+      "frontend/src/tests/app/AdminRouteGuard.test.jsx",
+      "reports/current/pri6_completion_report.json"
+    ],
+    "modified_files": [
+      "frontend/src/app/routes.jsx (AdminRoute-Guard)",
+      "reports/current/masterplan_status.json (version 4)",
+      "reports/current/rc_decision.md",
+      "docs/changelog.md",
+      "README.md",
+      "Entwicklung.md",
+      "docs/operations-runbook.md",
+      "docs/runbooks/05-login-funktioniert-nicht.md"
+    ]
+  },
+  "rc_status": {
+    "verdict": "CONDITIONAL_RC",
+    "maturity_score": 80,
+    "gold_paths_pass": "8/8",
+    "security_blockers": 0,
+    "technical_id_leaks": 0,
+    "gp06_pass": true,
+    "limitations_documented": true
+  },
+  "external_blockers_remaining": [
+    {
+      "id": "SCGB-01",
+      "title": "TEST_DATABASE_URL fehlt in CI/CD",
+      "owner": "DevOps",
+      "blocks": "rc_stabilization_gate",
+      "next_action": "DevOps-Ticket: ENV-Variable in CI/CD-Pipeline setzen"
+    },
+    {
+      "id": "SCGB-02",
+      "title": "NAV_ITEMS Struktur nicht entschieden",
+      "owner": "PO",
+      "next_action": "PO-Entscheidung bis PRI-7 Sprint-Start"
+    }
+  ],
+  "next_sprint": {
+    "id": "PRI-7",
+    "trigger": "CONDITIONAL_RC",
+    "goal": "GA-Vorbereitung",
+    "ga_blocking_items": [
+      "GA-SEC-01",
+      "GA-PERF-01",
+      "GA-PERF-02"
+    ],
+    "primary_maturity_lever": "Suche 45 → 85 (KWIC + Stemming + Tags, ca. +3.6 Gesamtpunkte)",
+    "maturity_gap_to_ga": 5
+  }
+}
