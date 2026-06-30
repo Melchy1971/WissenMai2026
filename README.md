@@ -116,10 +116,9 @@ Wenn `DATABASE_URL` explizit gesetzt ist, hat dieser Wert Vorrang.
 
 Der Backend-Start fuehrt lokal automatisch `alembic upgrade head` aus und legt den Auth-Seed an. Harte Bootstrap-Invariante: Nach `backend/scripts/seed_auth.py` muss die lokale DB einen funktionierenden Admin-Login besitzen; Legacy-Logins werden migriert oder deaktiviert.
 
-```text
-Login: mdickscheit@gmail.com
-Passwort: Alex..2026
-```
+Die Admin-Zugangsdaten werden über die ENV-Variablen `SEED_ADMIN_LOGIN` und `SEED_ADMIN_PASSWORD` gesetzt (siehe Abschnitt „Benötigte Umgebungsvariablen"). Keine Klartext-Credentials in dieser Datei.
+
+> **Sicherheitshinweis:** Frühere Versionen dieser Datei enthielten ein Klartext-Login. Dieses Passwort gilt als kompromittiert und ist zu rotieren; der Eintrag wurde aus der History zu entfernen.
 
 Smoke-Test der Invariante:
 
@@ -139,7 +138,7 @@ PostgreSQL-Truth-Report lokal erzeugen:
 
 ```powershell
 Set-Location H:\WissenMai2026
-$env:TEST_DATABASE_URL="postgresql+psycopg://appuser:<password>@85.215.131.200:5432/wissen2026"
+$env:TEST_DATABASE_URL="postgresql+psycopg://appuser:<password>@<test-db-host>:5432/wissen2026"
 .\scripts\run-postgres-truth.ps1
 ```
 
@@ -147,7 +146,7 @@ Die Reports landen in `reports/current/m4_truth_report.json` und `reports/curren
 
 Bekannte Einschraenkung:
 
-- Der aktuelle Verifikationslauf gegen `85.215.131.200:5432` ist aus dieser Umgebung per Connection-Timeout fehlgeschlagen. Die Testumgebung ist damit fachlich vorbereitet, aber infrastrukturell erst nutzbar, wenn Netzwerkzugriff auf die Instanz besteht.
+- Der aktuelle Verifikationslauf gegen die Test-DB-Instanz (`<test-db-host>:5432`) ist aus dieser Umgebung per Connection-Timeout fehlgeschlagen. Die Testumgebung ist damit fachlich vorbereitet, aber infrastrukturell erst nutzbar, wenn Netzwerkzugriff auf die Instanz besteht.
 - `alembic heads` zeigt aktuell zwei Heads (`20260505_0016`, `20260506_0013`); damit ist der Migrationsstand lokal lesbar, aber nicht als einzelner linearer Head belegbar.
 
 Frontend-Abhaengigkeiten installieren:
