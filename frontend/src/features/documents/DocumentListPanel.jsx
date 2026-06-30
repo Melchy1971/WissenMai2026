@@ -80,7 +80,7 @@ export function DocumentListPanel({ items, selectedId, onSelect, sort, onSort, l
   }
 
   return (
-    <div className="doc-list-panel panel">
+    <div className="doc-list-panel panel" data-testid="document-list">
       <div className="panel__header doc-list-panel__header">
         <span className="panel__eyebrow">{items.length} Dokument{items.length !== 1 ? 'e' : ''}</span>
         <div className="doc-list-sort-bar">

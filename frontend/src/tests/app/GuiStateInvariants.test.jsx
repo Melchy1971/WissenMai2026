@@ -34,7 +34,7 @@ function renderApp(initialEntry, initialAuthState = validAuthState) {
 }
 
 function isDocumentListRequest(input) {
-  return String(input).includes('/documents?limit=200&offset=0&lifecycle_status=');
+  return String(input).includes('/documents?limit=100&offset=0&lifecycle_status=');
 }
 
 function isStatusRequest(input) {
@@ -120,7 +120,7 @@ describe('GUI state invariant component guards', () => {
       if (isStatusRequest(url)) {
         return jsonResponse({});
       }
-      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=active')) {
+      if (url.includes('/documents?limit=100&offset=0&lifecycle_status=active')) {
         return jsonResponse([
         {
           id: 'doc-1',
@@ -136,7 +136,7 @@ describe('GUI state invariant component guards', () => {
         },
         ]);
       }
-      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=archived')) {
+      if (url.includes('/documents?limit=100&offset=0&lifecycle_status=archived')) {
         return jsonResponse([]);
       }
       if (url.includes('/documents/doc-1/archive')) {
@@ -166,7 +166,7 @@ describe('GUI state invariant component guards', () => {
       if (isStatusRequest(url)) {
         return jsonResponse({});
       }
-      if (url.includes('/documents?limit=200&offset=0&lifecycle_status=active')) {
+      if (url.includes('/documents?limit=100&offset=0&lifecycle_status=active')) {
         activeListCalls += 1;
         if (activeListCalls > 1) {
           return jsonResponse([]);

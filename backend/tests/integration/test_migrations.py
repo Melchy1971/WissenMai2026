@@ -71,6 +71,20 @@ def test_migrations_upgrade_downgrade_on_test_database(test_database_url, monkey
                 assert str(user_row[0]) == DEFAULT_USER_ID
                 assert user_row[1] is True
 
+                cursor.execute("select to_regclass('public.analysis_results_legacy')")
+                assert cursor.fetchone() == ("analysis_results_legacy",)
+
+                cursor.execute(
+                    """
+                    select column_name
+                    from information_schema.columns
+                    where table_schema = 'public'
+                      and table_name = 'analysis_results'
+                    """
+                )
+                analysis_result_columns = {row[0] for row in cursor.fetchall()}
+                assert {"job_id", "summary", "content_markdown", "status"} <= analysis_result_columns
+
                 cursor.execute(
                     """
                     insert into tags (id, workspace_id, name, normalized_name)
@@ -105,6 +119,8 @@ def test_migrations_upgrade_downgrade_on_test_database(test_database_url, monkey
     with psycopg.connect(psycopg_url(test_database_url)) as connection:
         with connection.cursor() as cursor:
             cursor.execute("select to_regclass('public.documents')")
+            assert cursor.fetchone() == (None,)
+            cursor.execute("select to_regclass('public.analysis_results_legacy')")
             assert cursor.fetchone() == (None,)
 
 

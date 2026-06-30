@@ -52,7 +52,7 @@ function clearStoredAuth() {
 }
 
 function isDocumentListRequest(input) {
-  return String(input).includes('/documents?limit=200&offset=0&lifecycle_status=');
+  return String(input).includes('/documents?limit=100&offset=0&lifecycle_status=');
 }
 
 function isStatusRequest(input) {
@@ -128,7 +128,7 @@ describe('Auth bootstrap', () => {
     await waitFor(() => {
       expect(authBootstrapAttempts).toBe(2);
       expect(fetchSpy).toHaveBeenCalledWith(
-          expect.stringContaining('/documents?limit=200&offset=0&lifecycle_status=active'),
+          expect.stringContaining('/documents?limit=100&offset=0&lifecycle_status=active'),
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: 'Bearer test-token',
@@ -217,7 +217,7 @@ describe('Auth bootstrap', () => {
         }),
       );
       expect(fetchSpy).toHaveBeenCalledWith(
-          expect.stringContaining('/documents?limit=200&offset=0&lifecycle_status=active'),
+          expect.stringContaining('/documents?limit=100&offset=0&lifecycle_status=active'),
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: 'Bearer test-token',
@@ -277,7 +277,7 @@ describe('Auth bootstrap', () => {
         }),
       );
       expect(fetchSpy).toHaveBeenCalledWith(
-        expect.stringContaining('/documents?limit=200&offset=0&lifecycle_status=active'),
+        expect.stringContaining('/documents?limit=100&offset=0&lifecycle_status=active'),
         expect.objectContaining({
           headers: expect.objectContaining({
             Authorization: 'Bearer real-api-token',

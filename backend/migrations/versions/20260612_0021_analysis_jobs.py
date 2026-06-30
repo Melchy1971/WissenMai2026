@@ -19,7 +19,46 @@ depends_on = None
 json_type = sa.JSON().with_variant(postgresql.JSONB(astext_type=sa.Text()), "postgresql")
 
 
+def _archive_legacy_analysis_tables() -> None:
+    """Free the analysis_results name while preserving the legacy model."""
+    bind = op.get_bind()
+    tables = set(sa.inspect(bind).get_table_names())
+    if "analysis_results" not in tables:
+        return
+
+    columns = {column["name"] for column in sa.inspect(bind).get_columns("analysis_results")}
+    if "analysis_group_id" not in columns:
+        raise RuntimeError("analysis_results exists but is not the expected legacy table")
+    if "analysis_results_legacy" in tables:
+        raise RuntimeError("analysis_results_legacy already exists")
+
+    # The final model adds an index with this name in revision 0023. Index
+    # names are schema-global in PostgreSQL, so remove the legacy index while
+    # the archived table is unused and restore it on downgrade.
+    op.drop_index("ix_analysis_results_status", table_name="analysis_results")
+    op.rename_table("analysis_results", "analysis_results_legacy")
+
+    if "analysis_result_sources" in tables:
+        if "analysis_result_sources_legacy" in tables:
+            raise RuntimeError("analysis_result_sources_legacy already exists")
+        op.rename_table("analysis_result_sources", "analysis_result_sources_legacy")
+
+
+def _restore_legacy_analysis_tables() -> None:
+    tables = set(sa.inspect(op.get_bind()).get_table_names())
+    if "analysis_results_legacy" not in tables:
+        return
+
+    op.rename_table("analysis_results_legacy", "analysis_results")
+    op.create_index("ix_analysis_results_status", "analysis_results", ["status"])
+
+    if "analysis_result_sources_legacy" in tables:
+        op.rename_table("analysis_result_sources_legacy", "analysis_result_sources")
+
+
 def upgrade() -> None:
+    _archive_legacy_analysis_tables()
+
     op.create_table(
         "analysis_jobs",
         sa.Column("id", sa.String(), nullable=False),
@@ -149,3 +188,4 @@ def downgrade() -> None:
     op.drop_table("analysis_results")
     op.drop_table("analysis_job_source_documents")
     op.drop_table("analysis_jobs")
+    _restore_legacy_analysis_tables()

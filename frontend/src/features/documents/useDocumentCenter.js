@@ -56,12 +56,12 @@ export function useDocumentCenter() {
     setListState({ status: 'loading', items: [], error: null });
     try {
       const raw = await getDocuments(
-        { limit: 200, offset: 0, lifecycleStatus: 'active' },
+        { limit: 100, offset: 0, lifecycleStatus: 'active' },
         { signal: ticket.signal, correlationId: ticket.correlationId },
       );
       if (!coordRef.current.isCurrent(ticket)) return;
       const archived = await getDocuments(
-        { limit: 200, offset: 0, lifecycleStatus: 'archived' },
+        { limit: 100, offset: 0, lifecycleStatus: 'archived' },
         { signal: ticket.signal, correlationId: ticket.correlationId },
       ).catch(() => []);
       if (!coordRef.current.isCurrent(ticket)) return;

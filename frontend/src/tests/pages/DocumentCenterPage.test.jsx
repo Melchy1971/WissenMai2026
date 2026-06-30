@@ -264,7 +264,7 @@ describe('DocumentCenterPage', () => {
     await screen.findByText('Prozesshandbuch Eingang');
 
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/documents?limit=200&offset=0&lifecycle_status=active'),
+      expect.stringContaining('/documents?limit=100&offset=0&lifecycle_status=active'),
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: 'Bearer test-token',
@@ -273,7 +273,7 @@ describe('DocumentCenterPage', () => {
       }),
     );
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/documents?limit=200&offset=0&lifecycle_status=archived'),
+      expect.stringContaining('/documents?limit=100&offset=0&lifecycle_status=archived'),
       expect.any(Object),
     );
   });

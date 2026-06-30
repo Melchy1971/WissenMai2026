@@ -27,7 +27,6 @@ Create Date: 2026-06-18
 """
 from __future__ import annotations
 
-import sqlalchemy as sa
 from alembic import op
 
 revision: str = "20260618_0026"
@@ -37,6 +36,11 @@ depends_on = None
 
 
 def upgrade() -> None:
+    with op.get_context().autocommit_block():
+        _create_indexes()
+
+
+def _create_indexes() -> None:
     # ------------------------------------------------------------------ #
     # 1. document_chunks.search_vector — GIN on existing TSVECTOR column  #
     #    CRITICAL: Without this, ts_headline() and @@ operator do O(n)    #
@@ -131,6 +135,11 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    with op.get_context().autocommit_block():
+        _drop_indexes()
+
+
+def _drop_indexes() -> None:
     op.execute("DROP INDEX CONCURRENTLY IF EXISTS ix_document_chunks_search_vector_gin")
     op.execute("DROP INDEX CONCURRENTLY IF EXISTS ix_document_versions_metadata_gin")
     op.execute("DROP INDEX CONCURRENTLY IF EXISTS ix_documents_title_fts_gin")
