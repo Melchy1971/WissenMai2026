@@ -1,3 +1,5 @@
+import json
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 import pytest
@@ -55,7 +57,12 @@ def test_status_contract_contains_required_fields(api_client):
     assert isinstance(body["open_blockers"], list)
 
 
-def test_status_uses_unknown_instead_of_fake_pass_for_missing_sources(api_client):
+def test_status_uses_unknown_instead_of_fake_pass_for_missing_sources(
+    api_client, monkeypatch, tmp_path
+):
+    from app.api.v1 import status as status_api
+
+    monkeypatch.setattr(status_api, "_REPORTS_DIR", tmp_path)
     response = api_client.get("/api/v1/status")
 
     assert response.status_code == 200
@@ -73,8 +80,60 @@ def test_status_uses_unknown_instead_of_fake_pass_for_missing_sources(api_client
         "collaboration_status",
     ):
         assert body[field] != "PASS"
+    assert body["release_status"] == "UNKNOWN"
     assert body["gui_gate"] == "UNKNOWN"
     assert all(gate["status"] != "PASS" for gate in body["gates"])
+
+
+def test_status_uses_runtime_and_report_sources(api_client, monkeypatch, tmp_path):
+    from app.api.v1 import collaboration_gui, orchestrator, rag_gui, settings, status as status_api
+
+    (tmp_path / "release_gate.json").write_text(
+        json.dumps({"current_status": "BLOCKED"}), encoding="utf-8"
+    )
+    (tmp_path / "gui_release_candidate.json").write_text(
+        json.dumps({"overall_status": "BLOCKED"}), encoding="utf-8"
+    )
+    (tmp_path / "gui_truth_report.json").write_text(
+        json.dumps({"status": "PASS"}), encoding="utf-8"
+    )
+    monkeypatch.setattr(status_api, "_REPORTS_DIR", tmp_path)
+    monkeypatch.setattr(rag_gui, "_documents", [])
+    monkeypatch.setattr(orchestrator, "_executions", [])
+    monkeypatch.setattr(collaboration_gui, "_runs", [])
+    monkeypatch.setitem(
+        settings._store,
+        "provider",
+        {"model": "local-model", "base_url": "http://localhost:11434"},
+    )
+    monkeypatch.setitem(
+        settings._store,
+        "agents",
+        {"agents_enabled": True},
+    )
+    monkeypatch.setitem(
+        settings._store,
+        "collaboration",
+        {"collaboration_enabled": True},
+    )
+    monkeypatch.setitem(
+        settings._store,
+        "security",
+        {"require_approval_for_high": True, "block_critical_by_default": True},
+    )
+    response = api_client.get("/api/v1/status")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["workspace_status"] == "ACTIVE"
+    assert body["provider_status"] == "CONFIGURED"
+    assert body["provider_name"] == "OLLAMA"
+    assert body["autonomy_level"] == "SUPERVISED"
+    assert body["release_status"] == "BLOCKED"
+    assert body["gui_gate"] == "BLOCKED"
+    assert body["security_gate"] == "OK"
+    assert body["agent_status"] == "IDLE"
+    assert body["collaboration_status"] == "IDLE"
 
 
 def test_status_surfaces_critical_blockers_and_counts(api_client):

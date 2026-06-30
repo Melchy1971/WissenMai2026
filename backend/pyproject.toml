@@ -13,6 +13,7 @@ dependencies = [
     "python-multipart",
     "python-docx",
     "pypdf",
+    "prometheus-client",
 ]
 
 [tool.ruff]

@@ -177,7 +177,9 @@
       "PowerShell(netstat -an)",
       "Bash(curl -sv http://127.0.0.1:8000/health)",
       "Bash(python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "PowerShell(Start-Process powershell -ArgumentList \"-NoProfile -ExecutionPolicy Bypass -File h:\\\\WissenMai2026\\\\scripts\\\\start_backend.ps1\" -WindowStyle Normal)",
+      "PowerShell(Start-Process powershell -ArgumentList \"-NoProfile -ExecutionPolicy Bypass -File h:\\\\WissenMai2026\\\\scripts\\\\start_frontend.ps1\" -WindowStyle Normal)"
     ]
   },
   "hooks": {

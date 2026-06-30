@@ -1,9 +1,11 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext.jsx';
-import { callApi } from '../lib/apiClient.js';
 import { PrivacyModeBanner } from '../components/shared/PrivacyModeBanner.jsx';
 import { getDriftOverview } from '../api/drift_analytics.js';
+import { getSystemStatus } from '../api/status.js';
+
+const STATUS_REFRESH_INTERVAL_MS = 30_000;
 
 // ── Telekom logo ──────────────────────────────────────────────────────────────
 
@@ -101,8 +103,23 @@ export function AppShell() {
   const [driftOverview, setDriftOverview] = useState(null);
 
   useEffect(() => {
-    callApi('/api/v1/status').then(r => { if (r.ok) setStatus(r.data); });
-  }, []);
+    let controller = null;
+    const refreshStatus = () => {
+      controller?.abort();
+      controller = new AbortController();
+      getSystemStatus({ signal: controller.signal }).then(setStatus).catch((error) => {
+        if (error?.name !== 'AbortError') setStatus(null);
+      });
+    };
+    refreshStatus();
+    const intervalId = window.setInterval(refreshStatus, STATUS_REFRESH_INTERVAL_MS);
+    window.addEventListener('focus', refreshStatus);
+    return () => {
+      controller?.abort();
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refreshStatus);
+    };
+  }, [workspaceId]);
 
   // Load drift overview once on mount — best-effort, no error display in shell
   useEffect(() => {

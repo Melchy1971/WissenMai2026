@@ -30,7 +30,7 @@ def database_health() -> dict[str, str]:
 def prometheus_metrics() -> Response:
     """Prometheus /metrics Endpoint. Gibt text/plain im Prometheus-Format zurück."""
     content, content_type = metrics_response()
-    return Response(content=content, media_type=content_type)
+    return Response(content=content, headers={"Content-Type": content_type})
 
 
 @router.get("/health/preflight")

@@ -17,13 +17,15 @@ Kein prometheus_client-Pflicht-Import in Tests — alles lazy.
 """
 from __future__ import annotations
 
+import os
 import time
 from contextlib import contextmanager
 
+from app.core.config import settings
+
 try:
     from prometheus_client import (
-        Counter, Gauge, Histogram, CONTENT_TYPE_LATEST, generate_latest,
-        CollectorRegistry, REGISTRY,
+        Counter, Gauge, Histogram, Info, generate_latest,
     )
     _PROMETHEUS_AVAILABLE = True
 except ImportError:
@@ -57,7 +59,7 @@ if _PROMETHEUS_AVAILABLE:
     HTTP_REQUEST_COUNT = Counter(
         "http_requests_total",
         "Total HTTP requests",
-        ["method", "path", "status_code"],
+        ["method", "path", "status"],
     )
     HTTP_REQUEST_DURATION = Histogram(
         "http_request_duration_seconds",
@@ -68,8 +70,14 @@ if _PROMETHEUS_AVAILABLE:
     HTTP_ERROR_COUNT = Counter(
         "http_errors_total",
         "Total HTTP errors (4xx + 5xx)",
-        ["method", "path", "status_code"],
+        ["method", "path", "status"],
     )
+    APP_INFO = Info("app", "Application build information")
+
+    app_info_labels = {"version": settings.app_version}
+    if settings.app_sprint:
+        app_info_labels["sprint"] = settings.app_sprint
+    APP_INFO.info(app_info_labels)
 
     # ── System ────────────────────────────────────────────────────────────── #
     SYSTEM_CPU_USAGE = Gauge("system_cpu_usage_percent", "CPU usage in percent")
@@ -81,27 +89,25 @@ if _PROMETHEUS_AVAILABLE:
     BUSINESS_DOCUMENTS_TOTAL = Gauge(
         "business_documents_total",
         "Total documents",
-        ["workspace_id", "lifecycle_status"],
+        ["lifecycle_status"],
     )
     BUSINESS_TOPICS_TOTAL = Gauge(
         "business_topics_total",
         "Total topics",
-        ["workspace_id"],
     )
     BUSINESS_ANALYSIS_JOBS_TOTAL = Gauge(
         "business_analysis_jobs_total",
         "Analysis jobs by status",
-        ["workspace_id", "status"],
+        ["status"],
     )
     BUSINESS_EXPORT_JOBS_TOTAL = Gauge(
         "business_export_jobs_total",
         "Export jobs by status",
-        ["workspace_id", "status"],
+        ["status"],
     )
     BUSINESS_OPEN_REVIEWS = Gauge(
         "business_open_reviews_total",
         "Analysis results in review/draft status",
-        ["workspace_id"],
     )
 
     # ── Provider ──────────────────────────────────────────────────────────── #
@@ -134,6 +140,7 @@ else:
     HTTP_REQUEST_COUNT = _noop_counter()
     HTTP_REQUEST_DURATION = _noop_histogram()
     HTTP_ERROR_COUNT = _noop_counter()
+    APP_INFO = _noop_gauge()
     SYSTEM_CPU_USAGE = _noop_gauge()
     SYSTEM_MEMORY_USAGE_MB = _noop_gauge()
     SYSTEM_UPTIME_SECONDS = _noop_gauge()
@@ -156,12 +163,13 @@ else:
 # ── System-Metriken aktualisieren ──────────────────────────────────────────── #
 
 _PROCESS_START = time.time()
+PROMETHEUS_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8"
 
 
 def update_system_metrics() -> None:
     """Aktualisiert CPU/RAM/Uptime/Disk Gauges. Benötigt psutil."""
     try:
-        import psutil, os
+        import psutil
         proc = psutil.Process(os.getpid())
         SYSTEM_CPU_USAGE.set(psutil.cpu_percent(interval=None))
         SYSTEM_MEMORY_USAGE_MB.set(proc.memory_info().rss / 1024 / 1024)
@@ -196,6 +204,6 @@ def track_provider_request(provider: str):
 def metrics_response():
     """Gibt Prometheus-Text-Format zurück."""
     if not _PROMETHEUS_AVAILABLE:
-        return "# prometheus_client not installed\n", "text/plain"
+        return "# prometheus_client not installed\n", PROMETHEUS_CONTENT_TYPE
     update_system_metrics()
-    return generate_latest(), CONTENT_TYPE_LATEST
+    return generate_latest(), PROMETHEUS_CONTENT_TYPE

@@ -8,7 +8,7 @@ from app.api.health import router as health_router
 from app.api.v1.router import api_router
 from app.observability.logging import configure_structured_logging
 from app.observability.auth_middleware import AuthContextMiddleware
-from app.observability.middleware import CorrelationIdMiddleware
+from app.observability.middleware import CorrelationIdMiddleware, PrometheusMetricsMiddleware
 from app.observability.security_headers import SecurityHeadersMiddleware
 from app.api.health_extended import router as health_extended_router
 from app.core.config import settings
@@ -22,13 +22,14 @@ async def _lifespan(application: FastAPI):  # noqa: ARG001
     yield
 
 
-app = FastAPI(title="Wissensbasis API", version="0.1.0", lifespan=_lifespan)
+app = FastAPI(title="Wissensbasis API", version=settings.app_version, lifespan=_lifespan)
 configure_structured_logging()
 
 _is_dev = settings.app_env in ("local", "development", "test")
 app.add_middleware(SecurityHeadersMiddleware, dev_mode=_is_dev)
 app.add_middleware(CorrelationIdMiddleware)
 app.add_middleware(AuthContextMiddleware)
+app.add_middleware(PrometheusMetricsMiddleware)
 app.add_middleware(
 	CORSMiddleware,
 	allow_origins=[

@@ -21,7 +21,7 @@ router = APIRouter(tags=["health"])
 StatusValue = Literal["UP", "DEGRADED", "DOWN"]
 
 _PROCESS_START = time.time()
-_APP_VERSION = "0.1.0"
+_APP_VERSION = settings.app_version
 
 
 def _db_check() -> dict:

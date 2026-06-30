@@ -1,7 +1,7 @@
-# Metrics Catalog — PRI-7
+# Metrics Catalog — PRI-8
 
-Stand: 2026-06-17
-Quelle: `reports/current/observability_report.json`
+Stand: 2026-06-30
+Quelle: `/metrics`
 
 ---
 
@@ -9,9 +9,10 @@ Quelle: `reports/current/observability_report.json`
 
 | Name | Einheit | Quelle |
 |------|---------|--------|
-| cpu_usage_percent | % | psutil |
-| memory_usage_mb | MB | psutil |
-| disk_usage_percent | % | psutil |
+| system_cpu_usage_percent | % | psutil |
+| system_memory_usage_mb | MB | psutil |
+| system_disk_usage_percent | % | psutil |
+| system_uptime_seconds | s | Prozesszeit |
 
 ---
 
@@ -19,15 +20,18 @@ Quelle: `reports/current/observability_report.json`
 
 | Name | Labels | Typ |
 |------|--------|-----|
-| http_requests_total | method, path, status_code | Counter |
+| app_info | version, optional sprint | Info |
+| http_requests_total | method, path, status | Counter |
 | http_request_duration_seconds | method, path | Histogram |
-| job_queue_depth | job_type | Gauge |
-| job_success_total | job_type | Counter |
-| job_failure_total | job_type | Counter |
+| http_errors_total | method, path, status | Counter |
+| job_running_total | job_type | Gauge |
+| job_failed_total | job_type | Counter |
+| job_queue_length | job_type | Gauge |
+| job_retry_total | job_type | Counter |
+| job_dead_letter_total | job_type | Gauge |
+| provider_requests_total | provider | Counter |
 | provider_request_duration_seconds | provider | Histogram |
-| provider_error_total | provider, error_type | Counter |
-| export_generated_total | format | Counter |
-| analysis_completed_total | provider | Counter |
+| provider_errors_total | provider, error_type | Counter |
 
 ---
 
@@ -35,11 +39,11 @@ Quelle: `reports/current/observability_report.json`
 
 | Name | Labels | Typ |
 |------|--------|-----|
-| documents_total | workspace_id, lifecycle_status | Gauge |
-| topics_total | workspace_id | Gauge |
-| search_requests_total | workspace_id | Counter |
-| exports_total | workspace_id, format | Counter |
-| reviews_total | workspace_id, decision | Counter |
+| business_documents_total | lifecycle_status | Gauge |
+| business_topics_total | — | Gauge |
+| business_analysis_jobs_total | status | Gauge |
+| business_export_jobs_total | status | Gauge |
+| business_open_reviews_total | — | Gauge |
 
 ---
 
@@ -55,7 +59,7 @@ Quelle: `reports/current/observability_report.json`
 
 ---
 
-## Empfohlener /metrics Endpoint (Prometheus)
+## Implementierter /metrics Endpoint (Prometheus)
 
 ```
 GET /metrics
@@ -63,10 +67,14 @@ Content-Type: text/plain; version=0.0.4
 
 # HELP http_requests_total Total HTTP requests
 # TYPE http_requests_total counter
-http_requests_total{method="GET",path="/api/v1/documents",status_code="200"} 1547
+http_requests_total{method="GET",path="/api/v1/documents",status="200"} 1547
 
-# HELP job_queue_depth Jobs in queue
-# TYPE job_queue_depth gauge
-job_queue_depth{job_type="import"} 3
-job_queue_depth{job_type="analysis"} 1
+# HELP job_queue_length Pending jobs in queue
+# TYPE job_queue_length gauge
+job_queue_length{job_type="import"} 3
+job_queue_length{job_type="analysis"} 1
 ```
+
+`path` enthält ausschließlich registrierte Routen-Templates. Pfadparameter,
+Query-Parameter und technische IDs werden nicht als Labels exportiert; nicht
+zuordenbare Routen werden unter `unmatched` zusammengefasst.

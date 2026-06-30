@@ -1,6 +1,9 @@
 """GET /status - system overview for GUI dashboard and AppShell."""
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
@@ -11,6 +14,7 @@ router = APIRouter(prefix="/status", tags=["status"])
 UNKNOWN = "UNKNOWN"
 CRITICAL_STATUSES = {"FAIL", "FAILED", "BLOCKED", "CRITICAL", "ERROR"}
 WARNING_STATUSES = {"WARNING", "WARN", "DEGRADED", "PENDING", "RUNNING", "QUEUED"}
+_REPORTS_DIR = Path(__file__).resolve().parents[4] / "reports" / "current"
 
 
 class StatusBlocker(BaseModel):
@@ -75,6 +79,82 @@ def _status_from_runtime_items(items: list[dict], *, empty_status: str = UNKNOWN
     return "OK"
 
 
+def _read_report(filename: str) -> dict:
+    try:
+        payload = json.loads((_REPORTS_DIR / filename).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _release_status() -> str:
+    report = _read_report("release_gate.json")
+    return _upper(report.get("current_status") or report.get("verdict") or report.get("status"))
+
+
+def _gui_status() -> str:
+    candidates = [
+        _read_report("gui_release_candidate.json").get("overall_status"),
+        _read_report("gui_truth_report.json").get("status"),
+    ]
+    statuses = [_upper(value) for value in candidates if value is not None]
+    if not statuses:
+        return UNKNOWN
+    priority = {
+        UNKNOWN: -1,
+        "OK": 0,
+        "PASS": 0,
+        "WARNING": 1,
+        "WARN": 1,
+        "DEGRADED": 1,
+        "FAIL": 2,
+        "FAILED": 2,
+        "CRITICAL": 3,
+        "BLOCKED": 4,
+    }
+    return max(statuses, key=lambda status: priority.get(status, 1))
+
+
+def _provider_snapshot() -> tuple[str, str]:
+    try:
+        from app.api.v1.settings import _store
+
+        provider = _store.get("provider") or {}
+    except Exception:
+        return UNKNOWN, UNKNOWN
+
+    model = str(provider.get("model") or "").strip()
+    base_url = str(provider.get("base_url") or "").strip()
+    name = str(provider.get("name") or "").strip().upper()
+    if not name:
+        normalized_url = base_url.lower()
+        if "11434" in normalized_url or "ollama" in normalized_url:
+            name = "OLLAMA"
+        elif "openai" in normalized_url:
+            name = "OPENAI"
+        elif "googleapis" in normalized_url or "gemini" in normalized_url:
+            name = "GEMINI"
+        elif base_url:
+            name = "CUSTOM"
+    status = "CONFIGURED" if model and (base_url or name) else "UNCONFIGURED"
+    return status, name or UNKNOWN
+
+
+def _autonomy_status() -> str:
+    try:
+        from app.api.v1.settings import _store
+
+        agents = _store.get("agents") or {}
+        security = _store.get("security") or {}
+    except Exception:
+        return UNKNOWN
+    if not agents.get("agents_enabled"):
+        return "DISABLED"
+    if security.get("require_approval_for_high") or security.get("block_critical_by_default"):
+        return "SUPERVISED"
+    return "AUTONOMOUS"
+
+
 def _security_status() -> str:
     try:
         from app.api.v1.security import get_security_status
@@ -88,7 +168,7 @@ def _security_status() -> str:
         return "CRITICAL"
     if payload.get("audit_all_actions") is False:
         return "WARNING"
-    return UNKNOWN
+    return "OK"
 
 
 def _rag_status() -> str:
@@ -97,7 +177,7 @@ def _rag_status() -> str:
     except Exception:
         return UNKNOWN
     if not _documents:
-        return UNKNOWN
+        return "EMPTY"
     statuses = [_upper(doc.get("index_status")) for doc in _documents]
     if any(status == "BLOCKED" for status in statuses):
         return "WARNING"
@@ -183,31 +263,40 @@ def _privacy_mode() -> bool | None:
 def _governance_status(pending_approvals: list[dict]) -> str:
     try:
         from app.api.v1.governance import _changesets
+        from app.api.v1.settings import _store
     except Exception:
         return UNKNOWN
+    if not (_store.get("governance") or {}).get("changesets_enabled"):
+        return "DISABLED"
     if any(_upper(approval.get("risk")) == "CRITICAL" for approval in pending_approvals):
         return "CRITICAL"
     if pending_approvals or any(item.get("status") == "pending" for item in _changesets):
         return "WARNING"
-    return UNKNOWN
+    return "OK"
 
 
 def _agent_status(workspace_id: str) -> str:
     try:
         from app.api.v1.orchestrator import _executions
+        from app.api.v1.settings import _store
     except Exception:
         return UNKNOWN
+    if not (_store.get("agents") or {}).get("agents_enabled"):
+        return "DISABLED"
     items = [item for item in _executions if item.get("workspace_id") == workspace_id]
-    return _status_from_runtime_items(items)
+    return _status_from_runtime_items(items, empty_status="IDLE")
 
 
 def _collaboration_status(workspace_id: str) -> str:
     try:
         from app.api.v1.collaboration_gui import _runs
+        from app.api.v1.settings import _store
     except Exception:
         return UNKNOWN
+    if not (_store.get("collaboration") or {}).get("collaboration_enabled"):
+        return "DISABLED"
     items = [item for item in _runs if item.get("workspace_id") == workspace_id]
-    return _status_from_runtime_items(items)
+    return _status_from_runtime_items(items, empty_status="IDLE")
 
 
 @router.get("", response_model=StatusResponse)
@@ -215,15 +304,20 @@ def get_status(ctx: AuthContext = Depends(require_workspace_member)) -> StatusRe
     """Return a dashboard-safe status snapshot without fake green defaults."""
     pending_approvals = _pending_approvals()
     critical_audit_events = _critical_audit_events()
+    release_status = _release_status()
+    provider_status, provider_name = _provider_snapshot()
+    autonomy_level = _autonomy_status()
     governance_gate = _governance_status(pending_approvals)
     security_gate = _security_status()
+    gui_gate = _gui_status()
     rag_status = _rag_status()
     agent_status = _agent_status(ctx.workspace_id)
     collaboration_status = _collaboration_status(ctx.workspace_id)
     gates = {
+        "release_status": release_status,
         "governance_gate": governance_gate,
         "security_gate": security_gate,
-        "gui_gate": UNKNOWN,
+        "gui_gate": gui_gate,
         "rag_status": rag_status,
         "agent_status": agent_status,
         "collaboration_status": collaboration_status,
@@ -241,15 +335,15 @@ def get_status(ctx: AuthContext = Depends(require_workspace_member)) -> StatusRe
         system_health = UNKNOWN
 
     return StatusResponse(
-        release_status=UNKNOWN,
+        release_status=release_status,
         system_health=system_health,
-        provider_status=UNKNOWN,
+        provider_status=provider_status,
         workspace_status="ACTIVE",
         privacy_mode=_privacy_mode(),
-        autonomy_level=UNKNOWN,
+        autonomy_level=autonomy_level,
         governance_gate=governance_gate,
         security_gate=security_gate,
-        gui_gate=UNKNOWN,
+        gui_gate=gui_gate,
         rag_status=rag_status,
         agent_status=agent_status,
         collaboration_status=collaboration_status,
@@ -258,11 +352,12 @@ def get_status(ctx: AuthContext = Depends(require_workspace_member)) -> StatusRe
         open_blockers=blockers,
         current_user_is_admin=ctx.role in {"owner", "admin"},
         workspace_id=ctx.workspace_id,
-        provider_name=UNKNOWN,
+        provider_name=provider_name,
         gates=[
+            StatusGate(id="release", label="Release", status=release_status),
             StatusGate(id="governance", label="Governance", status=governance_gate),
             StatusGate(id="security", label="Security", status=security_gate),
-            StatusGate(id="gui", label="GUI", status=UNKNOWN),
+            StatusGate(id="gui", label="GUI", status=gui_gate),
             StatusGate(id="rag", label="RAG", status=rag_status),
             StatusGate(id="agents", label="Agents", status=agent_status),
             StatusGate(id="collaboration", label="Collaboration", status=collaboration_status),

@@ -9,6 +9,7 @@ import { TopicsWidgetPanel } from '../features/dashboard/TopicsWidgetPanel.jsx';
 import { DriftWidgetPanel } from '../features/dashboard/DriftWidgetPanel.jsx';
 
 const UNKNOWN = 'UNKNOWN';
+const REFRESH_INTERVAL_MS = 30_000;
 
 const STATUS_FIELDS = [
   ['release_status', 'Release Status'],
@@ -26,7 +27,7 @@ const STATUS_FIELDS = [
 
 function normalizeStatus(value) {
   const label = value == null || String(value).trim() === '' ? UNKNOWN : String(value).trim().toUpperCase();
-  if (['OK', 'HEALTHY', 'PASS', 'ACTIVE', 'READY', 'COMPLETED', 'INDEXED'].includes(label)) {
+  if (['OK', 'HEALTHY', 'PASS', 'ACTIVE', 'READY', 'COMPLETED', 'INDEXED', 'CONFIGURED'].includes(label)) {
     return { label, tone: 'success' };
   }
   if (['WARNING', 'WARN', 'DEGRADED', 'PENDING', 'RUNNING', 'QUEUED'].includes(label)) {
@@ -130,15 +131,37 @@ export function DashboardPage() {
   const [summary, setSummary] = useState(null);
   const [activity, setActivity] = useState([]);
   const [blockers, setBlockers] = useState(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
+  const [refreshError, setRefreshError] = useState(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-    load(controller.signal);
-    return () => controller.abort();
+    let controller = null;
+    let initialLoad = true;
+
+    const refresh = async () => {
+      controller?.abort();
+      controller = new AbortController();
+      const succeeded = await load(controller.signal, { showLoading: initialLoad });
+      if (succeeded) initialLoad = false;
+    };
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+
+    refresh();
+    const intervalId = window.setInterval(refresh, REFRESH_INTERVAL_MS);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      controller?.abort();
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
   }, []);
 
-  async function load(signal) {
-    setLoading();
+  async function load(signal, { showLoading = false } = {}) {
+    if (showLoading) setLoading();
     try {
       const currentStatus = await getSystemStatus({ signal });
       const supplementalResults = await Promise.allSettled([
@@ -148,6 +171,7 @@ export function DashboardPage() {
       ]);
 
       const [summaryResult, activityResult] = supplementalResults;
+      if (signal.aborted) return false;
       const summaryData = summaryResult?.status === 'fulfilled' ? summaryResult.value : null;
       const activityItems = listFromSettled(activityResult);
 
@@ -157,9 +181,15 @@ export function DashboardPage() {
       setSummary(summaryData);
       setActivity(activityItems);
       setBlockers(derivedBlockers);
+      setLastUpdatedAt(new Date());
+      setRefreshError(null);
       setSuccess();
+      return true;
     } catch (err) {
-      if (err?.name !== 'AbortError') setError(err);
+      if (err?.name === 'AbortError') return false;
+      if (showLoading) setError(err);
+      else setRefreshError(err);
+      return false;
     }
   }
 
@@ -174,6 +204,13 @@ export function DashboardPage() {
     <div className="page-stack dashboard-page" data-testid="dashboard-page">
       <header className="dashboard-page__header">
         <h1 className="page-title">Dashboard</h1>
+        <p className="dashboard-page__freshness" data-testid="dashboard-freshness">
+          {refreshError
+            ? 'Aktualisierung fehlgeschlagen – angezeigte Daten können veraltet sein.'
+            : lastUpdatedAt
+              ? `Aktualisiert: ${lastUpdatedAt.toLocaleTimeString('de-DE')}`
+              : 'Aktualisierung läuft …'}
+        </p>
       </header>
 
       {/* Status grid */}
@@ -220,6 +257,7 @@ export function DashboardPage() {
       <style>{`
         .dashboard-page { display: flex; flex-direction: column; gap: 0; overflow-y: auto; }
         .dashboard-page__header { padding: 16px 24px 0; }
+        .dashboard-page__freshness { margin: 4px 0 0; color: var(--color-text-secondary, #666); font-size: 12px; }
         .dashboard-section { padding: 16px 24px; border-bottom: 1px solid var(--color-border, #e0e0e0); }
         .dashboard-section:last-child { border-bottom: none; }
         .dashboard-section__title { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--color-text-secondary, #666); text-transform: uppercase; letter-spacing: 0.05em; }
