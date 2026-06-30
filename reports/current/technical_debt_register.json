@@ -52,7 +52,18 @@
       "aufwand": "XS (2h)",
       "risiko": "HIGH",
       "prioritaet": 1,
-      "empfohlene_loesung": "CREATE INDEX CONCURRENTLY ix_chunks_search_vector ON document_chunks USING GIN (search_vector); in neuer Migration."
+      "empfohlene_loesung": "CREATE INDEX CONCURRENTLY ix_chunks_search_vector ON document_chunks USING GIN (search_vector); in neuer Migration.",
+      "pri8_korrektur": {
+        "geprueft_am": "2026-06-30",
+        "status": "PRAEMISSE_FALSCH",
+        "befund": "Migration 0011 (Z. 65-66) erstellt bereits 'CREATE INDEX ix_document_chunks_search_vector ON document_chunks USING gin (search_vector)'. 0012 ebenso. test_migrations.py verifiziert ihn. Die TD-004-Beschreibung widerspricht der genannten Quelldatei.",
+        "redundanz": "Migration 0026 hat zusaetzlich einen zweiten GIN-Index 'ix_document_chunks_search_vector_gin' (partiell) auf derselben Spalte angelegt -> doppelte Schreiblast, kein Lesenutzen.",
+        "echte_restaufgabe": [
+          "Live-Verifikation der Index-Nutzung via EXPLAIN (gesperrt durch SCGB-01)",
+          "Genau einen der beiden GIN-Indizes behalten, anderen zurueckbauen (PO-Entscheidung offen)"
+        ],
+        "neue_migration_noetig": false
+      }
     },
     {
       "id": "TD-005",
@@ -142,7 +153,15 @@
       "aufwand": "S (0.5 Tag)",
       "risiko": "HIGH",
       "prioritaet": 1,
-      "empfohlene_loesung": "CSP-Header in FastAPI-Middleware: default-src 'self'; script-src 'self'; object-src 'none'."
+      "empfohlene_loesung": "CSP-Header in FastAPI-Middleware: default-src 'self'; script-src 'self'; object-src 'none'.",
+      "pri8_korrektur": {
+        "geprueft_am": "2026-06-30",
+        "status": "PRAEMISSE_FALSCH",
+        "befund": "SecurityHeadersMiddleware existiert in app/observability/security_headers.py und ist in main.py Z.29 registriert (dev_mode=_is_dev). Setzt CSP, X-Content-Type-Options: nosniff, X-Frame-Options: DENY, Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy. tests/test_security_headers.py: 18 Tests, lokal ausgefuehrt -> 18 passed.",
+        "offener_punkt": "style-src 'unsafe-inline' ist auch im Prod-Modus aktiv -> CSP geschwaecht. Vor GA-PASS klaeren, ob Frontend/Swagger Inline-Styles benoetigt; sonst im Prod-Pfad entfernen.",
+        "betroffene_datei_korrektur": "Tatsaechliche Datei: app/observability/security_headers.py (nicht middleware.py).",
+        "neue_middleware_noetig": false
+      }
     },
     {
       "id": "TD-014",

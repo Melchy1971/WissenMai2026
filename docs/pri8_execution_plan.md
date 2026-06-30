@@ -64,20 +64,31 @@
 
 Reihenfolge wie vorgegeben. Jeder Schritt: Ziel, betroffenes GA-Kriterium, Abhängigkeit, Definition of Done. **DoD-Standard global: Abnahme erst bei fehlerfreiem Live-Lauf — kein Mock, kein Stub.**
 
-### Schritt 1 — GIN-Index
+### Schritt 1 — GIN-Index (Befund 2026-06-30: Code bereits vorhanden, TD-004-Prämisse falsch)
 
-- **Ziel:** GIN-Index auf `document_chunks.search_vector` per Alembic-Migration.
-- **Blocker / Kriterium:** GA-PERF-01 → GA-05.
-- **Abhängigkeit:** keine (sofort umsetzbar).
-- **DoD:** Migration angelegt und `alembic upgrade head` fehlerfrei; Index in DB nachgewiesen (`\d+ document_chunks`); Suchanfrage bei realem Datenbestand mit Query-Plan-Beleg (Index statt Seq-Scan).
-- **Hinweis:** `CREATE INDEX CONCURRENTLY` läuft nicht in einer Alembic-Transaktion — Migration entsprechend mit autocommit/`op.execute` außerhalb Transaktion bauen.
+- **Ziel (ursprünglich):** GIN-Index auf `document_chunks.search_vector` per Alembic-Migration.
+- **Tatsächlicher Stand (codebelegt):**
+  - GIN-Index existiert seit `20260504_0011_chunk_search_vector.py` (Z. 65–66): `CREATE INDEX ix_document_chunks_search_vector ON document_chunks USING gin (search_vector)`. `0012_chunk_searchability.py` legt ihn ebenfalls an. `tests/integration/test_migrations.py::test_chunk_search_vector_migration_creates_generated_column_and_gin_index` verifiziert ihn.
+  - `20260618_0026_gin_indexes_search_and_metadata.py` (PRI-7) hat einen **zweiten, redundanten** GIN-Index `ix_document_chunks_search_vector_gin` (partiell, `WHERE search_vector IS NOT NULL`) auf derselben Spalte angelegt — korrekt mit `autocommit_block()` + `CONCURRENTLY`, aber funktional doppelt.
+  - **TD-004 ist sachlich falsch:** Es behauptet „kein CREATE INDEX USING GIN" und nennt als Beleg `0011` — die Datei, die den Index erzeugt.
+- **Korrigierte Aufgabe (keine neue Migration):**
+  1. Live-Verifikation, dass `ix_document_chunks_search_vector` auf der Ziel-DB existiert (`\d+ document_chunks`) und vom Planner genutzt wird (`EXPLAIN` zeigt Bitmap/Index-Scan statt Seq-Scan). **Gesperrt durch SCGB-01** (kein DB-Zugriff).
+  2. Redundanten Index `ix_document_chunks_search_vector_gin` aus `0026` zurückbauen — **PO-Entscheidung offen** (welcher Index bleibt; siehe unten).
+- **Blocker / Kriterium:** GA-PERF-01 → GA-05. Code-seitig erfüllt; Gate-Bewertung „FAIL" beruht auf Laufzeitzustand/SCGB-01 und/oder der falschen TD-004-Prämisse.
+- **DoD:** EXPLAIN-Beleg gegen reale Datenmenge (Index-Nutzung) + genau **ein** GIN-Index auf `search_vector`.
+- **Alembic-Transaktionsverhalten (zur Doku, Aufgabe 4/5):** `CREATE INDEX CONCURRENTLY` darf nicht in einer Transaktion laufen. `0026` löst das korrekt über `op.get_context().autocommit_block()`. Für die Test-/CI-DB (kleine Datenmengen, leere Tabelle) ist `CONCURRENTLY` nicht nötig und kann zu Komplikationen führen; dort genügt das nicht-konkurrente `CREATE INDEX` aus `0011`. Die bestehende Aufteilung (0011 nicht-konkurrent, 0026 konkurrent) ist tragfähig — der Fehler liegt nicht in der Syntax, sondern in der Doppelung.
 
-### Schritt 2 — CSP / Security-Header
+### Schritt 2 — CSP / Security-Header (Befund 2026-06-30: bereits umgesetzt, registriert, getestet)
 
-- **Ziel:** `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options` als Middleware.
-- **Blocker / Kriterium:** GA-SEC-01 → GA-03.
-- **Abhängigkeit:** keine.
-- **DoD:** Header in Live-Response nachgewiesen (curl/Browser-DevTools); bestehende Security-Tests grün; keine Regression bei Frontend-Assets durch CSP (`style-src`/`script-src` real geprüft).
+- **Tatsaechlicher Stand (codebelegt + verifiziert):**
+  - `app/observability/security_headers.py` enthaelt `SecurityHeadersMiddleware`, registriert in `main.py` Z. 29 (`app.add_middleware(SecurityHeadersMiddleware, dev_mode=_is_dev)`).
+  - Header: `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`.
+  - CSP: `default-src 'self'`; `script-src 'self'` (+ `'unsafe-eval'` nur Dev/Vite-HMR); `style-src 'self' 'unsafe-inline'`; `img-src 'self' data: blob:`; `object-src 'none'`; `frame-ancestors 'none'`; `base-uri 'self'`; `form-action 'self'`; `connect-src` inkl. LLM-Provider; `upgrade-insecure-requests`.
+  - `tests/test_security_headers.py`: 18 Tests, lokal ausgefuehrt -> **18 passed**.
+  - **TD-013 ist sachlich falsch** (behauptet „CSP-Header fehlen").
+- **Offener Punkt (GA-Reviewer-relevant):** `style-src 'unsafe-inline'` ist auch im Prod-Modus aktiv und schwaecht die CSP. Aufgabe 4 erlaubt 'unsafe-inline' nur bei echtem Bedarf. Vor GA-PASS klaeren, ob Frontend/Swagger Inline-Styles braucht; sonst im Prod entfernen.
+- **Blocker / Kriterium:** GA-SEC-01 → GA-03. Code + Test erfuellt; „FAIL" im Gate beruht auf veralteter Bewertung (ggf. plus unsafe-inline-Frage).
+- **DoD:** Middleware-Verhalten erfuellt (18/18). Restpunkt: Integrationsnachweis am realen `/health` + Entscheidung zu `style-src 'unsafe-inline'`.
 
 ### Schritt 3 — Observability
 

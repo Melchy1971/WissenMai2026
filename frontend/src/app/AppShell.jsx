@@ -139,7 +139,7 @@ export function AppShell() {
           <TelekomLogo />
           <div className="shell__title-group">
             <p className="shell__eyebrow">Deutsche Telekom</p>
-            <span className="shell__app-name">Jarvis</span>
+            <span className="shell__app-name">Wissens-DB</span>
           </div>
         </div>
 

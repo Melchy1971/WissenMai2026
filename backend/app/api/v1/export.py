@@ -319,6 +319,8 @@ def download_export_file(
 @router.delete(
     "/jobs/{job_id}/file",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
     summary="Delete export file",
     responses={
         204: {"description": "File deleted"},
@@ -329,11 +331,12 @@ def delete_export_file(
     job_id: str,
     auth: Annotated[RequestAuthContext, Depends(require_workspace_member)],
     service: Annotated[ExportService, Depends(get_export_service)],
-) -> None:
+) -> Response:
     try:
         service.delete_export_file(job_id)
     except ExportJobNotFoundApiError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message) from exc
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ---------------------------------------------------------------------------
@@ -425,6 +428,8 @@ def update_export_template(
 @router.delete(
     "/templates/{template_id}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    response_model=None,
     summary="Delete export template",
     responses={
         204: {"description": "Template deleted"},
@@ -435,11 +440,12 @@ def delete_export_template(
     template_id: str,
     auth: Annotated[RequestAuthContext, Depends(require_workspace_member)],
     service: Annotated[ExportService, Depends(get_export_service)],
-) -> None:
+) -> Response:
     try:
         service.delete_template(template_id)
     except ExportTemplateNotFoundApiError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=exc.message) from exc
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ---------------------------------------------------------------------------

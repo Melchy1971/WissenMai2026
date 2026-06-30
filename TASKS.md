@@ -36,6 +36,24 @@ Nach Sprint: `product_maturity_v2.json` + `version_1_0_candidate_gate.json` neu 
 - [ ] Schwellwert 85 für 1.0 vs. 80 für RC / 85 für GA klären (nach Sprint erwartet: ~78–82)
 - [ ] Schritt 5 (Vorschläge) und Schritt 7 (Übernahme) im Analyse-Workflow inhaltlich klären
 
+## 1.1 / nach Scope Freeze (NICHT Teil des 1.0-Sprints)
+
+> Außerhalb des 1.0 Scope Freeze. Erst nach 1.0-Gate angehen. Stories/Konzept in `OUTPUTS/Importcenter-Erweiterung/`.
+
+### Importcenter-Erweiterung — Ordner-Import (Feature 1, Variante A entschieden)
+
+- [ ] ENB-1 — Datenmodell `import_batch` / `import_batch_item` (Migration)
+- [ ] ENB-2 — Batch-Upload-Eingang (eröffnen → Items → start)
+- [ ] ENB-3 — Fan-out über bestehende Pipeline (Pro-Element-Status)
+- [ ] ENB-4 — Fortschritt/Status-Abfrage (Live-Zähler)
+- [ ] ENB-5 — Ergebnisbericht (persistiert)
+- [ ] F1-S1..S9 — Ordnerauswahl (webkitdirectory), Vorab-Prüfung, relative_path, Dedup, Skip-Klassen, Ausschlussliste, Obergrenzen (hängt an E2), Abbruch, Fehlerbehandlung
+
+### Importcenter-Erweiterung — Outlook-PST-Import (Feature 2, offen)
+
+- [ ] Offene Entscheidungen klären: E2 (Obergrenzen), E3 (PST-Dokumenteneinheit/Anhänge), E4 (PST-Bibliothek Lizenz/Freigabe), E5 (passwortgeschützte PST), E6 (Datenschutz/Löschkonzept)
+- [ ] F2-Stories nach Entscheidung E3 ableiten (nutzt ENB-1..5)
+
 ## Someday / Backlog
 
 - PDF-Export (1.1)

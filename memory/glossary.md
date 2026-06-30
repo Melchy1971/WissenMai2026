@@ -31,6 +31,11 @@
 | NICHT_IMPLEMENTIERT | Feature-Status: vollständig fehlend |
 | VOLLSTÄNDIG | Feature-Status: vollständig und produktionsreif |
 | CONDITIONAL_PASS | Gate-Status: bedingt bestanden, bekannte Einschränkungen vorhanden |
+| Importcenter | Frontend-Bereich zum Importieren von Dokumenten (`ImportCenterPage.jsx`). Erweiterung geplant: Ordner-Import + Outlook-PST-Import (1.1) |
+| Ordner-Import | Geplante Importart: ganzer Ordner rekursiv. Entschieden: Variante A = `webkitdirectory` (Browser lädt alle Dateien hoch, kein Server-Pfad) |
+| Variante A / B | Ordner-Import-Deployment: A = `webkitdirectory` (Web, gewählt); B = nativer OS-Pfaddialog (Desktop-Hülle, Phase 2) |
+| PST-Import | Geplante Importart: Outlook-`.pst` zerlegen, je E-Mail (+ Anhänge) ein Dokument. Braucht neuen PST-/E-Mail-Parser (F2, offen) |
+| Batch-Import / Fan-out | Neues Modell `1 Quelle = N Dokumente = N Element-Jobs` mit Pro-Element-Status. Voraussetzung für Ordner- und PST-Import |
 
 ## Workplace Shorthand
 

@@ -1,8 +1,9 @@
 # Ruflo — Wissensbasis V1
 
 **Interner Produktname:** Ruflo  
-**Status:** BLOCKED — NOT_READY_FOR_1_0 (Stand: 2026-06-15)  
-**Produktreife-Score:** 52/85 (Schwellwert für 1.0-Release: 85)
+**Status (aktuellster Stand 2026-06-17):** GA Final Gate = BLOCKED. Product Maturity 68.7/100 (GA-Schwelle 90). Quelle: README + `reports/current/ga_final_gate_report.json`. Blocker: SCGB-01 (DevOps), GIN-Index, CSP, Prometheus.  
+**Älterer Stand (2026-06-15):** 52/85 (1.0-Schwellwert 85) — überholt, nur als Verlaufswert.  
+**Hinweis:** Score-Bezugsgröße variiert je Gate (1.0 = 85, GA = 90). Bei Statusfragen immer Datum + Bezugsgröße prüfen, nicht Zahlen mischen.
 
 ## Stack
 
@@ -56,6 +57,15 @@
 - `tasks/product_gap_tasks.md` — 39 Tasks (T01–T39)
 - Erwartung nach Sprint: Produktreife ~78–82 (knapp unter 85-Schwellwert)
 - Für 85 zusätzlich nötig: Lazy Loading, KWIC, deutsches FTS-Stemming, AGAP-02 Cancel, Tags vollständig
+
+## Importcenter-Erweiterung (1.1-Kandidat, außerhalb 1.0 Scope Freeze)
+
+Konzept + Stories: `OUTPUTS/Importcenter-Erweiterung/` (Fachkonzept + Jira_Stories_F1).
+
+- **Feature 1 — Ordner-Import:** Entscheidung **E1 = Variante A (`webkitdirectory`)**. Browser lädt alle Dateien hoch, kein Server-Pfad. Pfad-/Desktop-Variante (B) auf Phase 2 verschoben.
+- **Feature 2 — Outlook-PST-Import:** offen. Mail → Dokument; braucht neuen PST-/E-Mail-Parser.
+- **Gemeinsamer Kern:** Batch-/Fan-out-Modell (`1 Quelle = N Dokumente`), neu — heutiges Modell ist `1 Upload = 1 Dokument`. Dedup über bestehenden `UniqueConstraint(workspace_id, content_hash)` → Duplikate werden `skipped_duplicate`, kein Abbruch.
+- **Offene Entscheidungen:** E2 (Mengen-Obergrenzen), E3 (PST-Dokumenteneinheit + Anhänge), E4 (PST-Bibliothek libpff/readpst — Lizenz/Telekom-Freigabe), E5 (passwortgeschützte PST), E6 (Datenschutz/Löschkonzept Temp-Extrakte).
 
 ## Security-Constraints (unveränderlich)
 

@@ -161,7 +161,23 @@
       "PowerShell(Start-Process -FilePath \"h:\\\\WissenMai2026\\\\backend\\\\.venv\\\\Scripts\\\\uvicorn.exe\" -ArgumentList \"app.main:app\", \"--host\", \"127.0.0.1\", \"--port\", \"8001\", \"--reload\" -WorkingDirectory \"h:\\\\WissenMai2026\\\\backend\" -WindowStyle Normal)",
       "PowerShell(Start-Process -FilePath \"cmd.exe\" -ArgumentList \"/c\", \"npm run dev -- --host 127.0.0.1 --port 5174\" -WorkingDirectory \"h:\\\\WissenMai2026\\\\frontend\" -WindowStyle Normal)",
       "PowerShell(Start-Sleep -Seconds 5; try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:8001/health\" -TimeoutSec 5 -UseBasicParsing; \"Backend: $\\($r.StatusCode\\)\" } catch { \"Backend: NICHT ERREICHBAR - $\\($_.Exception.Message\\)\" })",
-      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:5174\" -TimeoutSec 5 -UseBasicParsing; \"Frontend: $\\($r.StatusCode\\)\" } catch { \"Frontend: NICHT ERREICHBAR - $\\($_.Exception.Message\\)\" })"
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://127.0.0.1:5174\" -TimeoutSec 5 -UseBasicParsing; \"Frontend: $\\($r.StatusCode\\)\" } catch { \"Frontend: NICHT ERREICHBAR - $\\($_.Exception.Message\\)\" })",
+      "Bash(sqlite3 \"h:/WissenMai2026/backend/app.db\" \"SELECT name FROM sqlite_master WHERE type='table';\")",
+      "PowerShell(Add-Type -Path \"C:\\\\Users\\\\User\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python313\\\\Lib\\\\sqlite3.py\" -ErrorAction SilentlyContinue; python -c \"import sqlite3; conn=sqlite3.connect\\('h:/WissenMai2026/backend/app.db'\\); cursor=conn.cursor\\(\\); cursor.execute\\(\\\\\"SELECT name FROM sqlite_master WHERE type='table'\\\\\"\\); print\\([r[0] for r in cursor.fetchall\\(\\)]\\)\")",
+      "PowerShell(python -c \"import sqlite3; conn=sqlite3.connect\\('h:/WissenMai2026/backend/app.db'\\); c=conn.cursor\\(\\); c.execute\\('SELECT name FROM sqlite_master WHERE type=chr\\(39\\)+chr\\(116\\)+chr\\(97\\)+chr\\(98\\)+chr\\(108\\)+chr\\(101\\)+chr\\(39\\)'\\); print\\([r[0] for r in c.fetchall\\(\\)]\\)\")",
+      "PowerShell(Remove-Item -Recurse -Force \"h:\\\\WissenMai2026\\\\backend\\\\data\\\\originals\\\\00000000-0000-0000-0000-000000000001\\\\3f71b645-9917-4e18-a15e-44752248146a\" -Confirm:$false)",
+      "PowerShell(python -c \"import json; data=json.load\\(open\\('h:/WissenMai2026/reports/current/frontend_vitest_failures.json', encoding='utf-8'\\)\\); import re; matches=re.findall\\(r'.{60}[Jj]arvis.{60}', json.dumps\\(data\\)\\); [print\\(m\\) for m in matches[:5]]\")",
+      "PowerShell(Remove-Item -Force \"h:\\\\WissenMai2026\\\\reports\\\\current\\\\frontend_vitest_failures.json\" -Confirm:$false)",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('scripts',{}\\), indent=2\\)\\)\")",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s http://127.0.0.1:8000/api/v1/status)",
+      "PowerShell(Get-Process -Id 67200 -ErrorAction SilentlyContinue)",
+      "PowerShell(netstat -an)",
+      "Bash(curl -sv http://127.0.0.1:8000/health)",
+      "Bash(python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)"
     ]
   },
   "hooks": {

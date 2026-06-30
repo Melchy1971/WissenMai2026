@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.api.dependencies.auth import RequestAuthContext, require_workspace_admin, require_workspace_member
@@ -109,13 +109,14 @@ def update_topic(
     return service.update_topic(topic_id, workspace_id=auth.workspace_id, request=request)
 
 
-@router.delete("/{topic_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{topic_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response, response_model=None)
 def delete_topic(
     topic_id: str,
     auth: Annotated[RequestAuthContext, Depends(require_workspace_member)],
     service: Annotated[TopicService, Depends(get_topic_service)],
-) -> None:
+) -> Response:
     service.delete_topic(topic_id, workspace_id=auth.workspace_id)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/{topic_id}/approve", response_model=TopicDetail)
