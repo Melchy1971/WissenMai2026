@@ -15,6 +15,12 @@ class Workspace(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Multi-user V1 (Story 1): 'private' = per-user area, 'shared' = single common area.
+    kind: Mapped[str] = mapped_column(String(16), nullable=False, default="private")
+    # Set for private workspaces (their owner); NULL for the shared workspace.
+    owner_user_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("users.id", ondelete="CASCADE"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 

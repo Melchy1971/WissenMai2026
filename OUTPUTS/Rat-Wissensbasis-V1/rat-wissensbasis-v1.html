@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Der Rat — Wissensbasis V1</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1d212b; --line:#2a2f3a;
+    --tx:#e8eaed; --mut:#9aa2ad; --ok:#3ecf8e; --warn:#f5b544; --bad:#ff6b6b;
+    --accent:#E20074; --accent2:#7aa2ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:32px 18px}
+  .wrap{max-width:860px;margin:0 auto}
+  .kicker{letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--accent);font-weight:700}
+  h1{font-size:26px;margin:6px 0 2px}
+  .meta{color:var(--mut);font-size:13px;margin-bottom:22px}
+  .q{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);
+    border-radius:10px;padding:16px 18px;margin-bottom:26px}
+  .q b{color:var(--tx)}
+  h2{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);
+    margin:30px 0 12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .verdict{background:linear-gradient(180deg,#1d212b,#171a21);border:1px solid var(--line);
+    border-radius:12px;padding:20px 22px}
+  .verdict h3{margin:0 0 6px;font-size:17px;color:var(--accent2)}
+  .verdict p{margin:0 0 16px;color:#d6dae1}
+  .verdict .block:last-child p{margin-bottom:0}
+  .first{background:var(--card2);border:1px solid var(--accent);border-radius:10px;
+    padding:16px 18px;margin-top:8px}
+  .first .lbl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .first code{background:#0c0e12;color:#ffd6ec;padding:1px 6px;border-radius:5px;font-size:14px}
+  table{width:100%;border-collapse:collapse;margin:6px 0 4px;font-size:14px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .p-ok{background:rgba(62,207,142,.14);color:var(--ok);border:1px solid rgba(62,207,142,.35)}
+  .p-warn{background:rgba(245,181,68,.14);color:var(--warn);border:1px solid rgba(245,181,68,.35)}
+  .p-bad{background:rgba(255,107,107,.14);color:var(--bad);border:1px solid rgba(255,107,107,.35)}
+  details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden}
+  summary{cursor:pointer;padding:13px 16px;font-weight:600;list-style:none;display:flex;
+    justify-content:space-between;align-items:center;gap:12px}
+  summary::-webkit-details-marker{display:none}
+  summary .who{color:var(--accent2)}
+  summary .stance{font-size:12px;color:var(--mut);font-weight:500}
+  details[open] summary{border-bottom:1px solid var(--line)}
+  details p{margin:0;padding:14px 16px;color:#cfd4db;font-size:15px}
+  .foot{color:var(--mut);font-size:12px;margin-top:30px;border-top:1px solid var(--line);padding-top:14px}
+  .tag{font-size:11px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Der Rat &middot; 5 Berater</div>
+  <h1>Wissensbasis V1 — was fehlt, und wie weiter?</h1>
+  <div class="meta">Sitzung 2026-07-24 &middot; Quelle: masterplan.md, reports/current/, Code &amp; Git-Historie</div>
+
+  <div class="q">
+    <b>Die Frage:</b> Das System steht laut eigenem Gate auf <b>BLOCKED</b> (Ziel Maturity &ge;90).
+    Geplant ist Sprint PRI-8 „Blockerbehebung". Parallel l&auml;uft Feature-Ausbau weiter
+    (Topics, Export/PDF, KI-Analyse, Importcenter). Der ma&szlig;gebliche Status ist vom 2026-06-17,
+    aber Commits ab 2026-06-18 haben mehrere Blocker bereits im Code erledigt — der Status wei&szlig; es nicht.
+    Richtiger n&auml;chster Schritt: den echten Gate schlie&szlig;en oder weiterbauen — und stimmt das Zielbild noch?
+  </div>
+
+  <h2>Das Urteil</h2>
+  <div class="verdict">
+    <div class="block">
+      <h3>Worüber sich der Rat einig ist</h3>
+      <p>Der Status l&uuml;gt — nicht b&ouml;swillig, sondern weil er dem Code hinterherhinkt.
+      Vier von f&uuml;nf sagen unabh&auml;ngig: erst Wahrheit herstellen, dann entscheiden.
+      Weiterbauen auf widerspr&uuml;chlichem Statusfundament ist gerade der teuerste Fehler.</p>
+    </div>
+    <div class="block">
+      <h3>Worüber der Rat streitet</h3>
+      <p>Wie weit das Projekt wirklich ist. Der Vision&auml;r sieht es kurz vor GA (Blocker im Code erledigt).
+      Der Skeptiker kontert: „im Code" ist wertlos ohne gr&uuml;nen Lauf, und SCGB-01 verhindert genau diesen Beweis.
+      Kein Meinungs-, sondern ein Messproblem — l&ouml;st sich durch <em>einen</em> Postgres-Lauf.</p>
+    </div>
+    <div class="block">
+      <h3>Was der Rat fast übersehen hätte</h3>
+      <p>Der Feature-Ausbau (KI-Analyse, Export, Importcenter) hat den Scope faktisch von
+      „lokales read-only V1" zu „RAG-Analyse-Produkt" verschoben — aber der Masterplan sagt anderswo noch
+      „Analyse/Vektorsuche optional, nicht V1-kritisch". Du entwickelst gegen ein Zielbild, das du im Kopf
+      l&auml;ngst verlassen, aber nie umgeschrieben hast. Das ist die tiefere Drift-Ursache, nicht die Status-Engine.</p>
+    </div>
+    <div class="block">
+      <h3>Die Empfehlung</h3>
+      <p>Stopp beim Feature-Bau. Ein <b>Regenerations-Sprint</b>, kein Blocker-Abarbeitungs-Sprint:
+      (1) Postgres + <code>TEST_DATABASE_URL</code>, Truth/Gates neu generieren. (2) 06-18-Commits gegen die
+      GA-Blocker abgleichen, Gr&uuml;nes schlie&szlig;en. (3) Eine Scope-Entscheidung in den Masterplan schreiben:
+      „lokales V1" oder „KI-Analyse-Produkt"? Davon h&auml;ngt ab, ob Maturity &ge;90 sinnvoll oder Gold-Plating ist.</p>
+    </div>
+    <div class="first">
+      <div class="lbl">Der erste Schritt</div>
+      <div><code>TEST_DATABASE_URL</code> setzen und den Status-/Gate-Lauf einmal komplett gegen echte
+      Postgres durchziehen. Eine Stunde — danach echte Zahlen statt drei falsche.</div>
+    </div>
+  </div>
+
+  <h2>Blocker-Check am Code (verifiziert 2026-07-24)</h2>
+  <table>
+    <thead><tr><th>Blocker</th><th>Laut Status</th><th>Realit&auml;t im Code</th><th>Stand</th></tr></thead>
+    <tbody>
+      <tr><td>GA-PERF-01<br><span class="tag">GIN-Index search_vector</span></td><td>offen</td>
+        <td>Migration <code>0026</code> ist unerbrochener Chain-Head (28 Revisions, 1 Head)</td>
+        <td><span class="pill p-warn">Code fertig, ungepr&uuml;ft</span></td></tr>
+      <tr><td>GA-SEC-01<br><span class="tag">Content Security Policy</span></td><td>offen</td>
+        <td><code>security_headers.py</code> + Middleware in <code>main.py</code> verdrahtet</td>
+        <td><span class="pill p-warn">Code fertig, ungepr&uuml;ft</span></td></tr>
+      <tr><td>GA-OBS-01<br><span class="tag">Prometheus + Logging</span></td><td>offen</td>
+        <td><code>/metrics</code>-Endpoint + <code>PrometheusMetricsMiddleware</code> + <code>logging.py</code></td>
+        <td><span class="pill p-warn">Code fertig, ungepr&uuml;ft</span></td></tr>
+      <tr><td>GA-TEST-01<br><span class="tag">Integrationstests</span></td><td>blockiert</td>
+        <td>Backup/Restore-Tests vorhanden; 68 Testdateien brauchen Postgres</td>
+        <td><span class="pill p-bad">Offen — h&auml;ngt an SCGB-01</span></td></tr>
+      <tr><td>SCGB-01<br><span class="tag">TEST_DATABASE_URL</span></td><td>extern (DevOps)</td>
+        <td>Infra, kein Code. Sperrt den Beweis f&uuml;r alle vier oberen Zeilen</td>
+        <td><span class="pill p-bad">Der echte Gate</span></td></tr>
+      <tr><td>SCGB-02<br><span class="tag">NAV_ITEMS</span></td><td>extern (PO)</td>
+        <td>Deine Entscheidung, kein Code. 5 Minuten</td>
+        <td><span class="pill p-warn">PO-Entscheid offen</span></td></tr>
+    </tbody>
+  </table>
+  <p class="tag">Fazit des Checks: 3 von 4 internen GA-Blockern sind code-komplett, aber unbewiesen.
+  Der wahre Engpass ist SCGB-01 (Infra) — er schaltet GA-TEST-01 und den Beweis der drei anderen frei.
+  Randnotiz: die Zahlen-Widerspr&uuml;che (68.7 / 76 / 80) hast du in <code>docs/pri8_execution_plan.md</code>
+  am 2026-06-30 bereits als „68.7 verbindlich" aufgel&ouml;st — der Report-Neulauf steht aber noch aus.</p>
+
+  <h2>Die fünf Berater</h2>
+
+  <details><summary><span class="who">Der Skeptiker</span><span class="stance">Wo scheitert es?</span></summary>
+    <p>Der ganze Statusapparat ist unglaubw&uuml;rdig: drei sich widersprechende Reifezahlen auf demselben Projekt.
+    Auf so einem Fundament „weiterentwickeln" hei&szlig;t auf Treibsand bauen. SCGB-01 ist der echte Killer — ohne
+    <code>TEST_DATABASE_URL</code> sind Backup, Restore und Integrationstests unbewiesen. Code existiert, aber kein
+    gr&uuml;ner Lauf. Nach deinem eigenen Standard „Abnahme erst bei fehlerfreiem Live-Lauf" ist hier nichts
+    abnahmef&auml;hig. Topics, Export, Analysis, Importcenter: Zimmer an ein Haus, dessen Fundament nie abgenommen wurde.</p>
+  </details>
+
+  <details><summary><span class="who">Der Grundsatz-Denker</span><span class="stance">Falsche Frage?</span></summary>
+    <p>„Was fehlt im Masterplan" ist die falsche Frage. Dem Masterplan fehlt nichts — er erstickt an sich selbst:
+    1635 Zeilen, v7-Status-Engine, dutzende Gate-JSONs, Blocker-Taxonomien. Du hast eine Governance-Maschine gebaut,
+    um Doku-Code-Drift zu verhindern — und die Maschine ist jetzt selbst die Drift-Quelle. Die eigentliche Frage:
+    Ist „Maturity &ge;90 / GA" das richtige Ziel f&uuml;r ein lokales Wissenssystem? Wenn ja, definiere „live fehlerfrei"
+    hart und wirf den Rest raus. Wenn nein, ist der halbe Apparat Gold-Plating.</p>
+  </details>
+
+  <details><summary><span class="who">Der Visionär</span><span class="stance">Was ist größer?</span></summary>
+    <p>Was keiner ausspricht: Der Code ist weiter als der Status zugibt. GIN, CSP, Prometheus sind schon gelandet.
+    Du bist vielleicht zwei, drei Fixes plus eine Infra-Entscheidung von GA entfernt, nicht einen ganzen Sprint.
+    Die KI-Provider-Integration (Ollama/OpenAI/Gemini) plus Analysis, Topics und Export haben aus dem
+    read-only-Speicher leise ein echtes RAG-Analyse-Produkt gemacht. Das ist gr&ouml;&szlig;er als „Wissensbasis V1".
+    Die Importcenter-Erweiterung mit PST-/Ordner-Import zeigt, wo das bei Telekom-Volumen wirklich bei&szlig;t.</p>
+  </details>
+
+  <details><summary><span class="who">Der Außenstehende</span><span class="stance">Frische Augen</span></summary>
+    <p>Ich kenne das Projekt nicht — und genau das ist der Punkt. Ich kann nicht erkennen, was fertig ist.
+    „82%", „68.7", „76", „NO-GO" auf demselben Projekt, dazu eine v7-Engine und f&uuml;nf Blocker-Pr&auml;fixe.
+    Ich br&auml;uchte einen Tag nur f&uuml;r die Taxonomie. Ein neuer Entwickler oder ein Dienstleister — dein Profil
+    nennt Offshoring und Dienstleisterwechsel als Risiko — w&auml;re verloren. Die eine Zahl, die z&auml;hlt,
+    „l&auml;uft es live fehlerfrei", finde ich nirgends. Das ist die Diagnose.</p>
+  </details>
+
+  <details><summary><span class="who">Der Macher</span><span class="stance">Montagmorgen</span></summary>
+    <p>Du kannst nicht weiterentwickeln, weil du nicht wei&szlig;t, wo du stehst. Erster Schritt:
+    <code>TEST_DATABASE_URL</code> setzen, echte Postgres hochziehen, <code>generate_masterplan_status_v3.py</code>
+    und die Gates neu laufen lassen. Dann siehst du in einer Stunde, welche Blocker durch die 06-18-Commits schon
+    gr&uuml;n sind. Wette: drei davon. Danach bleiben SCGB-01-Infra und SCGB-02 (deine NAV_ITEMS-Entscheidung, f&uuml;nf
+    Minuten). Alles andere — noch ein Feature, noch ein Gate-JSON — ist Ausweichen vor dieser einen Stunde Wahrheit.</p>
+  </details>
+
+  <div class="foot">
+    Methodik: „Der Rat" nach Andrej Karpathy (LLM Council), Claude-Chat-Adaption.
+    Blocker-Stand am Code verifiziert (Migrations-Chain, main.py-Middleware, /metrics-Endpoint, Git-Log) —
+    Reifegrad-Zahlen unver&auml;ndert aus den Reports &uuml;bernommen, nicht gesch&auml;tzt.
+  </div>
+</div>
+</body>
+</html>
