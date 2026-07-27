@@ -8,6 +8,7 @@ from app.api.v1.dashboard import router as dashboard_router
 from app.api.v1.data_quality import router as data_quality_router
 from app.api.v1.jobs import router as jobs_router
 from app.api.v1.search import router as search_router
+from app.api.v1.users import router as users_router
 
 # GUI-Erweiterungen
 from app.api.v1.status import router as status_router
@@ -44,6 +45,7 @@ router.include_router(chat_router)
 router.include_router(admin_router)
 router.include_router(jobs_router)
 router.include_router(auth_router)
+router.include_router(users_router)
 router.include_router(analysis_router)
 
 # GUI

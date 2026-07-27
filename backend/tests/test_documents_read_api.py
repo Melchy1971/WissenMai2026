@@ -126,7 +126,10 @@ def test_get_documents_excludes_archived_by_default_and_shows_with_filter(
             source_type="upload",
             mime_type="text/plain",
             content_hash="archived-doc",
-            import_status="chunked",
+            # 'pending': ohne current_version_id verbietet
+            # ck_documents_readable_status_requires_current_version jeden
+            # Lesestatus. Der Test prueft den Lifecycle-Filter, nicht den Import.
+            import_status="pending",
             lifecycle_status="archived",
             archived_at=archived_time,
             deleted_at=None,
@@ -164,7 +167,8 @@ def test_deleted_document_is_not_retrievable(
             source_type="upload",
             mime_type="text/plain",
             content_hash="deleted-doc",
-            import_status="chunked",
+            # siehe oben: ohne Version ist nur ein Nicht-Lesestatus zulaessig.
+            import_status="pending",
             lifecycle_status="deleted",
             archived_at=None,
             deleted_at=deleted_time,
@@ -227,7 +231,8 @@ def test_archive_document_cannot_mutate_foreign_workspace_document(
             source_type="upload",
             mime_type="text/plain",
             content_hash="foreign-hash",
-            import_status="chunked",
+            # siehe oben: ohne Version ist nur ein Nicht-Lesestatus zulaessig.
+            import_status="pending",
             lifecycle_status="active",
             created_at=created,
             updated_at=created,
@@ -604,7 +609,9 @@ def test_get_document_returns_409_when_completed_version_has_no_chunks(
         source_type="upload",
         mime_type="text/plain",
         content_hash="broken-no-chunks",
-        import_status="chunked",
+        # Endstatus wird erst nach dem Anlegen der Version gesetzt, sonst
+        # verletzt der Insert ck_documents_readable_status_requires_current_version.
+        import_status="pending",
         created_at=created_at,
         updated_at=created_at,
     )
@@ -627,6 +634,7 @@ def test_get_document_returns_409_when_completed_version_has_no_chunks(
     )
     db_session.flush()
     document.current_version_id = version_id
+    document.import_status = "chunked"
     db_session.commit()
 
     response = client.get(f"/documents/{document_id}")

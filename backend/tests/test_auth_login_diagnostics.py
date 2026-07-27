@@ -102,6 +102,7 @@ def test_user_inactive_logs_reason(db_session: Session) -> None:
     ws = Workspace(id=str(uuid4()), name="ws", is_default=False, created_at=now)
     user = User(
         id=str(uuid4()),
+        display_name="Inactive User",
         login="inactive@example.com",
         password_hash=hash_password("pw123", salt="inactive@example.com"),
         is_active=False,  # ← inactive
@@ -142,6 +143,7 @@ def test_password_mismatch_logs_reason(db_session: Session) -> None:
     ws = Workspace(id=str(uuid4()), name="ws2", is_default=False, created_at=now)
     user = User(
         id=str(uuid4()),
+        display_name="Active User",
         login="active@example.com",
         password_hash=hash_password("correct_pw", salt="active@example.com"),
         is_active=True,

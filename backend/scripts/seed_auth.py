@@ -168,6 +168,12 @@ def main():
                 id=DEFAULT_WORKSPACE_ID,
                 name=WORKSPACE_NAME,
                 is_default=True,
+                # Der Default-Workspace IST der gemeinsame Bereich (PO-Entscheidung
+                # 2026-07-24). ck_workspaces_kind_default_consistency erzwingt
+                # (kind='shared') <=> (is_default=true) — ohne kind schlaegt der
+                # Insert auf PostgreSQL fehl.
+                kind="shared",
+                owner_user_id=None,
                 created_at=now,
             )
             session.add(workspace)
@@ -175,6 +181,10 @@ def main():
         else:
             workspace.name = WORKSPACE_NAME
             workspace.is_default = True
+            # Muss mitgezogen werden, sonst verletzt das UPDATE den
+            # Consistency-Check (is_default=true, kind bliebe 'private').
+            workspace.kind = "shared"
+            workspace.owner_user_id = None
 
         user = _find_user(session)
         if user is None:

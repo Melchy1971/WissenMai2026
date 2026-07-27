@@ -315,6 +315,12 @@ def document_fixture(db_session: Session, auth_fixture: dict[str, str]) -> dict[
     updated = datetime(2026, 5, 1, 11, 0, tzinfo=UTC)
     older_created = datetime(2026, 4, 30, 10, 0, tzinfo=UTC)
 
+    # Reihenfolge ist erzwungen, nicht kosmetisch:
+    # ck_documents_readable_status_requires_current_version (Migration
+    # 20260504_0010) verbietet import_status='parsed'/'chunked' ohne
+    # current_version_id. Die Version braucht wegen des FK auf documents.id aber
+    # das Dokument. Also: erst 'pending' anlegen, dann Version, dann Endstatus —
+    # exakt der Weg, den auch die Import-Pipeline gehen muss.
     document = Document(
         id=DOCUMENT_ID,
         workspace_id=DEFAULT_WORKSPACE_ID,
@@ -324,7 +330,7 @@ def document_fixture(db_session: Session, auth_fixture: dict[str, str]) -> dict[
         source_type="upload",
         mime_type="text/plain",
         content_hash="hash-current",
-        import_status="chunked",
+        import_status="pending",
         created_at=created,
         updated_at=updated,
     )
@@ -337,7 +343,7 @@ def document_fixture(db_session: Session, auth_fixture: dict[str, str]) -> dict[
         source_type="upload",
         mime_type="text/markdown",
         content_hash="hash-older",
-        import_status="parsed",
+        import_status="pending",
         created_at=older_created,
         updated_at=older_created,
     )
@@ -374,7 +380,10 @@ def document_fixture(db_session: Session, auth_fixture: dict[str, str]) -> dict[
     db_session.flush()
 
     document.current_version_id = VERSION_ID
+    document.import_status = "chunked"
     older_document.current_version_id = OLDER_VERSION_ID
+    older_document.import_status = "parsed"
+    db_session.flush()
     db_session.add_all(
         [
             Chunk(

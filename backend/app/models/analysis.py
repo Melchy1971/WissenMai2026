@@ -165,6 +165,7 @@ class AnalysisResult(Base):
             "OR (status != 'approved' AND approved_by IS NULL AND approved_at IS NULL)",
             name="ck_analysis_results_approval_metadata",
         ),
+        UniqueConstraint("job_id", name="uq_analysis_results_job_id"),
         Index("ix_analysis_results_created_at", "created_at"),
         Index("ix_analysis_results_status", "status"),
     )
@@ -174,7 +175,6 @@ class AnalysisResult(Base):
         String,
         ForeignKey("analysis_jobs.id", ondelete="CASCADE"),
         nullable=False,
-        unique=True,
     )
     summary: Mapped[str] = mapped_column(Text, nullable=False)
     key_points: Mapped[list] = mapped_column(JSON_TYPE, nullable=False, default=list)
@@ -200,6 +200,7 @@ class AnalysisResult(Base):
 class AnalysisComparison(Base):
     __tablename__ = "analysis_comparisons"
     __table_args__ = (
+        UniqueConstraint("job_id", name="uq_analysis_comparisons_job_id"),
         Index("ix_analysis_comparisons_created_at", "created_at"),
     )
 
@@ -208,7 +209,6 @@ class AnalysisComparison(Base):
         String,
         ForeignKey("analysis_jobs.id", ondelete="CASCADE"),
         nullable=False,
-        unique=True,
     )
     overlaps: Mapped[list] = mapped_column(JSON_TYPE, nullable=False, default=list)
     differences: Mapped[list] = mapped_column(JSON_TYPE, nullable=False, default=list)

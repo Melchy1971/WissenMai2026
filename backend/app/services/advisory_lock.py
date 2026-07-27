@@ -17,6 +17,7 @@ _SCOPE_IDS = {
     "reindex": 3,
     "job_claim": 4,
     "job_replay": 5,
+    "user_provisioning": 6,
 }
 
 
@@ -60,6 +61,9 @@ class AdvisoryLockService:
 
     def acquire_job_replay_lock(self, *, job_id: str) -> None:
         self._acquire("job_replay", job_id)
+
+    def acquire_user_provisioning_lock(self, *, login: str) -> None:
+        self._acquire("user_provisioning", login)
 
     def _acquire(self, scope_name: str, resource_key: str) -> None:
         if not _is_postgresql(self._session):

@@ -376,3 +376,42 @@ class ExportTemplateNameConflictApiError(ApiError):
     status_code = 409
     code = "EXPORT_TEMPLATE_NAME_CONFLICT"
     message = "Export template name already in use"
+
+
+# --- Multi-user provisioning (Story 2) ---------------------------------------
+
+
+class UserAlreadyExistsApiError(ApiError):
+    status_code = 409
+    code = "USER_ALREADY_EXISTS"
+    message = "A user with this login already exists"
+
+
+class UserNotFoundApiError(ApiError):
+    status_code = 404
+    code = "USER_NOT_FOUND"
+    message = "User not found"
+
+
+class SharedWorkspaceMissingApiError(ApiError):
+    status_code = 409
+    code = "SHARED_WORKSPACE_MISSING"
+    message = "The shared workspace has not been initialized"
+
+
+class SharedWorkspaceExistsApiError(ApiError):
+    status_code = 409
+    code = "SHARED_WORKSPACE_EXISTS"
+    message = "A shared workspace already exists"
+
+
+class LastAdminProtectedApiError(ApiError):
+    status_code = 409
+    code = "LAST_ADMIN_PROTECTED"
+    message = "The shared workspace must retain at least one active admin"
+
+
+class PasswordPolicyViolatedApiError(ApiError):
+    status_code = 422
+    code = "PASSWORD_POLICY_VIOLATED"
+    message = "Password does not meet the required policy"
