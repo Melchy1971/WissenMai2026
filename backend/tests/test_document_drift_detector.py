@@ -132,6 +132,7 @@ def _add_doc_with_version(session, **doc_kwargs):
     session.add(ver)
     session.flush()
     doc.current_version_id = ver.id
+    doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
     return doc, ver
 
 
@@ -216,6 +217,7 @@ class TestVersionPresent:
         session.add(doc)
         session.flush()
         doc.current_version_id = ver.id
+        doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
         session.commit()
 
         findings = _detect(session)

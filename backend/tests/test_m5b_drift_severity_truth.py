@@ -98,6 +98,7 @@ def _make_doc(session, workspace_id=WS_ID, lifecycle_status="active",
     session.add(ver)
     session.flush()
     doc.current_version_id = ver.id
+    doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
     if not no_chunk:
         chunk = Chunk(
             id=str(uuid.uuid4()),
@@ -140,7 +141,7 @@ class TestDocumentDriftSeverity:
             id=str(uuid.uuid4()), workspace_id=WS_ID, owner_user_id=OWNER,
             current_version_id=None, title="Broken",
             source_type="upload", content_hash=str(uuid.uuid4()),
-            import_status="chunked", lifecycle_status="active",
+            import_status="pending", lifecycle_status="active",
             created_at=datetime.now(UTC), updated_at=datetime.now(UTC),
         )
         session.add(doc)
@@ -156,7 +157,7 @@ class TestDocumentDriftSeverity:
             id=str(uuid.uuid4()), workspace_id=WS_ID, owner_user_id=OWNER,
             current_version_id=None, title="Broken",
             source_type="upload", content_hash=str(uuid.uuid4()),
-            import_status="chunked", lifecycle_status="active",
+            import_status="pending", lifecycle_status="active",
             created_at=datetime.now(UTC), updated_at=datetime.now(UTC),
         )
         session.add(doc)
@@ -186,32 +187,9 @@ class TestMetadataDriftSeverity:
             assert f.severity in VALID_SEVERITIES
             assert f.finding_type == "METADATA_DRIFT"
 
-    def test_missing_title_produces_error(self, session):
-        # Document.title empty → MetadataDriftDetector._check_title → error
-        doc = Document(
-            id=str(uuid.uuid4()), workspace_id=WS_ID, owner_user_id=OWNER,
-            current_version_id=None,
-            title="   ",  # blank title triggers the check
-            source_type="upload", content_hash=str(uuid.uuid4()),
-            import_status="chunked", lifecycle_status="active",
-            created_at=datetime.now(UTC), updated_at=datetime.now(UTC),
-        )
-        session.add(doc)
-        session.flush()
-        ver = DocumentVersion(
-            id=str(uuid.uuid4()), document_id=doc.id, version_number=1,
-            normalized_markdown="# T", markdown_hash=str(uuid.uuid4()),
-            parser_version="1.0", ocr_used=False,
-            metadata_={"category": "tech", "summary": "ok"},
-            created_at=datetime.now(UTC),
-        )
-        session.add(ver)
-        session.flush()
-        doc.current_version_id = ver.id
-        session.commit()
-        findings = _detect_meta(session)
-        errors = [f for f in findings if f.severity == "error"]
-        assert len(errors) >= 1, "Blank Document.title must produce an error severity finding"
+    # test_missing_title_produces_error entfernt (2026-07-26): die Pruefung
+    # "Fehlender Titel" ist aus dem MetadataDriftDetector entfernt, weil
+    # ck_documents_title_not_blank einen leeren Titel gar nicht zulaesst.
 
     def test_missing_category_produces_warning(self, session):
         _make_doc(session, meta={"summary": "ok", "title": "Doc"})

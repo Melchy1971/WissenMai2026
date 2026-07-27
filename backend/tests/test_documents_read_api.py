@@ -527,33 +527,10 @@ def test_document_lifecycle_updates_historical_chat_citation_source_status(
     assert deleted_citation.source_status == "deleted"
 
 
-def test_get_document_returns_409_when_document_has_no_version(
-    client: TestClient,
-    db_session: Session,
-) -> None:
-    document_id = "00000000-0000-0000-0000-000000000401"
-    db_session.add(
-        Document(
-            id=document_id,
-            workspace_id=DEFAULT_WORKSPACE_ID,
-            owner_user_id=DEFAULT_USER_ID,
-            current_version_id=None,
-            title="Broken",
-            source_type="upload",
-            mime_type="text/plain",
-            content_hash="broken-no-version",
-            import_status="chunked",
-            created_at=datetime(2026, 5, 2, 10, 0, tzinfo=UTC),
-            updated_at=datetime(2026, 5, 2, 10, 0, tzinfo=UTC),
-        )
-    )
-    db_session.commit()
-
-    response = client.get(f"/documents/{document_id}")
-
-    assert response.status_code == 409
-    assert response.json()["error"]["code"] == "DOCUMENT_STATE_CONFLICT"
-    assert response.json()["error"]["message"] == "Document exists without a latest version"
+# test_get_document_returns_409_when_document_has_no_version entfernt (2026-07-26):
+# Der Test baute ein Dokument mit import_status='chunked' ohne current_version_id.
+# ck_documents_readable_status_requires_current_version schliesst diesen Zustand aus,
+# der zugehoerige 409-Zweig in read_service war toter Code und ist entfernt.
 
 
 def test_get_document_returns_pending_document_without_version(
@@ -658,7 +635,9 @@ def test_duplicate_document_content_hash_is_rejected_by_test_database(
             source_type="upload",
             mime_type="text/plain",
             content_hash="hash-current",
-            import_status="chunked",
+            # 'pending', damit wirklich uq_documents_workspace_content_hash
+            # ausloest und nicht vorher der Lesestatus-Check.
+            import_status="pending",
             created_at=datetime(2026, 5, 2, 10, 0, tzinfo=UTC),
             updated_at=datetime(2026, 5, 2, 10, 0, tzinfo=UTC),
         )

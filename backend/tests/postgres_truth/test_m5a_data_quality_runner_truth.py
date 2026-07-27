@@ -156,11 +156,11 @@ def test_runner_sets_failed_status_on_error(
     truth_seed: dict[str, str],
 ) -> None:
     from unittest.mock import patch
-    from app.services.data_quality_runner import InvalidLifecycleDetector
+    from app.services.metadata_quality_detector import MetadataQualityDetector
 
     run_id = str(uuid.uuid4())
     with patch.object(
-        InvalidLifecycleDetector, "detect", side_effect=RuntimeError("injected")
+        MetadataQualityDetector, "detect", side_effect=RuntimeError("injected")
     ):
         with pytest.raises(RuntimeError):
             _run(truth_session, truth_seed["workspace_id"], run_id=run_id)

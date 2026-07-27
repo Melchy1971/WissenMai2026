@@ -61,7 +61,7 @@ def _doc(session: Session, wid: str) -> str:
             title="doc",
             source_type="upload",
             content_hash=uuid.uuid4().hex,
-            import_status="parsed",
+            import_status="pending",
             lifecycle_status="active",
             created_at=_now(),
             updated_at=_now(),
@@ -89,6 +89,7 @@ def _version(session: Session, doc_id: str) -> str:
     session.flush()
     doc = session.get(Document, doc_id)
     doc.current_version_id = vid
+    doc.import_status = "parsed"  # Endstatus erst mit Version zulaessig
     session.flush()
     return vid
 

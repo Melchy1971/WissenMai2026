@@ -16,14 +16,9 @@ from app.models.data_quality import DataQualityFinding, DataQualityRun
 from app.models.documents import Base
 from app.services.data_quality_runner import (
     DataQualityRunner,
-    DuplicateDetector,
-    EmptyChunkDetector,
-    InvalidLifecycleDetector,
     LifecycleIntegrityDetector,
     MetadataQualityDetector,
-    MissingMetadataDetector,
     OrphanObjectDetector,
-    OrphanChunkDetector,
     RunResult,
     SourceStatusIntegrityDetector,
     _calculate_score,
@@ -105,63 +100,11 @@ class TestCalculateScore:
 # Skeleton detectors — return empty (no DB data)
 # ---------------------------------------------------------------------------
 
-class TestSkeletonDetectors:
-    def test_orphan_chunk_detector_returns_list(self, session, engine):
-        wid = _workspace_id()
-        _seed_workspace(session, wid)
-        d = OrphanChunkDetector(session, wid)
-        result = d.detect()
-        assert isinstance(result, list)
+# TestSkeletonDetectors entfernt (2026-07-26): OrphanChunkDetector,
+# EmptyChunkDetector, InvalidLifecycleDetector und MissingMetadataDetector
+# sind aus dem Runner entfernt. Begruendung im Modulkopf von
+# app/services/data_quality_runner.py.
 
-    def test_empty_chunk_detector_returns_list(self, session):
-        d = EmptyChunkDetector(session, _workspace_id())
-        assert isinstance(d.detect(), list)
-
-    def test_invalid_lifecycle_detector_empty_db(self, session, engine):
-        wid = _workspace_id()
-        _seed_workspace(session, wid)
-        d = InvalidLifecycleDetector(session, wid)
-        assert d.detect() == []
-
-    def test_missing_metadata_detector_empty_db(self, session, engine):
-        wid = _workspace_id()
-        _seed_workspace(session, wid)
-        d = MissingMetadataDetector(session, wid)
-        assert d.detect() == []
-
-    def test_invalid_lifecycle_finding_shape(self, session, engine):
-        """Detector returns correctly shaped dicts when violations exist."""
-        from app.models.documents import Document
-        wid = _workspace_id()
-        _seed_workspace(session, wid)
-        session.add(Document(
-            id=str(uuid.uuid4()),
-            workspace_id=wid,
-            owner_user_id="u1",
-            title="doc",
-            source_type="upload",
-            content_hash="abc",
-            import_status="parsed",
-            lifecycle_status="INVALID",  # violates constraint in Postgres; SQLite ignores CHECK
-            created_at=datetime.now(UTC),
-            updated_at=datetime.now(UTC),
-        ))
-        session.flush()
-        d = InvalidLifecycleDetector(session, wid)
-        findings = d.detect()
-        for f in findings:
-            assert "finding_type" in f
-            assert "severity" in f
-            assert "title" in f
-            assert "description" in f
-            assert "remediation" in f
-            # No automated repair field
-            assert "remediation_applied" not in f
-
-
-# ---------------------------------------------------------------------------
-# DataQualityRunner — run lifecycle
-# ---------------------------------------------------------------------------
 
 class TestDataQualityRunnerLifecycle:
     @pytest.mark.m3a_truth
@@ -170,7 +113,6 @@ class TestDataQualityRunnerLifecycle:
         _seed_workspace(session, wid)
 
         with (
-            patch.object(DuplicateDetector, "detect", return_value=[]),
             patch.object(MetadataQualityDetector, "detect", return_value=[]),
             patch.object(SourceStatusIntegrityDetector, "detect", return_value=[]),
             patch.object(OrphanObjectDetector, "detect", return_value=[]),
@@ -201,7 +143,6 @@ class TestDataQualityRunnerLifecycle:
         _seed_workspace(session, wid)
 
         with (
-            patch.object(DuplicateDetector, "detect", return_value=[]),
             patch.object(MetadataQualityDetector, "detect", return_value=[]),
             patch.object(LifecycleIntegrityDetector, "detect", return_value=[]),
             patch.object(OrphanObjectDetector, "detect", return_value=[]),
@@ -232,7 +173,6 @@ class TestDataQualityRunnerLifecycle:
         _seed_workspace(session, wid)
 
         with (
-            patch.object(DuplicateDetector, "detect", return_value=[]),
             patch.object(MetadataQualityDetector, "detect", return_value=[]),
             patch.object(LifecycleIntegrityDetector, "detect", return_value=[]),
             patch.object(SourceStatusIntegrityDetector, "detect", return_value=[]),
@@ -337,7 +277,7 @@ class TestDataQualityRunnerLifecycle:
         runner = DataQualityRunner.from_session(session, wid)
         run_id = str(uuid.uuid4())
         with patch.object(
-            InvalidLifecycleDetector, "detect", side_effect=RuntimeError("db error")
+            MetadataQualityDetector, "detect", side_effect=RuntimeError("db error")
         ):
             with pytest.raises(RuntimeError):
                 runner.run(run_id=run_id)

@@ -3,7 +3,6 @@
 Erkennt Dokumente mit fehlenden oder leeren Pflichtmetadaten.
 
 Regeln:
-  MQ-1  documents.title leer/whitespace            → MISSING_METADATA  error
   MQ-2  metadata["tags"] fehlt oder leer           → MISSING_METADATA  warning
   MQ-3  metadata["category"] fehlt oder leer       → MISSING_METADATA  warning
   MQ-4  metadata["doc_type"] fehlt oder leer       → MISSING_METADATA  warning
@@ -17,7 +16,7 @@ Contracts:
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from sqlalchemy import select
@@ -42,25 +41,17 @@ class MetadataQualityConfig:
 @dataclass(frozen=True)
 class _MetadataRule:
     id: str
-    key: str            # "title" for MQ-1, else the metadata_ key
+    key: str            # Schluessel in DocumentVersion.metadata_
     severity: str
     title: str
     description_tmpl: str  # {doc_id} and optionally {key} are substituted
     remediation: str
 
 
+# MQ-1 (leerer Dokumenttitel) wurde am 2026-07-26 entfernt, siehe Kommentar an
+# der Stelle von _check_title(). Die Regel ist durch ck_documents_title_not_blank
+# abgedeckt und konnte auf PostgreSQL nie ausloesen.
 _RULES: tuple[_MetadataRule, ...] = (
-    _MetadataRule(
-        id="MQ-1",
-        key="title",
-        severity="error",
-        title="Leerer Dokumenttitel",
-        description_tmpl=(
-            "Dokument {doc_id} hat einen leeren oder nur Whitespace enthaltenden Titel. "
-            "Ein aussagekraeftiger Titel ist Pflicht."
-        ),
-        remediation="Titel des Dokuments setzen. Keine automatische Reparatur.",
-    ),
     _MetadataRule(
         id="MQ-2",
         key="tags",
@@ -144,33 +135,15 @@ class MetadataQualityDetector:
 
     def detect(self) -> list[dict[str, Any]]:
         findings: list[dict[str, Any]] = []
-        findings.extend(self._check_title())
         findings.extend(self._check_version_metadata())
         return findings
 
-    # ── MQ-1: empty title ────────────────────────────────────────────────────
-
-    def _check_title(self) -> list[dict[str, Any]]:
-        rule = _RULES[0]  # MQ-1
-        rows = self._session.scalars(
-            select(Document.id)
-            .where(
-                Document.workspace_id == self._workspace_id,
-                Document.lifecycle_status == _ACTIVE_STATUS,
-            )
-            .limit(self._config.limit_per_rule)
-        ).all()
-
-        findings = []
-        for doc_id in rows:
-            doc = self._session.get(Document, doc_id)
-            if doc and _is_empty(doc.title):
-                findings.append(self._make_finding(
-                    rule=rule,
-                    doc_id=str(doc_id),
-                    version_id=None,
-                ))
-        return findings
+    # ── MQ-1 entfernt (2026-07-26) ───────────────────────────────────────────
+    #
+    # Die Regel meldete leere oder reine Whitespace-Titel. Genau das verbietet
+    # ck_documents_title_not_blank (Migration 20260504_0006, "length(trim(title)) > 0").
+    # Auf PostgreSQL konnte die Regel nie ein Finding erzeugen; sie war nur in der
+    # SQLite-Testbasis sichtbar, weil dort die Constraints fehlten.
 
     # ── MQ-2..5: version metadata keys ───────────────────────────────────────
 
@@ -204,7 +177,7 @@ class MetadataQualityDetector:
             version = versions[version_id]
             metadata = version.metadata_ or {}
 
-            for rule in _RULES[1:]:  # MQ-2..5
+            for rule in _RULES:  # MQ-2..5
                 if _is_empty(metadata.get(rule.key)):
                     findings.append(self._make_finding(
                         rule=rule,

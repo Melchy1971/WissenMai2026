@@ -93,8 +93,10 @@ class DocumentReadService:
         record = self._repository.get_document_detail(document_id, workspace_id=workspace_id)
         if record is None:
             raise DocumentNotFoundError(document_id)
-        if record.version_id is None and record.import_status in {"parsed", "chunked"}:
-            raise DocumentStateConflictError("Document exists without a latest version")
+        # Frueher stand hier ein 409 fuer "parsed/chunked ohne Version". Der
+        # Zustand ist seit Migration 20260504_0010 durch
+        # ck_documents_readable_status_requires_current_version ausgeschlossen;
+        # der Zweig war toter Code. Entfernt 2026-07-26.
         if record.version_id is None:
             return self._build_unversioned_detail(record)
         if record.import_status == "chunked" and record.chunk_count == 0:

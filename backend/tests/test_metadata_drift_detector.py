@@ -61,7 +61,7 @@ def _doc(title="Valid Title"):
         title=title,
         source_type="upload",
         content_hash=str(uuid.uuid4()),
-        import_status="chunked",
+        import_status="pending",
         lifecycle_status="active",
         created_at=now,
         updated_at=now,
@@ -90,6 +90,7 @@ def _add_doc_with_version(session, title="Valid Title", metadata=None):
     session.add(ver)
     session.flush()
     doc.current_version_id = ver.id
+    doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
     session.commit()
     return doc, ver
 
@@ -102,41 +103,10 @@ def _detect(session):
 # Check 1: Fehlender Titel
 # ---------------------------------------------------------------------------
 
-class TestMissingTitle:
-    def test_empty_title(self, session):
-        doc = _doc(title="")
-        session.add(doc)
-        session.commit()
+# TestMissingTitle entfernt (2026-07-26): die Pruefung "Fehlender Titel" ist aus
+# dem MetadataDriftDetector entfernt, weil ck_documents_title_not_blank sie
+# unerreichbar macht.
 
-        findings = _detect(session)
-        assert any(
-            f.finding_type == "METADATA_DRIFT"
-            and f.detail.get("check") == "missing_title"
-            and f.severity == "error"
-            for f in findings
-        )
-
-    def test_whitespace_only_title(self, session):
-        doc = _doc(title="   ")
-        session.add(doc)
-        session.commit()
-
-        findings = _detect(session)
-        assert any(
-            f.detail.get("check") == "missing_title"
-            for f in findings
-        )
-
-    def test_valid_title_no_finding(self, session):
-        doc, ver = _add_doc_with_version(session, title="A real title")
-        findings = _detect(session)
-        title_findings = [f for f in findings if f.detail and f.detail.get("check") == "missing_title"]
-        assert len(title_findings) == 0
-
-
-# ---------------------------------------------------------------------------
-# Check 2: Fehlende Kategorie
-# ---------------------------------------------------------------------------
 
 class TestMissingCategory:
     def test_no_category_key(self, session):
@@ -198,6 +168,7 @@ class TestMissingSummary:
         session.add(ver)
         session.flush()
         doc.current_version_id = ver.id
+        doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
         session.commit()
 
         findings = _detect(session)
@@ -227,6 +198,7 @@ class TestInconsistentMetadata:
         session.add_all([v1, v2])
         session.flush()
         doc.current_version_id = v2.id
+        doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
         session.commit()
 
         findings = _detect(session)
@@ -243,6 +215,7 @@ class TestInconsistentMetadata:
         session.add_all([v1, v2])
         session.flush()
         doc.current_version_id = v2.id
+        doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
         session.commit()
 
         findings = _detect(session)
@@ -262,6 +235,7 @@ class TestInconsistentMetadata:
         session.add_all([v1, v2])
         session.flush()
         doc.current_version_id = v2.id
+        doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
         session.commit()
 
         findings = _detect(session)

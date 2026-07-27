@@ -171,7 +171,7 @@ class TestDocumentCountUnchanged:
             owner_user_id=OWNER_ID, current_version_id=None,
             title="Broken", source_type="upload",
             content_hash=str(uuid.uuid4()),
-            import_status="chunked", lifecycle_status="active",
+            import_status="pending", lifecycle_status="active",
             created_at=datetime.now(UTC), updated_at=datetime.now(UTC),
         )
         session.add(doc)

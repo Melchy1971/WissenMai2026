@@ -27,7 +27,7 @@ def _doc(session, workspace_id, title="doc", lifecycle_status="active"):
     session.add(Document(
         id=did, workspace_id=workspace_id, owner_user_id="u", title=title,
         source_type="upload", content_hash=uuid.uuid4().hex,
-        import_status="parsed", lifecycle_status=lifecycle_status,
+        import_status="pending", lifecycle_status=lifecycle_status,
         created_at=_now(), updated_at=_now(),
     ))
     session.flush()
@@ -46,6 +46,7 @@ def _version(session, doc_id, metadata=None):
     session.flush()
     doc = session.get(Document, doc_id)
     doc.current_version_id = vid
+    doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
     session.flush()
     return vid
 

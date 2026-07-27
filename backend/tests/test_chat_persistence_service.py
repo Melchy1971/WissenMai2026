@@ -50,7 +50,7 @@ def chat_session(chat_engine):
             source_type="upload",
             mime_type="text/plain",
             content_hash="hash-current",
-            import_status="chunked",
+            import_status="pending",
             created_at=created,
             updated_at=created,
         )
@@ -327,6 +327,7 @@ def test_historical_chat_replay_survives_version_replacement(chat_session: Sessi
     chat_session.add(replacement_chunk)
     chat_session.flush()
     document.current_version_id = replacement_version.id
+    document.import_status = "chunked"  # Endstatus erst mit Version zulaessig
     document.updated_at = created
     chat_session.add(document)
     chat_session.commit()

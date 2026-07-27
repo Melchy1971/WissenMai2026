@@ -55,7 +55,7 @@ def _doc(session, wid, title="doc", lifecycle_status="active", content_hash=None
     session.add(Document(
         id=did, workspace_id=wid, owner_user_id="u", title=title,
         source_type="upload", content_hash=content_hash or uuid.uuid4().hex,
-        import_status="parsed", lifecycle_status=lifecycle_status,
+        import_status="pending", lifecycle_status=lifecycle_status,
         created_at=_now(), updated_at=_now(),
     ))
     session.flush()
@@ -76,6 +76,7 @@ def _version(session, doc_id, metadata=None):
     # Link version to document
     doc = session.get(Document, doc_id)
     doc.current_version_id = vid
+    doc.import_status = "parsed"  # Endstatus erst mit Version zulaessig
     session.flush()
     return vid
 
@@ -93,43 +94,6 @@ def _detect(session, wid, **kwargs):
 # MQ-1: empty title
 # ---------------------------------------------------------------------------
 
-class TestMQ1EmptyTitle:
-    def test_empty_title_produces_finding(self, session, engine):
-        wid = _wid(); _seed_ws(session, wid)
-        did = _doc(session, wid, title="")
-        session.commit()
-        findings = _detect(session, wid)
-        assert any(f["document_id"] == did and f["severity"] == "error" for f in findings)
-
-    def test_whitespace_title_produces_finding(self, session, engine):
-        wid = _wid(); _seed_ws(session, wid)
-        did = _doc(session, wid, title="   ")
-        session.commit()
-        assert any(f["document_id"] == did for f in _detect(session, wid))
-
-    def test_valid_title_no_finding(self, session, engine):
-        wid = _wid(); _seed_ws(session, wid)
-        _doc(session, wid, title="Valid Title")
-        session.commit()
-        findings = [f for f in _detect(session, wid) if f["severity"] == "error"]
-        assert len(findings) == 0
-
-    def test_archived_empty_title_ignored(self, session, engine):
-        wid = _wid(); _seed_ws(session, wid)
-        _doc(session, wid, title="", lifecycle_status="archived")
-        session.commit()
-        assert len(_detect(session, wid)) == 0
-
-    def test_deleted_empty_title_ignored(self, session, engine):
-        wid = _wid(); _seed_ws(session, wid)
-        _doc(session, wid, title="", lifecycle_status="deleted")
-        session.commit()
-        assert len(_detect(session, wid)) == 0
-
-
-# ---------------------------------------------------------------------------
-# MQ-2..5: version metadata
-# ---------------------------------------------------------------------------
 
 class TestVersionMetadata:
     def test_missing_tags_produces_warning(self, session, engine):
@@ -203,13 +167,15 @@ class TestWorkspaceIsolation:
     def test_findings_scoped_to_workspace(self, session, engine):
         wa, wb = _wid(), _wid()
         _seed_ws(session, wa); _seed_ws(session, wb)
-        _doc(session, wa, title="")   # finding in wa
-        _doc(session, wb, title="")   # finding in wb
+        _version(session, _doc(session, wa), metadata={})   # finding in wa
+        _version(session, _doc(session, wb), metadata={})   # finding in wb
         session.commit()
         fa = _detect(session, wa)
         fb = _detect(session, wb)
         assert all(f["document_id"] != "" for f in fa)
-        assert all(f["severity"] == "error" for f in fa)
+        # Seit dem Entfernen von MQ-1 gibt es keine error-Severity mehr;
+        # MQ-2..4 sind warning, MQ-5 ist info.
+        assert all(f["severity"] in ("warning", "info") for f in fa)
         # Each WS only sees own documents
         wa_docs = {r.id for r in session.scalars(
             __import__("sqlalchemy").select(Document).where(Document.workspace_id == wa)).all()}
@@ -227,7 +193,8 @@ class TestNoMutations:
     def test_detect_does_not_mutate_documents(self, session, engine):
         from sqlalchemy import select as sa_select, text
         wid = _wid(); _seed_ws(session, wid)
-        did = _doc(session, wid, title="")
+        did = _doc(session, wid)
+        _version(session, did, metadata={})
         session.commit()
         snap_before = session.execute(
             text("SELECT id, title, lifecycle_status FROM documents WHERE workspace_id=:w"),
@@ -245,14 +212,19 @@ class TestNoMutations:
 # ---------------------------------------------------------------------------
 
 class TestConfigurableLimit:
-    def test_limit_caps_mq1_findings(self, session, engine):
+    def test_limit_caps_findings_per_rule(self, session, engine):
+        """limit_per_rule begrenzt die geprueften Dokumente, nicht die Regeln.
+
+        Frueher gegen MQ-1 formuliert. MQ-1 ist entfernt; der Grenzwert wirkt
+        jetzt ueber MQ-2..5, die pro Dokument je ein Finding erzeugen.
+        """
         wid = _wid(); _seed_ws(session, wid)
         for _ in range(10):
-            _doc(session, wid, title="")
+            _version(session, _doc(session, wid), metadata={})
         session.commit()
         findings = _detect(session, wid, limit_per_rule=3)
-        mq1 = [f for f in findings if f["severity"] == "error"]
-        assert len(mq1) <= 3
+        betroffene_dokumente = {f["document_id"] for f in findings}
+        assert len(betroffene_dokumente) <= 3
 
 
 # ---------------------------------------------------------------------------
@@ -262,7 +234,7 @@ class TestConfigurableLimit:
 class TestFindingShape:
     def test_all_required_keys_present(self, session, engine):
         wid = _wid(); _seed_ws(session, wid)
-        _doc(session, wid, title="")
+        _version(session, _doc(session, wid), metadata={})
         session.commit()
         required = {"finding_type", "severity", "document_id", "version_id",
                     "chunk_id", "title", "description", "remediation"}
@@ -271,21 +243,21 @@ class TestFindingShape:
 
     def test_no_run_id_in_finding(self, session, engine):
         wid = _wid(); _seed_ws(session, wid)
-        _doc(session, wid, title="")
+        _version(session, _doc(session, wid), metadata={})
         session.commit()
         for f in _detect(session, wid):
             assert "run_id" not in f
 
     def test_finding_type_is_missing_metadata(self, session, engine):
         wid = _wid(); _seed_ws(session, wid)
-        _doc(session, wid, title="")
+        _version(session, _doc(session, wid), metadata={})
         session.commit()
         for f in _detect(session, wid):
             assert f["finding_type"] == _FINDING_TYPE
 
     def test_severity_in_allowed_set(self, session, engine):
         wid = _wid(); _seed_ws(session, wid)
-        did = _doc(session, wid, title="")
+        did = _doc(session, wid)
         _version(session, did, metadata={})
         session.commit()
         for f in _detect(session, wid):

@@ -57,9 +57,11 @@ if ($rcOrm -ne 0) {
 
 # ---------------------------------------------------------------------------
 Step 2 "Ist-Stand vor dem Upgrade: Head + Zeilenzahlen der Drop-Kandidaten"
-Push-Location backend
-& $py -m alembic -c alembic.ini current
-Pop-Location
+# Achtung: alembic.ini setzt script_location = backend/migrations, also relativ
+# zum Repo-Root. Der alembic-CLI funktioniert deshalb NUR vom Repo-Root aus.
+# Alle Python-Aufrufer (bootstrap_local_backend.py, tests/integration/*)
+# ueberschreiben script_location und sind davon nicht betroffen.
+& $py -m alembic -c backend\alembic.ini current
 
 $countSql = @"
 SELECT c.relname AS tabelle, (SELECT count(*) FROM pg_class x WHERE x.oid = c.oid) AS existiert
@@ -87,11 +89,9 @@ Write-Host "Enthaelt eine der ersten vier Tabellen Zeilen, bricht Schritt 3 ab. 
 
 # ---------------------------------------------------------------------------
 Step 3 "alembic upgrade head (0027 -> 0028 -> 0029)"
-Push-Location backend
-& $py -m alembic -c alembic.ini upgrade head
+& $py -m alembic -c backend\alembic.ini upgrade head
 $rcUpgrade = $LASTEXITCODE
-& $py -m alembic -c alembic.ini current
-Pop-Location
+& $py -m alembic -c backend\alembic.ini current
 
 # ---------------------------------------------------------------------------
 Step 4 "Constraint-Proben + Round-Trip auf der echten DB"

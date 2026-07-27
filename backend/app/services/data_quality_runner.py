@@ -1,7 +1,10 @@
 """M5a Data Quality Runner.
 
-Starts a DataQualityRun, executes skeleton detectors, collects findings,
-computes a placeholder quality_score, and closes the run.
+Starts a DataQualityRun, executes the aktiven Detektoren, collects findings,
+computes a quality_score, and closes the run.
+
+Seit 2026-07-26 laufen vier statt acht Detektoren — Begruendung im Abschnitt
+"Entfernte Detektoren" weiter unten.
 
 Contracts:
 - Read-only on document data — no mutations outside data_quality_* tables.
@@ -18,12 +21,9 @@ from datetime import datetime, timezone
 UTC = timezone.utc
 from typing import Any, Protocol
 
-from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from app.models.data_quality import DataQualityFinding, DataQualityRun
-from app.models.documents import Chunk, Document, DocumentVersion
-from app.services.duplicate_detector import DuplicateDetector
 from app.services.lifecycle_integrity_detector import LifecycleIntegrityDetector
 from app.services.metadata_quality_detector import MetadataQualityDetector
 from app.services.orphan_detector import OrphanObjectDetector
@@ -60,117 +60,29 @@ class Detector(Protocol):
 
 
 # ---------------------------------------------------------------------------
-# Skeleton detectors
+# Entfernte Detektoren (2026-07-26)
 # ---------------------------------------------------------------------------
-
-class OrphanChunkDetector:
-    """Chunks whose document_id has no matching row in documents."""
-
-    _FINDING_TYPE = "ORPHAN_CHUNK"
-    _SEVERITY = "error"
-
-    def __init__(self, session: Session, workspace_id: str) -> None:
-        self._session = session
-        self._workspace_id = workspace_id
-
-    def detect(self) -> list[dict[str, Any]]:
-        # Skeleton: full cross-join deferred to M5a detector slice.
-        # PostgreSQL-specific query (IS DISTINCT FROM) omitted intentionally.
-        return []  # TODO: implement full cross-join in M5a slice
-
-
-class EmptyChunkDetector:
-    """Chunks with empty or whitespace-only content."""
-
-    _FINDING_TYPE = "EMPTY_CHUNK"
-    _SEVERITY = "warning"
-
-    def __init__(self, session: Session, workspace_id: str) -> None:
-        self._session = session
-        self._workspace_id = workspace_id
-
-    def detect(self) -> list[dict[str, Any]]:
-        # Skeleton: workspace join requires document → version → chunk.
-        # Full implementation deferred to dedicated slice.
-        return []  # TODO
+#
+# Fuenf der urspruenglich acht Detektoren konnten auf PostgreSQL nie ein Finding
+# erzeugen. Vier davon pruefen Zustaende, die das Schema bereits ausschliesst,
+# zwei waren nie ueber das Skelett hinausgekommen:
+#
+#   DuplicateDetector       -> uq_documents_workspace_content_hash (0005)
+#   InvalidLifecycleDetector-> ck_documents_lifecycle_status_allowed (0006);
+#                              die erlaubte Menge des Detektors war sogar weiter
+#                              als die der DB (enthielt 'pending')
+#   MissingMetadataDetector -> ck_documents_title_not_blank (0006); dritte Kopie
+#                              derselben Titelpruefung neben MQ-1 und dem
+#                              MetadataDriftDetector
+#   OrphanChunkDetector     -> Skelett, detect() lieferte immer []
+#   EmptyChunkDetector      -> Skelett, detect() lieferte immer [];
+#                              ck_document_chunks_content_not_blank deckt es ab
+#
+# Konsequenz fuer den Quality Score: er wurde bisher aus acht Detektoren
+# gebildet, von denen fuenf strukturell nie ausschlagen konnten.
 
 
-class InvalidLifecycleDetector:
-    """Documents with lifecycle_status outside the allowed set."""
 
-    _ALLOWED = frozenset({"active", "archived", "deleted", "pending"})
-    _FINDING_TYPE = "INVALID_LIFECYCLE"
-    _SEVERITY = "error"
-
-    def __init__(self, session: Session, workspace_id: str) -> None:
-        self._session = session
-        self._workspace_id = workspace_id
-
-    def detect(self) -> list[dict[str, Any]]:
-        rows = self._session.execute(
-            select(Document.id, Document.lifecycle_status)
-            .where(
-                Document.workspace_id == self._workspace_id,
-                Document.lifecycle_status.notin_(list(self._ALLOWED)),
-            )
-            .limit(200)
-        ).all()
-        return [
-            {
-                "finding_type": self._FINDING_TYPE,
-                "severity": self._SEVERITY,
-                "document_id": str(row.id),
-                "version_id": None,
-                "chunk_id": None,
-                "title": "Invalid lifecycle_status",
-                "description": (
-                    f"Document {row.id} has lifecycle_status='{row.lifecycle_status}', "
-                    f"which is not in {sorted(self._ALLOWED)}."
-                ),
-                "remediation": (
-                    "Inspect document and correct lifecycle_status. "
-                    "No automated repair — manual review required."
-                ),
-            }
-            for row in rows
-        ]
-
-
-class MissingMetadataDetector:
-    """Documents with an empty title."""
-
-    _FINDING_TYPE = "MISSING_METADATA"
-    _SEVERITY = "warning"
-
-    def __init__(self, session: Session, workspace_id: str) -> None:
-        self._session = session
-        self._workspace_id = workspace_id
-
-    def detect(self) -> list[dict[str, Any]]:
-        rows = self._session.execute(
-            select(Document.id)
-            .where(
-                Document.workspace_id == self._workspace_id,
-                func.trim(Document.title) == "",
-            )
-            .limit(200)
-        ).all()
-        return [
-            {
-                "finding_type": self._FINDING_TYPE,
-                "severity": self._SEVERITY,
-                "document_id": str(row.id),
-                "version_id": None,
-                "chunk_id": None,
-                "title": "Missing document title",
-                "description": f"Document {row.id} has an empty title.",
-                "remediation": (
-                    "Set a meaningful title on the document. "
-                    "No automated repair — manual update required."
-                ),
-            }
-            for row in rows
-        ]
 
 
 # ---------------------------------------------------------------------------
@@ -273,15 +185,17 @@ class DataQualityRunner:
         return run
 
     def _execute_detectors(self) -> list[dict[str, Any]]:
+        # DuplicateDetector entfernt (2026-07-26). Er suchte innerhalb eines
+        # Workspace nach mehreren aktiven Dokumenten mit gleichem content_hash.
+        # Genau das schliesst uq_documents_workspace_content_hash (Migration
+        # 20260504_0005) aus; der Import-Pfad meldet Kollisionen bereits beim
+        # Anlegen als DUPLICATE_DOCUMENT (import_status='duplicate'). Der
+        # Detektor konnte auf PostgreSQL nie ein Finding erzeugen.
         detectors: list[Detector] = [
-            DuplicateDetector(self._session, self._workspace_id),
             MetadataQualityDetector(self._session, self._workspace_id),
             LifecycleIntegrityDetector(self._session, self._workspace_id),
             SourceStatusIntegrityDetector(self._session, self._workspace_id),
             OrphanObjectDetector(self._session, self._workspace_id),
-            EmptyChunkDetector(self._session, self._workspace_id),
-            InvalidLifecycleDetector(self._session, self._workspace_id),
-            MissingMetadataDetector(self._session, self._workspace_id),
         ]
         findings: list[dict[str, Any]] = []
         for detector in detectors:

@@ -41,12 +41,19 @@ down_revision: str | None = "20260724_0027"
 branch_labels = None
 depends_on = None
 
-# Reihenfolge: Kinder vor Eltern (FK-Abhaengigkeiten).
+# Drop-Reihenfolge: Kinder vor Eltern. Die FK-Kanten zwischen den vier Tabellen
+# (aus Migration 20260430_0004, Tabellennamen nach dem rename in 0021):
+#
+#   analysis_group_documents      --fk_ag_docs_group_id-->        analysis_groups
+#   analysis_results_legacy       --fk_analysis_results_group_id--> analysis_groups
+#   analysis_result_sources_legacy--fk_analysis_sources_result_id-> analysis_results_legacy
+#
+# analysis_groups muss deshalb ZULETZT fallen, nicht als zweites.
 DEAD_TABLES = (
     "analysis_group_documents",
-    "analysis_groups",
     "analysis_result_sources_legacy",
     "analysis_results_legacy",
+    "analysis_groups",
 )
 
 ANALYSIS_STATUSES = "'draft', 'review', 'approved', 'archived'"
@@ -87,29 +94,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    """Stellt die Struktur wieder her. Daten sind nicht wiederherstellbar."""
-    op.create_table(
-        "analysis_results_legacy",
-        sa.Column("id", sa.String(), primary_key=True),
-        sa.Column("analysis_group_id", sa.String(), nullable=False),
-        sa.Column("result_type", sa.String(length=32), nullable=False),
-        sa.Column("status", sa.String(length=32), nullable=False, server_default="draft"),
-        sa.Column("result_markdown", sa.Text(), nullable=True),
-        sa.Column("commit_ref", sa.String(length=255), nullable=True),
-        sa.Column("metadata", _jsonb(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-        sa.CheckConstraint(
-            f"result_type in ({ANALYSIS_RESULT_TYPES})", name="ck_analysis_results_type_allowed"
-        ),
-        sa.CheckConstraint(
-            f"status in ({ANALYSIS_STATUSES})", name="ck_analysis_results_status_allowed"
-        ),
-        sa.CheckConstraint(
-            "result_markdown IS NULL OR length(trim(result_markdown)) > 0",
-            name="ck_analysis_results_markdown_not_blank",
-        ),
-    )
+    """Stellt die Struktur wieder her. Daten sind nicht wiederherstellbar.
+
+    Anlagereihenfolge ist die Umkehrung des Drops: Eltern vor Kindern.
+    """
     op.create_table(
         "analysis_groups",
         sa.Column("id", sa.String(), primary_key=True),
@@ -168,6 +156,39 @@ def downgrade() -> None:
         "ix_analysis_group_documents_document_version_id",
         "analysis_group_documents",
         ["document_version_id"],
+    )
+
+    op.create_table(
+        "analysis_results_legacy",
+        sa.Column("id", sa.String(), primary_key=True),
+        sa.Column("analysis_group_id", sa.String(), nullable=False),
+        sa.Column("result_type", sa.String(length=32), nullable=False),
+        sa.Column("status", sa.String(length=32), nullable=False, server_default="draft"),
+        sa.Column("result_markdown", sa.Text(), nullable=True),
+        sa.Column("commit_ref", sa.String(length=255), nullable=True),
+        sa.Column("metadata", _jsonb(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+        sa.CheckConstraint(
+            f"result_type in ({ANALYSIS_RESULT_TYPES})", name="ck_analysis_results_type_allowed"
+        ),
+        sa.CheckConstraint(
+            f"status in ({ANALYSIS_STATUSES})", name="ck_analysis_results_status_allowed"
+        ),
+        sa.CheckConstraint(
+            "result_markdown IS NULL OR length(trim(result_markdown)) > 0",
+            name="ck_analysis_results_markdown_not_blank",
+        ),
+        # Genau die FK-Kante, die den Drop-Fehler ausgeloest hat.
+        sa.ForeignKeyConstraint(
+            ["analysis_group_id"],
+            ["analysis_groups.id"],
+            name="fk_analysis_results_group_id",
+            ondelete="CASCADE",
+        ),
+    )
+    op.create_index(
+        "ix_analysis_results_analysis_group_id", "analysis_results_legacy", ["analysis_group_id"]
     )
 
     op.create_table(

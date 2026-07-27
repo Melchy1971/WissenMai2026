@@ -1,10 +1,13 @@
 """Metadata Drift Detector.
 
 Checks (all read-only):
-  1. Fehlender Titel         -- Document.title is empty or whitespace-only
-  2. Fehlende Kategorie      -- DocumentVersion.metadata_ has no 'category' key or value
-  3. Fehlende Zusammenfassung -- DocumentVersion.metadata_ has no 'summary' key or value
-  4. Inkonsistente Metadaten  -- version metadata keys differ between versions of the same doc
+  1. Fehlende Kategorie      -- DocumentVersion.metadata_ has no 'category' key or value
+  2. Fehlende Zusammenfassung -- DocumentVersion.metadata_ has no 'summary' key or value
+  3. Inkonsistente Metadaten  -- version metadata keys differ between versions of the same doc
+
+Entfernt am 2026-07-26: die Pruefung "Fehlender Titel". Sie meldete leere oder
+reine Whitespace-Titel — genau das, was ck_documents_title_not_blank
+(Migration 20260504_0006) ausschliesst. Auf PostgreSQL konnte sie nie ausloesen.
 
 Finding type: METADATA_DRIFT
 """
@@ -43,8 +46,6 @@ class MetadataDriftDetector(BaseDriftDetector):
         )
 
         for doc in documents:
-            findings.extend(self._check_title(doc))
-
             versions = (
                 session.execute(
                     select(DocumentVersion).where(DocumentVersion.document_id == doc.id)
@@ -68,29 +69,7 @@ class MetadataDriftDetector(BaseDriftDetector):
         return findings
 
     # ------------------------------------------------------------------
-    # Check 1: Fehlender Titel
-    # ------------------------------------------------------------------
-
-    def _check_title(self, doc: Document) -> list[FindingDTO]:
-        if not doc.title or not doc.title.strip():
-            return [
-                FindingDTO(
-                    finding_type="METADATA_DRIFT",
-                    severity="error",
-                    entity_type="document",
-                    entity_id=doc.id,
-                    detail=_detail(
-                        check="missing_title",
-                        reason="Document.title is empty or whitespace-only",
-                        document_id=doc.id,
-                        title_raw=repr(doc.title),
-                    ),
-                )
-            ]
-        return []
-
-    # ------------------------------------------------------------------
-    # Check 2 + 3: Fehlende Kategorie / Zusammenfassung
+    # Check 1 + 2: Fehlende Kategorie / Zusammenfassung
     # ------------------------------------------------------------------
 
     def _check_required_keys(

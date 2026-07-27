@@ -39,7 +39,7 @@ def _add_other_workspace_document(db_session: Session) -> str:
             source_type="upload",
             mime_type="text/plain",
             content_hash="analysis-services-other-document-hash",
-            import_status="parsed",
+            import_status="pending",
             created_at=now,
             updated_at=now,
         )

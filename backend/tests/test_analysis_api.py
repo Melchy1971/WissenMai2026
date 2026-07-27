@@ -106,7 +106,7 @@ class TestAnalysisWorkspaceIsolation:
                 source_type="upload",
                 mime_type="text/plain",
                 content_hash="analysis-other-document-hash",
-                import_status="parsed",
+                import_status="pending",
                 created_at=now,
                 updated_at=now,
             )

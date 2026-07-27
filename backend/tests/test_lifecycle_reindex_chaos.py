@@ -87,7 +87,7 @@ def _make_doc(
         source_type="upload",
         mime_type="text/plain",
         content_hash=f"hash-{doc_id}",
-        import_status="chunked",
+        import_status="pending",
         created_at=_NOW,
         updated_at=_NOW,
     )
@@ -112,6 +112,8 @@ def _make_doc(
     session.flush()
 
     doc.current_version_id = ver_id
+
+    doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
     session.flush()
 
     chunk_ids: list[str] = []
@@ -554,7 +556,7 @@ def test_chaos_reindex_parallel_to_chunking_chunks_inserted_between_phases(
             source_type="upload",
             mime_type="text/plain",
             content_hash="hash-chunking-race",
-            import_status="parsed",
+            import_status="pending",
             created_at=_NOW,
             updated_at=_NOW,
         )
@@ -577,6 +579,7 @@ def test_chaos_reindex_parallel_to_chunking_chunks_inserted_between_phases(
         session.add(ver)
         session.flush()
         doc.current_version_id = _VER_A
+        doc.import_status = "chunked"  # Endstatus erst mit Version zulaessig
         session.commit()
 
     # Reindex phase-1 runs: D exists as active, no chunks → phase-1 is no-op for D

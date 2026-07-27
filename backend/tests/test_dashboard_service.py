@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.models.analysis import AnalysisJob, AnalysisResult
 from app.models.data_quality import DataQualityRun
 from app.main import app
-from app.models.documents import BackgroundJob, Document, Workspace
+from app.models.documents import BackgroundJob, Document, DocumentVersion, Workspace
 from app.models.drift import DriftRun
 from app.services.dashboard_service import DashboardSummaryService
 from tests.conftest import DEFAULT_USER_ID, DEFAULT_WORKSPACE_ID, DOCUMENT_ID
@@ -49,7 +49,10 @@ def test_dashboard_summary_aggregates_workspace_data(
                 source_type="upload",
                 mime_type="text/plain",
                 content_hash="dashboard-archived-hash",
-                import_status="parsed",
+                # Start als 'pending'; weiter unten kommt die Version dazu und der
+                # Status wird auf 'parsed' gehoben. Direkt 'parsed' verletzt
+                # ck_documents_readable_status_requires_current_version.
+                import_status="pending",
                 lifecycle_status="archived",
                 created_at=now,
                 updated_at=now,
@@ -84,6 +87,26 @@ def test_dashboard_summary_aggregates_workspace_data(
             ),
         ]
     )
+    db_session.flush()
+    # Version fuer das archivierte Dokument nachziehen, damit es wie in Produktion
+    # den Lesestatus 'parsed' tragen kann und nicht als neuer Import zaehlt.
+    archived_version = DocumentVersion(
+        id="dashboard-archived-version",
+        document_id="dashboard-archived-doc",
+        version_number=1,
+        normalized_markdown="# Archived\n",
+        markdown_hash="dashboard-archived-markdown-hash",
+        parser_version="1.0",
+        ocr_used=False,
+        metadata_={},
+        created_at=now,
+    )
+    db_session.add(archived_version)
+    db_session.flush()
+    archived_doc = db_session.get(Document, "dashboard-archived-doc")
+    archived_doc.current_version_id = archived_version.id
+    archived_doc.import_status = "parsed"
+    db_session.flush()
     _add_analysis_job(
         db_session,
         job_id="dashboard-open-analysis",
