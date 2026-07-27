@@ -1,7 +1,7 @@
 # Datenbank-Fertigstellung — Umsetzungsnotiz
 
-Stand: 2026-07-26. Status: **implementiert, statisch verifiziert. Live-Lauf gegen PostgreSQL steht aus.**
-Nicht committet.
+Stand: 2026-07-26. Status: **implementiert und gegen echtes PostgreSQL 16 verifiziert**
+(leere DB; Altbestand-Fall offen). Nicht committet.
 
 ## Methode
 
@@ -90,7 +90,18 @@ Story 2 (Fehlercodes) war bereits umgesetzt — `USER_ALREADY_EXISTS`,
 | `tests/test_documents_read_api.py` | 25/26, 1 offener Streitfall (s.u.) |
 | `tests/test_provisioning_service.py` | 11 passed |
 | `tests/test_seed_auth_bootstrap.py`, `test_auth_login_diagnostics.py` | passed |
-| Migrationen gegen echtes PostgreSQL | **OFFEN** — Skript liegt bereit |
+| Migrationen gegen echtes PostgreSQL 16 (`wissen_test`, Container `testdb`) | PASS — `upgrade 0025 -> 0029` fehlerfrei |
+| `tests/integration/test_schema_truth_0028_0029.py -m postgres` | **9 passed** |
+| Backend-Start gegen migrierte DB (`uvicorn`, Preflight) | PASS |
+
+Der PostgreSQL-Lauf (2026-07-26) deckt ab: vier tote Tabellen entfernt,
+`migration_document_repairs` erhalten, `background_jobs` akzeptiert `cancelled`,
+fuenf Constraint-Proben weisen ungueltige Zeilen ab, Round-Trip
+`head -> 0027 -> head` stellt denselben Head wieder her.
+
+Einschraenkung: der Lauf fand auf einer **leeren** Datenbank statt. Der
+Zeilen-Riegel in 0028 wurde dabei nicht ausgeloest, weil nichts zu schuetzen war.
+Fuer eine DB mit Altbestand ist das noch nicht nachgewiesen.
 
 Dokumentierte Ausnahmen im ORM-Abgleich:
 1. `ck_document_chunks_source_anchor_normalized` — nutzt jsonb-Operatoren, in

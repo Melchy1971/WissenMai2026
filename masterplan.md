@@ -80,7 +80,7 @@ Paket 5 beschreibt die Dokument-Read-API und Datenkonsistenz vor M3 Suche/Retrie
 | Test-DB | SQLite fuer lokale API-/Unit-Tests, optional PostgreSQL via TEST_DATABASE_URL | implementiert |
 | Migrationen | Alembic | implementiert |
 | Auth V1 | M4a fuehrt Auth und Workspace-Isolation als Produktthema ein | Zielbild definiert; aktueller Freigabestatus siehe generierter Maschinenstatus und reports/current/m4_backend_release_candidate.json |
-| Mehrbenutzer | Datenmodell vorbereiten, Logik spaeter | Auth-Sessions und Workspace-Memberships sind im Backend vorhanden; aktueller Status siehe generierter Maschinenstatus |
+| Mehrbenutzer | **Korrigiert 2026-07-26: Mehrbenutzer ist V1-Ziel, nicht "spaeter".** Jeder User hat einen privaten Workspace, dazu genau ein gemeinsamer Workspace. Grundlage: `OUTPUTS/Rat-Wissensbasis-V1/V1-Definition-of-Done.md` | Schema vollstaendig (`workspaces.kind`, `owner_user_id`, Migration 20260724_0027). `ProvisioningService` und `POST/GET /api/v1/users` implementiert. Isolationstests gegen echte DB offen |
 | Originaldateien | Nicht speichern | gilt weiterhin |
 | Kanonischer Inhalt | document_versions.normalized_markdown | implementiert |
 | Versionierung | Dokument zeigt ueber current_version_id auf aktuelle Version | implementiert |
@@ -180,6 +180,89 @@ Aktuelle M5a-Regel: Nur offene Limitations mit `target_phase=M5A` und effektivem
 - KL-DEF-002: `deferred`, severity `low`, blocks_gate `[]`. Embeddings und Vektorsuche sind optional und nicht V1-kritisch.
 - KL-NB-001: `open`, severity `low`, blocks_gate `[]`. Der Alias /api/v1/documents ist nicht durchgaengig verfuegbar; Pfade nutzen teilweise /documents.
 
+
+## Schema-Konsolidierung 2026-07-26
+
+Nicht committet. Nachweis: `OUTPUTS/Rat-Wissensbasis-V1/Datenbank_Fertigstellung_Umsetzungsnotiz.md`.
+
+### Befund
+
+Die ORM-Modelle bildeten die Migrationskette nicht ab: 17 Check-Constraints und
+8 Unique-Constraints/Indizes existierten nur in den Migrationen. Da die
+Unit-Suite ueber `create_all` gegen SQLite laeuft, testete sie gegen ein Schema
+**ohne** diese Invarianten. Fixtures erzeugten deshalb Zeilen, die PostgreSQL
+ablehnt — und Anwendungsregeln pruefen Zustaende, die es dort nicht geben kann.
+
+### Schema-Aenderungen
+
+| Migration | Inhalt |
+|---|---|
+| `20260726_0028` | Droppt vier tote Tabellen (`analysis_groups`, `analysis_group_documents`, `analysis_results_legacy`, `analysis_result_sources_legacy`). Bricht ab, wenn sie Zeilen enthalten. `migration_document_repairs` bleibt bewusst erhalten (Audit-Log der Reparatur aus 0010). |
+| `20260726_0029` | `background_jobs` erlaubt Status `cancelled`. Vorher kannte der gesamte Code den Status, die DB nicht — abgebrochene Jobs waren auf PostgreSQL nicht persistierbar. |
+
+Weitere Korrekturen: `documents.lifecycle_status` im ORM auf die drei zulaessigen
+Werte reduziert (`pending` war nie erlaubt); JSON-Spalten auf
+`JSON().with_variant(JSONB)` umgestellt, sonst erzeugt `create_all` auf
+PostgreSQL `json` und die GIN-Indizes aus 0026 waeren nicht anlegbar;
+`scripts/seed_auth.py` setzt `kind='shared'` am Default-Workspace, sonst
+verletzt der Seed seit 0027 den Consistency-Check.
+
+### Entfernte Anwendungsregeln
+
+Sieben Regeln bzw. Detektoren konnten auf PostgreSQL nie ausloesen und wurden
+entfernt. Entscheidung: Constraints behalten, Regeln entfernen — eine
+DB-Garantie ist staerker als eine nachtraegliche Meldung.
+
+| Entfernt | Bereits abgedeckt durch |
+|---|---|
+| `DuplicateDetector` (kompletter Detektor) | `uq_documents_workspace_content_hash`; der Import-Pfad meldet Kollisionen als `DUPLICATE_DOCUMENT` |
+| `MetadataQualityDetector` MQ-1 | `ck_documents_title_not_blank` |
+| `MetadataDriftDetector._check_title` | dieselbe Regel, 2. Kopie |
+| `MissingMetadataDetector` | dieselbe Regel, 3. Kopie |
+| `InvalidLifecycleDetector` | `ck_documents_lifecycle_status_allowed` |
+| `read_service`, erster 409-Zweig | `ck_documents_readable_status_requires_current_version` |
+| `OrphanChunkDetector`, `EmptyChunkDetector` | Skelette, `detect()` lieferte immer `[]` |
+
+**Folge fuer den Quality Score:** Der Data-Quality-Runner fuehrt jetzt vier statt
+acht Detektoren aus. Der bisherige Score wurde aus acht Detektoren gebildet, von
+denen fuenf strukturell nie ausschlagen konnten — er war nicht falsch gerechnet,
+aber strukturell zu optimistisch. `reports/current/product_maturity_v2.json` und
+der M5a-Stand sind auf der alten Basis gerechnet und gehoeren neu bewertet.
+
+### Nachweis
+
+`alembic upgrade 20260617_0025 -> 20260726_0029` gegen PostgreSQL 16 fehlerfrei;
+`tests/integration/test_schema_truth_0028_0029.py -m postgres`: 9 passed
+(tote Tabellen entfernt, Audit-Tabelle erhalten, `cancelled` akzeptiert, fuenf
+Constraint-Proben weisen ungueltige Zeilen ab, Round-Trip `head -> 0027 -> head`).
+Backend-Start gegen die migrierte DB erfolgreich.
+
+Einschraenkung: der Lauf fand auf einer leeren Datenbank statt. Der Zeilen-Riegel
+in 0028 wurde nicht ausgeloest. Fuer eine DB mit Altbestand ist das offen.
+
+### Offene Entscheidungen
+
+1. **Gate-Hierarchie.** `duplicate_detector_gate` ist in `docs/gate_hierarchy.json`
+   ein `mandatory_child` von M5a mit
+   `reports/current/m5a_duplicate_detector_gate.json` als Nachweis. Mit dem
+   Detektor faellt das Gate. Die Hierarchie ist bewusst **nicht** angepasst —
+   das ist eine Governance-Entscheidung.
+2. **Quality Score / M5a-Stand** auf neuer Detektorbasis neu bewerten.
+3. **`DocumentDriftDetector`**: Check 1 (Teil "hat `current_version_id`") und
+   Check 2 ("Version aufloesbar") sind ebenfalls durch Constraint bzw. FK
+   abgedeckt; 17 Tests haengen daran.
+4. **Truth-Gate-Klassifizierer**: 17 Testdateien fallen durch
+   `_classify_truth_gate` in `backend/tests/conftest.py`. Folge: `pytest tests/`
+   bricht mit `UsageError` ab, sobald die postgres_truth-Preflight passiert.
+   Die Vollsuite ist damit derzeit nicht lauffaehig.
+5. **`tests/postgres_truth/test_m4e_backup_restore_truth.py`** importiert
+   weiterhin `create_backup` aus `app.services.backup_restore` — ImportError beim
+   Sammeln. Bekannt als EVIDENCE.md Fund 2.
+6. **Arbeitsdatenbank `wissen2026`** stand am 2026-07-26 auf `20260602_0019`,
+   also zehn Migrationen zurueck. `.env` zeigt weiterhin darauf, und
+   `scripts/dev-backend.ps1` migriert beim Start ohne Rueckfrage auf Head.
+
+---
 
 ## Documentation Truth Lint
 
@@ -331,7 +414,9 @@ Die folgenden Haken bedeuten: Artefakt oder Mechanik ist vorhanden. Sie bedeuten
 
 - Vollausbau von Login-/Logout-UX.
 - OAuth, SSO und externe Identity Provider.
-- komplexe Rollen-/Rechteverwaltung.
+- komplexe Rollen-/Rechteverwaltung. **Praezisiert 2026-07-26:** einfache Rollen
+  (`owner`/`admin`/`member`) und der gemeinsame Bereich **sind** V1. Nicht in V1
+  bleiben Enterprise-Feinrechte, Rechtevererbung und Rechte auf Dokumentebene.
 - Vektorsuche als Pflichtbestandteil.
 - VPS-Deployment von GUI/API als Muss.
 - vollstaendiges Alerting.
@@ -395,7 +480,22 @@ PostgreSQL bleibt zentrale Persistenz:
 - Chunk-Metadaten und Quellenanker.
 - Kategorien und Tags.
 - Dokument-Tag-Verknuepfungen.
-- Chat-Persistenztabellen, vorbereitete Analyse-Tabellen.
+- Chat-Persistenztabellen, Analyse-Tabellen (`analysis_jobs`-Modell seit 20260612_0021).
+- Workspaces mit `kind` (`private`/`shared`) und `owner_user_id`, Users, Memberships.
+- Drift-, Data-Quality-, Export- und Analytics-Tabellen.
+
+Head der Migrationskette: `20260726_0029` (31 Migrationen, linear).
+
+**Schema-Truth-Regel (seit 2026-07-26).** Die ORM-Modelle muessen die
+Migrationskette abbilden. Erzwungen durch
+`backend/tests/integration/test_schema_truth_0028_0029.py::test_orm_matches_migration_chain`:
+der Test spielt alle Migrationen gegen ein Schemamodell durch und diffed sie
+gegen `Base.metadata`. Dokumentierte Ausnahmen stehen dort als `KNOWN_ORM_GAPS`.
+
+Grenze dieser Absicherung: der Replay laeuft ohne Datenbank und kann
+DDL-Reihenfolgefehler (FK-Abhaengigkeiten beim Drop) nicht sehen. Dafuer gibt es
+die `@pytest.mark.postgres`-Tests derselben Datei und
+`OUTPUTS/Rat-Wissensbasis-V1/verify_schema_0028_0029.ps1`.
 
 ---
 
@@ -1065,7 +1165,10 @@ Ausserhalb M3a:
 - Agenten.
 - automatische Aktionen.
 - komplexe Workflows.
-- Multi-User-Collaboration.
+- Multi-User-Collaboration im Sinne gleichzeitiger Bearbeitung, Kommentare und
+  Freigabe-Workflows. **Korrigiert 2026-07-26:** der *gemeinsame Bereich*
+  (ein Workspace, in dem alle User Mitglied sind) ist davon ausgenommen und ist
+  V1-Pflicht.
 - Enterprise-Rollenmodell.
 - externe Integrationen.
 - neue semantische oder agentische Intelligenz-Schichten.
